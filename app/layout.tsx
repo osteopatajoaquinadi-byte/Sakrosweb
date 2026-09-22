@@ -31,6 +31,7 @@ export const metadata: Metadata = {
 
 const navLinks = [
   { href: "/servicios", label: "Servicios" },
+  { href: "/reserva", label: "Reserva" },
   { href: "/evidencia-metodologia", label: "Evidencia y Metodología" },
   { href: "/quienes-somos", label: "Quiénes Somos" },
   { href: "/blog", label: "Blog" },
@@ -75,14 +76,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 </Link>
               ))}
             </nav>
-            <a
-              href={siteConfig.bookingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/reserva"
               className="rounded-full bg-teal-700 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-800"
             >
               Reserva
-            </a>
+            </Link>
           </div>
         </header>
 

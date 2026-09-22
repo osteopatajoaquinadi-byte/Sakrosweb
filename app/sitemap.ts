@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/quienes-somos",
     "/evidencia-metodologia",
     "/packs-tratamiento",
+    "/reserva",
     "/contacto",
     "/blog",
   ].map((path) => ({

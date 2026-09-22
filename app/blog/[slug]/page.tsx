@@ -70,7 +70,7 @@ export default async function BlogPostPage({
 
       <div className="mt-12 pt-8 border-t border-slate-200">
         <a
-          href={siteConfig.bookingUrl}
+          href="/reserva"
           target="_blank"
           rel="noopener noreferrer"
           className="rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
