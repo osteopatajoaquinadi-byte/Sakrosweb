@@ -24,6 +24,10 @@ const serviceVideos: Record<string, { src: string; alt: string }> = {
     src: "/images/evaluacion-pie.mp4",
     alt: "Evaluación biomecánica del pie en Sakros",
   },
+  "posturologia": {
+    src: "/images/posturologia.mp4",
+    alt: "Evaluación postural en Sakros",
+  },
 };
 
 export function generateStaticParams() {
