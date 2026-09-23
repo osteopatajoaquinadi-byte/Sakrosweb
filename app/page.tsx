@@ -129,18 +129,47 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold text-slate-900 mb-4">
             ¿Por qué &quot;a tu medida&quot;?
           </h2>
-          <p className="text-slate-600 max-w-2xl">
-            Cada tratamiento parte por una evaluación individualizada: buscamos el
-            origen del problema, no solo el síntoma. Evaluamos biomecánica articular,
-            integración del sistema nervioso central, hábitos diarios y movimiento,
-            para que el plan se ajuste a tu cuerpo y a tu objetivo real — volver a
-            moverte como antes.
-          </p>
+          <div className="grid gap-8 md:grid-cols-2 items-center">
+            <p className="text-slate-600">
+              Cada tratamiento parte por una evaluación individualizada: buscamos el
+              origen del problema, no solo el síntoma. Evaluamos biomecánica articular,
+              integración del sistema nervioso central, hábitos diarios y movimiento,
+              para que el plan se ajuste a tu cuerpo y a tu objetivo real — volver a
+              moverte como antes.
+            </p>
+            <video
+              src="/images/hrv-kettlebell.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="rounded-2xl w-full max-h-[350px] object-cover"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonio */}
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <h2 className="text-2xl font-bold text-slate-900 mb-6">
+          Lo que dicen nuestros pacientes
+        </h2>
+        <div className="max-w-2xl">
+          <video
+            src="/images/testimonio-paciente.mp4"
+            controls
+            playsInline
+            preload="metadata"
+            className="rounded-2xl w-full"
+          >
+            Testimonio de paciente en Sakros
+          </video>
         </div>
       </section>
 
       {/* FAQ orientadas a búsqueda real */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
+      <section className="bg-slate-50 border-y border-slate-200">
+        <div className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="text-2xl font-bold text-slate-900 mb-8">Preguntas frecuentes</h2>
         <div className="space-y-8 max-w-3xl">
           {faqs.map((faq) => (
@@ -150,17 +179,35 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+        </div>
       </section>
 
       {/* Dónde estamos */}
-      <section className="border-t border-slate-200 bg-slate-50">
+      <section className="border-t border-slate-200">
         <div className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">Dónde estamos</h2>
-          <p className="text-slate-600">
-            {siteConfig.address.street}
-            <br />
-            {siteConfig.address.city}, {siteConfig.address.region}
-          </p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">Dónde estamos</h2>
+          <div className="grid gap-8 md:grid-cols-2 items-start">
+            <div>
+              <p className="text-slate-600 mb-4">
+                {siteConfig.address.street}
+                <br />
+                {siteConfig.address.city}, {siteConfig.address.region}
+              </p>
+              <Link
+                href="/reserva"
+                className="inline-block rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
+              >
+                Reserva tu evaluación
+              </Link>
+            </div>
+            <Image
+              src="/images/entrada-clinica.png"
+              alt="Entrada de Clínica Sakros en Viña del Mar"
+              width={600}
+              height={800}
+              className="rounded-2xl object-cover w-full max-h-[400px]"
+            />
+          </div>
         </div>
       </section>
     </div>

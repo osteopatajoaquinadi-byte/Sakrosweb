@@ -19,15 +19,22 @@ const serviceImages: Record<string, { src: string; alt: string }[]> = {
 };
 
 // Videos por servicio
-const serviceVideos: Record<string, { src: string; alt: string }> = {
-  "estudio-biomecanico-pie": {
-    src: "/images/evaluacion-pie.mp4",
-    alt: "Evaluación biomecánica del pie en Sakros",
-  },
-  "posturologia": {
-    src: "/images/posturologia.mp4",
-    alt: "Evaluación postural en Sakros",
-  },
+const serviceVideos: Record<string, { src: string; alt: string }[]> = {
+  "estudio-biomecanico-pie": [
+    { src: "/images/evaluacion-pie.mp4", alt: "Evaluación biomecánica del pie en Sakros" },
+    { src: "/images/biomecanico-sensor.mp4", alt: "Paciente en plataforma Sensor Medica" },
+  ],
+  "posturologia": [
+    { src: "/images/posturologia.mp4", alt: "Evaluación postural en Sakros" },
+  ],
+  "kinesiologia": [
+    { src: "/images/kine-puente.mp4", alt: "Ejercicio de rehabilitación supervisado" },
+    { src: "/images/kine-plancha.mp4", alt: "Ejercicio de control motor" },
+    { src: "/images/kine-cuadrupedia.mp4", alt: "Ejercicio progresivo en la clínica" },
+  ],
+  "actividad-fisica-dirigida": [
+    { src: "/images/af-adulta-mayor.mp4", alt: "Actividad física dirigida en Sakros" },
+  ],
 };
 
 export function generateStaticParams() {
@@ -97,17 +104,20 @@ export default async function ServicePage({
         ))}
       </ul>
       {serviceVideos[service.slug] && (
-        <div className="mb-6">
-          <video
-            src={serviceVideos[service.slug].src}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="rounded-xl w-full max-h-[400px] object-cover"
-          >
-            {serviceVideos[service.slug].alt}
-          </video>
+        <div className="grid gap-4 sm:grid-cols-2 mb-6">
+          {serviceVideos[service.slug].map((vid) => (
+            <video
+              key={vid.src}
+              src={vid.src}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="rounded-xl w-full max-h-[400px] object-cover"
+            >
+              {vid.alt}
+            </video>
+          ))}
         </div>
       )}
       {serviceImages[service.slug] && (
