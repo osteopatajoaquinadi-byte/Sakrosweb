@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { siteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
@@ -54,14 +55,23 @@ export default function QuienesSomosPage() {
         <h2 className="text-xl font-semibold text-slate-900 mb-3">
           Formación de nuestro director
         </h2>
-        <ul className="space-y-2 text-slate-600">
-          <li>Kinesiólogo y Osteópata (D.O.)</li>
-          <li>MSc en Psiconeuroinmunología Clínica (PNIc)</li>
-          <li>
-            Faculty internacional en EOM Internacional (Escuela de Osteopatía de
-            Madrid), en los módulos de osteopatía y PNI
-          </li>
-        </ul>
+        <div className="grid gap-6 md:grid-cols-2 items-start">
+          <ul className="space-y-2 text-slate-600">
+            <li>Kinesiólogo y Osteópata (D.O.)</li>
+            <li>MSc en Psiconeuroinmunología Clínica (PNIc)</li>
+            <li>
+              Faculty internacional en EOM Internacional (Escuela de Osteopatía de
+              Madrid), en los módulos de osteopatía y PNI
+            </li>
+          </ul>
+          <Image
+            src="/images/joaquin-adi.jpg"
+            alt="Joaquín Adi — director de Sakros"
+            width={400}
+            height={500}
+            className="rounded-2xl object-cover w-full max-h-[350px]"
+          />
+        </div>
       </section>
 
       <section>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { services, siteConfig } from "@/lib/site-config";
 
@@ -27,37 +28,47 @@ export default function HomePage() {
   return (
     <div>
       <section className="mx-auto max-w-6xl px-4 pt-16 pb-20 md:pt-24 md:pb-28">
-        <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-wide text-teal-700 mb-4">
-            Osteopatía · Kinesiología · Posturología en Viña del Mar
-          </p>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6">
-            Vuelve a tu deporte sin dolor
-          </h1>
-          <p className="text-lg text-slate-600 mb-4">
-            En Sakros ayudamos a ex-deportistas y deportistas activos a volver a
-            entrenar con confianza, con una evaluación individualizada que busca el
-            origen del dolor, no solo calmarlo.
-          </p>
-          <p className="text-sm text-slate-500 mb-8">
-            {siteConfig.address.street} · {siteConfig.address.city},{" "}
-            {siteConfig.address.region}
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a
-              href="/reserva"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
-            >
-              Reserva tu evaluación
-            </a>
-            <Link
-              href="/evidencia-metodologia"
-              className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-teal-700 hover:text-teal-700"
-            >
-              Cómo trabajamos
-            </Link>
+        <div className="grid gap-10 md:grid-cols-2 items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-teal-700 mb-4">
+              Osteopatía · Kinesiología · Posturología en Viña del Mar
+            </p>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6">
+              Vuelve a tu deporte sin dolor
+            </h1>
+            <p className="text-lg text-slate-600 mb-4">
+              En Sakros ayudamos a ex-deportistas y deportistas activos a volver a
+              entrenar con confianza, con una evaluación individualizada que busca el
+              origen del dolor, no solo calmarlo.
+            </p>
+            <p className="text-sm text-slate-500 mb-8">
+              {siteConfig.address.street} · {siteConfig.address.city},{" "}
+              {siteConfig.address.region}
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/reserva"
+                className="rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
+              >
+                Reserva tu evaluación
+              </Link>
+              <Link
+                href="/evidencia-metodologia"
+                className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-teal-700 hover:text-teal-700"
+              >
+                Cómo trabajamos
+              </Link>
+            </div>
+          </div>
+          <div>
+            <Image
+              src="/images/joaquin-adi.jpg"
+              alt="Joaquín Adi — Osteópata y Kinesiólogo, director de Sakros"
+              width={600}
+              height={800}
+              className="rounded-2xl object-cover w-full max-h-[500px]"
+              priority
+            />
           </div>
         </div>
       </section>

@@ -1,7 +1,22 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { services, siteConfig } from "@/lib/site-config";
+
+// Imágenes específicas por servicio (solo los que tienen fotos propias)
+const serviceImages: Record<string, { src: string; alt: string }[]> = {
+  "estudio-biomecanico-pie": [
+    { src: "/images/baropodometria.png", alt: "Análisis baropodométrico — mapa de presiones plantares" },
+    { src: "/images/plataforma-presiones-scanner3d.png", alt: "Plataforma de presiones y escáner 3D" },
+    { src: "/images/scanner-2d.png", alt: "Escáner 2D para diseño de plantillas personalizadas" },
+  ],
+  "plantillas-ortopedicas": [
+    { src: "/images/motion-balance-tecnologia.png", alt: "Tecnología de fresado CNC para plantillas ortopédicas a medida" },
+    { src: "/images/plantillas-precision.png", alt: "Plantillas ortopédicas de precisión — sin retoques" },
+    { src: "/images/baropodometria.png", alt: "Análisis baropodométrico para el diseño de plantillas" },
+  ],
+};
 
 export function generateStaticParams() {
   return services.map((service) => ({ slug: service.slug }));
@@ -61,15 +76,27 @@ export default async function ServicePage({
           </li>
         ))}
       </ul>
+      {serviceImages[service.slug] && (
+        <div className="grid gap-4 sm:grid-cols-2 mb-10">
+          {serviceImages[service.slug].map((img) => (
+            <Image
+              key={img.src}
+              src={img.src}
+              alt={img.alt}
+              width={600}
+              height={400}
+              className="rounded-xl object-cover w-full"
+            />
+          ))}
+        </div>
+      )}
       <div className="flex flex-wrap gap-4">
-        <a
+        <Link
           href="/reserva"
-          target="_blank"
-          rel="noopener noreferrer"
           className="rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
         >
           Reserva una evaluación
-        </a>
+        </Link>
         <Link
           href="/servicios"
           className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 hover:border-teal-700 hover:text-teal-700"
