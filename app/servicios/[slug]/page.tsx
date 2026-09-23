@@ -12,9 +12,10 @@ const serviceImages: Record<string, { src: string; alt: string }[]> = {
     { src: "/images/scanner-2d.png", alt: "Escáner 2D para diseño de plantillas personalizadas" },
   ],
   "plantillas-ortopedicas": [
+    { src: "/images/plantillas-pie.jpg", alt: "Prueba de plantilla ortopédica personalizada" },
+    { src: "/images/plantillas-mano.jpg", alt: "Plantilla Motion & Balance terminada" },
+    { src: "/images/plantillas-kit.jpg", alt: "Kit Motion & Balance — estudio biomecánico y plantillas" },
     { src: "/images/motion-balance-tecnologia.png", alt: "Tecnología de fresado CNC para plantillas ortopédicas a medida" },
-    { src: "/images/plantillas-precision.png", alt: "Plantillas ortopédicas de precisión — sin retoques" },
-    { src: "/images/baropodometria.png", alt: "Análisis baropodométrico para el diseño de plantillas" },
   ],
 };
 
@@ -34,6 +35,9 @@ const serviceVideos: Record<string, { src: string; alt: string }[]> = {
   ],
   "actividad-fisica-dirigida": [
     { src: "/images/af-adulta-mayor.mp4", alt: "Actividad física dirigida en Sakros" },
+  ],
+  "plantillas-ortopedicas": [
+    { src: "/images/plantillas-video.mp4", alt: "Proceso de fabricación de plantillas Motion & Balance" },
   ],
 };
 
