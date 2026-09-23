@@ -95,10 +95,13 @@ export default function QuienesSomosPage() {
       <section className="mb-12">
         <div className="grid gap-8 md:grid-cols-[280px_1fr] items-start">
           <div>
-            <div className="rounded-2xl bg-slate-200 w-full aspect-[4/5] flex items-center justify-center text-slate-400 text-sm">
-              {/* TODO: agregar foto de Anikken */}
-              Foto pendiente
-            </div>
+            <Image
+              src="/images/anikken-arentsen.jpg"
+              alt="Anikken Arentsen — Posturóloga, co-directora de Sakros"
+              width={400}
+              height={500}
+              className="rounded-2xl object-cover w-full"
+            />
             <h2 className="text-xl font-bold text-slate-900 mt-4">
               Anikken Arentsen A.
             </h2>
