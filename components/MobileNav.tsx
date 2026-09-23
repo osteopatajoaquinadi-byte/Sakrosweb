@@ -44,7 +44,7 @@ export default function MobileNav() {
       {open && (
         <>
           <div className="fixed inset-0 z-40 bg-black/30" onClick={() => setOpen(false)} />
-          <nav className="fixed top-0 right-0 z-40 h-full w-72 bg-white shadow-xl flex flex-col pt-20 px-6">
+          <nav className="fixed top-0 right-0 z-50 h-full w-72 bg-white shadow-2xl flex flex-col pt-20 px-6" style={{backgroundColor: '#ffffff'}}>
             {navLinks.map((link) => (
               <Link
                 key={link.href}
