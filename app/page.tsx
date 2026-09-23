@@ -200,13 +200,16 @@ export default function HomePage() {
                 Reserva tu evaluación
               </Link>
             </div>
-            <Image
-              src="/images/entrada-clinica.png"
-              alt="Entrada de Clínica Sakros en Viña del Mar"
-              width={600}
-              height={800}
+            <video
+              src="/images/clinica-recorrido.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
               className="rounded-2xl object-cover w-full max-h-[400px]"
-            />
+            >
+              Recorrido por Clínica Sakros en Viña del Mar
+            </video>
           </div>
         </div>
       </section>
