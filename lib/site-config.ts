@@ -28,6 +28,7 @@ export type Service = {
   tagline: string;
   description: string;
   bullets: string[];
+  image: string;
   // URL(s) del sitio anterior en Wix que deben redirigir a esta página.
   legacyPaths: string[];
 };
@@ -35,6 +36,7 @@ export type Service = {
 export const services: Service[] = [
   {
     slug: "osteopatia",
+    image: "/images/servicios/osteopatia.png",
     name: "Osteopatía",
     shortName: "Osteopatía",
     tagline: "Terapia manual para el dolor y la movilidad",
@@ -50,6 +52,7 @@ export const services: Service[] = [
   },
   {
     slug: "kinesiologia",
+    image: "/images/servicios/kinesiologia.png",
     name: "Kinesiología",
     shortName: "Kinesiología",
     tagline: "Rehabilitación y recuperación funcional",
@@ -68,6 +71,7 @@ export const services: Service[] = [
   },
   {
     slug: "posturologia",
+    image: "/images/servicios/posturologia.png",
     name: "Posturología",
     shortName: "Posturología",
     tagline: "Evaluación y corrección postural",
@@ -86,6 +90,7 @@ export const services: Service[] = [
   },
   {
     slug: "plantillas-ortopedicas",
+    image: "/images/servicios/plantillas-ortopedicas.png",
     name: "Plantillas Ortopédicas Personalizadas",
     shortName: "Plantillas Ortopédicas",
     tagline: "Soporte biomecánico hecho a tu medida",
@@ -101,6 +106,7 @@ export const services: Service[] = [
   },
   {
     slug: "actividad-fisica-dirigida",
+    image: "/images/servicios/actividad-fisica-dirigida.png",
     name: "Actividad Física Dirigida",
     shortName: "Actividad Física Dirigida",
     tagline: "Movimiento terapéutico guiado",
@@ -115,6 +121,7 @@ export const services: Service[] = [
   },
   {
     slug: "estudio-biomecanico-pie",
+    image: "/images/servicios/estudio-biomecanico-pie.png",
     name: "Estudio Biomecánico del Pie",
     shortName: "Estudio Biomecánico del Pie",
     tagline: "Análisis de la pisada",

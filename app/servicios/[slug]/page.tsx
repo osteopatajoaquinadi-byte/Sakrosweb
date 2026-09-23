@@ -75,6 +75,14 @@ export default async function ServicePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <Image
+        src={service.image}
+        alt={service.name}
+        width={1200}
+        height={700}
+        className="w-full rounded-2xl mb-8 object-cover max-h-[300px]"
+        priority
+      />
       <p className="text-sm font-semibold uppercase tracking-wide text-teal-700 mb-3">
         {service.tagline}
       </p>

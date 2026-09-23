@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { services } from "@/lib/site-config";
 
@@ -21,10 +22,19 @@ export default function ServiciosPage() {
           <Link
             key={service.slug}
             href={`/servicios/${service.slug}`}
-            className="block rounded-2xl border border-slate-200 p-6 hover:border-teal-700 hover:shadow-sm transition"
+            className="block rounded-2xl border border-slate-200 overflow-hidden hover:border-teal-700 hover:shadow-sm transition"
           >
-            <h2 className="font-semibold text-slate-900 mb-1">{service.name}</h2>
-            <p className="text-sm text-slate-600">{service.tagline}</p>
+            <Image
+              src={service.image}
+              alt={service.name}
+              width={1200}
+              height={700}
+              className="w-full h-44 object-cover"
+            />
+            <div className="p-5">
+              <h2 className="font-semibold text-slate-900 mb-1">{service.name}</h2>
+              <p className="text-sm text-slate-600">{service.tagline}</p>
+            </div>
           </Link>
         ))}
       </div>
