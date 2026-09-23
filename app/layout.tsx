@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import "./globals.css";
 import { siteConfig } from "@/lib/site-config";
+import MobileNav from "@/components/MobileNav";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -84,12 +85,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 </Link>
               ))}
             </nav>
-            <Link
-              href="/reserva"
-              className="rounded-full bg-teal-700 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-800"
-            >
-              Reserva
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/reserva"
+                className="hidden md:inline-block rounded-full bg-teal-700 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-800"
+              >
+                Reserva
+              </Link>
+              <MobileNav />
+            </div>
           </div>
         </header>
 
