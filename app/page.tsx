@@ -143,7 +143,7 @@ export default function HomePage() {
               loop
               muted
               playsInline
-              className="rounded-2xl w-full max-h-[350px] object-cover"
+              className="rounded-2xl w-full max-h-[240px] object-cover"
             />
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function HomePage() {
               loop
               muted
               playsInline
-              className="rounded-2xl object-cover w-full max-h-[400px]"
+              className="rounded-2xl object-cover w-full max-h-[280px]"
             >
               Recorrido por Clínica Sakros en Viña del Mar
             </video>

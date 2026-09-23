@@ -113,7 +113,7 @@ export default async function ServicePage({
               loop
               muted
               playsInline
-              className="rounded-xl w-full max-h-[400px] object-cover"
+              className="rounded-xl w-full max-h-[250px] object-cover"
             >
               {vid.alt}
             </video>
