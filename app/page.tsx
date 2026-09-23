@@ -154,7 +154,7 @@ export default function HomePage() {
         <h2 className="text-2xl font-bold text-slate-900 mb-6">
           Lo que dicen nuestros pacientes
         </h2>
-        <div className="max-w-xs">
+        <div className="max-w-[260px]">
           <video
             src="/images/testimonio-paciente.mp4"
             controls
