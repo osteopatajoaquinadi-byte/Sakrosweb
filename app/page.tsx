@@ -154,7 +154,7 @@ export default function HomePage() {
         <h2 className="text-2xl font-bold text-slate-900 mb-6">
           Lo que dicen nuestros pacientes
         </h2>
-        <div className="max-w-2xl">
+        <div className="max-w-md">
           <video
             src="/images/testimonio-paciente.mp4"
             controls
@@ -162,8 +162,12 @@ export default function HomePage() {
             preload="metadata"
             className="rounded-2xl w-full"
           >
-            Testimonio de paciente en Sakros
+            Testimonio de Sebastián Delgadillo
           </video>
+          <div className="mt-3">
+            <p className="font-semibold text-slate-900">Sebastián Delgadillo</p>
+            <p className="text-sm text-slate-500">Condromalacia grado 4</p>
+          </div>
         </div>
       </section>
 
