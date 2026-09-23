@@ -18,6 +18,14 @@ const serviceImages: Record<string, { src: string; alt: string }[]> = {
   ],
 };
 
+// Videos por servicio
+const serviceVideos: Record<string, { src: string; alt: string }> = {
+  "estudio-biomecanico-pie": {
+    src: "/images/evaluacion-pie.mp4",
+    alt: "Evaluación biomecánica del pie en Sakros",
+  },
+};
+
 export function generateStaticParams() {
   return services.map((service) => ({ slug: service.slug }));
 }
@@ -76,6 +84,20 @@ export default async function ServicePage({
           </li>
         ))}
       </ul>
+      {serviceVideos[service.slug] && (
+        <div className="mb-6">
+          <video
+            src={serviceVideos[service.slug].src}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="rounded-xl w-full max-h-[400px] object-cover"
+          >
+            {serviceVideos[service.slug].alt}
+          </video>
+        </div>
+      )}
       {serviceImages[service.slug] && (
         <div className="grid gap-4 sm:grid-cols-2 mb-10">
           {serviceImages[service.slug].map((img) => (
