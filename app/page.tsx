@@ -61,14 +61,16 @@ export default function HomePage() {
             </div>
           </div>
           <div>
-            <Image
-              src="/images/joaquin-adi.jpg"
-              alt="Joaquín Adi — Osteópata y Kinesiólogo, director de Sakros"
-              width={600}
-              height={800}
+            <video
+              src="/images/sakros-hero.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
               className="rounded-2xl object-cover w-full max-h-[500px]"
-              priority
-            />
+            >
+              Video de presentación de Sakros
+            </video>
           </div>
         </div>
       </section>
