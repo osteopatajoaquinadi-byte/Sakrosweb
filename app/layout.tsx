@@ -86,6 +86,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               ))}
             </nav>
             <div className="flex items-center gap-2">
+              <a
+                href="https://sakros-fichas.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden md:inline-block rounded-full border border-teal-700 px-4 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50"
+              >
+                Acceso Profesional
+              </a>
               <Link
                 href="/reserva"
                 className="hidden md:inline-block rounded-full bg-teal-700 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-800"
