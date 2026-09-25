@@ -77,18 +77,22 @@ export default function HomePage() {
 
       {/* Credenciales */}
       <section className="border-y border-slate-200 bg-slate-50">
-        <div className="mx-auto max-w-6xl px-4 py-8 grid gap-6 sm:grid-cols-3 text-center text-sm text-slate-600">
+        <div className="mx-auto max-w-6xl px-4 py-8 grid gap-6 sm:grid-cols-4 text-center text-sm text-slate-600">
           <div>
-            <p className="text-2xl font-bold text-slate-900">D.O.</p>
-            <p>Osteopatía, formación internacional</p>
+            <p className="text-2xl font-bold text-slate-900">Osteopatía</p>
+            <p>D.O. — formación internacional</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-slate-900">MSc PNIc</p>
-            <p>Psiconeuroinmunología clínica</p>
+            <p className="text-2xl font-bold text-slate-900">Kinesiología</p>
+            <p>Rehabilitación y readaptación deportiva</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-slate-900">EOM Internacional</p>
-            <p>Faculty internacional en osteopatía</p>
+            <p className="text-2xl font-bold text-slate-900">Posturología</p>
+            <p>Evaluación y corrección postural</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-slate-900">PNI Clínica</p>
+            <p>Psiconeuroinmunología aplicada</p>
           </div>
         </div>
       </section>
