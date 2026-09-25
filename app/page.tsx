@@ -179,29 +179,37 @@ export default function HomePage() {
             en la primera fase, pero el objetivo final es devolverte a tu máximo
             rendimiento mediante el ejercicio guiado.
           </p>
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl bg-white border border-slate-200 p-6">
               <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 text-xl font-bold mb-4">1</div>
-              <h3 className="font-semibold text-slate-900 mb-2">Evaluación biomecánica</h3>
+              <h3 className="font-semibold text-slate-900 mb-2">Evaluación manual y funcional</h3>
               <p className="text-sm text-slate-600">
                 Analizamos cómo te mueves y dónde están las compensaciones que te
-                causan dolor al entrenar. No partimos por tratar — partimos por entender.
+                causan dolor. No partimos por tratar — partimos por entender.
               </p>
             </div>
             <div className="rounded-2xl bg-white border border-slate-200 p-6">
               <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 text-xl font-bold mb-4">2</div>
-              <h3 className="font-semibold text-slate-900 mb-2">Eliminación del dolor</h3>
+              <h3 className="font-semibold text-slate-900 mb-2">Modulación del dolor</h3>
               <p className="text-sm text-slate-600">
-                Usamos terapia manual avanzada (osteopatía, movilización neural,
-                técnicas miofasciales) para aliviar la molestia aguda y devolverte rango de movimiento.
+                Terapia manual avanzada (osteopatía, movilización neural,
+                técnicas miofasciales) para modular la respuesta de dolor y devolverte rango de movimiento.
               </p>
             </div>
             <div className="rounded-2xl bg-white border border-slate-200 p-6">
               <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 text-xl font-bold mb-4">3</div>
-              <h3 className="font-semibold text-slate-900 mb-2">Readaptación y carga</h3>
+              <h3 className="font-semibold text-slate-900 mb-2">Control motor</h3>
               <p className="text-sm text-slate-600">
-                Fortalecemos tu cuerpo simulando los gestos de tu deporte para que
-                vuelvas a la actividad de forma segura, sin recaídas.
+                Reentrenamos los patrones de movimiento que tu cuerpo perdió o
+                compensó, para que cada gesto sea eficiente y seguro.
+              </p>
+            </div>
+            <div className="rounded-2xl bg-white border border-slate-200 p-6">
+              <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 text-xl font-bold mb-4">4</div>
+              <h3 className="font-semibold text-slate-900 mb-2">Cargas progresivas</h3>
+              <p className="text-sm text-slate-600">
+                Fortalecemos tu cuerpo con progresión controlada, simulando los gestos
+                de tu deporte para que vuelvas a la actividad sin recaídas.
               </p>
             </div>
           </div>
