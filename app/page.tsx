@@ -34,12 +34,12 @@ export default function HomePage() {
               Osteopatía · Kinesiología · Posturología en Viña del Mar
             </p>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6">
-              Vuelve a tu deporte sin dolor
+              Vuelve a entrenar y a las actividades de tu vida. Sin dolores, sin recaídas.
             </h1>
             <p className="text-lg text-slate-600 mb-4">
-              En Sakros ayudamos a ex-deportistas y deportistas activos a volver a
-              entrenar con confianza, con una evaluación individualizada que busca el
-              origen del dolor, no solo calmarlo.
+              Ayudamos a deportistas, exdeportistas, y a todos quienes quieran
+              recuperar la confianza en su cuerpo, superar lesiones viejas y
+              volver a su deporte sin que las horas de oficina les pasen factura.
             </p>
             <p className="text-sm text-slate-500 mb-8">
               {siteConfig.address.street} · {siteConfig.address.city},{" "}
