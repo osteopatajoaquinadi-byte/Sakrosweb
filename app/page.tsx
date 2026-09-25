@@ -93,6 +93,44 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Espejo de frustración */}
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <h2 className="text-2xl font-bold text-slate-900 mb-3">
+          Sabemos lo que es sentir que tu cuerpo ya no te responde igual
+        </h2>
+        <p className="text-slate-600 mb-10 max-w-3xl">
+          Pasar horas sentado frente a una pantalla y después querer rendir en la cancha,
+          en el gimnasio o en el asfalto es la receta perfecta para la frustración. Las
+          lesiones mal curadas del pasado vuelven a aparecer y el cuerpo empieza a mandar alertas.
+        </p>
+        <div className="grid gap-6 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 p-6">
+            <p className="text-2xl mb-3">😣</p>
+            <h3 className="font-semibold text-slate-900 mb-2">El dolor del lunes</h3>
+            <p className="text-sm text-slate-600">
+              Molestias en la espalda o rodillas que aparecen dos días después de haber
+              jugado o corrido el fin de semana.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 p-6">
+            <p className="text-2xl mb-3">🛑</p>
+            <h3 className="font-semibold text-slate-900 mb-2">Miedo a romperte otra vez</h3>
+            <p className="text-sm text-slate-600">
+              Entrenás con el freno de mano puesto porque tenés miedo de que esa vieja
+              lesión te vuelva a dejar parado.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 p-6">
+            <p className="text-2xl mb-3">⏰</p>
+            <h3 className="font-semibold text-slate-900 mb-2">Falta de tiempo</h3>
+            <p className="text-sm text-slate-600">
+              No quieres perder meses en sesiones donde solo te ponen electrodos
+              acostado en una camilla. Quieres soluciones dinámicas.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Áreas de tratamiento */}
       <section className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="text-2xl font-bold text-slate-900 mb-2">
@@ -125,20 +163,45 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Por qué a tu medida */}
+      {/* Nuestro método: 3 pilares */}
       <section className="bg-slate-50 border-y border-slate-200">
         <div className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">
-            ¿Por qué &quot;a tu medida&quot;?
+          <h2 className="text-2xl font-bold text-slate-900 mb-3">
+            Nuestro método: kinesiología basada en el movimiento
           </h2>
-          <div className="grid gap-8 md:grid-cols-2 items-center">
-            <p className="text-slate-600">
-              Cada tratamiento parte por una evaluación individualizada: buscamos el
-              origen del problema, no solo el síntoma. Evaluamos biomecánica articular,
-              integración del sistema nervioso central, hábitos diarios y movimiento,
-              para que el plan se ajuste a tu cuerpo y a tu objetivo real — volver a
-              moverte como antes.
-            </p>
+          <p className="text-slate-600 mb-10 max-w-3xl">
+            No te vamos a dejar acostado en una camilla durante 40 minutos. Nuestro
+            enfoque combina la clínica con la readaptación deportiva. Tratamos el dolor
+            en la primera fase, pero el objetivo final es devolverte a tu máximo
+            rendimiento mediante el ejercicio guiado.
+          </p>
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="rounded-2xl bg-white border border-slate-200 p-6">
+              <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 text-xl font-bold mb-4">1</div>
+              <h3 className="font-semibold text-slate-900 mb-2">Evaluación biomecánica</h3>
+              <p className="text-sm text-slate-600">
+                Analizamos cómo te mueves y dónde están las compensaciones que te
+                causan dolor al entrenar. No partimos por tratar — partimos por entender.
+              </p>
+            </div>
+            <div className="rounded-2xl bg-white border border-slate-200 p-6">
+              <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 text-xl font-bold mb-4">2</div>
+              <h3 className="font-semibold text-slate-900 mb-2">Eliminación del dolor</h3>
+              <p className="text-sm text-slate-600">
+                Usamos terapia manual avanzada (osteopatía, movilización neural,
+                técnicas miofasciales) para aliviar la molestia aguda y devolverte rango de movimiento.
+              </p>
+            </div>
+            <div className="rounded-2xl bg-white border border-slate-200 p-6">
+              <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 text-xl font-bold mb-4">3</div>
+              <h3 className="font-semibold text-slate-900 mb-2">Readaptación y carga</h3>
+              <p className="text-sm text-slate-600">
+                Fortalecemos tu cuerpo simulando los gestos de tu deporte para que
+                vuelvas a la actividad de forma segura, sin recaídas.
+              </p>
+            </div>
+          </div>
+          <div className="mt-8">
             <video
               src="/images/hrv-kettlebell.mp4"
               autoPlay
