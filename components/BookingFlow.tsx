@@ -65,6 +65,8 @@ export default function BookingFlow() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [weekOffset, setWeekOffset] = useState(0);
+  const [weekAvailability, setWeekAvailability] = useState<Record<string, number>>({});
+  const [loadingWeek, setLoadingWeek] = useState(false);
 
   // Form fields
   const [clientName, setClientName] = useState("");
@@ -88,6 +90,20 @@ export default function BookingFlow() {
   }, [weekDays]);
 
   const serviceName = SERVICES_LIST.find(s => s.slug === selectedService)?.label || "";
+
+  // Pre-cargar disponibilidad de la semana
+  useEffect(() => {
+    if (!selectedService || step !== "date") return;
+    setLoadingWeek(true);
+    const mondayStr = toDateStr(weekDays[0]);
+    fetch(`/api/week-availability?service=${selectedService}&weekStart=${mondayStr}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.available) setWeekAvailability(data.available);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingWeek(false));
+  }, [selectedService, weekOffset, step]);
 
   useEffect(() => {
     if (!selectedService || !selectedDate) return;
@@ -275,12 +291,16 @@ export default function BookingFlow() {
           </div>
 
           {/* Grilla de 7 días */}
+          {loadingWeek ? (
+            <div className="text-center py-8 text-slate-500 text-sm">Verificando disponibilidad...</div>
+          ) : (
           <div className="grid grid-cols-7 gap-2">
             {weekDays.map((day) => {
               const dateStr = toDateStr(day);
               const isPast = day <= today;
-              const isSunday = day.getDay() === 0;
-              const disabled = isPast || isSunday;
+              const slotsAvailable = weekAvailability[dateStr] ?? 0;
+              const noSlots = slotsAvailable === 0;
+              const disabled = isPast || noSlots;
               const isSelected = selectedDate === dateStr;
 
               return (
@@ -301,10 +321,14 @@ export default function BookingFlow() {
                 >
                   <span className="text-[11px] font-medium uppercase">{DAY_NAMES[day.getDay()]}</span>
                   <span className="text-lg font-bold">{day.getDate()}</span>
+                  {!isPast && !noSlots && (
+                    <span className="text-[10px] text-teal-600 font-medium">{slotsAvailable} hrs</span>
+                  )}
                 </button>
               );
             })}
           </div>
+          )}
         </div>
       )}
 

@@ -74,13 +74,13 @@ export async function GET(request: NextRequest) {
     .eq("block_date", dateStr)
     .in("professional_id", professionalIds);
 
-  // 4. Obtener reservas existentes para esa fecha
+  // 4. Obtener reservas existentes para esa fecha (por profesional, no por servicio)
   const { data: bookings } = await getSupabase()
     .from("bookings")
     .select("professional_id, start_time")
     .eq("booking_date", dateStr)
-    .eq("service_id", service.id)
-    .in("status", ["confirmed"]);
+    .in("professional_id", professionalIds)
+    .neq("status", "cancelled");
 
   const bookedSet = new Set(
     (bookings ?? []).map((b) => `${b.professional_id}_${b.start_time.slice(0, 5)}`)
