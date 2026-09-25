@@ -140,7 +140,7 @@ export default async function ServicePage({
       )}
       <div className="flex flex-wrap gap-4">
         <Link
-          href="/reserva"
+          href={`/reserva?servicio=${service.slug}`}
           className="rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
         >
           Reserva una evaluación

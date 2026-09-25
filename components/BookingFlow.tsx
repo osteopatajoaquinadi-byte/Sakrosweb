@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Service = {
   id: string;
@@ -26,15 +27,44 @@ const SERVICES_LIST = [
   { slug: "actividad-fisica-dirigida", label: "Actividad Física Dirigida", price: "$12.000" },
 ];
 
+const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+function getWeekDays(weekOffset: number): Date[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const monday = new Date(today);
+  const dayOfWeek = today.getDay();
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  monday.setDate(today.getDate() + diff + weekOffset * 7);
+  
+  const days: Date[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    days.push(d);
+  }
+  return days;
+}
+
+function toDateStr(d: Date): string {
+  return d.toISOString().split("T")[0];
+}
+
 export default function BookingFlow() {
-  const [step, setStep] = useState<Step>("service");
-  const [selectedService, setSelectedService] = useState<string>("");
+  const searchParams = useSearchParams();
+  const preselectedService = searchParams.get("servicio") || "";
+
+  const [step, setStep] = useState<Step>(preselectedService ? "date" : "service");
+  const [selectedService, setSelectedService] = useState<string>(preselectedService);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [slots, setSlots] = useState<Slot[]>([]);
   const [service, setService] = useState<Service | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [weekOffset, setWeekOffset] = useState(0);
 
   // Form fields
   const [clientName, setClientName] = useState("");
@@ -44,15 +74,20 @@ export default function BookingFlow() {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Fecha mínima: mañana
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split("T")[0];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  // Fecha máxima: 30 días
-  const maxDate = new Date();
-  maxDate.setDate(maxDate.getDate() + 30);
-  const maxDateStr = maxDate.toISOString().split("T")[0];
+  const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset]);
+  const weekLabel = useMemo(() => {
+    const first = weekDays[0];
+    const last = weekDays[6];
+    if (first.getMonth() === last.getMonth()) {
+      return `${first.getDate()} – ${last.getDate()} de ${MONTH_NAMES[first.getMonth()]}`;
+    }
+    return `${first.getDate()} ${MONTH_NAMES[first.getMonth()].slice(0, 3)} – ${last.getDate()} ${MONTH_NAMES[last.getMonth()].slice(0, 3)}`;
+  }, [weekDays]);
+
+  const serviceName = SERVICES_LIST.find(s => s.slug === selectedService)?.label || "";
 
   useEffect(() => {
     if (!selectedService || !selectedDate) return;
@@ -201,29 +236,75 @@ export default function BookingFlow() {
         </div>
       )}
 
-      {/* Step 2: Date */}
+      {/* Step 2: Date — calendario semanal */}
       {step === "date" && (
         <div>
           <button
-            onClick={() => setStep("service")}
+            onClick={() => {
+              setSelectedService("");
+              setStep("service");
+            }}
             className="text-sm text-slate-500 hover:text-teal-700 mb-4"
           >
             ← Cambiar servicio
           </button>
+          {serviceName && (
+            <p className="text-sm text-teal-700 font-semibold mb-2">{serviceName}</p>
+          )}
           <h2 className="text-xl font-semibold text-slate-900 mb-4">
             Elige una fecha
           </h2>
-          <input
-            type="date"
-            min={minDate}
-            max={maxDateStr}
-            value={selectedDate}
-            onChange={(e) => {
-              setSelectedDate(e.target.value);
-              setStep("time");
-            }}
-            className="w-full max-w-xs rounded-lg border border-slate-300 px-4 py-3 focus:border-teal-700 focus:outline-none"
-          />
+
+          {/* Navegación de semanas */}
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))}
+              disabled={weekOffset === 0}
+              className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:border-teal-700 hover:text-teal-700 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              ← Anterior
+            </button>
+            <span className="text-sm font-medium text-slate-700">{weekLabel}</span>
+            <button
+              onClick={() => setWeekOffset(Math.min(4, weekOffset + 1))}
+              disabled={weekOffset >= 4}
+              className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:border-teal-700 hover:text-teal-700 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              Siguiente →
+            </button>
+          </div>
+
+          {/* Grilla de 7 días */}
+          <div className="grid grid-cols-7 gap-2">
+            {weekDays.map((day) => {
+              const dateStr = toDateStr(day);
+              const isPast = day <= today;
+              const isSunday = day.getDay() === 0;
+              const disabled = isPast || isSunday;
+              const isSelected = selectedDate === dateStr;
+
+              return (
+                <button
+                  key={dateStr}
+                  disabled={disabled}
+                  onClick={() => {
+                    setSelectedDate(dateStr);
+                    setStep("time");
+                  }}
+                  className={`flex flex-col items-center py-3 px-1 rounded-xl border text-center transition
+                    ${disabled
+                      ? "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed"
+                      : isSelected
+                        ? "border-teal-700 bg-teal-50 text-teal-800"
+                        : "border-slate-200 hover:border-teal-700 hover:bg-teal-50 text-slate-700 cursor-pointer"
+                    }`}
+                >
+                  <span className="text-[11px] font-medium uppercase">{DAY_NAMES[day.getDay()]}</span>
+                  <span className="text-lg font-bold">{day.getDate()}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -236,6 +317,9 @@ export default function BookingFlow() {
           >
             ← Cambiar fecha
           </button>
+          {serviceName && (
+            <p className="text-sm text-teal-700 font-semibold mb-1">{serviceName}</p>
+          )}
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
             Horas disponibles
           </h2>
@@ -244,35 +328,41 @@ export default function BookingFlow() {
           {loading && <p className="text-slate-500">Cargando disponibilidad...</p>}
 
           {!loading && slots.length === 0 && !error && (
-            <p className="text-slate-500">
-              No hay horas disponibles para esa fecha. Prueba otro día.
-            </p>
-          )}
-
-          {!loading && slots.length > 0 && (
-            <div className="grid gap-2 grid-cols-3 sm:grid-cols-4">
-              {slots.map((slot) => (
-                <button
-                  key={`${slot.professional_id}_${slot.time}`}
-                  onClick={() => {
-                    setSelectedSlot(slot);
-                    setStep("details");
-                  }}
-                  className="rounded-lg border border-slate-200 py-3 text-center text-sm font-medium hover:border-teal-700 hover:text-teal-700 transition"
-                >
-                  {slot.time}
-                  <span className="block text-xs text-slate-400 mt-0.5">
-                    {slot.professional_name.split(" ")[0]}
-                  </span>
-                </button>
-              ))}
+            <div>
+              <p className="text-slate-500 mb-3">
+                No hay horas disponibles para esa fecha. Prueba otro día.
+              </p>
+              <button
+                onClick={() => setStep("date")}
+                className="text-sm text-teal-700 font-medium hover:underline"
+              >
+                ← Elegir otra fecha
+              </button>
             </div>
           )}
+
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+
+          <div className="grid gap-2 sm:grid-cols-3">
+            {slots.map((slot) => (
+              <button
+                key={`${slot.time}-${slot.professional_id}`}
+                onClick={() => {
+                  setSelectedSlot(slot);
+                  setStep("details");
+                }}
+                className="text-left rounded-xl border border-slate-200 p-4 hover:border-teal-700 hover:shadow-sm transition"
+              >
+                <p className="font-semibold text-slate-900">{slot.time.slice(0, 5)}</p>
+                <p className="text-xs text-slate-500">{slot.professional_name}</p>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Step 4: Client details */}
-      {step === "details" && selectedSlot && service && (
+      {/* Step 4: Details */}
+      {step === "details" && (
         <div>
           <button
             onClick={() => setStep("time")}
@@ -283,107 +373,108 @@ export default function BookingFlow() {
           <h2 className="text-xl font-semibold text-slate-900 mb-2">
             Tus datos
           </h2>
-          <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 mb-6 text-sm text-slate-700">
-            <p>
-              <strong>{service.name}</strong> con{" "}
-              {selectedSlot.professional_name}
-            </p>
-            <p>
-              {formatDate(selectedDate)} a las {selectedSlot.time}
-            </p>
-            <p className="text-teal-700 font-semibold">
-              ${service.price_clp.toLocaleString("es-CL")} CLP
-            </p>
-          </div>
+          <p className="text-sm text-slate-500 mb-6">
+            {serviceName && <span className="text-teal-700 font-semibold">{serviceName}</span>}
+            {" · "}
+            {formatDate(selectedDate)} · {selectedSlot?.time.slice(0, 5)} ·{" "}
+            {selectedSlot?.professional_name}
+          </p>
 
           <div className="space-y-4 max-w-md">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Nombre completo
+                Nombre completo *
               </label>
               <input
                 type="text"
-                required
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-teal-700 focus:outline-none"
+                required
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-teal-700 focus:outline-none"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Email
+                Email *
               </label>
               <input
                 type="email"
-                required
                 value={clientEmail}
                 onChange={(e) => setClientEmail(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-teal-700 focus:outline-none"
+                required
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-teal-700 focus:outline-none"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Teléfono (opcional)
+                Teléfono
               </label>
               <input
                 type="tel"
                 value={clientPhone}
                 onChange={(e) => setClientPhone(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-teal-700 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-teal-700 focus:outline-none"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                ¿Cómo prefieres pagar?
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Modalidad de pago
               </label>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-teal-700 focus:outline-none"
-              >
-                <option value="in_clinic">En la clínica</option>
-                <option value="online_transfer">Transferencia online</option>
-                {/* TODO: habilitar cuando esté Transbank Webpay */}
-                {/* <option value="online_webpay">Tarjeta (Webpay)</option> */}
-              </select>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("in_clinic")}
+                  className={`rounded-lg border p-3 text-left text-sm transition ${
+                    paymentMethod === "in_clinic"
+                      ? "border-teal-700 bg-teal-50 text-teal-800"
+                      : "border-slate-200 hover:border-teal-700"
+                  }`}
+                >
+                  <p className="font-semibold">Pago en clínica</p>
+                  <p className="text-xs text-slate-500">Presencial el día de tu hora</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("online_transfer")}
+                  className={`rounded-lg border p-3 text-left text-sm transition ${
+                    paymentMethod === "online_transfer"
+                      ? "border-teal-700 bg-teal-50 text-teal-800"
+                      : "border-slate-200 hover:border-teal-700"
+                  }`}
+                >
+                  <p className="font-semibold">Transferencia</p>
+                  <p className="text-xs text-slate-500">
+                    Envía comprobante por WhatsApp
+                  </p>
+                </button>
+              </div>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Notas (opcional)
               </label>
               <textarea
-                rows={2}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Motivo de consulta, lesión, algo que debamos saber"
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-teal-700 focus:outline-none"
+                rows={2}
+                className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-teal-700 focus:outline-none"
+                placeholder="¿Algo que debamos saber antes de tu hora?"
               />
             </div>
 
-            {paymentMethod === "online_transfer" && (
-              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-                Después de confirmar tu reserva, envía el comprobante de transferencia al
-                WhatsApp{" "}
-                <a href="https://wa.me/56945399692" className="underline">
-                  +56 9 4539 9692
-                </a>
-                .
-              </div>
-            )}
+            {error && <p className="text-red-600 text-sm">{error}</p>}
 
             <button
               onClick={handleSubmit}
-              disabled={submitting || !clientName || !clientEmail}
-              className="w-full rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-60"
+              disabled={!clientName || !clientEmail || submitting}
+              className="w-full rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? "Reservando..." : "Confirmar reserva"}
             </button>
           </div>
         </div>
-      )}
-
-      {error && (
-        <p className="text-sm text-red-600">{error}</p>
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import BookingFlow from "@/components/BookingFlow";
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ export default function ReservaPage() {
         Elige el servicio, la fecha y la hora que más te acomode. La reserva queda
         confirmada de inmediato y te enviamos los detalles por email.
       </p>
-      <BookingFlow />
+      <Suspense fallback={<p className="text-slate-500">Cargando...</p>}>
+        <BookingFlow />
+      </Suspense>
     </div>
   );
 }
