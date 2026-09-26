@@ -78,23 +78,52 @@ export default function HomePage() {
 
       {/* Credenciales */}
       <section className="border-y border-slate-200 bg-slate-50">
-        <div className="mx-auto max-w-6xl px-4 py-8 grid gap-6 sm:grid-cols-4 text-center text-sm text-slate-600">
-          <div>
-            <p className="text-2xl font-bold text-slate-900">Osteopatía</p>
-            <p>D.O. — formación internacional</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">Kinesiología</p>
-            <p>Rehabilitación y readaptación deportiva</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">Posturología</p>
-            <p>Evaluación y corrección postural</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold text-slate-900">PNI Clínica</p>
-            <p>Psiconeuroinmunología aplicada</p>
-          </div>
+        <div className="mx-auto max-w-6xl px-4 py-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              icon: "/images/iconos/osteopatia.png",
+              title: "Osteopatía",
+              desc: "D.O. — formación internacional",
+            },
+            {
+              icon: "/images/iconos/kinesiologia.png",
+              title: "Kinesiología",
+              desc: "Rehabilitación y readaptación deportiva",
+            },
+            {
+              icon: "/images/iconos/posturologia.png",
+              title: "Posturología",
+              desc: "Evaluación y corrección postural",
+            },
+            {
+              icon: null,
+              title: "PNI Clínica",
+              desc: "Psiconeuroinmunología aplicada",
+            },
+          ].map((cred) => (
+            <div
+              key={cred.title}
+              className="rounded-2xl border border-slate-200 bg-white p-6 text-center flex flex-col items-center gap-3"
+            >
+              <div className="w-14 h-14 rounded-xl bg-teal-50 flex items-center justify-center">
+                {cred.icon ? (
+                  <Image
+                    src={cred.icon}
+                    alt={cred.title}
+                    width={32}
+                    height={32}
+                    className="object-contain"
+                  />
+                ) : (
+                  <span className="text-teal-700 text-xl font-bold">PNI</span>
+                )}
+              </div>
+              <div>
+                <p className="text-lg font-bold text-slate-900">{cred.title}</p>
+                <p className="text-sm text-slate-500 mt-1">{cred.desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
