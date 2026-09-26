@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { services, siteConfig } from "@/lib/site-config";
+import LeadMagnet from "@/components/LeadMagnet";
 
 export const metadata: Metadata = {
   title: "Vuelve a tu deporte sin dolor en Viña del Mar",
@@ -247,6 +248,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Lead Magnet — guía descargable */}
+      <LeadMagnet />
 
       {/* FAQ orientadas a búsqueda real */}
       <section className="bg-slate-50 border-y border-slate-200">
