@@ -183,7 +183,9 @@ export default function HomePage() {
             tratamos el dolor en la primera fase, pero el objetivo final es devolverte
             a tu máximo rendimiento mediante ejercicio progresivo y guiado. Cada etapa
             se conecta con la siguiente — no son sesiones aisladas, es un proceso con
-            criterios claros para avanzar.
+            criterios claros para avanzar. Por eso integramos terapia manual, control
+            motor y carga progresiva en un mismo plan, adaptado a tu deporte, tu
+            historia de lesiones y tu vida diaria.
           </p>
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl bg-white border border-slate-200 p-6">
@@ -191,19 +193,15 @@ export default function HomePage() {
               <h3 className="font-semibold text-slate-900 mb-2">Evaluación manual y funcional</h3>
               <p className="text-sm text-slate-600">
                 Analizamos cómo te mueves y dónde están las compensaciones que te
-                causan dolor. Evaluamos movilidad articular, patrones de movimiento
-                y control neuromuscular antes de tocar una técnica. No partimos por
-                tratar — partimos por entender qué está fallando y por qué.
+                causan dolor. No partimos por tratar — partimos por entender.
               </p>
             </div>
             <div className="rounded-2xl bg-white border border-slate-200 p-6">
               <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-700 text-xl font-bold mb-4">2</div>
               <h3 className="font-semibold text-slate-900 mb-2">Modulación del dolor</h3>
               <p className="text-sm text-slate-600">
-                Terapia manual avanzada — osteopatía, movilización neural, técnicas
-                miofasciales — para modular la respuesta de dolor, reducir la
-                sensibilización y devolverte rango de movimiento. El objetivo no es
-                solo que deje de doler, sino que el tejido vuelva a moverse bien.
+                Terapia manual avanzada (osteopatía, movilización neural,
+                técnicas miofasciales) para modular la respuesta de dolor y devolverte rango de movimiento.
               </p>
             </div>
             <div className="rounded-2xl bg-white border border-slate-200 p-6">
@@ -211,9 +209,7 @@ export default function HomePage() {
               <h3 className="font-semibold text-slate-900 mb-2">Control motor</h3>
               <p className="text-sm text-slate-600">
                 Reentrenamos los patrones de movimiento que tu cuerpo perdió o
-                compensó durante la lesión. Trabajamos activación muscular selectiva,
-                estabilización articular y coordinación, para que cada gesto
-                sea eficiente, seguro y reproducible bajo carga.
+                compensó, para que cada gesto sea eficiente y seguro.
               </p>
             </div>
             <div className="rounded-2xl bg-white border border-slate-200 p-6">
@@ -221,9 +217,7 @@ export default function HomePage() {
               <h3 className="font-semibold text-slate-900 mb-2">Cargas progresivas</h3>
               <p className="text-sm text-slate-600">
                 Fortalecemos tu cuerpo con progresión controlada, simulando los gestos
-                de tu deporte con criterios objetivos de avance. Esta es la etapa
-                que la rehabilitación tradicional suele saltar — y donde se
-                previenen las recaídas.
+                de tu deporte para que vuelvas a la actividad sin recaídas.
               </p>
             </div>
           </div>
