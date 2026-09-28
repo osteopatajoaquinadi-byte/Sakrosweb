@@ -158,9 +158,9 @@ export default function HomePage() {
               <Image
                 src={service.image}
                 alt={service.shortName}
-                width={1200}
-                height={700}
-                className="w-full h-40 object-cover"
+                width={800}
+                height={600}
+                className="w-full"
               />
               <div className="p-5">
                 <h3 className="font-semibold text-slate-900 mb-1">{service.shortName}</h3>
