@@ -68,7 +68,7 @@ export default function HomePage() {
               loop
               muted
               playsInline
-              className="rounded-2xl object-cover w-full max-h-[420px]"
+              className="rounded-2xl w-full max-h-[420px] object-contain"
             >
               Video de presentación de Sakros
             </video>
