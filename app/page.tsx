@@ -224,7 +224,7 @@ export default function HomePage() {
               loop
               muted
               playsInline
-              className="rounded-2xl w-full max-h-[240px] object-cover"
+              className="rounded-2xl w-full max-h-[380px] object-cover"
             />
           </div>
         </div>
