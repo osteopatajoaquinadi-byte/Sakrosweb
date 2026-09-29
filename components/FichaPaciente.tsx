@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import ClinicalEvalForm, { ClinicalDataDisplay } from "./ClinicalEvalForm";
 
 type Patient = {
   id: string;
@@ -65,8 +66,17 @@ const SERVICE_TYPES = [
   "Actividad Física Dirigida",
 ];
 
-const PAYMENT_METHODS = ["Efectivo", "Transferencia", "Débito", "Crédito", "Otro"];
-const PAYMENT_TYPES = ["Sesión individual", "Bono / Pack", "Programa FONASA", "Programa ISAPRE", "Otro"];
+/* Métodos y tipos de pago con valores que coinciden con los CHECK constraints de la BD */
+const PAYMENT_METHODS: { value: string; label: string }[] = [
+  { value: "efectivo", label: "Efectivo" },
+  { value: "transferencia", label: "Transferencia" },
+  { value: "webpay", label: "Webpay (Débito/Crédito)" },
+  { value: "otro", label: "Otro" },
+];
+const PAYMENT_TYPES: { value: string; label: string }[] = [
+  { value: "sesion", label: "Sesión individual" },
+  { value: "pack", label: "Bono / Pack" },
+];
 
 export default function FichaPaciente({
   patientId,
@@ -95,13 +105,15 @@ export default function FichaPaciente({
     eva_score: "",
     notes: "",
   });
+  const [clinicalData, setClinicalData] = useState<Record<string, unknown>>({});
+  const [showClinicalForm, setShowClinicalForm] = useState(false);
   const [savingSession, setSavingSession] = useState(false);
 
   // Formulario de pago
   const [paymentForm, setPaymentForm] = useState({
     amount: "",
-    method: PAYMENT_METHODS[0],
-    payment_type: PAYMENT_TYPES[0],
+    method: PAYMENT_METHODS[0].value,
+    payment_type: PAYMENT_TYPES[0].value,
     pack_name: "",
     sessions_purchased: "1",
     service_type: SERVICE_TYPES[0],
@@ -158,6 +170,15 @@ export default function FichaPaciente({
     setSavingSession(true);
     setError("");
     try {
+      // Filtrar clinical_data: solo incluir campos que tengan contenido
+      const filteredClinical: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(clinicalData)) {
+        if (v === null || v === undefined || v === "") continue;
+        if (Array.isArray(v) && v.length === 0) continue;
+        filteredClinical[k] = v;
+      }
+      const hasClinical = Object.keys(filteredClinical).length > 0;
+
       const res = await fetch("/api/fichas/sessions", {
         method: "POST",
         headers: { ...headers, "Content-Type": "application/json" },
@@ -168,6 +189,7 @@ export default function FichaPaciente({
           session_date: sessionForm.session_date,
           eva_score: sessionForm.eva_score ? parseInt(sessionForm.eva_score) : null,
           notes: sessionForm.notes || null,
+          clinical_data: hasClinical ? filteredClinical : null,
         }),
       });
       if (!res.ok) {
@@ -175,6 +197,8 @@ export default function FichaPaciente({
         setError(d.error || "Error al guardar sesión.");
       } else {
         setShowNewSession(false);
+        setShowClinicalForm(false);
+        setClinicalData({});
         setSessionForm({
           professional: PROFESSIONALS[0],
           service_type: SERVICE_TYPES[0],
@@ -219,8 +243,8 @@ export default function FichaPaciente({
         setShowNewPayment(false);
         setPaymentForm({
           amount: "",
-          method: PAYMENT_METHODS[0],
-          payment_type: PAYMENT_TYPES[0],
+          method: PAYMENT_METHODS[0].value,
+          payment_type: PAYMENT_TYPES[0].value,
           pack_name: "",
           sessions_purchased: "1",
           service_type: SERVICE_TYPES[0],
@@ -451,7 +475,12 @@ export default function FichaPaciente({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Servicio *</label>
-                  <select value={sessionForm.service_type} onChange={(e) => setSessionForm({ ...sessionForm, service_type: e.target.value })}
+                  <select
+                    value={sessionForm.service_type}
+                    onChange={(e) => {
+                      setSessionForm({ ...sessionForm, service_type: e.target.value });
+                      setClinicalData({}); // Reset al cambiar servicio
+                    }}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none">
                     {SERVICE_TYPES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -475,6 +504,30 @@ export default function FichaPaciente({
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
                 </div>
               </div>
+
+              {/* Evaluación clínica individualizada por servicio */}
+              <div className="mt-5 border-t border-slate-100 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowClinicalForm(!showClinicalForm)}
+                  className={`flex items-center gap-2 text-sm font-semibold transition ${
+                    showClinicalForm ? "text-teal-800" : "text-teal-700 hover:text-teal-900"
+                  }`}
+                >
+                  <span className={`transition-transform ${showClinicalForm ? "rotate-90" : ""}`}>▸</span>
+                  {showClinicalForm ? "Ocultar evaluación clínica" : `Agregar evaluación clínica (${sessionForm.service_type})`}
+                </button>
+                {showClinicalForm && (
+                  <div className="mt-4 p-4 rounded-lg bg-teal-50/50 border border-teal-100">
+                    <ClinicalEvalForm
+                      serviceType={sessionForm.service_type}
+                      value={clinicalData}
+                      onChange={setClinicalData}
+                    />
+                  </div>
+                )}
+              </div>
+
               <button type="submit" disabled={savingSession}
                 className="mt-4 rounded-full bg-teal-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50">
                 {savingSession ? "Guardando..." : "Registrar sesión"}
@@ -515,6 +568,12 @@ export default function FichaPaciente({
                   {s.notes && (
                     <p className="text-sm text-slate-600 mt-2 whitespace-pre-wrap">{s.notes}</p>
                   )}
+                  {s.clinical_data && Object.keys(s.clinical_data).length > 0 && (
+                    <ClinicalDataDisplay
+                      serviceType={s.service_type}
+                      data={s.clinical_data}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -549,14 +608,14 @@ export default function FichaPaciente({
                   <label className="block text-sm font-medium text-slate-700 mb-1">Método *</label>
                   <select value={paymentForm.method} onChange={(e) => setPaymentForm({ ...paymentForm, method: e.target.value })}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none">
-                    {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{m}</option>)}
+                    {PAYMENT_METHODS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Tipo *</label>
                   <select value={paymentForm.payment_type} onChange={(e) => setPaymentForm({ ...paymentForm, payment_type: e.target.value })}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none">
-                    {PAYMENT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                    {PAYMENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
                 </div>
                 <div>
@@ -612,7 +671,7 @@ export default function FichaPaciente({
                         ${p.amount.toLocaleString("es-CL")}
                       </span>
                       <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
-                        {p.payment_type}
+                        {PAYMENT_TYPES.find((t) => t.value === p.payment_type)?.label || p.payment_type}
                       </span>
                     </div>
                     <span className="text-xs text-slate-500">
@@ -624,7 +683,7 @@ export default function FichaPaciente({
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-x-3 text-xs text-slate-500">
-                    <span>{p.method}</span>
+                    <span>{PAYMENT_METHODS.find((m) => m.value === p.method)?.label || p.method}</span>
                     {p.service_type && <span>{p.service_type}</span>}
                     {p.pack_name && <span>{p.pack_name}</span>}
                     {p.sessions_purchased > 1 && <span>{p.sessions_purchased} sesiones</span>}

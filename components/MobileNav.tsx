@@ -108,9 +108,7 @@ function MenuPanel({ onClose }: { onClose: () => void }) {
           Reserva tu hora
         </Link>
         <a
-          href="https://sakros-fichas.vercel.app"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/equipo"
           onClick={onClose}
           style={{
             display: "block",
