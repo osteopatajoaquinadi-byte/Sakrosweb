@@ -2,12 +2,21 @@
 
 import { useState, useEffect } from "react";
 import CalendarioEquipo from "./CalendarioEquipo";
+import PacientesTab from "./PacientesTab";
+
+type Tab = "calendario" | "pacientes";
+
+const TABS: { key: Tab; label: string }[] = [
+  { key: "calendario", label: "Calendario" },
+  { key: "pacientes", label: "Pacientes" },
+];
 
 export default function PanelEquipo() {
   const [pin, setPin] = useState("");
   const [inputPin, setInputPin] = useState("");
   const [error, setError] = useState("");
   const [checking, setChecking] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>("calendario");
 
   // Recuperar sesión guardada
   useEffect(() => {
@@ -52,6 +61,7 @@ export default function PanelEquipo() {
     try { sessionStorage.removeItem("equipo_pin"); } catch {}
   }
 
+  // Pantalla de login
   if (!pin) {
     return (
       <div className="max-w-sm mx-auto">
@@ -85,12 +95,14 @@ export default function PanelEquipo() {
     );
   }
 
+  // Panel principal con tabs
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Calendario Sakros</h1>
-          <p className="text-sm text-slate-500">Vista global de todos los servicios</p>
+          <h1 className="text-2xl font-bold text-slate-900">Panel Sakros</h1>
+          <p className="text-sm text-slate-500">Gestión profesional del equipo</p>
         </div>
         <button
           onClick={handleLogout}
@@ -99,7 +111,27 @@ export default function PanelEquipo() {
           Cerrar sesión
         </button>
       </div>
-      <CalendarioEquipo pin={pin} />
+
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 border-b border-slate-200 pb-px">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition ${
+              activeTab === tab.key
+                ? "bg-white text-teal-700 border border-slate-200 border-b-white -mb-px"
+                : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Contenido */}
+      {activeTab === "calendario" && <CalendarioEquipo pin={pin} />}
+      {activeTab === "pacientes" && <PacientesTab pin={pin} />}
     </div>
   );
 }

@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
+import { verifyPin } from "@/lib/equipo-auth";
 
 export async function GET(request: NextRequest) {
+  const denied = verifyPin(request);
+  if (denied) return denied;
+
   const { searchParams } = new URL(request.url);
   const month = searchParams.get("month"); // YYYY-MM
-  const pin = searchParams.get("pin");
 
-  if (!month || !pin) {
-    return NextResponse.json({ error: "Parámetros requeridos." }, { status: 400 });
-  }
-
-  // Verificar PIN de acceso profesional
-  const validPin = process.env.EQUIPO_PIN || "Sakros2026";
-  if (pin !== validPin) {
-    return NextResponse.json({ error: "PIN inválido." }, { status: 401 });
+  if (!month) {
+    return NextResponse.json({ error: "Parámetro 'month' requerido." }, { status: 400 });
   }
 
   // Calcular rango del mes
