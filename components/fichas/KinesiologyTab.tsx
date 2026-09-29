@@ -10,6 +10,7 @@ import {
   type SfmaClassification,
   type BlockType,
 } from "./constants";
+import SessionCard, { type SessionForCard } from "./SessionCard";
 
 /* ── Helpers ── */
 const uid = () =>
@@ -19,6 +20,9 @@ const uid = () =>
 interface KinesiologyTabProps {
   plan: KinePlan;
   onChange: (updated: KinePlan) => void;
+  sessions?: SessionForCard[];
+  isAdmin?: boolean;
+  onNewSession?: () => void;
 }
 
 /* ── Sub-tab key ── */
@@ -92,7 +96,7 @@ const textareaCls = `${inputCls} min-h-[72px] resize-y`;
 /* ══════════════════════════════════════════════════════════════
    KinesiologyTab
    ══════════════════════════════════════════════════════════════ */
-export default function KinesiologyTab({ plan, onChange }: KinesiologyTabProps) {
+export default function KinesiologyTab({ plan, onChange, sessions = [], isAdmin = false, onNewSession }: KinesiologyTabProps) {
   const [sec, setSec] = useState<SubTab>("eval");
   const [sfmaExp, setSfmaExp] = useState<Record<string, boolean>>({});
 
@@ -941,14 +945,46 @@ export default function KinesiologyTab({ plan, onChange }: KinesiologyTabProps) 
       )}
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          SESSIONS TAB (placeholder)
+          SESSIONS TAB
          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {sec === "sessions" && (
-        <div className="rounded-xl border border-[#CEC8BE] bg-white p-6 text-center shadow-sm">
-          <div className="text-2xl mb-2">📅</div>
-          <p className="text-xs text-[#9C9687]">
-            Gestion de sesiones &mdash; sera implementado por separado.
-          </p>
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="text-sm font-bold text-[#0B3D2E]">Plan 10 sesiones</div>
+              <div className="text-xs text-[#9C9687]">{sessions.length}/10 realizadas</div>
+            </div>
+            {sessions.length < 10 && onNewSession && (
+              <button
+                type="button"
+                onClick={onNewSession}
+                className="text-xs font-bold text-white bg-[#C8943A] px-3 py-1.5 rounded-lg hover:bg-[#C8943A]/90 transition-colors"
+              >
+                + Registrar sesión
+              </button>
+            )}
+          </div>
+
+          {/* Progress bar */}
+          <div className="bg-gray-200 rounded-full h-[7px] mb-4">
+            <div
+              className="bg-[#C8943A] h-full rounded-full transition-all duration-400"
+              style={{ width: `${(sessions.length / 10) * 100}%` }}
+            />
+          </div>
+
+          {sessions.length === 0 ? (
+            <div className="rounded-xl border border-[#CEC8BE] bg-white p-7 text-center shadow-sm">
+              <div className="text-2xl mb-2">📅</div>
+              <p className="text-xs text-[#9C9687]">Sin sesiones registradas.</p>
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              {sessions.map((s, i) => (
+                <SessionCard key={s.id} session={s} isAdmin={isAdmin} index={i} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

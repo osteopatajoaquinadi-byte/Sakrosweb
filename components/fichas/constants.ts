@@ -548,7 +548,25 @@ export type ClinicalPlans = {
   posturoPlan?: PosturoPlan;
 };
 
+// ── Meal-plan topics (1 per day, 10-day plan) ──
+export const TEMAS = [
+  "Antiinflamatorio — salmon, curcuma, berries",
+  "Microbiota — fermentados, prebioticos, fibra",
+  "Omega-3 — pescado azul, chia, nueces",
+  "Eje intestino-cerebro — triptofano, probioticos",
+  "Polifenoles — berries, oliva, te verde, jengibre",
+  "Vitamina D y magnesio — pescado, semillas, hoja verde",
+  "Detox hepatico — brocoli, ajo, limon, cilantro",
+  "Inmunidad — zinc, selenio, vitamina C, hongos",
+  "Energia mitocondrial — B12, hierro, CoQ10",
+  "Consolidacion — maxima variedad de plantas",
+] as const;
+
 // ── Utility ──
 export function fmtCLP(n: number): string {
   return "$" + n.toLocaleString("es-CL");
+}
+
+export function userName(id: string): string {
+  return USERS.find((u) => u.id === id)?.name ?? id;
 }

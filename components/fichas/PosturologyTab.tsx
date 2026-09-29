@@ -1,11 +1,15 @@
 "use client";
 
 import { REFLEXES, blankPosturo, type PosturoPlan, type Reflex } from "./constants";
+import SessionCard, { type SessionForCard } from "./SessionCard";
 
 /* ── Props ── */
 interface PosturologyTabProps {
   plan: PosturoPlan;
   onChange: (updated: PosturoPlan) => void;
+  sessions?: SessionForCard[];
+  isAdmin?: boolean;
+  onNewSession?: () => void;
 }
 
 /* ── Helpers ── */
@@ -201,7 +205,7 @@ function ReflexCard({
 /* ══════════════════════════════════════════════════════════
    PosturologyTab — Clinical posturology evaluation
    ══════════════════════════════════════════════════════════ */
-export default function PosturologyTab({ plan, onChange }: PosturologyTabProps) {
+export default function PosturologyTab({ plan, onChange, sessions = [], isAdmin = false, onNewSession }: PosturologyTabProps) {
   const pp = plan ?? blankPosturo();
 
   const handleField = (field: keyof PosturoPlan, value: string) => {
@@ -312,6 +316,34 @@ export default function PosturologyTab({ plan, onChange }: PosturologyTabProps) 
           onChange={(v) => handleField("evalGeneral", v)}
           placeholder="Postura global, compensaciones, programa propuesto…"
         />
+      </section>
+
+      {/* ── Sesiones ── */}
+      <section className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <SectionHeading>Sesiones</SectionHeading>
+          {onNewSession && (
+            <button
+              type="button"
+              onClick={onNewSession}
+              className="text-xs font-bold text-white bg-[#4A1A6B] px-3 py-1.5 rounded-lg hover:bg-[#4A1A6B]/90 transition-colors"
+            >
+              + Nueva sesión
+            </button>
+          )}
+        </div>
+        {sessions.length === 0 ? (
+          <div className="text-center py-7">
+            <div className="text-2xl mb-2">📅</div>
+            <p className="text-xs text-gray-400">Sin sesiones registradas.</p>
+          </div>
+        ) : (
+          <div className="grid gap-2">
+            {sessions.map((s, i) => (
+              <SessionCard key={s.id} session={s} isAdmin={isAdmin} index={i} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

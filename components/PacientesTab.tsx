@@ -24,7 +24,7 @@ export default function PacientesTab({ pin }: { pin: string }) {
   // Form para crear
   const [form, setForm] = useState({
     name: "", rut: "", phone: "", email: "", date_of_birth: "",
-    occupation: "", sport: "", reason: "", notes: "",
+    occupation: "", sport: "", sex: "", address: "", reason: "", notes: "",
   });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
@@ -64,7 +64,7 @@ export default function PacientesTab({ pin }: { pin: string }) {
         setError(data.error || "Error al crear.");
       } else {
         setShowCreate(false);
-        setForm({ name: "", rut: "", phone: "", email: "", date_of_birth: "", occupation: "", sport: "", reason: "", notes: "" });
+        setForm({ name: "", rut: "", phone: "", email: "", date_of_birth: "", occupation: "", sport: "", sex: "", address: "", reason: "", notes: "" });
         setSelectedId(data.patient.id);
         fetchPatients();
       }
@@ -148,6 +148,21 @@ export default function PacientesTab({ pin }: { pin: string }) {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Deporte</label>
               <input type="text" value={form.sport} onChange={(e) => setForm({ ...form, sport: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Sexo</label>
+              <select value={form.sex} onChange={(e) => setForm({ ...form, sex: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none">
+                <option value="">—</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="O">Otro</option>
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Dirección</label>
+              <input type="text" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
             </div>
             <div className="sm:col-span-2">

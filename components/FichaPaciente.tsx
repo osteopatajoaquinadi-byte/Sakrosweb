@@ -43,6 +43,8 @@ type Patient = {
   occupation: string | null;
   sport: string | null;
   reason: string | null;
+  sex: string | null;
+  address: string | null;
   red_flags: string[] | null;
   yellow_flags: string[] | null;
   notes: string | null;
@@ -158,6 +160,8 @@ function ProfileTab({
     date_of_birth: patient.date_of_birth || "",
     occupation: patient.occupation || "",
     sport: patient.sport || "",
+    sex: patient.sex || "",
+    address: patient.address || "",
     reason: patient.reason || "",
     notes: patient.notes || "",
   });
@@ -193,7 +197,7 @@ function ProfileTab({
           <h3 className="text-sm font-bold text-[#0B3D2E] uppercase tracking-wide">Datos personales</h3>
           {editing ? (
             <div className="flex gap-2">
-              <button onClick={() => { setForm({ name: patient.name||"", rut: patient.rut||"", phone: patient.phone||"", email: patient.email||"", date_of_birth: patient.date_of_birth||"", occupation: patient.occupation||"", sport: patient.sport||"", reason: patient.reason||"", notes: patient.notes||"" }); setEditing(false); }}
+              <button onClick={() => { setForm({ name: patient.name||"", rut: patient.rut||"", phone: patient.phone||"", email: patient.email||"", date_of_birth: patient.date_of_birth||"", occupation: patient.occupation||"", sport: patient.sport||"", sex: patient.sex||"", address: patient.address||"", reason: patient.reason||"", notes: patient.notes||"" }); setEditing(false); }}
                 className="text-xs text-gray-500 hover:text-gray-700 font-semibold">Cancelar</button>
               <button onClick={handleSave} disabled={saving || !form.name.trim()}
                 className="text-xs bg-[#0B3D2E] text-white px-3 py-1 rounded-lg font-semibold hover:bg-[#0B3D2E]/90 disabled:opacity-50">
@@ -216,6 +220,7 @@ function ProfileTab({
               { label: "Email", key: "email", type: "email" },
               { label: "Ocupación", key: "occupation", type: "text" },
               { label: "Deporte", key: "sport", type: "text" },
+              { label: "Dirección", key: "address", type: "text" },
             ].map((f) => (
               <div key={f.key} className={f.full ? "sm:col-span-2" : ""}>
                 <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">{f.label}</label>
@@ -224,6 +229,16 @@ function ProfileTab({
                   className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-[#0B3D2E]/40 focus:ring-1 focus:ring-[#0B3D2E]/10 focus:outline-none" />
               </div>
             ))}
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Sexo</label>
+              <select value={form.sex} onChange={(e) => setForm({ ...form, sex: e.target.value })}
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-[#0B3D2E]/40 focus:ring-1 focus:ring-[#0B3D2E]/10 focus:outline-none">
+                <option value="">—</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="O">Otro</option>
+              </select>
+            </div>
             <div className="sm:col-span-2">
               <label className="block text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Motivo de consulta</label>
               <textarea value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} rows={2}
@@ -243,8 +258,10 @@ function ProfileTab({
               { l: "Teléfono", v: patient.phone || "—" },
               { l: "F. Nacimiento", v: patient.date_of_birth ? new Date(patient.date_of_birth + "T12:00:00").toLocaleDateString("es-CL") : "—" },
               { l: "Email", v: patient.email || "—" },
+              { l: "Sexo", v: patient.sex === "M" ? "Masculino" : patient.sex === "F" ? "Femenino" : patient.sex === "O" ? "Otro" : "—" },
               { l: "Ocupación", v: patient.occupation || "—" },
               { l: "Deporte", v: patient.sport || "—" },
+              { l: "Dirección", v: patient.address || "—" },
             ].map((f) => (
               <div key={f.l}>
                 <span className="block text-[11px] font-semibold uppercase tracking-wide text-gray-400">{f.l}</span>
@@ -1142,51 +1159,70 @@ export default function FichaPaciente({
       )}
 
       {activeTab === "kinesiology" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#0B3D2E]">Plan de Kinesiología</h3>
-            <button onClick={() => setSessionModal("kinesiology")}
-              className="text-xs bg-[#0B3D2E] text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-[#0B3D2E]/90 cursor-pointer">
-              + Nueva Sesión
-            </button>
-          </div>
-          <KinesiologyTab
-            plan={plans.kinePlan ?? blankKine()}
-            onChange={handleKineChange}
-          />
-        </div>
+        <KinesiologyTab
+          plan={plans.kinePlan ?? blankKine()}
+          onChange={handleKineChange}
+          sessions={sessions
+            .filter((s) => s.service_type === "Kinesiología")
+            .map((s) => ({
+              id: s.id,
+              date: s.session_date,
+              vas: s.eva_score,
+              professional: s.professional,
+              service_type: s.service_type,
+              notes: s.notes || undefined,
+              clinical_data: s.clinical_data,
+              session_date: s.session_date,
+              eva_score: s.eva_score,
+            }))}
+          isAdmin={true}
+          onNewSession={() => setSessionModal("kinesiology")}
+        />
       )}
 
       {activeTab === "osteopathy" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#0B3D2E]">Plan de Osteopatía</h3>
-            <button onClick={() => setSessionModal("osteopathy")}
-              className="text-xs bg-[#0B3D2E] text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-[#0B3D2E]/90 cursor-pointer">
-              + Nueva Sesión
-            </button>
-          </div>
-          <OsteopathyTab
-            plan={plans.osteoPlan ?? blankOsteo()}
-            onChange={handleOsteoChange}
-          />
-        </div>
+        <OsteopathyTab
+          plan={plans.osteoPlan ?? blankOsteo()}
+          onChange={handleOsteoChange}
+          sessions={sessions
+            .filter((s) => s.service_type === "Osteopatía")
+            .map((s) => ({
+              id: s.id,
+              date: s.session_date,
+              vas: s.eva_score,
+              professional: s.professional,
+              service_type: s.service_type,
+              notes: s.notes || undefined,
+              clinical_data: s.clinical_data,
+              session_date: s.session_date,
+              eva_score: s.eva_score,
+            }))}
+          isAdmin={true}
+          onNewSession={() => setSessionModal("osteopathy")}
+          patientEmail={patient?.email || undefined}
+        />
       )}
 
       {activeTab === "posturology" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#0B3D2E]">Plan de Posturología</h3>
-            <button onClick={() => setSessionModal("posturology")}
-              className="text-xs bg-[#0B3D2E] text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-[#0B3D2E]/90 cursor-pointer">
-              + Nueva Sesión
-            </button>
-          </div>
-          <PosturologyTab
-            plan={plans.posturoPlan ?? blankPosturo()}
-            onChange={handlePosturoChange}
-          />
-        </div>
+        <PosturologyTab
+          plan={plans.posturoPlan ?? blankPosturo()}
+          onChange={handlePosturoChange}
+          sessions={sessions
+            .filter((s) => s.service_type === "Posturología Clínica")
+            .map((s) => ({
+              id: s.id,
+              date: s.session_date,
+              vas: s.eva_score,
+              professional: s.professional,
+              service_type: s.service_type,
+              notes: s.notes || undefined,
+              clinical_data: s.clinical_data,
+              session_date: s.session_date,
+              eva_score: s.eva_score,
+            }))}
+          isAdmin={true}
+          onNewSession={() => setSessionModal("posturology")}
+        />
       )}
 
       {activeTab === "history" && <HistoryTab sessions={sessions} />}
