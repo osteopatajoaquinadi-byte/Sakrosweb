@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   // 1. Obtener el servicio
   const { data: service, error: serviceErr } = await getSupabase()
     .from("services")
-    .select("id, name, duration_minutes, price_clp")
+    .select("id, name, duration_minutes, slot_interval_minutes, price_clp")
     .eq("slug", serviceSlug)
     .eq("active", true)
     .single();
@@ -88,6 +88,7 @@ export async function GET(request: NextRequest) {
 
   // 5. Generar slots disponibles
   const duration = service.duration_minutes;
+  const slotInterval = service.slot_interval_minutes ?? duration;
   const slots: Slot[] = [];
 
   for (const window of windows) {
@@ -109,12 +110,12 @@ export async function GET(request: NextRequest) {
     const endMinutes = timeToMinutes(window.end_time);
     const lastBookingMinutes = window.last_booking_time
       ? timeToMinutes(window.last_booking_time)
-      : endMinutes - duration;
+      : endMinutes - slotInterval;
 
     for (
       let m = startMinutes;
-      m <= lastBookingMinutes && m + duration <= endMinutes;
-      m += duration
+      m <= lastBookingMinutes && m + slotInterval <= endMinutes;
+      m += slotInterval
     ) {
       const timeStr = minutesToTime(m);
       const key = `${window.professional_id}_${timeStr}`;

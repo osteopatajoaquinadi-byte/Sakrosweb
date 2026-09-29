@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   const { data: service } = await getSupabase()
     .from("services")
-    .select("id, duration_minutes")
+    .select("id, duration_minutes, slot_interval_minutes")
     .eq("slug", serviceSlug)
     .eq("active", true)
     .single();
@@ -70,8 +70,9 @@ export async function GET(request: NextRequest) {
     for (const window of dayWindows) {
       if (dayBlocks.some(b => b.professional_id === window.professional_id && b.start_time === null)) continue;
       const startM = timeToMin(window.start_time), endM = timeToMin(window.end_time);
-      const lastM = window.last_booking_time ? timeToMin(window.last_booking_time) : endM - service.duration_minutes;
-      for (let m = startM; m <= lastM && m + service.duration_minutes <= endM; m += service.duration_minutes) {
+      const slotInterval = service.slot_interval_minutes ?? service.duration_minutes;
+      const lastM = window.last_booking_time ? timeToMin(window.last_booking_time) : endM - slotInterval;
+      for (let m = startM; m <= lastM && m + slotInterval <= endM; m += slotInterval) {
         const key = `${window.professional_id}_${minToTime(m)}`;
         if (bookedSet.has(key)) continue;
         if (dayBlocks.some(b => b.professional_id === window.professional_id && b.start_time !== null && timeToMin(b.start_time) <= m && timeToMin(b.end_time!) > m)) continue;
