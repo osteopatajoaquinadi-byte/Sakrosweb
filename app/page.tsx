@@ -177,7 +177,7 @@ export default function HomePage() {
           <h2 className="text-2xl font-bold text-slate-900 mb-3">
             Nuestro método: kinesiología basada en el movimiento
           </h2>
-          <p className="text-slate-600 mb-10 max-w-3xl">
+          <p className="text-slate-600 mb-10">
             No te vamos a dejar acostado en una camilla durante 40 minutos. Nuestro
             enfoque combina la evaluación clínica con la readaptación deportiva real:
             tratamos el dolor en la primera fase, pero el objetivo final es devolverte
