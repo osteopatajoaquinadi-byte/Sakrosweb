@@ -75,6 +75,7 @@ export default function BookingFlow() {
   const [paymentMethod, setPaymentMethod] = useState("in_clinic");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showProgramOptions, setShowProgramOptions] = useState(false);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -248,6 +249,40 @@ export default function BookingFlow() {
                 <p className="text-sm text-teal-700">{s.price}</p>
               </button>
             ))}
+          </div>
+
+          {/* Programa de Rehabilitación Kinésica */}
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <button
+              onClick={() => setShowProgramOptions(!showProgramOptions)}
+              className="w-full text-left rounded-xl border border-teal-200 bg-teal-50 p-4 hover:border-teal-700 hover:shadow-sm transition"
+            >
+              <p className="font-semibold text-slate-900">Programa de Rehabilitación Kinésica</p>
+              <p className="text-sm text-teal-700">10 sesiones</p>
+            </button>
+
+            {showProgramOptions && (
+              <div className="grid gap-3 sm:grid-cols-2 mt-3">
+                <a
+                  href="https://www.tuu.cl/programafonasa"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-xl border border-slate-200 p-4 hover:border-teal-700 hover:shadow-sm transition text-center"
+                >
+                  <p className="font-semibold text-slate-900">Programa FONASA</p>
+                  <p className="text-sm text-slate-500">Reservar con FONASA →</p>
+                </a>
+                <a
+                  href="https://www.tuu.cl/programaisapre"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-xl border border-slate-200 p-4 hover:border-teal-700 hover:shadow-sm transition text-center"
+                >
+                  <p className="font-semibold text-slate-900">Programa ISAPRE</p>
+                  <p className="text-sm text-slate-500">Reservar con ISAPRE →</p>
+                </a>
+              </div>
+            )}
           </div>
         </div>
       )}
