@@ -11,7 +11,7 @@ export async function GET(
 
   const { id } = await params;
 
-  const [patientRes, sessionsRes, paymentsRes, balanceRes] = await Promise.all([
+  const [patientRes, sessionsRes, paymentsRes, balanceRes, balanceRowsRes] = await Promise.all([
     getSupabase().from("fichas_patients").select("*").eq("id", id).single(),
     getSupabase()
       .from("fichas_sessions")
@@ -28,6 +28,10 @@ export async function GET(
       .select("*")
       .eq("patient_id", id)
       .maybeSingle(),
+    getSupabase()
+      .from("fichas_session_balance")
+      .select("payment_id, sessions_total, sessions_used, expires_at")
+      .eq("patient_id", id),
   ]);
 
   if (patientRes.error || !patientRes.data) {
@@ -39,6 +43,7 @@ export async function GET(
     sessions: sessionsRes.data ?? [],
     payments: paymentsRes.data ?? [],
     balance: balanceRes.data,
+    balance_rows: balanceRowsRes.data ?? [],
   });
 }
 

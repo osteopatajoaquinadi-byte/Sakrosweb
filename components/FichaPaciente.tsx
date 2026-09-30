@@ -44,6 +44,25 @@ type Payment = {
   created_at: string;
 };
 
+type BalanceRow = {
+  payment_id: string;
+  sessions_total: number;
+  sessions_used: number;
+  expires_at: string | null;
+};
+
+type PaymentEditForm = {
+  amount: string;
+  method: string;
+  payment_type: string;
+  pack_name: string;
+  sessions_purchased: string;
+  sessions_used: string;
+  service_type: string;
+  reference: string;
+  notes: string;
+};
+
 type Balance = {
   patient_id: string;
   patient_name: string;
@@ -89,6 +108,7 @@ export default function FichaPaciente({
   const [sessions, setSessions] = useState<Session[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [balance, setBalance] = useState<Balance | null>(null);
+  const [balanceRows, setBalanceRows] = useState<BalanceRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Subvistas
@@ -122,6 +142,10 @@ export default function FichaPaciente({
   });
   const [savingPayment, setSavingPayment] = useState(false);
 
+  // Edición de pagos existentes
+  const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
+  const [paymentEdit, setPaymentEdit] = useState<PaymentEditForm | null>(null);
+
   // Formulario de edición de paciente
   const [editForm, setEditForm] = useState({
     name: "", rut: "", phone: "", email: "", date_of_birth: "",
@@ -142,6 +166,7 @@ export default function FichaPaciente({
         setSessions(d.sessions ?? []);
         setPayments(d.payments ?? []);
         setBalance(d.balance ?? null);
+        setBalanceRows(d.balance_rows ?? []);
         // Poblar formulario de edición
         if (d.patient) {
           setEditForm({
@@ -260,6 +285,75 @@ export default function FichaPaciente({
     }
   }
 
+  function startEditPayment(p: Payment) {
+    const row = balanceRows.find((b) => b.payment_id === p.id);
+    setEditingPaymentId(p.id);
+    setPaymentEdit({
+      amount: String(p.amount),
+      method: p.method,
+      payment_type: p.payment_type,
+      pack_name: p.pack_name || "",
+      sessions_purchased: String(p.sessions_purchased),
+      sessions_used: String(row?.sessions_used ?? 0),
+      service_type: p.service_type || "",
+      reference: p.reference || "",
+      notes: p.notes || "",
+    });
+  }
+
+  async function handleUpdatePayment(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingPaymentId || !paymentEdit) return;
+    setSavingPayment(true);
+    setError("");
+    try {
+      const res = await fetch("/api/fichas/payments", {
+        method: "PATCH",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingPaymentId,
+          amount: parseInt(paymentEdit.amount),
+          method: paymentEdit.method,
+          payment_type: paymentEdit.payment_type,
+          pack_name: paymentEdit.pack_name || null,
+          sessions_purchased: parseInt(paymentEdit.sessions_purchased) || 0,
+          sessions_used: parseInt(paymentEdit.sessions_used) || 0,
+          service_type: paymentEdit.service_type || null,
+          reference: paymentEdit.reference || null,
+          notes: paymentEdit.notes || null,
+        }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        setError(d.error || "Error al actualizar pago.");
+      } else {
+        setEditingPaymentId(null);
+        setPaymentEdit(null);
+        fetchData();
+      }
+    } catch {
+      setError("Error de conexión.");
+    } finally {
+      setSavingPayment(false);
+    }
+  }
+
+  async function handleDeletePayment(id: string) {
+    if (!confirm("¿Eliminar este pago? También se eliminan las sesiones que acreditó.")) return;
+    setError("");
+    try {
+      const res = await fetch(`/api/fichas/payments?id=${id}`, { method: "DELETE", headers });
+      if (!res.ok) {
+        const d = await res.json();
+        setError(d.error || "Error al eliminar pago.");
+      } else {
+        fetchData();
+      }
+    } catch {
+      setError("Error de conexión.");
+    }
+  }
+
   async function handleSaveEdit(e: React.FormEvent) {
     e.preventDefault();
     setSavingEdit(true);
@@ -347,12 +441,11 @@ export default function FichaPaciente({
         )}
 
         {/* Balance */}
-        {balance && balance.total_remaining > 0 && (
-          <div className="mt-4 p-3 rounded-lg bg-teal-50 border border-teal-200">
+        <div className="mt-4 p-3 rounded-lg bg-teal-50 border border-teal-200">
             <p className="text-sm font-semibold text-teal-800">
-              Sesiones restantes: {balance.total_remaining}
+              Sesiones restantes: {balance?.total_remaining ?? 0}
             </p>
-            {balance.balance_detail && balance.balance_detail.length > 0 && (
+            {balance?.balance_detail && balance.balance_detail.length > 0 && (
               <div className="flex flex-wrap gap-3 mt-1">
                 {balance.balance_detail.map((b, i) => (
                   <span key={i} className="text-xs text-teal-700">
@@ -361,8 +454,7 @@ export default function FichaPaciente({
                 ))}
               </div>
             )}
-          </div>
-        )}
+        </div>
       </div>
 
       {/* Formulario de edición */}
@@ -663,7 +755,80 @@ export default function FichaPaciente({
             <p className="text-slate-400 text-center py-6">Sin pagos registrados.</p>
           ) : (
             <div className="space-y-3">
-              {payments.map((p) => (
+              {payments.map((p) => {
+                const row = balanceRows.find((b) => b.payment_id === p.id);
+                if (editingPaymentId === p.id && paymentEdit) {
+                  return (
+                    <form key={p.id} onSubmit={handleUpdatePayment}
+                      className="rounded-xl border border-teal-300 bg-white p-4">
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <label className="text-sm text-slate-700">Monto (CLP)
+                          <input type="number" min="0" value={paymentEdit.amount}
+                            onChange={(e) => setPaymentEdit({ ...paymentEdit, amount: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+                        </label>
+                        <label className="text-sm text-slate-700">Método
+                          <select value={paymentEdit.method}
+                            onChange={(e) => setPaymentEdit({ ...paymentEdit, method: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none">
+                            {PAYMENT_METHODS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                          </select>
+                        </label>
+                        <label className="text-sm text-slate-700">Tipo
+                          <select value={paymentEdit.payment_type}
+                            onChange={(e) => setPaymentEdit({ ...paymentEdit, payment_type: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none">
+                            {PAYMENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                          </select>
+                        </label>
+                        <label className="text-sm text-slate-700">Servicio
+                          <select value={paymentEdit.service_type}
+                            onChange={(e) => setPaymentEdit({ ...paymentEdit, service_type: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none">
+                            <option value="">Cualquier servicio</option>
+                            {SERVICE_TYPES.map((s) => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        </label>
+                        <label className="text-sm text-slate-700">Sesiones compradas
+                          <input type="number" min="0" value={paymentEdit.sessions_purchased}
+                            onChange={(e) => setPaymentEdit({ ...paymentEdit, sessions_purchased: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+                        </label>
+                        <label className="text-sm text-slate-700">Sesiones usadas
+                          <input type="number" min="0" value={paymentEdit.sessions_used}
+                            onChange={(e) => setPaymentEdit({ ...paymentEdit, sessions_used: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+                        </label>
+                        <label className="text-sm text-slate-700">Nombre del pack
+                          <input type="text" value={paymentEdit.pack_name}
+                            onChange={(e) => setPaymentEdit({ ...paymentEdit, pack_name: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+                        </label>
+                        <label className="text-sm text-slate-700">Referencia
+                          <input type="text" value={paymentEdit.reference}
+                            onChange={(e) => setPaymentEdit({ ...paymentEdit, reference: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+                        </label>
+                        <label className="text-sm text-slate-700 sm:col-span-2">Notas
+                          <input type="text" value={paymentEdit.notes}
+                            onChange={(e) => setPaymentEdit({ ...paymentEdit, notes: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+                        </label>
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button type="submit" disabled={savingPayment}
+                          className="rounded-full bg-teal-700 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50">
+                          {savingPayment ? "Guardando..." : "Guardar cambios"}
+                        </button>
+                        <button type="button" onClick={() => { setEditingPaymentId(null); setPaymentEdit(null); }}
+                          className="rounded-full border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:border-teal-700">
+                          Cancelar
+                        </button>
+                      </div>
+                    </form>
+                  );
+                }
+                return (
                 <div key={p.id} className="rounded-xl border border-slate-200 bg-white p-4">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
@@ -690,9 +855,23 @@ export default function FichaPaciente({
                     {p.reference && <span>Ref: {p.reference}</span>}
                   </div>
                   {p.notes && <p className="text-sm text-slate-600 mt-1">{p.notes}</p>}
-                  <p className="text-[11px] text-slate-400 mt-1">Registrado por: {p.registered_by}</p>
+                  {row && (
+                    <p className="text-xs text-slate-600 mt-1">
+                      Sesiones usadas: {row.sessions_used} de {row.sessions_total}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-[11px] text-slate-400">Registrado por: {p.registered_by}</p>
+                    <div className="flex gap-3 text-xs font-semibold">
+                      <button type="button" onClick={() => startEditPayment(p)}
+                        className="text-teal-700 hover:underline">Editar</button>
+                      <button type="button" onClick={() => handleDeletePayment(p.id)}
+                        className="text-red-600 hover:underline">Eliminar</button>
+                    </div>
+                  </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
