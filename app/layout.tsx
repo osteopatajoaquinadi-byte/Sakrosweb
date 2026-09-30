@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import "./globals.css";
-import { siteConfig } from "@/lib/site-config";
+import { siteConfig, services } from "@/lib/site-config";
 import MobileNav from "@/components/MobileNav";
+import { businessId } from "@/lib/seo";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -12,9 +13,6 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     locale: "es_CL",
@@ -45,8 +43,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "MedicalBusiness",
+    "@id": businessId,
     name: siteConfig.name,
+    legalName: siteConfig.legalName,
+    description: siteConfig.description,
     url: siteConfig.url,
+    logo: `${siteConfig.url}/images/logo-sakros.png`,
+    image: `${siteConfig.url}/og-image.jpg`,
     telephone: siteConfig.phone,
     email: siteConfig.email,
     address: {
@@ -56,6 +59,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       addressRegion: siteConfig.address.region,
       addressCountry: siteConfig.address.country,
     },
+    areaServed: [
+      { "@type": "City", name: "Viña del Mar" },
+      { "@type": "City", name: "Valparaíso" },
+      { "@type": "City", name: "Concón" },
+      { "@type": "City", name: "Quilpué" },
+    ],
+    medicalSpecialty: ["PhysicalTherapy", "Musculoskeletal"],
+    availableService: services.map((service) => ({
+      "@type": "MedicalTherapy",
+      name: service.name,
+      url: `${siteConfig.url}/servicios/${service.slug}`,
+    })),
     sameAs: [siteConfig.instagram],
   };
 

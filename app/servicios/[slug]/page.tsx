@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { services, siteConfig } from "@/lib/site-config";
+import { breadcrumbJsonLd, businessId, pageMetadata } from "@/lib/seo";
 
 // Imágenes específicas por servicio (solo los que tienen fotos propias)
 const serviceImages: Record<string, { src: string; alt: string }[]> = {
@@ -53,10 +54,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const service = services.find((s) => s.slug === slug);
   if (!service) return {};
-  return {
-    title: service.name,
+  return pageMetadata({
+    title: `${service.name} en Viña del Mar`,
     description: service.description,
-  };
+    path: `/servicios/${service.slug}`,
+  });
 }
 
 export default async function ServicePage({
@@ -73,18 +75,22 @@ export default async function ServicePage({
     "@type": "MedicalTherapy",
     name: service.name,
     description: service.description,
-    provider: {
-      "@type": "MedicalBusiness",
-      name: siteConfig.name,
-      url: siteConfig.url,
-    },
+    url: `${siteConfig.url}/servicios/${service.slug}`,
+    image: `${siteConfig.url}${service.image}`,
+    provider: { "@id": businessId },
   };
+
+  const breadcrumbs = breadcrumbJsonLd([
+    { name: "Inicio", path: "/" },
+    { name: "Servicios", path: "/servicios" },
+    { name: service.name, path: `/servicios/${service.slug}` },
+  ]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbs]) }}
       />
       <Image
         src={service.image}

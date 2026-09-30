@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { Suspense } from "react";
 import BookingFlow from "@/components/BookingFlow";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Reserva tu hora",
   description:
     "Reserva online tu hora de osteopatía, kinesiología, posturología o estudio biomecánico en Sakros, Viña del Mar.",
-};
+  path: "/reserva",
+});
 
 export default function ReservaPage() {
   return (

@@ -1,13 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { services } from "@/lib/site-config";
 
-export const metadata: Metadata = {
-  title: "Servicios",
+export const metadata: Metadata = pageMetadata({
+  title: "Servicios de osteopatía, kinesiología y posturología en Viña del Mar",
   description:
     "Osteopatía, kinesiología, posturología, plantillas ortopédicas y actividad física dirigida en Viña del Mar.",
-};
+  path: "/servicios",
+});
 
 export default function ServiciosPage() {
   return (

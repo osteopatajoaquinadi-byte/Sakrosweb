@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Packs de Tratamiento",
   description:
     "Packs de sesiones de osteopatía, kinesiología y posturología con valores promocionales en Sakros, Viña del Mar.",
-};
+  path: "/packs-tratamiento",
+});
 
 const packs = [
   {
