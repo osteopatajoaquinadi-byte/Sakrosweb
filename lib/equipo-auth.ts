@@ -23,7 +23,7 @@ export type Permission =
 
 const ROLE_PERMISSIONS: Record<StaffRole, Permission[]> = {
   admin: ["calendario", "agendar", "pacientes", "clinico", "pagos"],
-  profesional: ["calendario", "agendar", "pacientes", "clinico"],
+  profesional: ["calendario", "agendar", "pacientes", "clinico", "pagos"],
   secretaria: ["calendario", "agendar", "pacientes", "pagos"],
 };
 

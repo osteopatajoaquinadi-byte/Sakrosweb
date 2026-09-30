@@ -10,8 +10,9 @@ export async function POST(request: NextRequest) {
   }
 
   const { current_pin, new_pin } = await request.json().catch(() => ({}));
-  if (!/^\d{6,8}$/.test(String(new_pin ?? ""))) {
-    return NextResponse.json({ error: "El PIN nuevo debe tener entre 6 y 8 números." }, { status: 400 });
+  const next = String(new_pin ?? "");
+  if (next.length < 8 || next.length > 64) {
+    return NextResponse.json({ error: "El PIN nuevo debe tener al menos 8 caracteres." }, { status: 400 });
   }
 
   const { data, error } = await getServiceClient().rpc("staff_change_pin", {

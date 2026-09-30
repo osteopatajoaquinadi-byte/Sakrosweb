@@ -1,7 +1,7 @@
 -- Usuarios del panel del equipo, con PIN individual (guardado como hash
 -- bcrypt) y rol:
 --   admin       → todo (Joaquín, Anikken)
---   profesional → calendario, agendar y fichas clínicas (Camilo, Edison)
+--   profesional → calendario, agendar, fichas clínicas y pagos (Camilo, Edison)
 --   secretaria  → calendario, agendar, datos de contacto y pagos (sin
 --                 información clínica)
 -- La tabla no tiene políticas RLS: solo el servidor (service role) la lee,
@@ -73,7 +73,7 @@ as $$
 declare
   u staff_users;
 begin
-  if p_new !~ '^[0-9]{6,8}$' then
+  if length(p_new) < 8 or length(p_new) > 64 then
     return false;
   end if;
   select * into u from staff_users where username = lower(trim(p_username)) and active;

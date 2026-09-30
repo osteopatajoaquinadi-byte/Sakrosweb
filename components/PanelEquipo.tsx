@@ -124,12 +124,11 @@ export default function PanelEquipo() {
             />
             <input
               type="password"
-              inputMode="numeric"
               value={inputPin}
               onChange={(e) => setInputPin(e.target.value)}
               placeholder="PIN"
               autoComplete="current-password"
-              className="w-full rounded-lg border border-slate-300 px-4 py-3 text-center text-lg tracking-widest focus:border-teal-700 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-teal-700 focus:outline-none"
             />
             {error && <p className="text-red-600 text-sm text-center">{error}</p>}
             <button
@@ -181,14 +180,13 @@ export default function PanelEquipo() {
             {(
               [
                 ["current", "PIN actual"],
-                ["next", "PIN nuevo (6 a 8 números)"],
+                ["next", "PIN nuevo (mínimo 8 caracteres)"],
                 ["confirm", "Repite el PIN nuevo"],
               ] as const
             ).map(([key, label]) => (
               <input
                 key={key}
                 type="password"
-                inputMode="numeric"
                 placeholder={label}
                 value={pinForm[key]}
                 onChange={(e) => setPinForm({ ...pinForm, [key]: e.target.value })}
