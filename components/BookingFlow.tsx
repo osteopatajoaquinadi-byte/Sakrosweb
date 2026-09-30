@@ -76,6 +76,7 @@ export default function BookingFlow() {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isProgram, setIsProgram] = useState(false);
+  const [programType, setProgramType] = useState<"fonasa" | "isapre" | "">("");
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -148,7 +149,7 @@ export default function BookingFlow() {
           client_phone: clientPhone || undefined,
           payment_method: paymentMethod,
           notes: isProgram
-            ? `[Programa Rehabilitación Kinésica] ${notes}`.trim()
+            ? `[Programa Rehabilitación ${programType === "fonasa" ? "FONASA" : "ISAPRE"}] ${notes}`.trim()
             : notes || undefined,
         }),
       });
@@ -183,7 +184,7 @@ export default function BookingFlow() {
         <p className="text-emerald-700 mb-4">
           Te enviamos los detalles a <strong>{clientEmail}</strong>.
         </p>
-        {paymentMethod === "online_transfer" && !isProgram && (
+        {paymentMethod === "online_transfer" && (
           <p className="text-sm text-emerald-600 mb-4">
             Envía tu comprobante de transferencia al WhatsApp{" "}
             <a href="https://wa.me/56945399692" className="underline">
@@ -191,33 +192,6 @@ export default function BookingFlow() {
             </a>{" "}
             para confirmar tu pago.
           </p>
-        )}
-        {isProgram && (
-          <div className="mb-6">
-            <p className="text-sm text-emerald-700 mb-3">
-              Para completar el pago del programa, elige tu previsión:
-            </p>
-            <div className="grid gap-3 sm:grid-cols-2 max-w-md mx-auto">
-              <a
-                href="https://www.tuu.cl/programafonasa"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block rounded-xl border border-teal-700 bg-teal-700 p-4 text-white hover:bg-teal-800 transition"
-              >
-                <p className="font-semibold">FONASA</p>
-                <p className="text-sm text-teal-100">Pagar programa →</p>
-              </a>
-              <a
-                href="https://www.tuu.cl/programaisapre"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block rounded-xl border border-teal-700 bg-teal-700 p-4 text-white hover:bg-teal-800 transition"
-              >
-                <p className="font-semibold">ISAPRE</p>
-                <p className="text-sm text-teal-100">Pagar programa →</p>
-              </a>
-            </div>
-          </div>
         )}
         <button
           onClick={() => {
@@ -231,6 +205,7 @@ export default function BookingFlow() {
             setNotes("");
             setError("");
             setIsProgram(false);
+            setProgramType("");
           }}
           className="rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
         >
@@ -309,6 +284,7 @@ export default function BookingFlow() {
             onClick={() => {
               setSelectedService("");
               setIsProgram(false);
+              setProgramType("");
               setStep("service");
             }}
             className="text-sm text-slate-500 hover:text-teal-700 mb-4"
@@ -492,54 +468,125 @@ export default function BookingFlow() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Modalidad de pago
-              </label>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("in_clinic")}
-                  className={`rounded-lg border p-3 text-left text-sm transition ${
-                    paymentMethod === "in_clinic"
-                      ? "border-teal-700 bg-teal-50 text-teal-800"
-                      : "border-slate-200 hover:border-teal-700"
-                  }`}
-                >
-                  <p className="font-semibold">Pago en clínica</p>
-                  <p className="text-xs text-slate-500">Presencial el día de tu hora</p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("online_transfer")}
-                  className={`rounded-lg border p-3 text-left text-sm transition ${
-                    paymentMethod === "online_transfer"
-                      ? "border-teal-700 bg-teal-50 text-teal-800"
-                      : "border-slate-200 hover:border-teal-700"
-                  }`}
-                >
-                  <p className="font-semibold">Transferencia</p>
-                  <p className="text-xs text-slate-500">
-                    Envía comprobante por WhatsApp
-                  </p>
-                </button>
-              </div>
-              {paymentMethod === "online_transfer" && (
-                <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50 p-4 text-sm text-slate-700">
-                  <p className="font-semibold text-slate-900 mb-1">Datos para transferencia</p>
-                  <p>Anikken Arentsen</p>
-                  <p>RUT: 17.751.987-1</p>
-                  <p>Cuenta RUT BancoEstado</p>
-                  <p>N° cuenta: 17751987</p>
-                  <p className="mt-2 text-xs text-slate-500">
-                    Envía el comprobante al{" "}
-                    <a href="https://wa.me/56945399692" className="text-teal-700 underline">
-                      +56 9 4539 9692
-                    </a>
-                  </p>
+            {/* Previsión (solo programa) */}
+            {isProgram && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Previsión
+                </label>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => { setProgramType("fonasa"); setPaymentMethod(""); }}
+                    className={`rounded-lg border p-3 text-left text-sm transition ${
+                      programType === "fonasa"
+                        ? "border-teal-700 bg-teal-50 text-teal-800"
+                        : "border-slate-200 hover:border-teal-700"
+                    }`}
+                  >
+                    <p className="font-semibold">FONASA</p>
+                    <p className="text-xs text-slate-500">10 sesiones · $190.000</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setProgramType("isapre"); setPaymentMethod(""); }}
+                    className={`rounded-lg border p-3 text-left text-sm transition ${
+                      programType === "isapre"
+                        ? "border-teal-700 bg-teal-50 text-teal-800"
+                        : "border-slate-200 hover:border-teal-700"
+                    }`}
+                  >
+                    <p className="font-semibold">ISAPRE</p>
+                    <p className="text-xs text-slate-500">10 sesiones · $230.000</p>
+                  </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Modalidad de pago */}
+            {(!isProgram || programType) && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Modalidad de pago
+                </label>
+                <div className={`grid gap-2 ${isProgram ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("in_clinic")}
+                    className={`rounded-lg border p-3 text-left text-sm transition ${
+                      paymentMethod === "in_clinic"
+                        ? "border-teal-700 bg-teal-50 text-teal-800"
+                        : "border-slate-200 hover:border-teal-700"
+                    }`}
+                  >
+                    <p className="font-semibold">Pago en clínica</p>
+                    <p className="text-xs text-slate-500">
+                      Presencial el día de tu hora
+                      {isProgram && (
+                        <span className="block font-semibold text-teal-700 mt-1">
+                          {programType === "fonasa" ? "$190.000" : "$230.000"}
+                        </span>
+                      )}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("online_transfer")}
+                    className={`rounded-lg border p-3 text-left text-sm transition ${
+                      paymentMethod === "online_transfer"
+                        ? "border-teal-700 bg-teal-50 text-teal-800"
+                        : "border-slate-200 hover:border-teal-700"
+                    }`}
+                  >
+                    <p className="font-semibold">Transferencia</p>
+                    <p className="text-xs text-slate-500">
+                      Envía comprobante por WhatsApp
+                      {isProgram && (
+                        <span className="block font-semibold text-teal-700 mt-1">
+                          {programType === "fonasa" ? "$190.000" : "$230.000"}
+                        </span>
+                      )}
+                    </p>
+                  </button>
+                  {isProgram && (
+                    <a
+                      href={programType === "fonasa" ? "https://www.tuu.cl/programafonasa" : "https://www.tuu.cl/programaisapre"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg border border-slate-200 p-3 text-left text-sm transition hover:border-teal-700"
+                    >
+                      <p className="font-semibold text-slate-900">Pago con tarjeta</p>
+                      <p className="text-xs text-slate-500">
+                        Pagar online con tarjeta
+                        <span className="block font-semibold text-teal-700 mt-1">
+                          {programType === "fonasa" ? "$190.000" : "$230.000"}
+                        </span>
+                      </p>
+                    </a>
+                  )}
+                </div>
+                {paymentMethod === "online_transfer" && (
+                  <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50 p-4 text-sm text-slate-700">
+                    <p className="font-semibold text-slate-900 mb-1">Datos para transferencia</p>
+                    <p>Anikken Arentsen</p>
+                    <p>RUT: 17.751.987-1</p>
+                    <p>Cuenta RUT BancoEstado</p>
+                    <p>N° cuenta: 17751987</p>
+                    {isProgram && (
+                      <p className="mt-1 font-semibold text-teal-700">
+                        Monto: {programType === "fonasa" ? "$190.000" : "$230.000"}
+                      </p>
+                    )}
+                    <p className="mt-2 text-xs text-slate-500">
+                      Envía el comprobante al{" "}
+                      <a href="https://wa.me/56945399692" className="text-teal-700 underline">
+                        +56 9 4539 9692
+                      </a>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -558,7 +605,7 @@ export default function BookingFlow() {
 
             <button
               onClick={handleSubmit}
-              disabled={!clientName || !clientEmail || submitting}
+              disabled={!clientName || !clientEmail || submitting || (isProgram && (!programType || !paymentMethod))}
               className="w-full rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? "Reservando..." : "Confirmar reserva"}
