@@ -524,6 +524,21 @@ export default function BookingFlow() {
                   </p>
                 </button>
               </div>
+              {paymentMethod === "online_transfer" && (
+                <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50 p-4 text-sm text-slate-700">
+                  <p className="font-semibold text-slate-900 mb-1">Datos para transferencia</p>
+                  <p>Anikken Arentsen</p>
+                  <p>RUT: 17.751.987-1</p>
+                  <p>Cuenta RUT BancoEstado</p>
+                  <p>N° cuenta: 17751987</p>
+                  <p className="mt-2 text-xs text-slate-500">
+                    Envía el comprobante al{" "}
+                    <a href="https://wa.me/56945399692" className="text-teal-700 underline">
+                      +56 9 4539 9692
+                    </a>
+                  </p>
+                </div>
+              )}
             </div>
 
             <div>
