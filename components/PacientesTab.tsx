@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import FichaPaciente from "./FichaPaciente";
+import type { Permission } from "@/lib/equipo-auth";
 
 type Patient = {
   id: string;
@@ -14,7 +15,8 @@ type Patient = {
   created_at: string;
 };
 
-export default function PacientesTab({ pin }: { pin: string }) {
+export default function PacientesTab({ permissions }: { permissions: Permission[] }) {
+  const clinico = permissions.includes("clinico");
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -29,18 +31,17 @@ export default function PacientesTab({ pin }: { pin: string }) {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
 
-  const headers = { "x-equipo-pin": pin };
 
   const fetchPatients = useCallback(() => {
     setLoading(true);
     const q = search.trim();
     const url = q ? `/api/fichas/patients?q=${encodeURIComponent(q)}` : "/api/fichas/patients";
-    fetch(url, { headers })
+    fetch(url)
       .then((r) => r.json())
       .then((d) => setPatients(d.patients ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [search, pin]);
+  }, [search]);
 
   useEffect(() => {
     const t = setTimeout(fetchPatients, 300);
@@ -56,8 +57,8 @@ export default function PacientesTab({ pin }: { pin: string }) {
     try {
       const res = await fetch("/api/fichas/patients", {
         method: "POST",
-        headers: { ...headers, "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, created_by: "equipo" }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -85,7 +86,7 @@ export default function PacientesTab({ pin }: { pin: string }) {
         >
           ← Volver a pacientes
         </button>
-        <FichaPaciente patientId={selectedId} pin={pin} />
+        <FichaPaciente patientId={selectedId} permissions={permissions} />
       </div>
     );
   }
@@ -140,6 +141,7 @@ export default function PacientesTab({ pin }: { pin: string }) {
               <input type="date" value={form.date_of_birth} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
             </div>
+            {clinico && (<>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Ocupación</label>
               <input type="text" value={form.occupation} onChange={(e) => setForm({ ...form, occupation: e.target.value })}
@@ -160,6 +162,7 @@ export default function PacientesTab({ pin }: { pin: string }) {
               <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
             </div>
+            </>)}
           </div>
           {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
           <button type="submit" disabled={creating || !form.name.trim()}
@@ -183,8 +186,12 @@ export default function PacientesTab({ pin }: { pin: string }) {
               <tr>
                 <th className="text-left px-4 py-3 font-semibold text-slate-700">Nombre</th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-700 hidden sm:table-cell">RUT</th>
+                {clinico ? (<>
                 <th className="text-left px-4 py-3 font-semibold text-slate-700 hidden md:table-cell">Deporte</th>
                 <th className="text-left px-4 py-3 font-semibold text-slate-700 hidden lg:table-cell">Motivo</th>
+                </>) : (
+                <th className="text-left px-4 py-3 font-semibold text-slate-700 hidden md:table-cell">Teléfono</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -199,8 +206,12 @@ export default function PacientesTab({ pin }: { pin: string }) {
                     <p className="text-xs text-slate-500 sm:hidden">{p.rut || "–"}</p>
                   </td>
                   <td className="px-4 py-3 text-slate-600 hidden sm:table-cell">{p.rut || "–"}</td>
+                  {clinico ? (<>
                   <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{p.sport || "–"}</td>
                   <td className="px-4 py-3 text-slate-600 truncate max-w-[200px] hidden lg:table-cell">{p.reason || "–"}</td>
+                  </>) : (
+                  <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{p.phone || "–"}</td>
+                  )}
                 </tr>
               ))}
             </tbody>

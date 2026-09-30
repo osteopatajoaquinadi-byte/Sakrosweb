@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
+import { getServiceClient as getSupabase } from "@/lib/supabase";
 
 type Slot = {
   time: string; // HH:MM

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import ClinicalEvalForm, { ClinicalDataDisplay } from "./ClinicalEvalForm";
+import type { Permission } from "@/lib/equipo-auth";
 
 type Patient = {
   id: string;
@@ -99,11 +100,13 @@ const PAYMENT_TYPES: { value: string; label: string }[] = [
 
 export default function FichaPaciente({
   patientId,
-  pin,
+  permissions,
 }: {
   patientId: string;
-  pin: string;
+  permissions: Permission[];
 }) {
+  const clinico = permissions.includes("clinico");
+  const puedePagos = permissions.includes("pagos");
   const [patient, setPatient] = useState<Patient | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -112,7 +115,7 @@ export default function FichaPaciente({
   const [loading, setLoading] = useState(true);
 
   // Subvistas
-  const [activeSection, setActiveSection] = useState<"sesiones" | "pagos">("sesiones");
+  const [activeSection, setActiveSection] = useState<"sesiones" | "pagos">(clinico ? "sesiones" : "pagos");
   const [showNewSession, setShowNewSession] = useState(false);
   const [showNewPayment, setShowNewPayment] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -154,11 +157,10 @@ export default function FichaPaciente({
   const [savingEdit, setSavingEdit] = useState(false);
 
   const [error, setError] = useState("");
-  const headers = { "x-equipo-pin": pin };
 
   const fetchData = useCallback(() => {
     setLoading(true);
-    fetch(`/api/fichas/patients/${patientId}`, { headers })
+    fetch(`/api/fichas/patients/${patientId}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.error) return;
@@ -184,7 +186,7 @@ export default function FichaPaciente({
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [patientId, pin]);
+  }, [patientId]);
 
   useEffect(() => {
     fetchData();
@@ -206,7 +208,7 @@ export default function FichaPaciente({
 
       const res = await fetch("/api/fichas/sessions", {
         method: "POST",
-        headers: { ...headers, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           patient_id: patientId,
           professional: sessionForm.professional,
@@ -247,7 +249,7 @@ export default function FichaPaciente({
     try {
       const res = await fetch("/api/fichas/payments", {
         method: "POST",
-        headers: { ...headers, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           patient_id: patientId,
           amount: parseInt(paymentForm.amount),
@@ -258,7 +260,6 @@ export default function FichaPaciente({
           service_type: paymentForm.service_type,
           reference: paymentForm.reference || null,
           notes: paymentForm.notes || null,
-          registered_by: "equipo",
         }),
       });
       if (!res.ok) {
@@ -309,7 +310,7 @@ export default function FichaPaciente({
     try {
       const res = await fetch("/api/fichas/payments", {
         method: "PATCH",
-        headers: { ...headers, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: editingPaymentId,
           amount: parseInt(paymentEdit.amount),
@@ -342,7 +343,7 @@ export default function FichaPaciente({
     if (!confirm("¿Eliminar este pago? También se eliminan las sesiones que acreditó.")) return;
     setError("");
     try {
-      const res = await fetch(`/api/fichas/payments?id=${id}`, { method: "DELETE", headers });
+      const res = await fetch(`/api/fichas/payments?id=${id}`, { method: "DELETE" });
       if (!res.ok) {
         const d = await res.json();
         setError(d.error || "Error al eliminar pago.");
@@ -361,7 +362,7 @@ export default function FichaPaciente({
     try {
       const res = await fetch(`/api/fichas/patients/${patientId}`, {
         method: "PUT",
-        headers: { ...headers, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editForm),
       });
       if (!res.ok) {
@@ -403,8 +404,8 @@ export default function FichaPaciente({
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-slate-500">
               {patient.rut && <span>RUT: {patient.rut}</span>}
               {age !== null && <span>{age} años</span>}
-              {patient.occupation && <span>{patient.occupation}</span>}
-              {patient.sport && <span>Deporte: {patient.sport}</span>}
+              {clinico && patient.occupation && <span>{patient.occupation}</span>}
+              {clinico && patient.sport && <span>Deporte: {patient.sport}</span>}
             </div>
           </div>
           <button
@@ -429,12 +430,12 @@ export default function FichaPaciente({
           )}
         </div>
 
-        {patient.reason && (
+        {clinico && patient.reason && (
           <p className="text-sm text-slate-600">
             <span className="font-medium">Motivo:</span> {patient.reason}
           </p>
         )}
-        {patient.notes && (
+        {clinico && patient.notes && (
           <p className="text-sm text-slate-500 mt-1">
             <span className="font-medium">Notas:</span> {patient.notes}
           </p>
@@ -487,6 +488,7 @@ export default function FichaPaciente({
               <input type="date" value={editForm.date_of_birth} onChange={(e) => setEditForm({ ...editForm, date_of_birth: e.target.value })}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
             </div>
+            {clinico && (<>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Ocupación</label>
               <input type="text" value={editForm.occupation} onChange={(e) => setEditForm({ ...editForm, occupation: e.target.value })}
@@ -507,6 +509,7 @@ export default function FichaPaciente({
               <textarea value={editForm.notes} onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })} rows={2}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
             </div>
+            </>)}
           </div>
           {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
           <button type="submit" disabled={savingEdit || !editForm.name.trim()}
@@ -518,6 +521,7 @@ export default function FichaPaciente({
 
       {/* Tabs sesiones / pagos */}
       <div className="flex gap-1 mb-4">
+        {clinico && (
         <button
           onClick={() => setActiveSection("sesiones")}
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
@@ -528,6 +532,8 @@ export default function FichaPaciente({
         >
           Sesiones ({sessions.length})
         </button>
+        )}
+        {puedePagos && (
         <button
           onClick={() => setActiveSection("pagos")}
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
@@ -538,12 +544,13 @@ export default function FichaPaciente({
         >
           Pagos ({payments.length})
         </button>
+        )}
       </div>
 
       {error && !editing && <p className="text-red-600 text-sm mb-3">{error}</p>}
 
       {/* === SESIONES === */}
-      {activeSection === "sesiones" && (
+      {clinico && activeSection === "sesiones" && (
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-900">Historial de sesiones</h3>
@@ -674,7 +681,7 @@ export default function FichaPaciente({
       )}
 
       {/* === PAGOS === */}
-      {activeSection === "pagos" && (
+      {puedePagos && activeSection === "pagos" && (
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-900">Historial de pagos</h3>

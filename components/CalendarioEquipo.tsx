@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import AgendarReserva from "./AgendarReserva";
+import type { Permission } from "@/lib/equipo-auth";
 
 type Booking = {
   id: string;
@@ -8,6 +10,9 @@ type Booking = {
   start_time: string;
   end_time: string;
   client_name: string;
+  client_phone: string | null;
+  payment_status: string;
+  notes: string | null;
   status: string;
   service_id: string;
   professional_id: string;
@@ -40,7 +45,15 @@ function getDefaultColor() {
   return { bg: "bg-slate-100", text: "text-slate-800", dot: "bg-slate-500" };
 }
 
-export default function CalendarioEquipo({ pin }: { pin: string }) {
+const STATUS_LABELS: Record<string, string> = {
+  confirmed: "Confirmada",
+  completed: "Asistió",
+  no_show: "No asistió",
+};
+
+export default function CalendarioEquipo({ permissions }: { permissions: Permission[] }) {
+  const puedeAgendar = permissions.includes("agendar");
+  const [showAgendar, setShowAgendar] = useState(false);
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1); // 1-based
@@ -52,7 +65,7 @@ export default function CalendarioEquipo({ pin }: { pin: string }) {
 
   const fetchData = useCallback(() => {
     setLoading(true);
-    fetch(`/api/calendar?month=${monthStr}&pin=${encodeURIComponent(pin)}`)
+    fetch(`/api/calendar?month=${monthStr}`)
       .then((res) => res.json())
       .then((d) => {
         if (d.error) return;
@@ -60,7 +73,21 @@ export default function CalendarioEquipo({ pin }: { pin: string }) {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [monthStr, pin]);
+  }, [monthStr]);
+
+  async function setStatus(id: string, status: string) {
+    if (status === "cancelled" && !confirm("¿Cancelar esta reserva?")) return;
+    const res = await fetch("/api/equipo/bookings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      alert(d.error || "No se pudo actualizar la reserva.");
+    }
+    fetchData();
+  }
 
   useEffect(() => {
     fetchData();
@@ -153,6 +180,22 @@ export default function CalendarioEquipo({ pin }: { pin: string }) {
           </div>
         ))}
       </div>
+
+      {puedeAgendar && !showAgendar && (
+        <div className="mb-6">
+          <button onClick={() => setShowAgendar(true)}
+            className="rounded-full bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-800">
+            + Agendar hora
+          </button>
+        </div>
+      )}
+      {showAgendar && (
+        <AgendarReserva
+          defaultDate={selectedDateStr ?? todayStr}
+          onCancel={() => setShowAgendar(false)}
+          onDone={() => { setShowAgendar(false); fetchData(); }}
+        />
+      )}
 
       {/* Navegación de mes */}
       <div className="flex items-center justify-between mb-4">
@@ -274,7 +317,33 @@ export default function CalendarioEquipo({ pin }: { pin: string }) {
                             {b.start_time.slice(0, 5)} – {b.end_time.slice(0, 5)}
                           </p>
                           <p className="text-sm text-slate-700">{b.client_name}</p>
+                          {b.client_phone && (
+                            <a href={`tel:${b.client_phone}`} className="text-xs text-slate-600 hover:text-teal-700">
+                              {b.client_phone}
+                            </a>
+                          )}
                           <p className="text-xs text-slate-500">{b.professionals?.name}</p>
+                          <p className="text-[11px] text-slate-500 mt-1">
+                            {STATUS_LABELS[b.status] ?? b.status}
+                            {b.payment_status === "paid" && " · Pagada"}
+                          </p>
+                          {puedeAgendar && (
+                            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[11px] font-semibold">
+                              {b.status !== "completed" && (
+                                <button onClick={() => setStatus(b.id, "completed")} className="text-emerald-700 hover:underline">
+                                  Asistió
+                                </button>
+                              )}
+                              {b.status !== "no_show" && (
+                                <button onClick={() => setStatus(b.id, "no_show")} className="text-amber-700 hover:underline">
+                                  No asistió
+                                </button>
+                              )}
+                              <button onClick={() => setStatus(b.id, "cancelled")} className="text-red-600 hover:underline">
+                                Cancelar
+                              </button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

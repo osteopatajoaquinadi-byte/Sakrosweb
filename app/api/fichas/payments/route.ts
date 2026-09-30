@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
-import { verifyPin } from "@/lib/equipo-auth";
+import { getServiceClient as getSupabase } from "@/lib/supabase";
+import { requireStaff } from "@/lib/equipo-auth";
 
 export async function POST(request: NextRequest) {
-  const denied = verifyPin(request);
+  const { user, denied } = requireStaff(request, "pagos");
   if (denied) return denied;
 
   const body = await request.json();
-  const { patient_id, amount, method, payment_type, pack_name, sessions_purchased, service_type, reference, notes, registered_by } = body;
+  const { patient_id, amount, method, payment_type, pack_name, sessions_purchased, service_type, reference, notes } = body;
+  const registered_by = user.display_name;
 
-  if (!patient_id || !amount || !method || !payment_type || !registered_by) {
+  if (!patient_id || !amount || !method || !payment_type) {
     return NextResponse.json({ error: "Faltan campos obligatorios." }, { status: 400 });
   }
 
@@ -51,7 +52,7 @@ const EDITABLE_FIELDS = [
 // Editar un pago. Mantiene sincronizado el saldo de sesiones que generó
 // (fichas_session_balance) y permite corregir cuántas sesiones se han usado.
 export async function PATCH(request: NextRequest) {
-  const denied = verifyPin(request);
+  const { denied } = requireStaff(request, "pagos");
   if (denied) return denied;
 
   const body = await request.json();
@@ -141,7 +142,7 @@ export async function PATCH(request: NextRequest) {
 
 // Eliminar un pago (su saldo de sesiones se borra en cascada).
 export async function DELETE(request: NextRequest) {
-  const denied = verifyPin(request);
+  const { denied } = requireStaff(request, "pagos");
   if (denied) return denied;
 
   const id = new URL(request.url).searchParams.get("id");

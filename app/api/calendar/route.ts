@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
-import { verifyPin } from "@/lib/equipo-auth";
+import { getServiceClient as getSupabase } from "@/lib/supabase";
+import { requireStaff } from "@/lib/equipo-auth";
 
 export async function GET(request: NextRequest) {
-  const denied = verifyPin(request);
+  const { denied } = requireStaff(request, "calendario");
   if (denied) return denied;
 
   const { searchParams } = new URL(request.url);
@@ -27,6 +27,11 @@ export async function GET(request: NextRequest) {
       start_time,
       end_time,
       client_name,
+      client_phone,
+      client_email,
+      fichas_patient_id,
+      payment_status,
+      notes,
       status,
       service_id,
       professional_id,
