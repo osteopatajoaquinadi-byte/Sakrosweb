@@ -86,11 +86,21 @@ export default async function ServicePage({
     { name: service.name, path: `/servicios/${service.slug}` },
   ]);
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: service.faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.q,
+      acceptedAnswer: { "@type": "Answer", text: faq.a },
+    })),
+  };
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbs]) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbs, faqJsonLd]) }}
       />
       <Image
         src={service.image}
@@ -113,6 +123,19 @@ export default async function ServicePage({
           </li>
         ))}
       </ul>
+      <section className="mb-10 rounded-2xl bg-slate-50 p-6">
+        <h2 className="text-xl font-bold text-slate-900 mb-4">
+          ¿Para quién es este servicio?
+        </h2>
+        <ul className="space-y-2">
+          {service.forWho.map((item) => (
+            <li key={item} className="flex gap-3 text-slate-700">
+              <span className="text-teal-700">✓</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
       {serviceVideos[service.slug] && (
         <div className="grid gap-4 sm:grid-cols-2 mb-6">
           {serviceVideos[service.slug].map((vid) => (
@@ -144,6 +167,19 @@ export default async function ServicePage({
           ))}
         </div>
       )}
+      <section className="mb-10">
+        <h2 className="text-xl font-bold text-slate-900 mb-6">
+          Preguntas frecuentes: {service.shortName}
+        </h2>
+        <div className="space-y-6">
+          {service.faqs.map((faq) => (
+            <div key={faq.q}>
+              <h3 className="font-semibold text-slate-900 mb-2">{faq.q}</h3>
+              <p className="text-slate-600">{faq.a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
       <div className="flex flex-wrap gap-4">
         <Link
           href={`/reserva?servicio=${service.slug}`}

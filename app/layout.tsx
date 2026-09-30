@@ -59,6 +59,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       addressRegion: siteConfig.address.region,
       addressCountry: siteConfig.address.country,
     },
+    hasMap: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      `${siteConfig.address.street}, ${siteConfig.address.city}, Chile`
+    )}`,
+    openingHoursSpecification: siteConfig.openingHours.map((h) => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: h.days,
+      opens: h.opens,
+      closes: h.closes,
+    })),
     areaServed: [
       { "@type": "City", name: "Viña del Mar" },
       { "@type": "City", name: "Valparaíso" },
@@ -128,6 +137,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <p>
                 {siteConfig.address.city}, {siteConfig.address.region}
               </p>
+              {siteConfig.openingHours.map((h) => (
+                <p key={h.label} className="mt-2 first-of-type:mt-3">
+                  {h.label}: {h.opens} – {h.closes}
+                </p>
+              ))}
             </div>
             <div>
               <p className="font-semibold text-slate-900 mb-2">Contacto</p>
