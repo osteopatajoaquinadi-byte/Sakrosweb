@@ -11,6 +11,13 @@ import {
   type BlockType,
 } from "./constants";
 import SessionCard, { type SessionForCard } from "./SessionCard";
+import {
+  generateCertificado,
+  generateInforme,
+  checkInformeMissing,
+  type PatientInfo,
+  type SessionInfo,
+} from "./pdf-kine";
 
 /* ── Helpers ── */
 const uid = () =>
@@ -23,6 +30,8 @@ interface KinesiologyTabProps {
   sessions?: SessionForCard[];
   isAdmin?: boolean;
   onNewSession?: () => void;
+  patient?: PatientInfo;
+  professional?: string;
 }
 
 /* ── Sub-tab key ── */
@@ -96,9 +105,12 @@ const textareaCls = `${inputCls} min-h-[72px] resize-y`;
 /* ══════════════════════════════════════════════════════════════
    KinesiologyTab
    ══════════════════════════════════════════════════════════════ */
-export default function KinesiologyTab({ plan, onChange, sessions = [], isAdmin = false, onNewSession }: KinesiologyTabProps) {
+export default function KinesiologyTab({ plan, onChange, sessions = [], isAdmin = false, onNewSession, patient, professional = "Joaquín Adi A." }: KinesiologyTabProps) {
   const [sec, setSec] = useState<SubTab>("eval");
   const [sfmaExp, setSfmaExp] = useState<Record<string, boolean>>({});
+  const [certDate, setCertDate] = useState("");
+  const [pdfLoading, setPdfLoading] = useState<string | null>(null);
+  const [informeWarnings, setInformeWarnings] = useState<string[]>([]);
 
   const kp = plan;
 
@@ -211,6 +223,46 @@ export default function KinesiologyTab({ plan, onChange, sessions = [], isAdmin 
     (acc, v) => acc + (v.score ?? 0),
     0,
   );
+
+  /* ── PDF handlers ── */
+  const handleCertificado = async () => {
+    if (!patient) return;
+    if (!certDate) return;
+    setPdfLoading("cert");
+    try {
+      await generateCertificado(patient, certDate, professional);
+    } catch (err) {
+      console.error("Error generando certificado:", err);
+    } finally {
+      setPdfLoading(null);
+    }
+  };
+
+  const handleInforme = async () => {
+    if (!patient) return;
+    // Build SessionInfo array from SessionForCard
+    const sessionsForPdf: SessionInfo[] = sessions.map((s) => ({
+      session_date: s.session_date || s.date,
+      professional: s.professional || "",
+      eva_score: s.eva_score ?? s.vas ?? null,
+      notes: s.notes,
+      clinical_data: s.clinical_data as Record<string, unknown> | null | undefined,
+    }));
+    const missing = checkInformeMissing(patient, kp, sessionsForPdf);
+    if (missing.length > 0) {
+      setInformeWarnings(missing);
+      return;
+    }
+    setInformeWarnings([]);
+    setPdfLoading("informe");
+    try {
+      await generateInforme(patient, kp, sessionsForPdf, professional);
+    } catch (err) {
+      console.error("Error generando informe:", err);
+    } finally {
+      setPdfLoading(null);
+    }
+  };
 
   /* ── Sub-tab config ── */
   const tabs: { key: SubTab; label: string }[] = [
@@ -983,6 +1035,82 @@ export default function KinesiologyTab({ plan, onChange, sessions = [], isAdmin 
               {sessions.map((s, i) => (
                 <SessionCard key={s.id} session={s} isAdmin={isAdmin} index={i} />
               ))}
+            </div>
+          )}
+
+          {/* ── Documentos PDF ── */}
+          {patient && (
+            <div className="mt-6 rounded-xl border border-[#CEC8BE] bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-bold text-[#0B3D2E] mb-3">
+                Documentos
+              </h3>
+
+              {/* Certificado */}
+              <div className="rounded-lg border border-[#CEC8BE] bg-[#FAFAF8] p-3 mb-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-[#0B3D2E]">
+                    Certificado de Atenciones Kinesicas
+                  </span>
+                  <span className="text-[10px] text-[#9C9687]">
+                    (10 sesiones L-V)
+                  </span>
+                </div>
+                <div className="flex items-end gap-2 flex-wrap">
+                  <div className="flex-1 min-w-[160px]">
+                    <label className="block text-[11px] font-semibold text-[#9C9687] mb-1">
+                      Fecha de pago (inicio)
+                    </label>
+                    <input
+                      type="date"
+                      className={inputCls}
+                      value={certDate}
+                      onChange={(e) => setCertDate(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCertificado}
+                    disabled={!certDate || pdfLoading === "cert"}
+                    className="rounded-lg bg-[#0B3D2E] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0B3D2E]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    {pdfLoading === "cert" ? "Generando..." : "Descargar PDF"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Informe ISAPRE */}
+              <div className="rounded-lg border border-[#CEC8BE] bg-[#FAFAF8] p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-[#0B3D2E]">
+                    Informe de Atencion Kinesica
+                  </span>
+                  <span className="text-[10px] text-[#9C9687]">
+                    (para ISAPRE / Fonasa)
+                  </span>
+                </div>
+
+                {informeWarnings.length > 0 && (
+                  <div className="rounded-lg bg-amber-50 border border-amber-300 p-2.5 mb-2">
+                    <p className="text-xs font-semibold text-amber-700 mb-1">
+                      Informacion faltante — completa antes de generar:
+                    </p>
+                    <ul className="list-disc list-inside text-xs text-amber-600 space-y-0.5">
+                      {informeWarnings.map((w) => (
+                        <li key={w}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleInforme}
+                  disabled={pdfLoading === "informe"}
+                  className="rounded-lg bg-[#0B3D2E] px-4 py-2 text-xs font-semibold text-white hover:bg-[#0B3D2E]/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {pdfLoading === "informe" ? "Generando..." : "Descargar Informe PDF"}
+                </button>
+              </div>
             </div>
           )}
         </div>

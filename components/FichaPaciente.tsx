@@ -1177,6 +1177,18 @@ export default function FichaPaciente({
             }))}
           isAdmin={true}
           onNewSession={() => setSessionModal("kinesiology")}
+          patient={patient ? {
+            name: patient.name,
+            rut: patient.rut,
+            date_of_birth: patient.date_of_birth,
+            sex: patient.sex,
+            address: patient.address,
+            occupation: patient.occupation,
+            sport: patient.sport,
+            reason: patient.reason,
+            email: patient.email,
+            phone: patient.phone,
+          } : undefined}
         />
       )}
 
