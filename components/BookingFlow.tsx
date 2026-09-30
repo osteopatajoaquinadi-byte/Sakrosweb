@@ -75,7 +75,7 @@ export default function BookingFlow() {
   const [paymentMethod, setPaymentMethod] = useState("in_clinic");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [programType, setProgramType] = useState<"fonasa" | "isapre" | "">("");
+  const [isProgram, setIsProgram] = useState(false);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -90,8 +90,8 @@ export default function BookingFlow() {
     return `${first.getDate()} ${MONTH_NAMES[first.getMonth()].slice(0, 3)} – ${last.getDate()} ${MONTH_NAMES[last.getMonth()].slice(0, 3)}`;
   }, [weekDays]);
 
-  const serviceName = programType
-    ? `Programa Rehabilitación Kinésica (${programType === "fonasa" ? "FONASA" : "ISAPRE"})`
+  const serviceName = isProgram
+    ? "Programa Rehabilitación Kinésica"
     : SERVICES_LIST.find(s => s.slug === selectedService)?.label || "";
 
   // Pre-cargar disponibilidad de la semana
@@ -147,8 +147,8 @@ export default function BookingFlow() {
           client_email: clientEmail,
           client_phone: clientPhone || undefined,
           payment_method: paymentMethod,
-          notes: programType
-            ? `[Programa Rehabilitación ${programType === "fonasa" ? "FONASA" : "ISAPRE"}] ${notes}`.trim()
+          notes: isProgram
+            ? `[Programa Rehabilitación Kinésica] ${notes}`.trim()
             : notes || undefined,
         }),
       });
@@ -177,19 +177,13 @@ export default function BookingFlow() {
   // =================== RENDER ===================
 
   if (step === "done") {
-    const tuuLink = programType === "fonasa"
-      ? "https://www.tuu.cl/programafonasa"
-      : programType === "isapre"
-        ? "https://www.tuu.cl/programaisapre"
-        : "";
-
     return (
       <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-8 text-center">
         <p className="text-2xl font-bold text-emerald-800 mb-2">Reserva confirmada</p>
         <p className="text-emerald-700 mb-4">
           Te enviamos los detalles a <strong>{clientEmail}</strong>.
         </p>
-        {paymentMethod === "online_transfer" && !programType && (
+        {paymentMethod === "online_transfer" && !isProgram && (
           <p className="text-sm text-emerald-600 mb-4">
             Envía tu comprobante de transferencia al WhatsApp{" "}
             <a href="https://wa.me/56945399692" className="underline">
@@ -198,19 +192,31 @@ export default function BookingFlow() {
             para confirmar tu pago.
           </p>
         )}
-        {tuuLink && (
-          <div className="mb-4">
-            <p className="text-sm text-emerald-700 mb-2">
-              Para completar el pago del programa, haz clic en el siguiente enlace:
+        {isProgram && (
+          <div className="mb-6">
+            <p className="text-sm text-emerald-700 mb-3">
+              Para completar el pago del programa, elige tu previsión:
             </p>
-            <a
-              href={tuuLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
-            >
-              Pagar programa {programType === "fonasa" ? "FONASA" : "ISAPRE"} →
-            </a>
+            <div className="grid gap-3 sm:grid-cols-2 max-w-md mx-auto">
+              <a
+                href="https://www.tuu.cl/programafonasa"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-xl border border-teal-700 bg-teal-700 p-4 text-white hover:bg-teal-800 transition"
+              >
+                <p className="font-semibold">FONASA</p>
+                <p className="text-sm text-teal-100">Pagar programa →</p>
+              </a>
+              <a
+                href="https://www.tuu.cl/programaisapre"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-xl border border-teal-700 bg-teal-700 p-4 text-white hover:bg-teal-800 transition"
+              >
+                <p className="font-semibold">ISAPRE</p>
+                <p className="text-sm text-teal-100">Pagar programa →</p>
+              </a>
+            </div>
           </div>
         )}
         <button
@@ -224,7 +230,7 @@ export default function BookingFlow() {
             setClientPhone("");
             setNotes("");
             setError("");
-            setProgramType("");
+            setIsProgram(false);
           }}
           className="rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
         >
@@ -267,7 +273,7 @@ export default function BookingFlow() {
                 <button
                   onClick={() => {
                     setSelectedService(s.slug);
-                    setProgramType("");
+                    setIsProgram(false);
                     setStep("date");
                   }}
                   className="text-left rounded-xl border border-slate-200 p-4 hover:border-teal-700 hover:shadow-sm transition"
@@ -279,8 +285,12 @@ export default function BookingFlow() {
                 {/* Programa justo después de Kinesiología */}
                 {s.slug === "kinesiologia" && (
                   <button
-                    onClick={() => setProgramType(programType ? "" : "fonasa")}
-                    className="text-left rounded-xl border border-teal-200 bg-teal-50 p-4 hover:border-teal-700 hover:shadow-sm transition"
+                    onClick={() => {
+                      setSelectedService("kinesiologia");
+                      setIsProgram(true);
+                      setStep("date");
+                    }}
+                    className="text-left rounded-xl border border-slate-200 p-4 hover:border-teal-700 hover:shadow-sm transition"
                   >
                     <p className="font-semibold text-slate-900">Programa de Rehabilitación Kinésica</p>
                     <p className="text-sm text-teal-700">10 sesiones</p>
@@ -289,42 +299,6 @@ export default function BookingFlow() {
               </div>
             ))}
           </div>
-
-          {/* Sub-opciones FONASA / ISAPRE del programa */}
-          {programType && (
-            <div className="grid gap-3 sm:grid-cols-2 mt-3">
-              <button
-                onClick={() => {
-                  setProgramType("fonasa");
-                  setSelectedService("kinesiologia");
-                  setStep("date");
-                }}
-                className={`rounded-xl border p-4 text-center transition ${
-                  programType === "fonasa"
-                    ? "border-teal-700 bg-teal-50"
-                    : "border-slate-200 hover:border-teal-700 hover:shadow-sm"
-                }`}
-              >
-                <p className="font-semibold text-slate-900">FONASA</p>
-                <p className="text-sm text-slate-500">Programa FONASA →</p>
-              </button>
-              <button
-                onClick={() => {
-                  setProgramType("isapre");
-                  setSelectedService("kinesiologia");
-                  setStep("date");
-                }}
-                className={`rounded-xl border p-4 text-center transition ${
-                  programType === "isapre"
-                    ? "border-teal-700 bg-teal-50"
-                    : "border-slate-200 hover:border-teal-700 hover:shadow-sm"
-                }`}
-              >
-                <p className="font-semibold text-slate-900">ISAPRE</p>
-                <p className="text-sm text-slate-500">Programa ISAPRE →</p>
-              </button>
-            </div>
-          )}
         </div>
       )}
 
@@ -334,7 +308,7 @@ export default function BookingFlow() {
           <button
             onClick={() => {
               setSelectedService("");
-              setProgramType("");
+              setIsProgram(false);
               setStep("service");
             }}
             className="text-sm text-slate-500 hover:text-teal-700 mb-4"
