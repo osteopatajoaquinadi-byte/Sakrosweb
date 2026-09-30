@@ -35,7 +35,7 @@ export default function HomePage() {
               Osteopatía · Kinesiología · Posturología en Viña del Mar
             </p>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6">
-              Vuelve a entrenar y a las actividades de tu vida. Sin dolores, sin recaídas.
+              Vuelve a moverte y a entrenar con seguridad. No se trata de no volver a sentir nada, sino de que el dolor no vuelva a decidir por ti.
             </h1>
             <p className="text-lg text-slate-600 mb-4">
               Ayudamos a deportistas, exdeportistas, y a todos quienes quieran
