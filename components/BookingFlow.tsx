@@ -485,7 +485,7 @@ export default function BookingFlow() {
                     }`}
                   >
                     <p className="font-semibold">FONASA</p>
-                    <p className="text-xs text-slate-500">10 sesiones · $190.000</p>
+                    <p className="text-xs text-slate-500">10 sesiones</p>
                   </button>
                   <button
                     type="button"
@@ -497,7 +497,7 @@ export default function BookingFlow() {
                     }`}
                   >
                     <p className="font-semibold">ISAPRE</p>
-                    <p className="text-xs text-slate-500">10 sesiones · $230.000</p>
+                    <p className="text-xs text-slate-500">10 sesiones</p>
                   </button>
                 </div>
               </div>
