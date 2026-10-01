@@ -453,10 +453,11 @@ export default function BookingFlow() {
 
           <div className="space-y-4 max-w-md">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="bk-nombre" className="block text-sm font-medium text-slate-700 mb-1">
                 Nombre completo *
               </label>
               <input
+                id="bk-nombre"
                 type="text"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
@@ -465,10 +466,11 @@ export default function BookingFlow() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="bk-email" className="block text-sm font-medium text-slate-700 mb-1">
                 Email *
               </label>
               <input
+                id="bk-email"
                 type="email"
                 value={clientEmail}
                 onChange={(e) => setClientEmail(e.target.value)}
@@ -477,10 +479,11 @@ export default function BookingFlow() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label htmlFor="bk-telefono" className="block text-sm font-medium text-slate-700 mb-1">
                 Teléfono
               </label>
               <input
+                id="bk-telefono"
                 type="tel"
                 value={clientPhone}
                 onChange={(e) => setClientPhone(e.target.value)}
