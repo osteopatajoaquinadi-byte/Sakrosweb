@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { paymentLinks, servicePacks } from "../../lib/site-config";
+import { paymentLinks, servicePacks, sessionPrices } from "../../lib/site-config";
 
 // Flujo de reserva con las APIs simuladas: no toca Supabase ni crea reservas.
 async function mockBookingApis(page: Page) {
@@ -75,12 +75,20 @@ test.describe("ofertas visibles @prod", () => {
     await expect(page.getByRole("link", { name: /Programa ISAPRE/ })).toHaveAttribute("href", /tuu\.cl/);
   });
 
+  test("kinesiología muestra valor de sesión y programa Fonasa/Isapre", async ({ page }) => {
+    await page.goto("/servicios/kinesiologia");
+    await expect(page.getByRole("heading", { name: "Opciones y valores" })).toBeVisible();
+    await expect(page.getByText(sessionPrices.kinesiologia!)).toBeVisible();
+    await expect(page.getByRole("link", { name: "Programa FONASA" })).toHaveAttribute("href", /tuu\.cl\/programafonasa/);
+    await expect(page.getByRole("link", { name: "Programa ISAPRE" })).toHaveAttribute("href", /tuu\.cl\/programaisapre/);
+  });
+
   test("osteopatía muestra sesión y programa de 5 sesiones con su pago", async ({ page }) => {
     await page.goto("/servicios/osteopatia");
     await expect(page.getByRole("heading", { name: "Opciones y valores" })).toBeVisible();
     const pack = servicePacks.osteopatia;
     await expect(page.getByText(pack.name)).toBeVisible();
-    await expect(page.getByText(pack.price)).toBeVisible();
+    await expect(page.getByText(pack.price!)).toBeVisible();
     await expect(page.getByRole("link", { name: "Comprar programa" })).toHaveAttribute(
       "href",
       pack.paymentUrl!

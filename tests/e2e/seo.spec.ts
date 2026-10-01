@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { services, siteConfig } from "../../lib/site-config";
+import { conditions } from "../../lib/condiciones";
 
 // SEO de cada página pública. Etiqueta @prod: son de solo lectura y se
 // pueden correr también contra el sitio publicado (ver playwright.config.ts).
@@ -10,6 +11,10 @@ const pages: { path: string; title: RegExp }[] = [
   ...services.map((s) => ({
     path: `/servicios/${s.slug}`,
     title: new RegExp(`${s.name} en Viña del Mar \\| Sakros`),
+  })),
+  ...conditions.map((c) => ({
+    path: `/kinesiologia/${c.slug}`,
+    title: new RegExp(`${c.metaTitle} \\| Sakros`),
   })),
   { path: "/quienes-somos", title: /Quiénes Somos/ },
   { path: "/evidencia-metodologia", title: /Evidencia y Metodología/ },
@@ -90,6 +95,29 @@ test.describe("datos estructurados @prod", () => {
       await expect(page.getByRole("heading", { name: "¿Para quién es este servicio?" })).toBeVisible();
     });
   }
+});
+
+test.describe("páginas por molestia @prod", () => {
+  for (const c of conditions) {
+    test(`/kinesiologia/${c.slug}: datos estructurados, señales de alerta y reserva`, async ({ page }) => {
+      await page.goto(`/kinesiologia/${c.slug}`);
+      const types = (await jsonLd(page)).map((d) => d["@type"]);
+      expect(types).toEqual(expect.arrayContaining(["MedicalWebPage", "BreadcrumbList", "FAQPage"]));
+      await expect(page.getByRole("heading", { name: "Cuándo consultar primero a un médico" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Reserva tu evaluación" })).toHaveAttribute(
+        "href",
+        `/reserva?servicio=${c.service}`
+      );
+    });
+  }
+
+  test("la página de kinesiología enlaza a cada molestia", async ({ page }) => {
+    await page.goto("/servicios/kinesiologia");
+    await expect(page.getByRole("heading", { name: "Molestias que tratamos" })).toBeVisible();
+    for (const c of conditions) {
+      await expect(page.locator(`a[href="/kinesiologia/${c.slug}"]`).first()).toBeVisible();
+    }
+  });
 });
 
 test.describe("kinesiología en Viña del Mar @prod", () => {

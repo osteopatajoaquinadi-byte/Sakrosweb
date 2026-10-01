@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { services, siteConfig } from "@/lib/site-config";
 import { blogPosts } from "@/lib/blog-posts";
+import { conditions } from "@/lib/condiciones";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [
@@ -29,5 +30,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(post.date),
     }));
 
-  return [...staticRoutes, ...serviceRoutes, ...blogRoutes];
+  const conditionRoutes = conditions.map((c) => ({
+    url: `${siteConfig.url}/kinesiologia/${c.slug}`,
+    lastModified: new Date(),
+  }));
+
+  return [...staticRoutes, ...serviceRoutes, ...conditionRoutes, ...blogRoutes];
 }

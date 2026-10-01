@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { services, siteConfig } from "../../lib/site-config";
 import { blogPosts } from "../../lib/blog-posts";
+import { conditions } from "../../lib/condiciones";
 
 test.describe("rastreo e indexación @prod", () => {
   test("robots.txt bloquea API y panel y declara el sitemap", async ({ request }) => {
@@ -17,6 +18,7 @@ test.describe("rastreo e indexación @prod", () => {
     expect(res.status()).toBe(200);
     const xml = await res.text();
     for (const s of services) expect(xml).toContain(`${siteConfig.url}/servicios/${s.slug}</loc>`);
+    for (const c of conditions) expect(xml).toContain(`${siteConfig.url}/kinesiologia/${c.slug}</loc>`);
     for (const p of blogPosts.filter((p) => p.draft)) expect(xml).not.toContain(`/blog/${p.slug}`);
     expect(xml).not.toContain("/equipo");
   });
@@ -55,7 +57,12 @@ test.describe("redirecciones del Wix anterior @prod", () => {
 
 test.describe("enlaces internos @prod", () => {
   test("ningún enlace interno del home y servicios está roto", async ({ page, request }) => {
-    const start = ["/", "/servicios", ...services.map((s) => `/servicios/${s.slug}`)];
+    const start = [
+      "/",
+      "/servicios",
+      ...services.map((s) => `/servicios/${s.slug}`),
+      ...conditions.map((c) => `/kinesiologia/${c.slug}`),
+    ];
     const links = new Set<string>();
     for (const path of start) {
       await page.goto(path);
