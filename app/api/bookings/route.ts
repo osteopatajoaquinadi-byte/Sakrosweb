@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { Resend } from "resend";
-import { siteConfig } from "@/lib/site-config";
+import { paymentLinks, siteConfig } from "@/lib/site-config";
 
 export async function POST(request: Request) {
   try {
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     // Obtener servicio para calcular end_time
     const { data: service } = await db
       .from("services")
-      .select("id, name, duration_minutes, price_clp")
+      .select("id, name, slug, duration_minutes, price_clp")
       .eq("id", service_id)
       .single();
 
@@ -132,7 +132,9 @@ export async function POST(request: Request) {
           `Hora: ${start_time} - ${end_time}`,
           `Valor: $${service.price_clp.toLocaleString("es-CL")} CLP`,
           "",
-          payment_method === "online_transfer"
+          payment_method === "online_webpay" && paymentLinks[service.slug]
+            ? `Pago online: ${paymentLinks[service.slug]}`
+            : payment_method === "online_transfer"
             ? `Pago: transferencia online. Envía tu comprobante al WhatsApp ${siteConfig.phone} para confirmar.`
             : `Pago: en la clínica.`,
           "",
@@ -161,7 +163,7 @@ export async function POST(request: Request) {
           `Profesional: ${professional?.name ?? ""}`,
           `Fecha: ${dateFormatted}`,
           `Hora: ${start_time} - ${end_time}`,
-          `Pago: ${payment_method === "online_transfer" ? "Transferencia (pendiente comprobante)" : "En clínica"}`,
+          `Pago: ${payment_method === "online_webpay" ? "Online con Mercado Pago (verificar pago)" : payment_method === "online_transfer" ? "Transferencia (pendiente comprobante)" : "En clínica"}`,
           notes ? `Notas: ${notes}` : "",
         ].join("\n"),
       });

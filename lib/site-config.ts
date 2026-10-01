@@ -26,6 +26,34 @@ export const siteConfig = {
   bookingUrl: "https://wa.me/56945399692",
 };
 
+// Links de pago online (Mercado Pago) por servicio de la reserva. Si un
+// servicio tiene link, la reserva ofrece "Pago online" y lo muestra al final.
+export const paymentLinks: Record<string, string> = {
+  osteopatia: "https://mpago.la/2tDadem", // sesión unitaria de osteopatía
+};
+
+// Programas (packs) que se ofrecen dentro de la página de cada servicio.
+// Sin paymentUrl, el botón lleva a WhatsApp para coordinar la compra.
+export type ServicePack = {
+  name: string;
+  price: string;
+  validity: string;
+  includes: string;
+  paymentUrl?: string;
+};
+
+export const servicePacks: Record<string, ServicePack> = {
+  osteopatia: {
+    name: "Programa de 5 sesiones de osteopatía",
+    price: "$185.000",
+    validity: "Válido por 6 meses",
+    includes: "5 sesiones de osteopatía estructural con asesoramiento metabólico",
+    // PENDIENTE: link de Mercado Pago propio del programa (el recibido era
+    // igual al de la sesión unitaria).
+    paymentUrl: undefined,
+  },
+};
+
 export type Service = {
   slug: string;
   name: string;
