@@ -48,9 +48,7 @@ export const servicePacks: Record<string, ServicePack> = {
     price: "$185.000",
     validity: "Válido por 6 meses",
     includes: "5 sesiones de osteopatía estructural con asesoramiento metabólico",
-    // PENDIENTE: link de Mercado Pago propio del programa (el recibido era
-    // igual al de la sesión unitaria).
-    paymentUrl: undefined,
+    paymentUrl: "https://mpago.la/1idmHEA",
   },
 };
 
