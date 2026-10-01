@@ -2,7 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { paymentLinks, servicePacks, services, siteConfig } from "@/lib/site-config";
+import { paymentLinks, servicePacks, services, sessionPrices, siteConfig } from "@/lib/site-config";
+import { conditionsFor } from "@/lib/condiciones";
 import { breadcrumbJsonLd, businessId, pageMetadata } from "@/lib/seo";
 
 // Imágenes específicas por servicio (solo los que tienen fotos propias)
@@ -180,46 +181,72 @@ export default async function ServicePage({
           ))}
         </div>
       </section>
-      {(servicePacks[service.slug] || paymentLinks[service.slug]) && (
+      {conditionsFor(service.slug).length > 0 && (
+        <section className="mb-10">
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Molestias que tratamos</h2>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {conditionsFor(service.slug).map((c) => (
+              <Link
+                key={c.slug}
+                href={`/kinesiologia/${c.slug}`}
+                className="rounded-xl border border-slate-200 p-4 hover:border-teal-700 hover:bg-teal-50 transition"
+              >
+                <p className="font-semibold text-slate-900">{c.shortName}</p>
+                <p className="text-sm text-slate-600 mt-1">{c.cardText}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+      {(servicePacks[service.slug] || paymentLinks[service.slug] || sessionPrices[service.slug]) && (
         <section className="mb-10">
           <h2 className="text-xl font-bold text-slate-900 mb-4">Opciones y valores</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            {paymentLinks[service.slug] && (
-              <div className="rounded-2xl border border-slate-200 p-5">
-                <p className="font-semibold text-slate-900">Sesión individual</p>
-                <p className="text-sm text-slate-600 mt-1 mb-4">
-                  Reserva tu hora y paga online al agendar o en la clínica.
-                </p>
-                <Link
-                  href={`/reserva?servicio=${service.slug}`}
-                  className="inline-block rounded-full border border-teal-700 px-5 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50"
-                >
-                  Reservar sesión
-                </Link>
-              </div>
-            )}
+            <div className="rounded-2xl border border-slate-200 p-5">
+              <p className="font-semibold text-slate-900">Sesión individual</p>
+              {sessionPrices[service.slug] && (
+                <p className="text-2xl font-bold text-slate-900 mt-1">{sessionPrices[service.slug]}</p>
+              )}
+              <p className="text-sm text-slate-600 mt-1 mb-4">
+                {paymentLinks[service.slug]
+                  ? "Reserva tu hora y paga online al agendar o en la clínica."
+                  : "Reserva tu hora online y paga en la clínica."}
+              </p>
+              <Link
+                href={`/reserva?servicio=${service.slug}`}
+                className="inline-block rounded-full border border-teal-700 px-5 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50"
+              >
+                Reservar sesión
+              </Link>
+            </div>
             {servicePacks[service.slug] && (() => {
               const pack = servicePacks[service.slug];
-              const href =
-                pack.paymentUrl ??
-                `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
-                  `Hola, me interesa el ${pack.name}.`
-                )}`;
+              const whatsapp = `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
+                `Hola, me interesa el ${pack.name}.`
+              )}`;
+              const buttons = pack.options ?? [
+                { label: pack.paymentUrl ? "Comprar programa" : "Consultar por WhatsApp", href: pack.paymentUrl ?? whatsapp },
+              ];
               return (
                 <div className="rounded-2xl border-2 border-teal-700 p-5">
                   <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Programa</p>
                   <p className="font-semibold text-slate-900">{pack.name}</p>
-                  <p className="text-2xl font-bold text-slate-900 mt-1">{pack.price}</p>
+                  {pack.price && <p className="text-2xl font-bold text-slate-900 mt-1">{pack.price}</p>}
                   <p className="text-sm text-slate-600 mt-1">{pack.includes}</p>
-                  <p className="text-xs text-slate-500 mt-1 mb-4">{pack.validity}</p>
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block rounded-full bg-teal-700 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-800"
-                  >
-                    {pack.paymentUrl ? "Comprar programa" : "Consultar por WhatsApp"}
-                  </a>
+                  {pack.validity && <p className="text-xs text-slate-500 mt-1">{pack.validity}</p>}
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {buttons.map((b) => (
+                      <a
+                        key={b.label}
+                        href={b.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block rounded-full bg-teal-700 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-800"
+                      >
+                        {b.label}
+                      </a>
+                    ))}
+                  </div>
                 </div>
               );
             })()}

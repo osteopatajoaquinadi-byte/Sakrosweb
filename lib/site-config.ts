@@ -36,10 +36,19 @@ export const paymentLinks: Record<string, string> = {
 // Sin paymentUrl, el botón lleva a WhatsApp para coordinar la compra.
 export type ServicePack = {
   name: string;
-  price: string;
-  validity: string;
+  price?: string;
+  validity?: string;
   includes: string;
   paymentUrl?: string;
+  // Varias formas de contratarlo (ej. Fonasa / Isapre), cada una con su link.
+  options?: { label: string; href: string }[];
+};
+
+// Valor de la sesión individual (el mismo que muestra la reserva).
+export const sessionPrices: Record<string, string> = {
+  osteopatia: "$40.000",
+  kinesiologia: "$25.000",
+  posturologia: "$30.000",
 };
 
 export const servicePacks: Record<string, ServicePack> = {
@@ -49,6 +58,14 @@ export const servicePacks: Record<string, ServicePack> = {
     validity: "Válido por 6 meses",
     includes: "5 sesiones de osteopatía estructural con asesoramiento metabólico",
     paymentUrl: "https://mpago.la/1idmHEA",
+  },
+  kinesiologia: {
+    name: "Programa de Rehabilitación Kinésica",
+    includes: "10 sesiones de kinesiología con evaluación y plan de ejercicios progresivo",
+    options: [
+      { label: "Programa FONASA", href: "https://www.tuu.cl/programafonasa" },
+      { label: "Programa ISAPRE", href: "https://www.tuu.cl/programaisapre" },
+    ],
   },
 };
 
