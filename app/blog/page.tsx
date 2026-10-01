@@ -1,12 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { blogPosts } from "@/lib/blog-posts";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Blog",
   description:
     "Artículos sobre vuelta al deporte, dolor recurrente y recuperación funcional, desde Sakros en Viña del Mar.",
-};
+  path: "/blog",
+});
 
 export default function BlogIndexPage() {
   return (

@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Evidencia y Metodología — En qué nos basamos",
   description:
     "Cómo evaluamos y tratamos en Sakros: qué tiene evidencia firme, qué es razonamiento clínico y qué sigue en debate. Transparencia sobre nuestras herramientas terapéuticas.",
-};
+  path: "/evidencia-metodologia",
+});
 
 /* ------------------------------------------------------------------ */
 /*  Contenido clasificado por nivel de evidencia                       */

@@ -1,14 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { services, siteConfig } from "@/lib/site-config";
 import LeadMagnet from "@/components/LeadMagnet";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Vuelve a tu deporte sin dolor en Viña del Mar",
   description:
     "Osteopatía, kinesiología y posturología a tu medida en Viña del Mar. Evaluamos el origen del dolor para que vuelvas a entrenar con confianza, no solo para que dejes de sentirlo.",
-};
+  path: "/",
+  absoluteTitle: true,
+});
 
 const faqs = [
   {
@@ -26,8 +29,22 @@ const faqs = [
 ];
 
 export default function HomePage() {
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.q,
+      acceptedAnswer: { "@type": "Answer", text: faq.a },
+    })),
+  };
+
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <section className="mx-auto max-w-6xl px-4 pt-16 pb-20 md:pt-24 md:pb-28">
         <div className="grid gap-10 md:grid-cols-2 items-center">
           <div>

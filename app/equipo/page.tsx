@@ -3,8 +3,8 @@ import { Suspense } from "react";
 import PanelEquipo from "@/components/PanelEquipo";
 
 export const metadata: Metadata = {
-  title: "Equipo — Sakros",
-  robots: "noindex, nofollow",
+  title: "Acceso Profesional",
+  robots: { index: false, follow: false },
 };
 
 export default function EquipoPage() {

@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site-config";
 import ContactForm from "@/components/ContactForm";
 
-export const metadata: Metadata = {
-  title: "Contacto",
+export const metadata: Metadata = pageMetadata({
+  title: "Contacto y ubicación en Viña del Mar",
   description: `Escríbenos o agenda tu evaluación en ${siteConfig.address.street}, ${siteConfig.address.city}.`,
-};
+  path: "/contacto",
+});
 
 export default function ContactoPage() {
   return (

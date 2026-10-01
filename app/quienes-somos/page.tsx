@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { businessId, pageMetadata } from "@/lib/seo";
 import Image from "next/image";
 import { siteConfig } from "@/lib/site-config";
 
-export const metadata: Metadata = {
-  title: "Quiénes Somos",
+export const metadata: Metadata = pageMetadata({
+  title: "Quiénes Somos — Equipo de osteopatía y kinesiología",
   description:
     "Equipo de osteopatía, kinesiología y posturología en Viña del Mar, dirigido por Joaquín Adi, kinesiólogo y osteópata D.O.",
-};
+  path: "/quienes-somos",
+});
 
 export default function QuienesSomosPage() {
   const jsonLd = {
@@ -14,11 +16,9 @@ export default function QuienesSomosPage() {
     "@type": "Person",
     name: "Joaquín Adi",
     jobTitle: "Kinesiólogo y Osteópata (D.O.)",
-    worksFor: {
-      "@type": "MedicalBusiness",
-      name: siteConfig.name,
-      url: siteConfig.url,
-    },
+    url: `${siteConfig.url}/quienes-somos`,
+    image: `${siteConfig.url}/images/joaquin-adi.jpg`,
+    worksFor: { "@id": businessId },
   };
 
   return (

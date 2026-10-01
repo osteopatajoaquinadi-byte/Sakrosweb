@@ -1,0 +1,195 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceClient } from "@/lib/supabase";
+import { requireStaff } from "@/lib/equipo-auth";
+
+// Agenda interna del panel: a diferencia de /api/bookings (reserva pública),
+// permite agendar fuera de los horarios publicados y vincular la reserva a
+// una ficha existente.
+
+// Profesionales, servicios y combinaciones válidas para el formulario.
+export async function GET(request: NextRequest) {
+  const { denied } = requireStaff(request, "agendar");
+  if (denied) return denied;
+
+  const db = getServiceClient();
+  const [pros, svcs, links] = await Promise.all([
+    db.from("professionals").select("id, name, slug").order("name"),
+    db.from("services").select("id, name, slug, duration_minutes").eq("active", true).order("name"),
+    db.from("professional_services").select("professional_id, service_id"),
+  ]);
+
+  return NextResponse.json({
+    professionals: pros.data ?? [],
+    services: svcs.data ?? [],
+    links: links.data ?? [],
+  });
+}
+
+export async function POST(request: NextRequest) {
+  const { user, denied } = requireStaff(request, "agendar");
+  if (denied) return denied;
+
+  const body = await request.json();
+  const { patient_id, professional_id, service_id, booking_date, start_time, notes } = body;
+  let { client_name, client_email, client_phone } = body;
+
+  if (!professional_id || !service_id || !booking_date || !start_time) {
+    return NextResponse.json({ error: "Faltan profesional, servicio, fecha u hora." }, { status: 400 });
+  }
+
+  const db = getServiceClient();
+
+  if (patient_id) {
+    const { data: patient } = await db
+      .from("fichas_patients")
+      .select("name, email, phone")
+      .eq("id", patient_id)
+      .single();
+    if (!patient) {
+      return NextResponse.json({ error: "Paciente no encontrado." }, { status: 404 });
+    }
+    client_name = patient.name;
+    client_email = patient.email;
+    client_phone = patient.phone;
+  }
+
+  if (!client_name) {
+    return NextResponse.json({ error: "Elige un paciente o ingresa el nombre." }, { status: 400 });
+  }
+
+  // Paciente nuevo: se reutiliza su ficha si ya existe una con el mismo
+  // email o teléfono; si no, se crea una. Así todas las sesiones (incluido
+  // un programa completo) quedan en una sola ficha.
+  let fichaId: string | null = patient_id || null;
+  if (!fichaId) {
+    const lookups: [string, string | undefined][] = [
+      ["email", client_email],
+      ["phone", client_phone],
+    ];
+    for (const [column, value] of lookups) {
+      if (fichaId || !value) continue;
+      const { data: match } = await db
+        .from("fichas_patients")
+        .select("id")
+        .eq(column as "email", String(value))
+        .limit(1);
+      fichaId = (match?.[0] as { id: string } | undefined)?.id ?? null;
+    }
+    if (!fichaId) {
+      const { data: created } = await db
+        .from("fichas_patients")
+        .insert({
+          name: client_name,
+          email: client_email || null,
+          phone: client_phone || null,
+          created_by: user.username,
+          notes: "Creado desde la agenda del panel",
+        })
+        .select("id")
+        .single();
+      fichaId = created?.id ?? null;
+    }
+  }
+
+  const { data: service } = await db
+    .from("services")
+    .select("duration_minutes")
+    .eq("id", service_id)
+    .single();
+  if (!service) {
+    return NextResponse.json({ error: "Servicio no encontrado." }, { status: 404 });
+  }
+
+  const [h, m] = String(start_time).split(":").map(Number);
+  const end = h * 60 + m + service.duration_minutes;
+  const end_time = `${String(Math.floor(end / 60)).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`;
+
+  // Programa: varias sesiones, una cada `every_days` días desde la fecha
+  // inicial. Una sesión suelta es un programa de 1.
+  const count = Math.min(Math.max(parseInt(body.sessions_count) || 1, 1), 52);
+  const everyDays = Math.min(Math.max(parseInt(body.every_days) || 7, 1), 60);
+  const isProgram = count > 1;
+  const dates: string[] = [];
+  const start = new Date(`${booking_date}T12:00:00Z`);
+  for (let i = 0; i < count; i++) {
+    const d = new Date(start);
+    d.setUTCDate(start.getUTCDate() + i * everyDays);
+    dates.push(d.toISOString().slice(0, 10));
+  }
+
+  const { data: clashes } = await db
+    .from("bookings")
+    .select("booking_date")
+    .eq("professional_id", professional_id)
+    .in("booking_date", dates)
+    .eq("start_time", start_time)
+    .eq("status", "confirmed");
+  if (clashes && clashes.length > 0 && !body.allow_overlap) {
+    const list = [...new Set(clashes.map((c) => c.booking_date))].sort().join(", ");
+    return NextResponse.json(
+      { error: `Ese profesional ya tiene reserva a esa hora el ${list}.`, overlap: true },
+      { status: 409 }
+    );
+  }
+
+  const baseNote = [notes, `Agendado desde el panel por ${user.display_name}`].filter(Boolean);
+  const rows = dates.map((date, i) => ({
+    professional_id,
+    service_id,
+    booking_date: date,
+    start_time,
+    end_time,
+    client_name,
+    client_email: client_email || "",
+    client_phone: client_phone || null,
+    status: "confirmed",
+    payment_status: "pending",
+    notes: [isProgram ? `Programa: sesión ${i + 1} de ${count}` : null, ...baseNote]
+      .filter(Boolean)
+      .join(" · "),
+  }));
+
+  const { data: created, error } = await db.from("bookings").insert(rows).select("id");
+
+  if (error || !created) {
+    return NextResponse.json({ error: "Error al crear la reserva." }, { status: 500 });
+  }
+
+  // El trigger de la BD vincula por email/teléfono; se fija la ficha
+  // elegida (evita confusiones con correos compartidos).
+  const ids = created.map((b) => b.id);
+  if (fichaId) {
+    await db
+      .from("bookings")
+      .update({ ficha_patient_id: fichaId, fichas_patient_id: fichaId })
+      .in("id", ids);
+  }
+
+  return NextResponse.json({ ok: true, ids, dates });
+}
+
+const STATUSES = ["confirmed", "cancelled", "completed", "no_show"];
+
+// Cambiar estado de una reserva (cancelar, marcar asistida o no asistió).
+export async function PATCH(request: NextRequest) {
+  const { denied } = requireStaff(request, "agendar");
+  if (denied) return denied;
+
+  const { id, status } = await request.json();
+  if (!id || !STATUSES.includes(status)) {
+    return NextResponse.json({ error: "Datos inválidos." }, { status: 400 });
+  }
+
+  const { error } = await getServiceClient()
+    .from("bookings")
+    .update({
+      status,
+      cancelled_at: status === "cancelled" ? new Date().toISOString() : null,
+    })
+    .eq("id", id);
+
+  if (error) {
+    return NextResponse.json({ error: "Error al actualizar la reserva." }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true });
+}

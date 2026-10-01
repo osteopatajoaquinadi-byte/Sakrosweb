@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { blogPosts } from "@/lib/blog-posts";
 import { siteConfig } from "@/lib/site-config";
+import { breadcrumbJsonLd, businessId, pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
@@ -16,10 +17,13 @@ export async function generateMetadata({
   const { slug } = await params;
   const post = blogPosts.find((p) => p.slug === slug);
   if (!post) return {};
-  return {
+  // Los borradores no se indexan hasta que tengan revisión clínica.
+  return pageMetadata({
     title: post.title,
     description: post.excerpt,
-  };
+    path: `/blog/${post.slug}`,
+    noindex: post.draft,
+  });
 }
 
 export default async function BlogPostPage({
@@ -35,10 +39,23 @@ export default async function BlogPostPage({
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.title,
+    description: post.excerpt,
     datePublished: post.date,
-    author: { "@type": "Person", name: "Joaquín Adi" },
-    publisher: { "@type": "MedicalBusiness", name: siteConfig.name },
+    inLanguage: "es-CL",
+    mainEntityOfPage: `${siteConfig.url}/blog/${post.slug}`,
+    author: {
+      "@type": "Person",
+      name: "Joaquín Adi",
+      url: `${siteConfig.url}/quienes-somos`,
+    },
+    publisher: { "@id": businessId },
   };
+
+  const breadcrumbs = breadcrumbJsonLd([
+    { name: "Inicio", path: "/" },
+    { name: "Blog", path: "/blog" },
+    { name: post.title, path: `/blog/${post.slug}` },
+  ]);
 
   const related = blogPosts.filter((p) => p.slug !== post.slug).slice(0, 2);
 
@@ -46,7 +63,7 @@ export default async function BlogPostPage({
     <article className="mx-auto max-w-3xl px-4 py-16">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbs]) }}
       />
       {post.draft && (
         <p className="mb-6 rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-800">

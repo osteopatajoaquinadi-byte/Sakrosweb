@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
-import { verifyPin } from "@/lib/equipo-auth";
+import { getServiceClient as getSupabase } from "@/lib/supabase";
+import { requireStaff } from "@/lib/equipo-auth";
 
 export async function POST(request: NextRequest) {
-  const denied = verifyPin(request);
+  const { denied } = requireStaff(request, "clinico");
   if (denied) return denied;
 
   const body = await request.json();

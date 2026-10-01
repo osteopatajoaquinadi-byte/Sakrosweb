@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabase } from "@/lib/supabase";
-import { verifyPin } from "@/lib/equipo-auth";
+import { getServiceClient as getSupabase } from "@/lib/supabase";
+import { can, requireStaff } from "@/lib/equipo-auth";
 
 export async function GET(request: NextRequest) {
-  const denied = verifyPin(request);
+  const { user, denied } = requireStaff(request, "pacientes");
   if (denied) return denied;
 
   const { searchParams } = new URL(request.url);
@@ -11,7 +11,11 @@ export async function GET(request: NextRequest) {
 
   let query = getSupabase()
     .from("fichas_patients")
-    .select("id, rut, name, phone, email, sport, reason, created_at")
+    .select(
+      can(user, "clinico")
+        ? "id, rut, name, phone, email, sport, reason, created_at"
+        : "id, rut, name, phone, email, created_at"
+    )
     .order("name");
 
   if (q) {
@@ -28,14 +32,18 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const denied = verifyPin(request);
+  const { user, denied } = requireStaff(request, "pacientes");
   if (denied) return denied;
 
   const body = await request.json();
-  const { name, rut, phone, email, date_of_birth, occupation, sport, reason, red_flags, yellow_flags, notes, created_by } = body;
+  const { name, rut, phone, email, date_of_birth } = body;
+  // Los datos clínicos solo los puede cargar quien tiene acceso clínico.
+  const clinical = can(user, "clinico") ? body : {};
+  const { occupation, sport, reason, red_flags, yellow_flags, notes } = clinical;
+  const created_by = user.username;
 
-  if (!name || !created_by) {
-    return NextResponse.json({ error: "Nombre y profesional son obligatorios." }, { status: 400 });
+  if (!name) {
+    return NextResponse.json({ error: "El nombre es obligatorio." }, { status: 400 });
   }
 
   const { data, error } = await getSupabase()
