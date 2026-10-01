@@ -16,14 +16,19 @@ export function instagramConfigured(): boolean {
 }
 
 // Verifica X-Hub-Signature-256 (HMAC SHA-256 del cuerpo con el app secret).
+// IG_APP_SECRET acepta varios secretos separados por coma (el de la app de
+// Meta y el "Instagram app secret"), porque según el tipo de app Meta firma
+// con uno u otro.
 export function verifySignature(rawBody: string, header: string | null): boolean {
-  const secret = process.env.IG_APP_SECRET;
-  if (!secret || !header?.startsWith("sha256=")) return false;
-  const expected = Buffer.from(
-    "sha256=" + createHmac("sha256", secret).update(rawBody).digest("hex")
-  );
+  const secrets = (process.env.IG_APP_SECRET || "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (secrets.length === 0 || !header?.startsWith("sha256=")) return false;
   const given = Buffer.from(header);
-  return expected.length === given.length && timingSafeEqual(expected, given);
+  return secrets.some((secret) => {
+    const expected = Buffer.from(
+      "sha256=" + createHmac("sha256", secret).update(rawBody).digest("hex")
+    );
+    return expected.length === given.length && timingSafeEqual(expected, given);
+  });
 }
 
 async function post(path: string, body: unknown): Promise<void> {
