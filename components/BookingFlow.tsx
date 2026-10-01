@@ -1,5 +1,7 @@
 "use client";
 
+import { paymentLinks } from "@/lib/site-config";
+
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -179,6 +181,16 @@ export default function BookingFlow() {
         <p className="text-emerald-700 mb-4">
           Te enviamos los detalles a <strong>{clientEmail}</strong>.
         </p>
+        {paymentMethod === "online_webpay" && paymentLinks[selectedService] && (
+          <a
+            href={paymentLinks[selectedService]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mb-4 rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
+          >
+            Pagar ahora con Mercado Pago
+          </a>
+        )}
         {paymentMethod === "online_transfer" && (
           <p className="text-sm text-emerald-600 mb-4">
             Envía tu comprobante de transferencia al WhatsApp{" "}
@@ -480,7 +492,21 @@ export default function BookingFlow() {
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Modalidad de pago
               </label>
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className={`grid gap-2 ${paymentLinks[selectedService] ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+                {paymentLinks[selectedService] && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("online_webpay")}
+                    className={`rounded-lg border p-3 text-left text-sm transition ${
+                      paymentMethod === "online_webpay"
+                        ? "border-teal-700 bg-teal-50 text-teal-800"
+                        : "border-slate-200 hover:border-teal-700"
+                    }`}
+                  >
+                    <p className="font-semibold">Pago online</p>
+                    <p className="text-xs text-slate-500">Tarjeta con Mercado Pago</p>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("in_clinic")}

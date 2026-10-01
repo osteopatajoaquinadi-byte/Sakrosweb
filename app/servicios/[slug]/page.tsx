@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { services, siteConfig } from "@/lib/site-config";
+import { paymentLinks, servicePacks, services, siteConfig } from "@/lib/site-config";
 import { breadcrumbJsonLd, businessId, pageMetadata } from "@/lib/seo";
 
 // Imágenes específicas por servicio (solo los que tienen fotos propias)
@@ -180,6 +180,52 @@ export default async function ServicePage({
           ))}
         </div>
       </section>
+      {(servicePacks[service.slug] || paymentLinks[service.slug]) && (
+        <section className="mb-10">
+          <h2 className="text-xl font-bold text-slate-900 mb-4">Opciones y valores</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {paymentLinks[service.slug] && (
+              <div className="rounded-2xl border border-slate-200 p-5">
+                <p className="font-semibold text-slate-900">Sesión individual</p>
+                <p className="text-sm text-slate-600 mt-1 mb-4">
+                  Reserva tu hora y paga online al agendar o en la clínica.
+                </p>
+                <Link
+                  href={`/reserva?servicio=${service.slug}`}
+                  className="inline-block rounded-full border border-teal-700 px-5 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50"
+                >
+                  Reservar sesión
+                </Link>
+              </div>
+            )}
+            {servicePacks[service.slug] && (() => {
+              const pack = servicePacks[service.slug];
+              const href =
+                pack.paymentUrl ??
+                `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
+                  `Hola, me interesa el ${pack.name}.`
+                )}`;
+              return (
+                <div className="rounded-2xl border-2 border-teal-700 p-5">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">Programa</p>
+                  <p className="font-semibold text-slate-900">{pack.name}</p>
+                  <p className="text-2xl font-bold text-slate-900 mt-1">{pack.price}</p>
+                  <p className="text-sm text-slate-600 mt-1">{pack.includes}</p>
+                  <p className="text-xs text-slate-500 mt-1 mb-4">{pack.validity}</p>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block rounded-full bg-teal-700 px-5 py-2 text-sm font-semibold text-white hover:bg-teal-800"
+                  >
+                    {pack.paymentUrl ? "Comprar programa" : "Consultar por WhatsApp"}
+                  </a>
+                </div>
+              );
+            })()}
+          </div>
+        </section>
+      )}
       <div className="flex flex-wrap gap-4">
         <Link
           href={`/reserva?servicio=${service.slug}`}
