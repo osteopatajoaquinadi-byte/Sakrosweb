@@ -27,6 +27,9 @@ export default function AgendarReserva({
   const [date, setDate] = useState(defaultDate);
   const [time, setTime] = useState("09:00");
   const [notes, setNotes] = useState("");
+  const [isProgram, setIsProgram] = useState(false);
+  const [sessionsCount, setSessionsCount] = useState("8");
+  const [everyDays, setEveryDays] = useState("7");
 
   const [search, setSearch] = useState("");
   const [hits, setHits] = useState<PatientHit[]>([]);
@@ -83,6 +86,8 @@ export default function AgendarReserva({
           start_time: time,
           notes: notes || null,
           allow_overlap: allowOverlap,
+          sessions_count: isProgram ? parseInt(sessionsCount) || 1 : 1,
+          every_days: isProgram ? parseInt(everyDays) || 7 : 7,
         }),
       });
       const d = await res.json();
@@ -95,6 +100,9 @@ export default function AgendarReserva({
       if (!res.ok) {
         setError(d.error || "Error al agendar.");
         return;
+      }
+      if (d.dates?.length > 1) {
+        alert(`Programa agendado: ${d.dates.length} sesiones, desde el ${d.dates[0]} hasta el ${d.dates[d.dates.length - 1]}.`);
       }
       onDone();
     } catch {
@@ -115,7 +123,20 @@ export default function AgendarReserva({
       }}
       className="rounded-xl border border-teal-300 bg-white p-5 mb-6"
     >
-      <h3 className="font-semibold text-slate-900 mb-4">Agendar hora</h3>
+      <h3 className="font-semibold text-slate-900 mb-3">Agendar</h3>
+      <div className="flex gap-2 mb-4">
+        {([
+          [false, "Sesión"],
+          [true, "Programa (varias sesiones)"],
+        ] as const).map(([value, label]) => (
+          <button key={label} type="button" onClick={() => setIsProgram(value)}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold ${
+              isProgram === value ? "bg-teal-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}>
+            {label}
+          </button>
+        ))}
+      </div>
 
       <div className="mb-4">
         <label className="block text-sm font-medium text-slate-700 mb-1">Paciente *</label>
@@ -176,13 +197,30 @@ export default function AgendarReserva({
             {availablePros.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </label>
-        <label className="text-sm font-medium text-slate-700">Fecha *
+        <label className="text-sm font-medium text-slate-700">{isProgram ? "Fecha de la primera sesión *" : "Fecha *"}
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={`mt-1 ${input}`} />
         </label>
         <label className="text-sm font-medium text-slate-700">Hora *
           <input type="time" step={900} value={time} onChange={(e) => setTime(e.target.value)}
             className={`mt-1 ${input}`} />
         </label>
+        {isProgram && (
+          <>
+            <label className="text-sm font-medium text-slate-700">Cantidad de sesiones
+              <input type="number" min={2} max={52} value={sessionsCount}
+                onChange={(e) => setSessionsCount(e.target.value)} className={`mt-1 ${input}`} />
+            </label>
+            <label className="text-sm font-medium text-slate-700">Frecuencia
+              <select value={everyDays} onChange={(e) => setEveryDays(e.target.value)} className={`mt-1 ${input}`}>
+                <option value="7">1 vez por semana (mismo día y hora)</option>
+                <option value="14">Cada 2 semanas</option>
+                <option value="3">Cada 3 días</option>
+                <option value="2">Día por medio</option>
+                <option value="1">Todos los días</option>
+              </select>
+            </label>
+          </>
+        )}
         <label className="text-sm font-medium text-slate-700 sm:col-span-2">Notas
           <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} className={`mt-1 ${input}`} />
         </label>
@@ -192,7 +230,7 @@ export default function AgendarReserva({
       <div className="mt-4 flex flex-wrap gap-2">
         <button type="submit" disabled={saving || !canSubmit}
           className="rounded-full bg-teal-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50">
-          {saving ? "Agendando..." : "Agendar"}
+          {saving ? "Agendando..." : isProgram ? `Agendar ${sessionsCount} sesiones` : "Agendar"}
         </button>
         <button type="button" onClick={onCancel}
           className="rounded-full border border-slate-300 px-6 py-2.5 text-sm font-semibold text-slate-700 hover:border-teal-700">

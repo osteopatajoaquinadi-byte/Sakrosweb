@@ -57,6 +57,40 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Elige un paciente o ingresa el nombre." }, { status: 400 });
   }
 
+  // Paciente nuevo: se reutiliza su ficha si ya existe una con el mismo
+  // email o teléfono; si no, se crea una. Así todas las sesiones (incluido
+  // un programa completo) quedan en una sola ficha.
+  let fichaId: string | null = patient_id || null;
+  if (!fichaId) {
+    const lookups: [string, string | undefined][] = [
+      ["email", client_email],
+      ["phone", client_phone],
+    ];
+    for (const [column, value] of lookups) {
+      if (fichaId || !value) continue;
+      const { data: match } = await db
+        .from("fichas_patients")
+        .select("id")
+        .eq(column as "email", String(value))
+        .limit(1);
+      fichaId = (match?.[0] as { id: string } | undefined)?.id ?? null;
+    }
+    if (!fichaId) {
+      const { data: created } = await db
+        .from("fichas_patients")
+        .insert({
+          name: client_name,
+          email: client_email || null,
+          phone: client_phone || null,
+          created_by: user.username,
+          notes: "Creado desde la agenda del panel",
+        })
+        .select("id")
+        .single();
+      fichaId = created?.id ?? null;
+    }
+  }
+
   const { data: service } = await db
     .from("services")
     .select("duration_minutes")
@@ -70,53 +104,68 @@ export async function POST(request: NextRequest) {
   const end = h * 60 + m + service.duration_minutes;
   const end_time = `${String(Math.floor(end / 60)).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`;
 
-  const { data: clash } = await db
+  // Programa: varias sesiones, una cada `every_days` días desde la fecha
+  // inicial. Una sesión suelta es un programa de 1.
+  const count = Math.min(Math.max(parseInt(body.sessions_count) || 1, 1), 52);
+  const everyDays = Math.min(Math.max(parseInt(body.every_days) || 7, 1), 60);
+  const isProgram = count > 1;
+  const dates: string[] = [];
+  const start = new Date(`${booking_date}T12:00:00Z`);
+  for (let i = 0; i < count; i++) {
+    const d = new Date(start);
+    d.setUTCDate(start.getUTCDate() + i * everyDays);
+    dates.push(d.toISOString().slice(0, 10));
+  }
+
+  const { data: clashes } = await db
     .from("bookings")
-    .select("id")
+    .select("booking_date")
     .eq("professional_id", professional_id)
-    .eq("booking_date", booking_date)
+    .in("booking_date", dates)
     .eq("start_time", start_time)
-    .eq("status", "confirmed")
-    .limit(1);
-  if (clash && clash.length > 0 && !body.allow_overlap) {
+    .eq("status", "confirmed");
+  if (clashes && clashes.length > 0 && !body.allow_overlap) {
+    const list = [...new Set(clashes.map((c) => c.booking_date))].sort().join(", ");
     return NextResponse.json(
-      { error: "Ese profesional ya tiene una reserva a esa hora.", overlap: true },
+      { error: `Ese profesional ya tiene reserva a esa hora el ${list}.`, overlap: true },
       { status: 409 }
     );
   }
 
-  const { data: booking, error } = await db
-    .from("bookings")
-    .insert({
-      professional_id,
-      service_id,
-      booking_date,
-      start_time,
-      end_time,
-      client_name,
-      client_email: client_email || "",
-      client_phone: client_phone || null,
-      status: "confirmed",
-      payment_status: "pending",
-      notes: [notes, `Agendado desde el panel por ${user.display_name}`].filter(Boolean).join(" · "),
-    })
-    .select("id")
-    .single();
+  const baseNote = [notes, `Agendado desde el panel por ${user.display_name}`].filter(Boolean);
+  const rows = dates.map((date, i) => ({
+    professional_id,
+    service_id,
+    booking_date: date,
+    start_time,
+    end_time,
+    client_name,
+    client_email: client_email || "",
+    client_phone: client_phone || null,
+    status: "confirmed",
+    payment_status: "pending",
+    notes: [isProgram ? `Programa: sesión ${i + 1} de ${count}` : null, ...baseNote]
+      .filter(Boolean)
+      .join(" · "),
+  }));
 
-  if (error || !booking) {
+  const { data: created, error } = await db.from("bookings").insert(rows).select("id");
+
+  if (error || !created) {
     return NextResponse.json({ error: "Error al crear la reserva." }, { status: 500 });
   }
 
-  // El trigger de la BD vincula por email/teléfono; si se eligió una ficha
-  // concreta, se fija esa (evita confusiones con correos compartidos).
-  if (patient_id) {
+  // El trigger de la BD vincula por email/teléfono; se fija la ficha
+  // elegida (evita confusiones con correos compartidos).
+  const ids = created.map((b) => b.id);
+  if (fichaId) {
     await db
       .from("bookings")
-      .update({ ficha_patient_id: patient_id, fichas_patient_id: patient_id })
-      .eq("id", booking.id);
+      .update({ ficha_patient_id: fichaId, fichas_patient_id: fichaId })
+      .in("id", ids);
   }
 
-  return NextResponse.json({ ok: true, id: booking.id });
+  return NextResponse.json({ ok: true, ids, dates });
 }
 
 const STATUSES = ["confirmed", "cancelled", "completed", "no_show"];

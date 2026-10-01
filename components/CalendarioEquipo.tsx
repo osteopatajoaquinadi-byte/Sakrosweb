@@ -185,7 +185,7 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
         <div className="mb-6">
           <button onClick={() => setShowAgendar(true)}
             className="rounded-full bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-800">
-            + Agendar hora
+            + Agendar sesión o programa
           </button>
         </div>
       )}
