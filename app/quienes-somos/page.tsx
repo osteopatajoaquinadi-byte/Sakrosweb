@@ -128,6 +128,43 @@ export default function QuienesSomosPage() {
         </div>
       </section>
 
+      {/* Camilo */}
+      <section className="mb-12">
+        <div className="grid gap-8 md:grid-cols-[280px_1fr] items-start">
+          <div>
+            <Image
+              src="/images/camilo-zamora.jpg"
+              alt="Camilo Zamora — Kinesiólogo de Sakros"
+              width={400}
+              height={500}
+              className="rounded-2xl object-cover w-full"
+            />
+            <h2 className="text-xl font-bold text-slate-900 mt-4">
+              Camilo Zamora
+            </h2>
+            <p className="text-sm text-teal-700 font-medium">Kinesiólogo</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Universidad Andrés Bello · Osteopatía en formación (EOM)
+            </p>
+          </div>
+          <div className="text-slate-600 space-y-3">
+            <p>
+              Soy kinesiólogo de la Universidad Andrés Bello y me estoy formando
+              como osteópata en la Escuela de Osteopatía de Madrid. Trabajo en el
+              área musculoesquelética, con foco en el movimiento y en ver a la
+              persona en su totalidad, no solo la lesión.
+            </p>
+            <p>
+              El deporte es parte de mi vida, y eso me ayuda a entender lo que
+              significa volver a moverse bien. Creo que no hay dos pacientes
+              iguales, por eso cada tratamiento es personalizado. Mi objetivo es
+              que te sientas cómodo en cada sesión y recibas la mejor atención
+              posible.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Para quién */}
       <section>
         <h2 className="text-xl font-semibold text-slate-900 mb-3">
