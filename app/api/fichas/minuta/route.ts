@@ -92,7 +92,9 @@ export async function POST(request: NextRequest) {
 
   try {
     let ultimoError = "";
-    for (const model of modelos) {
+    let intentosLectura = 0;
+    for (let m = 0; m < modelos.length; m++) {
+      const model = modelos[m];
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -106,14 +108,36 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           model,
-          max_tokens: 800,
+          max_tokens: 2000,
           messages: [{ role: "user", content: buildPrompt(n, tema, config as Config) }],
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        const text = (data.content || []).map((b: { text?: string }) => b.text || "").join("");
-        return NextResponse.json({ day: parseDay(text), model });
+        const text = (data.content || [])
+          .filter((b: { type?: string }) => b.type === "text")
+          .map((b: { text?: string }) => b.text || "")
+          .join("");
+        try {
+          return NextResponse.json({ day: parseDay(text), model });
+        } catch (e) {
+          console.error(
+            `Minuta día ${n}: respuesta no legible (${model}, stop_reason=${data.stop_reason}):`,
+            (e as Error).message,
+            text.slice(0, 500)
+          );
+          // Un reintento con el mismo modelo antes de rendirse
+          if (intentosLectura++ < 1) { m--; continue; }
+          return NextResponse.json(
+            {
+              error:
+                data.stop_reason === "max_tokens"
+                  ? `La respuesta del día ${n} llegó cortada.`
+                  : `La respuesta del día ${n} no vino en el formato esperado.`,
+            },
+            { status: 502 }
+          );
+        }
       }
 
       const tipo: string = data?.error?.type ?? "";
@@ -138,6 +162,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: ultimoError || "Ningún modelo disponible." }, { status: 502 });
   } catch (err) {
     console.error("Error generando minuta:", err);
-    return NextResponse.json({ error: `No se pudo generar el día ${n}.` }, { status: 500 });
+    return NextResponse.json(
+      { error: `No se pudo generar el día ${n} (${(err as Error).message}).` },
+      { status: 500 }
+    );
   }
 }
