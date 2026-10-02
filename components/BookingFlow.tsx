@@ -44,25 +44,12 @@ const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-function getWeekDays(weekOffset: number): Date[] {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const monday = new Date(today);
-  const dayOfWeek = today.getDay();
-  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  monday.setDate(today.getDate() + diff + weekOffset * 7);
-  
-  const days: Date[] = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    days.push(d);
-  }
-  return days;
-}
+// Horizonte de búsqueda de fechas disponibles (≈ 5 semanas)
+const DIAS_BUSQUEDA = 35;
+const FECHAS_INICIALES = 12;
 
 function toDateStr(d: Date): string {
-  return d.toISOString().split("T")[0];
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export default function BookingFlow() {
@@ -77,9 +64,9 @@ export default function BookingFlow() {
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [weekOffset, setWeekOffset] = useState(0);
   const [weekAvailability, setWeekAvailability] = useState<Record<string, number>>({});
   const [loadingWeek, setLoadingWeek] = useState(false);
+  const [verTodasLasFechas, setVerTodasLasFechas] = useState(false);
 
   // Form fields
   const [clientName, setClientName] = useState("");
@@ -95,15 +82,16 @@ export default function BookingFlow() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset]);
-  const weekLabel = useMemo(() => {
-    const first = weekDays[0];
-    const last = weekDays[6];
-    if (first.getMonth() === last.getMonth()) {
-      return `${first.getDate()} – ${last.getDate()} de ${MONTH_NAMES[first.getMonth()]}`;
-    }
-    return `${first.getDate()} ${MONTH_NAMES[first.getMonth()].slice(0, 3)} – ${last.getDate()} ${MONTH_NAMES[last.getMonth()].slice(0, 3)}`;
-  }, [weekDays]);
+  // Solo los días con horas libres, en orden
+  const fechasDisponibles = useMemo(
+    () =>
+      Object.entries(weekAvailability)
+        .filter(([date, n]) => n > 0 && date > toDateStr(today))
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, n]) => ({ date, slots: n, day: new Date(date + "T12:00:00") })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [weekAvailability]
+  );
 
   const serviceName = SERVICES_LIST.find(s => s.slug === selectedService)?.label || "";
 
@@ -111,15 +99,13 @@ export default function BookingFlow() {
   useEffect(() => {
     if (!selectedService || step !== "date") return;
     setLoadingWeek(true);
-    const mondayStr = toDateStr(weekDays[0]);
-    fetch(`/api/week-availability?service=${selectedService}&weekStart=${mondayStr}`)
+    setVerTodasLasFechas(false);
+    fetch(`/api/week-availability?service=${selectedService}&from=${toDateStr(new Date())}&days=${DIAS_BUSQUEDA}`)
       .then(res => res.json())
-      .then(data => {
-        if (data.available) setWeekAvailability(data.available);
-      })
+      .then(data => setWeekAvailability(data.available ?? {}))
       .catch(() => {})
       .finally(() => setLoadingWeek(false));
-  }, [selectedService, weekOffset, step]);
+  }, [selectedService, step]);
 
   useEffect(() => {
     if (!selectedService || !selectedDate) return;
@@ -470,63 +456,84 @@ export default function BookingFlow() {
             Elige una fecha
           </h2>
 
-          {/* Navegación de semanas */}
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => setWeekOffset(Math.max(0, weekOffset - 1))}
-              disabled={weekOffset === 0}
-              className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:border-teal-700 hover:text-teal-700 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              ← Anterior
-            </button>
-            <span className="text-sm font-medium text-slate-700">{weekLabel}</span>
-            <button
-              onClick={() => setWeekOffset(Math.min(4, weekOffset + 1))}
-              disabled={weekOffset >= 4}
-              className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:border-teal-700 hover:text-teal-700 disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              Siguiente →
-            </button>
-          </div>
-
-          {/* Grilla de 7 días */}
           {loadingWeek ? (
-            <div className="text-center py-8 text-slate-500 text-sm">Verificando disponibilidad...</div>
+            <div className="text-center py-8 text-slate-500 text-sm">Buscando fechas disponibles...</div>
+          ) : fechasDisponibles.length === 0 ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-center">
+              <p className="font-semibold text-slate-900 mb-1">No hay horas disponibles en las próximas semanas</p>
+              <p className="text-sm text-slate-600">
+                Escríbenos por WhatsApp y te buscamos un espacio.
+              </p>
+            </div>
           ) : (
-          <div className="grid grid-cols-7 gap-2">
-            {weekDays.map((day) => {
-              const dateStr = toDateStr(day);
-              const isPast = day <= today;
-              const slotsAvailable = weekAvailability[dateStr] ?? 0;
-              const noSlots = slotsAvailable === 0;
-              const disabled = isPast || noSlots;
-              const isSelected = selectedDate === dateStr;
+            <div className="space-y-6">
+              {/* Próxima fecha disponible */}
+              {(() => {
+                const next = fechasDisponibles[0];
+                return (
+                  <button
+                    onClick={() => {
+                      setSelectedDate(next.date);
+                      setStep("time");
+                    }}
+                    className="w-full flex items-center justify-between gap-4 rounded-2xl border-2 border-teal-700 bg-teal-50 p-5 text-left transition hover:bg-teal-100"
+                  >
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
+                        Próxima fecha disponible
+                      </p>
+                      <p className="text-lg font-bold text-slate-900 first-letter:uppercase">
+                        {formatDate(next.date)}
+                      </p>
+                      <p className="text-sm text-teal-700">
+                        {next.slots} {next.slots === 1 ? "hora libre" : "horas libres"}
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-teal-700 px-4 py-2 text-sm font-semibold text-white">
+                      Ver horas →
+                    </span>
+                  </button>
+                );
+              })()}
 
-              return (
-                <button
-                  key={dateStr}
-                  disabled={disabled}
-                  onClick={() => {
-                    setSelectedDate(dateStr);
-                    setStep("time");
-                  }}
-                  className={`flex flex-col items-center py-3 px-1 rounded-xl border text-center transition
-                    ${disabled
-                      ? "border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed"
-                      : isSelected
-                        ? "border-teal-700 bg-teal-50 text-teal-800"
-                        : "border-slate-200 hover:border-teal-700 hover:bg-teal-50 text-slate-700 cursor-pointer"
-                    }`}
-                >
-                  <span className="text-[11px] font-medium uppercase">{DAY_NAMES[day.getDay()]}</span>
-                  <span className="text-lg font-bold">{day.getDate()}</span>
-                  {!isPast && !noSlots && (
-                    <span className="text-[10px] text-teal-600 font-medium">{slotsAvailable} hrs</span>
+              {/* Otras fechas, solo con disponibilidad */}
+              {fechasDisponibles.length > 1 && (
+                <div>
+                  <p className="text-sm font-semibold text-slate-700 mb-3">Otras fechas disponibles</p>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {fechasDisponibles
+                      .slice(1, verTodasLasFechas ? undefined : FECHAS_INICIALES + 1)
+                      .map(({ date, slots, day }) => (
+                        <button
+                          key={date}
+                          onClick={() => {
+                            setSelectedDate(date);
+                            setStep("time");
+                          }}
+                          className={`flex flex-col items-center py-3 px-1 rounded-xl border text-center transition ${
+                            selectedDate === date
+                              ? "border-teal-700 bg-teal-50 text-teal-800"
+                              : "border-slate-200 hover:border-teal-700 hover:bg-teal-50 text-slate-700"
+                          }`}
+                        >
+                          <span className="text-[11px] font-medium uppercase">{DAY_NAMES[day.getDay()]}</span>
+                          <span className="text-lg font-bold leading-tight">{day.getDate()}</span>
+                          <span className="text-[11px] text-slate-500">{MONTH_NAMES[day.getMonth()].slice(0, 3)}</span>
+                          <span className="text-[10px] text-teal-600 font-medium">{slots} {slots === 1 ? "hr" : "hrs"}</span>
+                        </button>
+                      ))}
+                  </div>
+                  {!verTodasLasFechas && fechasDisponibles.length - 1 > FECHAS_INICIALES && (
+                    <button
+                      onClick={() => setVerTodasLasFechas(true)}
+                      className="mt-3 text-sm font-semibold text-teal-700 hover:underline"
+                    >
+                      Ver más fechas ({fechasDisponibles.length - 1 - FECHAS_INICIALES})
+                    </button>
                   )}
-                </button>
-              );
-            })}
-          </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}

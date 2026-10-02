@@ -4,9 +4,11 @@ import { getServiceClient as getSupabase } from "@/lib/supabase";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const serviceSlug = searchParams.get("service");
-  const weekStart = searchParams.get("weekStart");
+  // weekStart: inicio del rango (YYYY-MM-DD). days: largo del rango (1–60, por defecto 7).
+  const weekStart = searchParams.get("weekStart") || searchParams.get("from");
+  const numDays = Math.min(Math.max(parseInt(searchParams.get("days") ?? "7") || 7, 1), 60);
 
-  if (!serviceSlug || !weekStart) {
+  if (!serviceSlug || !weekStart || !/^\d{4}-\d{2}-\d{2}$/.test(weekStart)) {
     return NextResponse.json({ error: "Parámetros requeridos." }, { status: 400 });
   }
 
@@ -38,7 +40,7 @@ export async function GET(request: NextRequest) {
   const profIds = [...new Set(allWindows.map(w => w.professional_id))];
 
   const weekDates: string[] = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < numDays; i++) {
     const d = new Date(monday); d.setDate(monday.getDate() + i);
     weekDates.push(d.toISOString().split("T")[0]);
   }
@@ -53,7 +55,7 @@ export async function GET(request: NextRequest) {
 
   const available: Record<string, number> = {};
 
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < numDays; i++) {
     const d = new Date(monday); d.setDate(monday.getDate() + i);
     const dateStr = d.toISOString().split("T")[0];
     if (d <= today) { available[dateStr] = 0; continue; }
