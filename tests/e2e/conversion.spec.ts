@@ -68,11 +68,24 @@ test("kinesiología no ofrece pago online mientras no tenga link", async ({ page
 });
 
 test.describe("ofertas visibles @prod", () => {
-  test("programa de rehabilitación kinésica con Fonasa e Isapre en /reserva", async ({ page }) => {
+  test("programa de rehabilitación kinésica pide datos y lleva al link correcto", async ({ page }) => {
+    // El programa es externo (Tuu), así que Sakros captura los datos primero
+    // y recién al final muestra el link que corresponde a la previsión.
+    await page.route("**/api/program-interest", (r) => r.fulfill({ json: { ok: true } }));
     await page.goto("/reserva");
     await page.getByRole("button", { name: /Programa de Rehabilitación Kinésica/ }).click();
-    await expect(page.getByRole("link", { name: /Programa FONASA/ })).toHaveAttribute("href", /tuu\.cl/);
-    await expect(page.getByRole("link", { name: /Programa ISAPRE/ })).toHaveAttribute("href", /tuu\.cl/);
+    await expect(page.getByRole("heading", { name: /Programa de Rehabilitación Kinésica/ })).toBeVisible();
+
+    await page.getByLabel("Nombre completo *").fill("Paciente Programa");
+    await page.getByLabel("Email *").fill("programa@example.com");
+    await page.getByLabel("Teléfono *").fill("+56 9 1111 1111");
+    await page.getByRole("button", { name: "FONASA" }).click();
+    await page.getByRole("button", { name: /Continuar al programa/ }).click();
+
+    await expect(page.getByRole("link", { name: /FONASA en Tuu/ })).toHaveAttribute(
+      "href",
+      "https://www.tuu.cl/programafonasa",
+    );
   });
 
   test("kinesiología muestra valor de sesión y programa Fonasa/Isapre", async ({ page }) => {
