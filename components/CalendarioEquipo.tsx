@@ -5,7 +5,7 @@ import AgendarReserva from "./AgendarReserva";
 import DetalleCita, { type CalendarBooking as Booking } from "./DetalleCita";
 import type { Permission } from "@/lib/equipo-auth";
 
-type Vista = "quincena" | "mes";
+type Vista = "dia" | "quincena" | "mes";
 const DIAS_VISTA = 14; // quincena: semana actual + siguiente (lunes a domingo)
 
 // Fecha local YYYY-MM-DD (toISOString usa UTC y en Chile cambia de día de noche)
@@ -68,15 +68,22 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [vista, setVista] = useState<Vista>("quincena");
+  const [dia, setDia] = useState(() => {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    return d;
+  });
   const [inicio, setInicio] = useState(lunesDeEstaSemana);
   const [citaAbierta, setCitaAbierta] = useState<Booking | null>(null);
 
   const monthStr = `${year}-${month.toString().padStart(2, "0")}`;
   const diasQuincena = Array.from({ length: DIAS_VISTA }, (_, i) => addDays(inicio, i));
   const rangoQuery =
-    vista === "quincena"
-      ? `from=${ymd(inicio)}&to=${ymd(addDays(inicio, DIAS_VISTA - 1))}`
-      : `month=${monthStr}`;
+    vista === "dia"
+      ? `from=${ymd(dia)}&to=${ymd(dia)}`
+      : vista === "quincena"
+        ? `from=${ymd(inicio)}&to=${ymd(addDays(inicio, DIAS_VISTA - 1))}`
+        : `month=${monthStr}`;
 
   const fetchData = useCallback(() => {
     setLoading(true);
@@ -213,7 +220,7 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
       <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
         <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 sm:px-4">
           <p className="text-xs sm:text-sm text-slate-500">
-            {vista === "quincena" ? "Reservas quincena" : "Reservas del mes"}
+            {vista === "dia" ? "Reservas del día" : vista === "quincena" ? "Reservas quincena" : "Reservas del mes"}
           </p>
           <p className="text-lg sm:text-2xl font-bold text-slate-900">
             {loading ? "–" : data?.bookedSlots ?? 0}
@@ -265,41 +272,56 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => (vista === "quincena" ? setInicio(addDays(inicio, -DIAS_VISTA)) : prevMonth())}
+            onClick={() =>
+              vista === "dia" ? setDia(addDays(dia, -1)) : vista === "quincena" ? setInicio(addDays(inicio, -DIAS_VISTA)) : prevMonth()
+            }
             aria-label="Anterior"
             className="h-8 w-8 rounded-lg border border-slate-200 text-sm text-slate-600 hover:border-teal-700 hover:text-teal-700"
           >
             ←
           </button>
           <button
-            onClick={() => (vista === "quincena" ? setInicio(addDays(inicio, DIAS_VISTA)) : nextMonth())}
+            onClick={() =>
+              vista === "dia" ? setDia(addDays(dia, 1)) : vista === "quincena" ? setInicio(addDays(inicio, DIAS_VISTA)) : nextMonth()
+            }
             aria-label="Siguiente"
             className="h-8 w-8 rounded-lg border border-slate-200 text-sm text-slate-600 hover:border-teal-700 hover:text-teal-700"
           >
             →
           </button>
-          <h2 className="ml-1 text-base font-bold text-slate-900">
-            {vista === "quincena"
+          <h2 className="ml-1 text-base font-bold text-slate-900 first-letter:uppercase">
+            {vista === "dia"
+              ? dia.toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" })
+              : vista === "quincena"
               ? `${diasQuincena[0].toLocaleDateString("es-CL", { day: "numeric", month: "short" })} – ${diasQuincena[DIAS_VISTA - 1].toLocaleDateString("es-CL", { day: "numeric", month: "short" })}`
               : `${MONTH_NAMES[month - 1]} ${year}`}
           </h2>
-          {vista === "quincena" && ymd(inicio) !== ymd(lunesDeEstaSemana()) && (
+          {((vista === "quincena" && ymd(inicio) !== ymd(lunesDeEstaSemana())) ||
+            (vista === "dia" && ymd(dia) !== todayStr)) && (
             <button
-              onClick={() => setInicio(lunesDeEstaSemana())}
+              onClick={() => {
+                if (vista === "dia") { const d = new Date(); d.setHours(12, 0, 0, 0); setDia(d); }
+                else setInicio(lunesDeEstaSemana());
+              }}
               className="ml-1 text-xs font-semibold text-teal-700 hover:underline"
             >
-              Hoy
+              Volver a {vista === "dia" ? "hoy" : "esta quincena"}
             </button>
           )}
         </div>
         <div className="inline-flex rounded-full border border-slate-200 bg-white p-0.5 text-xs font-semibold">
           {([
+            ["dia", "Hoy"],
             ["quincena", "Quincena"],
             ["mes", "Mes"],
           ] as const).map(([key, label]) => (
             <button
               key={key}
-              onClick={() => { setVista(key); setSelectedDay(null); }}
+              onClick={() => {
+                if (key === "dia") { const d = new Date(); d.setHours(12, 0, 0, 0); setDia(d); }
+                setVista(key);
+                setSelectedDay(null);
+              }}
               className={`rounded-full px-3 py-1 transition ${
                 vista === key ? "bg-teal-700 text-white" : "text-slate-600 hover:text-teal-700"
               }`}
@@ -312,6 +334,58 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
 
       {loading ? (
         <div className="text-center py-16 text-slate-500">Cargando calendario...</div>
+      ) : vista === "dia" ? (
+        (() => {
+          const citas = bookingsByDate[ymd(dia)] ?? [];
+          if (citas.length === 0) {
+            return (
+              <div className="rounded-xl border border-slate-200 bg-white py-12 text-center text-sm text-slate-400">
+                Sin citas para este día.
+              </div>
+            );
+          }
+          return (
+            <div className="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100 overflow-hidden">
+              {citas.map((b) => {
+                const colors = SERVICE_COLORS[b.services?.slug] || getDefaultColor();
+                const abierta = citaAbierta?.id === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    onClick={() => setCitaAbierta(b)}
+                    className={`grid w-full grid-cols-[48px_1fr_auto] sm:grid-cols-[72px_1fr_auto] items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 text-left transition hover:bg-teal-50 ${
+                      abierta ? "bg-teal-50" : ""
+                    } ${b.status === "no_show" ? "opacity-60" : ""}`}
+                  >
+                    <span className="tabular-nums">
+                      <span className="block text-sm font-bold text-slate-900">{b.start_time.slice(0, 5)}</span>
+                      <span className="block text-[11px] text-slate-400">{b.end_time.slice(0, 5)}</span>
+                    </span>
+                    <span className="flex min-w-0 items-start gap-2">
+                      <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${colors.dot}`} />
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium text-slate-900">{b.client_name}</span>
+                        <span className={`block truncate text-[11px] font-semibold ${colors.text}`}>
+                          {b.services?.name} · {b.professionals?.name}
+                        </span>
+                      </span>
+                    </span>
+                    <span className="flex flex-col items-end gap-1 text-[11px] font-semibold">
+                      <span className={`rounded-full px-2 py-0.5 ${
+                        b.status === "completed" ? "bg-emerald-100 text-emerald-800"
+                          : b.status === "no_show" ? "bg-amber-100 text-amber-800"
+                            : "bg-slate-100 text-slate-700"
+                      }`}>
+                        {STATUS_LABELS[b.status] ?? b.status}
+                      </span>
+                      {b.payment_status === "paid" && <span className="text-emerald-700">Pagada</span>}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })()
       ) : vista === "quincena" ? (
         <>
           {/* Escritorio: 2 semanas × 7 días, una línea por cita */}
