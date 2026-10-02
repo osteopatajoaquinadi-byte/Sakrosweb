@@ -98,12 +98,42 @@ const PAYMENT_TYPES: { value: string; label: string }[] = [
   { value: "pack", label: "Bono / Pack" },
 ];
 
+function hoyLocal() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export type SessionDefaults = {
+  professional?: string; // nombre como viene de la agenda
+  service_type?: string; // nombre del servicio como viene de la agenda
+  session_date?: string; // YYYY-MM-DD
+};
+
+// Ajusta los datos de una cita a las opciones del formulario de sesión
+function sesionInicial(defaults?: SessionDefaults) {
+  const norm = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const servicio =
+    SERVICE_TYPES.find((s) => defaults?.service_type && norm(s).startsWith(norm(defaults.service_type).split(" ")[0])) ??
+    SERVICE_TYPES[0];
+  const primerNombre = defaults?.professional ? norm(defaults.professional).split(" ")[0] : "";
+  const profesional = PROFESSIONALS.find((p) => primerNombre && norm(p).startsWith(primerNombre)) ?? PROFESSIONALS[0];
+  return {
+    professional: profesional,
+    service_type: servicio,
+    session_date: defaults?.session_date ?? hoyLocal(),
+    eva_score: "",
+    notes: "",
+  };
+}
+
 export default function FichaPaciente({
   patientId,
   permissions,
+  sessionDefaults,
 }: {
   patientId: string;
   permissions: Permission[];
+  sessionDefaults?: SessionDefaults;
 }) {
   const clinico = permissions.includes("clinico");
   const puedePagos = permissions.includes("pagos");
@@ -121,15 +151,10 @@ export default function FichaPaciente({
   const [editing, setEditing] = useState(false);
 
   // Formulario de sesión
-  const [sessionForm, setSessionForm] = useState({
-    professional: PROFESSIONALS[0],
-    service_type: SERVICE_TYPES[0],
-    session_date: new Date().toISOString().split("T")[0],
-    eva_score: "",
-    notes: "",
-  });
+  const [sessionForm, setSessionForm] = useState(() => sesionInicial(sessionDefaults));
   const [clinicalData, setClinicalData] = useState<Record<string, unknown>>({});
-  const [showClinicalForm, setShowClinicalForm] = useState(false);
+  // EVA y notas libres quedan plegadas: la ficha de evaluación del servicio va primero
+  const [showEvaNotas, setShowEvaNotas] = useState(false);
   const [savingSession, setSavingSession] = useState(false);
 
   // Formulario de pago
@@ -224,15 +249,9 @@ export default function FichaPaciente({
         setError(d.error || "Error al guardar sesión.");
       } else {
         setShowNewSession(false);
-        setShowClinicalForm(false);
+        setShowEvaNotas(false);
         setClinicalData({});
-        setSessionForm({
-          professional: PROFESSIONALS[0],
-          service_type: SERVICE_TYPES[0],
-          session_date: new Date().toISOString().split("T")[0],
-          eva_score: "",
-          notes: "",
-        });
+        setSessionForm(sesionInicial(sessionDefaults));
         fetchData();
       }
     } catch {
@@ -564,7 +583,7 @@ export default function FichaPaciente({
 
           {showNewSession && (
             <form onSubmit={handleSaveSession} className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Profesional *</label>
                   <select value={sessionForm.professional} onChange={(e) => setSessionForm({ ...sessionForm, professional: e.target.value })}
@@ -589,40 +608,43 @@ export default function FichaPaciente({
                   <input type="date" value={sessionForm.session_date} onChange={(e) => setSessionForm({ ...sessionForm, session_date: e.target.value })}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">EVA (0-10)</label>
-                  <input type="number" min="0" max="10" value={sessionForm.eva_score}
-                    onChange={(e) => setSessionForm({ ...sessionForm, eva_score: e.target.value })}
-                    placeholder="Dolor percibido"
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Notas clínicas</label>
-                  <textarea value={sessionForm.notes} onChange={(e) => setSessionForm({ ...sessionForm, notes: e.target.value })} rows={3}
-                    placeholder="Hallazgos, técnicas utilizadas, evolución..."
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
-                </div>
               </div>
 
-              {/* Evaluación clínica individualizada por servicio */}
-              <div className="mt-5 border-t border-slate-100 pt-4">
+              {/* Ficha de evaluación del servicio elegido, directo */}
+              <div className="mt-5 p-4 rounded-lg bg-teal-50/50 border border-teal-100">
+                <ClinicalEvalForm
+                  key={sessionForm.service_type}
+                  serviceType={sessionForm.service_type}
+                  value={clinicalData}
+                  onChange={setClinicalData}
+                />
+              </div>
+
+              {/* EVA y notas libres, opcionales */}
+              <div className="mt-4">
                 <button
                   type="button"
-                  onClick={() => setShowClinicalForm(!showClinicalForm)}
-                  className={`flex items-center gap-2 text-sm font-semibold transition ${
-                    showClinicalForm ? "text-teal-800" : "text-teal-700 hover:text-teal-900"
-                  }`}
+                  onClick={() => setShowEvaNotas(!showEvaNotas)}
+                  className="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-teal-700"
                 >
-                  <span className={`transition-transform ${showClinicalForm ? "rotate-90" : ""}`}>▸</span>
-                  {showClinicalForm ? "Ocultar evaluación clínica" : `Agregar evaluación clínica (${sessionForm.service_type})`}
+                  <span className={`transition-transform ${showEvaNotas ? "rotate-90" : ""}`}>▸</span>
+                  {showEvaNotas ? "Ocultar EVA y notas" : "Agregar EVA y notas"}
                 </button>
-                {showClinicalForm && (
-                  <div className="mt-4 p-4 rounded-lg bg-teal-50/50 border border-teal-100">
-                    <ClinicalEvalForm
-                      serviceType={sessionForm.service_type}
-                      value={clinicalData}
-                      onChange={setClinicalData}
-                    />
+                {showEvaNotas && (
+                  <div className="mt-3 grid gap-4 sm:grid-cols-[140px_1fr]">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">EVA (0-10)</label>
+                      <input type="number" min="0" max="10" value={sessionForm.eva_score}
+                        onChange={(e) => setSessionForm({ ...sessionForm, eva_score: e.target.value })}
+                        placeholder="Dolor"
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Notas clínicas</label>
+                      <textarea value={sessionForm.notes} onChange={(e) => setSessionForm({ ...sessionForm, notes: e.target.value })} rows={3}
+                        placeholder="Hallazgos, técnicas utilizadas, evolución..."
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+                    </div>
                   </div>
                 )}
               </div>

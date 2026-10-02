@@ -198,7 +198,15 @@ export default function DetalleCita({
 
         {verFicha && fichaId ? (
           <div className="p-5">
-            <FichaPaciente patientId={fichaId} permissions={permissions} />
+            <FichaPaciente
+              patientId={fichaId}
+              permissions={permissions}
+              sessionDefaults={{
+                service_type: booking.services?.name,
+                professional: booking.professionals?.name,
+                session_date: booking.booking_date,
+              }}
+            />
           </div>
         ) : (
           <div className="p-5 space-y-5">
