@@ -99,6 +99,10 @@ export async function POST(request: NextRequest) {
           "Content-Type": "application/json",
           "x-api-key": apiKey,
           "anthropic-version": "2023-06-01",
+          // Claves no asociadas a un workspace exigen indicar cuál usar
+          ...(process.env.ANTHROPIC_WORKSPACE_ID
+            ? { "anthropic-workspace-id": process.env.ANTHROPIC_WORKSPACE_ID }
+            : {}),
         },
         body: JSON.stringify({
           model,
