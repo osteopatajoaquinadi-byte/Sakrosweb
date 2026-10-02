@@ -85,27 +85,53 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Datos inválidos." }, { status: 400 });
   }
 
+  // Si el modelo no existe para esta cuenta, se prueba el siguiente.
+  const modelos = process.env.ANTHROPIC_MODEL
+    ? [process.env.ANTHROPIC_MODEL]
+    : ["claude-sonnet-5-5", "claude-sonnet-4-5", "claude-sonnet-4-20250514"];
+
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5",
-        max_tokens: 800,
-        messages: [{ role: "user", content: buildPrompt(n, tema, config as Config) }],
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      console.error("Error Anthropic minuta:", data);
-      return NextResponse.json({ error: "El servicio de IA no respondió bien." }, { status: 502 });
+    let ultimoError = "";
+    for (const model of modelos) {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 800,
+          messages: [{ role: "user", content: buildPrompt(n, tema, config as Config) }],
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const text = (data.content || []).map((b: { text?: string }) => b.text || "").join("");
+        return NextResponse.json({ day: parseDay(text), model });
+      }
+
+      const tipo: string = data?.error?.type ?? "";
+      const detalle: string = data?.error?.message ?? `HTTP ${res.status}`;
+      console.error(`Anthropic minuta (${model}):`, res.status, tipo, detalle);
+      if (tipo === "not_found_error") {
+        ultimoError = `Modelo no disponible (${model}).`;
+        continue;
+      }
+      const motivo =
+        tipo === "authentication_error"
+          ? "La ANTHROPIC_API_KEY no es válida. Revisa que esté bien copiada en Vercel."
+          : tipo === "permission_error"
+            ? "La clave no tiene permiso para usar la API."
+            : /credit balance/i.test(detalle)
+              ? "La cuenta de la API no tiene saldo. Carga créditos en platform.claude.com → Billing."
+              : tipo === "rate_limit_error" || tipo === "overloaded_error"
+                ? "El servicio de IA está saturado. Espera un minuto e intenta de nuevo."
+                : `El servicio de IA respondió: ${detalle}`;
+      return NextResponse.json({ error: motivo }, { status: 502 });
     }
-    const text = (data.content || []).map((b: { text?: string }) => b.text || "").join("");
-    return NextResponse.json({ day: parseDay(text) });
+    return NextResponse.json({ error: ultimoError || "Ningún modelo disponible." }, { status: 502 });
   } catch (err) {
     console.error("Error generando minuta:", err);
     return NextResponse.json({ error: `No se pudo generar el día ${n}.` }, { status: 500 });
