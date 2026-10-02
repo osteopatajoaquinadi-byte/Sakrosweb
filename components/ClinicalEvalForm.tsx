@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import EvalOsteopatia, { OSTEO_FORM_ID, OsteoResumen } from "./EvalOsteopatia";
 
 /* ── Tipos ── */
 type FieldType = "text" | "textarea" | "select" | "multiselect" | "number";
@@ -377,11 +378,19 @@ export default function ClinicalEvalForm({
   serviceType,
   value,
   onChange,
+  patientName,
+  patientEmail,
 }: {
   serviceType: string;
   value: ClinicalData;
   onChange: (data: ClinicalData) => void;
+  patientName?: string;
+  patientEmail?: string | null;
 }) {
+  // Osteopatía usa la ficha completa (HRV, tests, alimentación y minuta)
+  if (serviceType === "Osteopatía") {
+    return <EvalOsteopatia value={value} onChange={onChange} patientName={patientName} patientEmail={patientEmail} />;
+  }
   const fields = SCHEMAS[serviceType];
   if (!fields) return null;
 
@@ -516,6 +525,7 @@ export function ClinicalDataDisplay({
   data: Record<string, unknown>;
 }) {
   const [expanded, setExpanded] = useState(false);
+  if (data?._form === OSTEO_FORM_ID) return <OsteoResumen data={data} />;
   const fields = SCHEMAS[serviceType];
 
   // Filtrar solo campos que tienen datos

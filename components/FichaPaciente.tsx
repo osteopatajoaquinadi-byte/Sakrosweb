@@ -617,6 +617,8 @@ export default function FichaPaciente({
                   serviceType={sessionForm.service_type}
                   value={clinicalData}
                   onChange={setClinicalData}
+                  patientName={patient?.name}
+                  patientEmail={patient?.email}
                 />
               </div>
 
