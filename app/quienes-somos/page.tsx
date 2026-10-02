@@ -69,7 +69,7 @@ export default function QuienesSomosPage() {
             <p>
               Durante mi formación profesional como kinesiólogo, el enfoque del
               razonamiento clínico es buscar las mejores herramientas para
-              evaluar y tratar al sistema músculoesquelético. Gracias a esto
+              evaluar y tratar al sistema musculoesquelético. Gracias a esto
               conocí la terapia manual ortopédica, que me brindó un pensamiento
               más global y mejores herramientas manuales.
             </p>
@@ -77,7 +77,7 @@ export default function QuienesSomosPage() {
               Al cabo de un tiempo y por una búsqueda constante para mejorar el
               estado de salud, llegué a la osteopatía, la cual me ha ayudado a
               tener un entendimiento global del cuerpo humano, desde su
-              anatomía, biomecánica y fisiología, integrando al picante como un
+              anatomía, biomecánica y fisiología, integrando al paciente como un
               ser individual, con sus propias vivencias personales, y por ende su
               propia representación del dolor.
             </p>
@@ -122,7 +122,7 @@ export default function QuienesSomosPage() {
               a abarcar todos los mecanismos neurofisiológicos que tienen
               finalmente como resultado la postura, lo que me ha llevado a
               incursionar en trastornos sensoriales, déficit atencional, espectro
-              autista, entre otros, con excelente avances y resultados.
+              autista, entre otros, con excelentes avances y resultados.
             </p>
           </div>
         </div>
