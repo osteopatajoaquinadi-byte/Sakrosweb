@@ -134,6 +134,69 @@ export const conditions: Condition[] = [
     ],
   },
   {
+    slug: "hombro",
+    service: "kinesiologia",
+    shortName: "Dolor de hombro",
+    cardText: "Dolor al elevar el brazo, en entrenamientos de empuje o en lanzadores y voleibolistas.",
+    metaTitle: "Kinesiología de hombro en Viña del Mar",
+    description:
+      "Kinesiología de hombro en Viña del Mar: dolor al elevar el brazo, molestias en press, dominadas, lanzamientos y voleibol. Trabajamos el balance de empuje y tracción, el manguito rotador y el control motor del deltoides.",
+    h1: "Kinesiología de hombro en Viña del Mar",
+    intro: [
+      "El hombro es la articulación más móvil del cuerpo, y por eso depende tanto del control muscular como del balance entre los grupos que lo mueven. Casi todo el dolor que vemos en consulta no viene de una estructura rota, sino de un desbalance entre lo que empuja y lo que tracciona, y de un manguito rotador que dejó de hacer su trabajo de centrado de la cabeza humeral.",
+      "Cuando ese control se pierde, el deltoides, sobre todo su porción anterior, toma el mando y aparece la típica molestia al elevar el brazo, al dormir sobre ese lado o al cargar peso por encima de la cabeza.",
+    ],
+    whenToConsult: [
+      "Dolor al elevar el brazo, al vestirte o al dormir sobre ese lado.",
+      "Molestia en press de banca, press militar, dominadas o fondos.",
+      "Lanzadores, voleibolistas, tenistas o nadadores con dolor progresivo.",
+      "Post operatorio de manguito rotador, inestabilidad o acromioplastía.",
+      "Sensación de que el hombro \"se sale de lugar\" o no responde con fuerza.",
+    ],
+    evaluation: [
+      "Historia detallada: cómo empezó, qué gestos lo gatillan y qué cargas sostiene.",
+      "Evaluación de movilidad activa y pasiva, descartando pérdida de rotación interna por retracción capsular posterior.",
+      "Pruebas de fuerza del manguito rotador (supraespinoso, infraespinoso, redondo menor, subescapular) y del balance entre empuje (pectoral, deltoides anterior) y tracción (romboides, trapecio medio e inferior, dorsal).",
+      "Análisis del gesto deportivo o laboral: lanzamiento, saque, bloqueo, press, trabajo con brazos sobre la cabeza.",
+    ],
+    treatment: [
+      "Reeducación del control motor del manguito rotador, para que vuelva a centrar la cabeza humeral antes de que entre el deltoides.",
+      "Fortalecimiento de la tracción (dorsal, trapecio medio e inferior, romboides) para compensar el predominio de empuje que casi todos cargamos.",
+      "Trabajo específico de rotadores externos: en lanzadores y voleibolistas la cápsula posterior se retrae por el acortamiento adaptativo de los rotadores externos, y recuperar esa movilidad es clave.",
+      "Terapia manual puntual cuando ayuda a ganar rango sin dolor, siempre acompañada de ejercicio activo.",
+      "Progresión de cargas con criterios objetivos para volver al deporte o al entrenamiento, no solo cuando deja de doler.",
+    ],
+    redFlags: [
+      "Pérdida brusca de fuerza en el brazo después de un trauma: puede ser una rotura completa.",
+      "Deformidad visible del hombro tras una caída o luxación.",
+      "Dolor nocturno intenso, constante, que no cede con posición ni analgésicos.",
+      "Fiebre, enrojecimiento o calor en la zona.",
+      "Dolor que se irradia al pecho, mandíbula o brazo izquierdo con sudoración o dificultad para respirar: emergencia médica.",
+    ],
+    faqs: [
+      {
+        q: "¿Por qué me duele el hombro si nunca me lesioné?",
+        a: "La mayoría de los dolores de hombro aparecen sin un trauma claro, y vienen de un desbalance acumulado. Casi todos entrenamos y vivimos con más empuje que tracción, el deltoides anterior y el pectoral toman el mando, y el manguito rotador deja de centrar bien la cabeza humeral. Ahí empieza el roce y el dolor.",
+      },
+      {
+        q: "Soy voleibolista (o lanzador). ¿Por qué me duele cada vez más la parte posterior o superior?",
+        a: "Es un patrón muy conocido: el gesto repetido de lanzar o rematar acorta de forma adaptativa a los rotadores externos, y eso termina retrayendo la cápsula posterior del hombro. Pierdes rotación interna, el hombro ya no se mueve centrado y aparece el dolor. Se trabaja recuperando esa movilidad y rebalanceando la fuerza del manguito.",
+      },
+      {
+        q: "¿Puedo seguir entrenando mientras me recupero?",
+        a: "Casi siempre sí, ajustando. Lo primero es sacar o modificar los ejercicios que te duelen (muchas veces press militar sobre la cabeza, fondos profundos o lanzamientos) y mantener lo que puedes hacer sin molestia, mientras trabajamos el déficit. La idea no es que pares, sino que entrenes distinto por un tiempo.",
+      },
+      {
+        q: "Tengo un tip para mientras llego a la evaluación.",
+        a: "Un tip útil, no una solución final: apoya una pelotita (de tenis o lacrosse) contra la pared, deja que presione sobre los rotadores externos del hombro (parte posterior, justo bajo el borde de la escápula) y mantén ahí entre 60 y 90 segundos. La idea es que la sintomatología baje levemente, no que desaparezca. Es un alivio temporal, no reemplaza la evaluación ni resuelve el desbalance de fondo.",
+      },
+      {
+        q: "¿Necesito una ecografía o resonancia antes?",
+        a: "En la mayoría de los casos no, al menos para empezar. Las imágenes se piden cuando hay señales específicas en la evaluación o cuando el dolor no responde al tratamiento. Si ya las tienes, tráelas; nos sirven para afinar el plan.",
+      },
+    ],
+  },
+  {
     slug: "deportiva",
     service: "kinesiologia",
     shortName: "Kinesiología deportiva",
