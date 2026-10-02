@@ -1,3 +1,4 @@
+import { emailFrom } from "@/lib/email";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
 
     // 1) Enviar la guía al usuario
     await resend.emails.send({
-      from: "Sakros <onboarding@resend.dev>",
+      from: emailFrom("Sakros"),
       to: email,
       subject: "Tu guía: 5 pasos para volver a entrenar después de una lesión",
       html: `
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
 
     // 2) Notificar a Sakros del nuevo lead
     await resend.emails.send({
-      from: "Sakros Web <onboarding@resend.dev>",
+      from: emailFrom("Sakros Web"),
       to: "sakrosvina@gmail.com",
       subject: `Nuevo lead magnet descargado — ${name}`,
       text: `Nombre: ${name}\nEmail: ${email}\n\nDescargó la guía "5 pasos para volver a entrenar después de una lesión".\nPuedes contactarlo para ofrecer una evaluación.`,

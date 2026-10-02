@@ -53,6 +53,13 @@ const nextConfig: NextConfig = {
       // "/general-9" quedó en el listado que pegaste sin contenido claro;
       // por ahora va al home. Ajustar si corresponde a otra página.
       { source: "/general-9", destination: "/", permanent: true },
+      // Vistas en Search Console (export del 2 de octubre) que aún no tenían destino.
+      {
+        source: "/service-page/kinesiolog%C3%ADa",
+        destination: "/servicios/kinesiologia",
+        permanent: true,
+      },
+      { source: "/category/:path*", destination: "/servicios", permanent: true },
     ];
   },
 };

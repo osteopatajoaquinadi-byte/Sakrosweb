@@ -140,7 +140,7 @@ export const conditions: Condition[] = [
     cardText: "Dolor al elevar el brazo, en entrenamientos de empuje o en lanzadores y voleibolistas.",
     metaTitle: "Kinesiología de hombro en Viña del Mar",
     description:
-      "Kinesiología de hombro en Viña del Mar: dolor al elevar el brazo, molestias en press, dominadas, lanzamientos y voleibol. Trabajamos el balance de empuje y tracción, el manguito rotador y el control motor del deltoides.",
+      "Kinesiología de hombro en Viña del Mar: dolor al elevar el brazo, en press o en lanzadores y voleibolistas. Trabajamos el balance empuje-tracción y el control del manguito rotador.",
     h1: "Kinesiología de hombro en Viña del Mar",
     intro: [
       "El hombro es la articulación más móvil del cuerpo, y por eso depende tanto del control muscular como del balance entre los grupos que lo mueven. Casi todo el dolor que vemos en consulta no viene de una estructura rota, sino de un desbalance entre lo que empuja y lo que tracciona, y de un manguito rotador que dejó de hacer su trabajo de centrado de la cabeza humeral.",

@@ -1,3 +1,4 @@
+import { emailFrom } from "@/lib/email";
 import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { Resend } from "resend";
@@ -117,7 +118,7 @@ export async function POST(request: Request) {
       );
 
       await resend.emails.send({
-        from: "Sakros <onboarding@resend.dev>",
+        from: emailFrom("Sakros"),
         to: client_email,
         replyTo: siteConfig.email,
         subject: `Tu reserva en Sakros — ${service.name} el ${dateFormatted}`,
@@ -150,7 +151,7 @@ export async function POST(request: Request) {
 
       // Notificación interna a Sakros
       await resend.emails.send({
-        from: "Sakros Web <onboarding@resend.dev>",
+        from: emailFrom("Sakros Web"),
         to: siteConfig.email,
         subject: `Nueva reserva — ${client_name} / ${service.name}`,
         text: [

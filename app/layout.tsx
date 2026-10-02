@@ -4,6 +4,7 @@ import Image from "next/image";
 import "./globals.css";
 import { siteConfig, services } from "@/lib/site-config";
 import MobileNav from "@/components/MobileNav";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { businessId } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -27,6 +28,10 @@ export const metadata: Metadata = {
     title: siteConfig.title,
     description: siteConfig.description,
   },
+  // Meta de verificación de Search Console (NEXT_PUBLIC_GSC_VERIFICATION en Vercel).
+  ...(process.env.NEXT_PUBLIC_GSC_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION } }
+    : {}),
 };
 
 const navLinks = [
@@ -194,6 +199,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </div>
           </div>
         </footer>
+        <GoogleAnalytics />
       </body>
     </html>
   );
