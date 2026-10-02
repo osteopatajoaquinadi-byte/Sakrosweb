@@ -170,24 +170,89 @@ export async function POST(request: NextRequest) {
 
 const STATUSES = ["confirmed", "cancelled", "completed", "no_show"];
 
-// Cambiar estado de una reserva (cancelar, marcar asistida o no asistió).
+// Editar una reserva: cambiar estado (cancelar, asistió, no asistió) y/o
+// reagendar (fecha, hora, profesional, servicio) y notas.
 export async function PATCH(request: NextRequest) {
   const { denied } = requireStaff(request, "agendar");
   if (denied) return denied;
 
-  const { id, status } = await request.json();
-  if (!id || !STATUSES.includes(status)) {
+  const body = await request.json();
+  const { id, status } = body;
+  if (!id || (status !== undefined && !STATUSES.includes(status))) {
     return NextResponse.json({ error: "Datos inválidos." }, { status: 400 });
   }
 
-  const { error } = await getServiceClient()
+  const db = getServiceClient();
+  const { data: current } = await db
     .from("bookings")
-    .update({
-      status,
-      cancelled_at: status === "cancelled" ? new Date().toISOString() : null,
-    })
-    .eq("id", id);
+    .select("booking_date, start_time, professional_id, service_id")
+    .eq("id", id)
+    .single();
+  if (!current) {
+    return NextResponse.json({ error: "Reserva no encontrada." }, { status: 404 });
+  }
 
+  const update: Record<string, unknown> = {};
+  if (status !== undefined) {
+    update.status = status;
+    update.cancelled_at = status === "cancelled" ? new Date().toISOString() : null;
+  }
+  if (typeof body.notes === "string") update.notes = body.notes;
+
+  const booking_date = body.booking_date ?? current.booking_date;
+  const start_time = String(body.start_time ?? current.start_time).slice(0, 5);
+  const professional_id = body.professional_id ?? current.professional_id;
+  const service_id = body.service_id ?? current.service_id;
+  const rescheduling =
+    booking_date !== current.booking_date ||
+    start_time !== String(current.start_time).slice(0, 5) ||
+    professional_id !== current.professional_id ||
+    service_id !== current.service_id;
+
+  if (rescheduling) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(booking_date) || !/^\d{2}:\d{2}$/.test(start_time)) {
+      return NextResponse.json({ error: "Fecha u hora inválida." }, { status: 400 });
+    }
+    const { data: service } = await db
+      .from("services")
+      .select("duration_minutes")
+      .eq("id", service_id)
+      .single();
+    if (!service) {
+      return NextResponse.json({ error: "Servicio no encontrado." }, { status: 404 });
+    }
+
+    const { data: clashes } = await db
+      .from("bookings")
+      .select("id")
+      .eq("professional_id", professional_id)
+      .eq("booking_date", booking_date)
+      .eq("start_time", start_time)
+      .eq("status", "confirmed")
+      .neq("id", id);
+    if (clashes && clashes.length > 0 && !body.allow_overlap) {
+      return NextResponse.json(
+        { error: "Ese profesional ya tiene una reserva a esa hora.", overlap: true },
+        { status: 409 }
+      );
+    }
+
+    const [h, m] = start_time.split(":").map(Number);
+    const end = h * 60 + m + service.duration_minutes;
+    Object.assign(update, {
+      booking_date,
+      start_time,
+      end_time: `${String(Math.floor(end / 60)).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`,
+      professional_id,
+      service_id,
+    });
+  }
+
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ ok: true });
+  }
+
+  const { error } = await db.from("bookings").update(update).eq("id", id);
   if (error) {
     return NextResponse.json({ error: "Error al actualizar la reserva." }, { status: 500 });
   }

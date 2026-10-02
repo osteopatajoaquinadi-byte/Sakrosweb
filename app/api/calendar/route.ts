@@ -8,15 +8,23 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const month = searchParams.get("month"); // YYYY-MM
+  const fromParam = searchParams.get("from"); // YYYY-MM-DD
+  const toParam = searchParams.get("to"); // YYYY-MM-DD
+  const ISO = /^\d{4}-\d{2}-\d{2}$/;
 
-  if (!month) {
-    return NextResponse.json({ error: "Parámetro 'month' requerido." }, { status: 400 });
+  // Rango: un mes completo (?month=) o un rango libre (?from=&to=)
+  let firstDay: string;
+  let lastDay: string;
+  if (fromParam && toParam && ISO.test(fromParam) && ISO.test(toParam)) {
+    firstDay = fromParam;
+    lastDay = toParam;
+  } else if (month && /^\d{4}-\d{2}$/.test(month)) {
+    const [year, m] = month.split("-").map(Number);
+    firstDay = `${month}-01`;
+    lastDay = `${month}-${String(new Date(year, m, 0).getDate()).padStart(2, "0")}`;
+  } else {
+    return NextResponse.json({ error: "Indica 'month' o 'from' y 'to'." }, { status: 400 });
   }
-
-  // Calcular rango del mes
-  const [year, m] = month.split("-").map(Number);
-  const firstDay = `${month}-01`;
-  const lastDay = new Date(year, m, 0).toISOString().split("T")[0];
 
   // Traer reservas del mes con servicio y profesional
   const { data: bookings, error: err } = await getSupabase()
@@ -60,12 +68,12 @@ export async function GET(request: NextRequest) {
       services ( duration_minutes, slot_interval_minutes )
     `);
 
-  // Calcular slots totales del mes (capacidad)
+  // Calcular slots totales del rango (capacidad)
   let totalSlots = 0;
   if (windows) {
-    for (let day = 1; day <= new Date(year, m, 0).getDate(); day++) {
-      const date = new Date(year, m - 1, day);
-      const jsDay = date.getDay();
+    const end = new Date(`${lastDay}T12:00:00Z`);
+    for (let d = new Date(`${firstDay}T12:00:00Z`); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+      const jsDay = d.getUTCDay();
       const isoDay = jsDay === 0 ? 7 : jsDay;
 
       for (const w of windows) {
