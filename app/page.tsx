@@ -256,20 +256,40 @@ export default function HomePage() {
         <h2 className="text-2xl font-bold text-slate-900 mb-6">
           Lo que dicen nuestros pacientes
         </h2>
-        <div className="max-w-[260px]">
-          <video
-            src="/images/testimonio-paciente.mp4"
-            controls
-            playsInline
-            preload="metadata"
-            className="rounded-2xl w-full"
-          >
-            Testimonio de Sebastián Delgadillo
-          </video>
-          <div className="mt-3">
-            <p className="font-semibold text-slate-900">Sebastián Delgadillo</p>
-            <p className="text-sm text-slate-500">Condromalacia grado 4</p>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-[260px] sm:max-w-none mx-auto sm:mx-0">
+          {[
+            {
+              src: "/images/testimonio-paciente.mp4",
+              nombre: "Sebastián Delgadillo",
+              dg: "Condromalacia grado 4",
+            },
+            {
+              src: "/images/testimonio-constanza-castro.mp4",
+              nombre: "Constanza Castro",
+              dg: "Dolor persistente + tendinopatías",
+            },
+            {
+              src: "/images/testimonio-maria-paz-tadres.mp4",
+              nombre: "María Paz Tadres",
+              dg: "Pinzamiento de cadera + dolor persistente",
+            },
+          ].map((t) => (
+            <div key={t.src} className="sm:max-w-[260px]">
+              <video
+                src={t.src}
+                controls
+                playsInline
+                preload="metadata"
+                className="rounded-2xl w-full"
+              >
+                Testimonio de {t.nombre}
+              </video>
+              <div className="mt-3">
+                <p className="font-semibold text-slate-900">{t.nombre}</p>
+                <p className="text-sm text-slate-500">{t.dg}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
