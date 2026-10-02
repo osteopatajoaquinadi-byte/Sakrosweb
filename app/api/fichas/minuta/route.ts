@@ -17,23 +17,80 @@ type Config = {
   restr: string;
 };
 
-function buildPrompt(dayNum: number, tema: string, c: Config) {
+// Rotación para que los 10 días sean distintos entre sí. Si algo choca con
+// una restricción del paciente, la IA lo reemplaza por otra opción permitida.
+const DESAYUNOS = [
+  "omelette relleno",
+  "shakshuka (huevos en salsa de tomate y pimentón)",
+  "huevos pochados sobre base de verduras",
+  "frittata al horno",
+  "huevos revueltos con champiñones",
+  "panqueques de harina de almendra",
+  "tortilla de claras con espinaca",
+  "huevos cocidos con palta y semillas",
+  "budín de chía con frutos rojos y proteína",
+  "huevos al plato con verduras asadas",
+];
+const PROTEINAS: [string, string][] = [
+  ["salmón", "pollo"],
+  ["vacuno magro (posta, lomo)", "merluza"],
+  ["pavo", "sardinas o jurel"],
+  ["reineta o corvina", "cerdo magro (lomo)"],
+  ["pollo (trutro deshuesado)", "atún fresco o en conserva al agua"],
+  ["cordero", "huevos y quesos maduros"],
+  ["camarones o choritos", "pechuga de pavo"],
+  ["legumbres con proteína (lentejas, garbanzos) en porción controlada", "salmón"],
+  ["vacuno magro (carne molida 5%)", "congrio o pescado blanco"],
+  ["pollo entero o pechuga", "tofu o tempeh"],
+];
+const PREPARACIONES: [string, string][] = [
+  ["al horno", "salteado tipo wok"],
+  ["a la plancha", "al vapor"],
+  ["guiso o estofado", "en papillote"],
+  ["a la parrilla", "en ensalada tibia"],
+  ["al curry suave", "a la plancha"],
+  ["cocción lenta / braseado", "en brochetas"],
+  ["ceviche o tartar (si el pescado lo permite) o salteado", "al horno con hierbas"],
+  ["en budín o pastel de verduras", "salteado"],
+  ["albóndigas al horno", "a la plancha con salsa verde"],
+  ["en bowl con verduras asadas", "en sopa o crema de verduras con proteína"],
+];
+const SNACKS = [
+  "frutos secos y semillas",
+  "palitos de verduras con hummus",
+  "huevo duro y aceitunas",
+  "yogur griego natural con nueces",
+  "queso de cabra con pepino",
+  "chips de coco y almendras",
+  "palta con limón y sal de mar",
+  "berries con semillas de chía",
+  "rollitos de pavo con palta",
+  "edamame o lupino",
+];
+
+function buildPrompt(dayNum: number, tema: string, c: Config, previos: string[]) {
+  const i = (dayNum - 1) % 10;
   return (
-    "Nutricionista low carb psiconeuroinmunologia. " +
-    `1 dia de comidas (dia ${dayNum}/10, tema: ${tema}). ` +
+    "Nutricionista low carb psiconeuroinmunologia, contexto Chile. " +
+    `Crea 1 dia de comidas (dia ${dayNum}/10, tema: ${tema}). ` +
     `Paciente ${c.peso}kg ${c.lbl} ${c.tdee}kcal. ` +
     `MACROS: prot ${c.prot}g, hidratos MAX ${c.carb}g (LOW CARB), grasas ${c.fat}g. ` +
-    (c.restr ? `Restricciones: ${c.restr}. ` : "") +
-    "REGLAS DESAYUNO (contexto Chile): NUNCA salmon ni pescado en desayuno. " +
-    "Desayuno proteico con: huevos (2-4 unidades, revueltos/cocidos/omelette), queso de cabra o queso de oveja, " +
-    "palta, tomate, espinaca salteada. Si se necesita base: pan de almendras o tortilla de coco (low carb). " +
-    "Mantener proteina del desayuno con huevos+queso, no con pescado. " +
-    "ALMUERZO y CENA: salmon, atun, sardina, pollo, pavo, carne magra son bienvenidos. " +
-    "PROHIBIDO siempre: azucar, pan trigo, arroz, pasta, papa, harinas, jugos, ultraprocesados. " +
+    (c.restr ? `RESTRICCIONES OBLIGATORIAS: ${c.restr}. ` : "") +
+    "VARIEDAD (muy importante): " +
+    `Desayuno de hoy: ${DESAYUNOS[i]}. ` +
+    `Almuerzo: proteina principal ${PROTEINAS[i][0]}, preparacion ${PREPARACIONES[i][0]}. ` +
+    `Cena: proteina principal ${PROTEINAS[i][1]}, preparacion ${PREPARACIONES[i][1]}. ` +
+    `Snack: ${SNACKS[i]}. ` +
+    "Usa verduras, hierbas y especias distintas en cada comida. " +
+    (previos.length
+      ? `NO repitas ninguno de estos platos de dias anteriores ni combinaciones parecidas: ${previos.join("; ")}. `
+      : "") +
+    "Si algo asignado choca con una restriccion, reemplazalo por otra opcion permitida que no se haya usado en dias anteriores. " +
+    "REGLAS: nunca pescado en el desayuno. " +
+    "PROHIBIDO siempre: azucar, pan de trigo, arroz, pasta, papa, harinas refinadas, jugos, ultraprocesados. " +
     "BASE: verduras no almidonadas. GRASAS: oliva, palta, frutos secos. " +
-    `Aplica tema: ${tema}. ` +
-    "Si una restriccion choca con una regla (ej. sin huevo o vegano en el desayuno), la restriccion manda. " +
-    "Ingredientes max 4 por comida, breves. " +
+    `Aplica el tema: ${tema}. ` +
+    "Nombre del plato descriptivo (incluye la preparacion). Ingredientes max 5 por comida, breves. " +
     "Responde solo JSON, sin texto adicional: " +
     `{"i":${dayNum},"t":"${tema.split(" — ")[0]}",` +
     '"b":{"n":"nombre","v":["ing1","ing2","ing3"],"p":0,"h":0,"g":0,"k":0},' +
@@ -79,7 +136,10 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { dayNum, tema, config } = await request.json();
+  const { dayNum, tema, config, previos: previosRaw } = await request.json();
+  const previos: string[] = Array.isArray(previosRaw)
+    ? previosRaw.filter((x: unknown) => typeof x === "string").slice(0, 40).map((x: string) => x.slice(0, 80))
+    : [];
   const n = parseInt(dayNum);
   if (!n || n < 1 || n > 10 || typeof tema !== "string" || !config?.peso) {
     return NextResponse.json({ error: "Datos inválidos." }, { status: 400 });
@@ -109,7 +169,8 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           model,
           max_tokens: 2000,
-          messages: [{ role: "user", content: buildPrompt(n, tema, config as Config) }],
+          temperature: 1,
+          messages: [{ role: "user", content: buildPrompt(n, tema, config as Config, previos) }],
         }),
       });
       const data = await res.json().catch(() => ({}));

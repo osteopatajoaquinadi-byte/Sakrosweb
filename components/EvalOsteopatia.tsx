@@ -189,7 +189,13 @@ export default function EvalOsteopatia({
         const res = await fetch("/api/fichas/minuta", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ dayNum: i, tema: TEMAS[i - 1], config }),
+          body: JSON.stringify({
+            dayNum: i,
+            tema: TEMAS[i - 1],
+            config,
+            // Platos ya generados, para que la IA no los repita
+            previos: nuevos.flatMap((dia) => ["b", "a", "c", "s"].map((k) => dia?.[k]?.n).filter(Boolean)),
+          }),
         });
         const out = await res.json().catch(() => ({}));
         if (!res.ok || !out.day) throw new Error(out.error || `No se pudo generar el día ${i}.`);
