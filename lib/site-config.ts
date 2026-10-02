@@ -93,7 +93,7 @@ export const services: Service[] = [
     shortName: "Osteopatía",
     tagline: "Terapia manual para el dolor y la movilidad",
     description:
-      "Evaluación y tratamiento manual orientado a encontrar el origen del dolor o la restricción de movimiento, no solo el síntoma. Trabajamos la biomecánica articular y su relación con el sistema nervioso.",
+      "Evaluación y tratamiento manual orientado a la persona. Evaluamos la movilidad visceral, la adaptabilidad del sistema nervioso central y las restricciones de la biomecánica articular. La evaluación integra psiconeuroinmunología clínica, terapia manual ortopédica y razonamiento clínico osteopático. Nos enfocamos en la causa, no en el síntoma, y lo integramos con kinesiología y posturología cuando es necesario.",
     bullets: [
       "Evaluación biomecánica articular completa",
       "Terapia manual osteopática",
