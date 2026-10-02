@@ -6,11 +6,19 @@ import DetalleCita, { type CalendarBooking as Booking } from "./DetalleCita";
 import type { Permission } from "@/lib/equipo-auth";
 
 type Vista = "quincena" | "mes";
-const DIAS_VISTA = 15;
+const DIAS_VISTA = 14; // quincena: semana actual + siguiente (lunes a domingo)
 
 // Fecha local YYYY-MM-DD (toISOString usa UTC y en Chile cambia de día de noche)
 function ymd(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function lunesDeEstaSemana() {
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  const dow = d.getDay(); // 0=Dom
+  d.setDate(d.getDate() + (dow === 0 ? -6 : 1 - dow));
+  return d;
 }
 
 function addDays(d: Date, n: number) {
@@ -60,11 +68,7 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [vista, setVista] = useState<Vista>("quincena");
-  const [inicio, setInicio] = useState(() => {
-    const d = new Date();
-    d.setHours(12, 0, 0, 0);
-    return d;
-  });
+  const [inicio, setInicio] = useState(lunesDeEstaSemana);
   const [citaAbierta, setCitaAbierta] = useState<Booking | null>(null);
 
   const monthStr = `${year}-${month.toString().padStart(2, "0")}`;
@@ -140,53 +144,115 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
     }
   }
 
+  function renderDia(d: Date, enGrilla: boolean) {
+    const dateStr = ymd(d);
+    const dayBookings = bookingsByDate[dateStr] ?? [];
+    const isToday = dateStr === todayStr;
+    const isPast = dateStr < todayStr;
+    const isSelected = selectedDay === dateStr;
+    if (!enGrilla && dayBookings.length === 0 && !isToday) {
+      return (
+        <p key={dateStr} className="px-1 text-[11px] text-slate-400 first-letter:uppercase">
+          {d.toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" })} · sin citas
+        </p>
+      );
+    }
+    return (
+      <div
+        key={dateStr}
+        className={`rounded-lg border p-1.5 ${enGrilla ? "min-h-[84px]" : ""} ${
+          isSelected
+            ? "border-teal-600 ring-1 ring-teal-600/40 bg-white"
+            : isToday
+              ? "border-teal-400 bg-teal-50/40"
+              : isPast
+                ? "border-slate-100 bg-slate-50"
+                : "border-slate-200 bg-white"
+        }`}
+      >
+        <button
+          onClick={() => setSelectedDay(dateStr)}
+          className="flex w-full items-baseline justify-between gap-1 px-0.5 mb-1 text-left"
+          title="Seleccionar día para agendar"
+        >
+          <span className={`text-[11px] font-bold capitalize ${isToday ? "text-teal-700" : isPast ? "text-slate-400" : "text-slate-700"}`}>
+            {enGrilla
+              ? d.toLocaleDateString("es-CL", { day: "numeric", month: "short" })
+              : d.toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" })}
+            {isToday && " · hoy"}
+          </span>
+          {dayBookings.length > 0 && <span className="text-[10px] text-slate-400">{dayBookings.length}</span>}
+        </button>
+        <div className="space-y-0.5">
+          {dayBookings.map((b) => {
+            const colors = SERVICE_COLORS[b.services?.slug] || getDefaultColor();
+            const abierta = citaAbierta?.id === b.id;
+            return (
+              <button
+                key={b.id}
+                onClick={() => setCitaAbierta(b)}
+                title={`${b.start_time.slice(0, 5)} ${b.client_name} · ${b.services?.name} · ${b.professionals?.name}`}
+                className={`flex w-full items-center gap-1 rounded ${colors.bg} px-1 py-0.5 text-left text-[11px] leading-tight transition hover:ring-1 hover:ring-teal-600 ${
+                  abierta ? "ring-2 ring-teal-700" : ""
+                } ${b.status === "no_show" ? "opacity-50 line-through" : ""}`}
+              >
+                <span className={`font-semibold tabular-nums ${colors.text}`}>{b.start_time.slice(0, 5)}</span>
+                <span className="truncate text-slate-900">{b.client_name}</span>
+                {b.status === "completed" && <span className="ml-auto text-emerald-700">✓</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Header con stats */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
-        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-5">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
+        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 sm:px-4">
           <p className="text-xs sm:text-sm text-slate-500">
-            {vista === "quincena" ? "Reservas en 15 días" : "Reservas del mes"}
+            {vista === "quincena" ? "Reservas quincena" : "Reservas del mes"}
           </p>
-          <p className="text-xl sm:text-3xl font-bold text-slate-900">
+          <p className="text-lg sm:text-2xl font-bold text-slate-900">
             {loading ? "–" : data?.bookedSlots ?? 0}
           </p>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-5">
+        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 sm:px-4">
           <p className="text-xs sm:text-sm text-slate-500">Capacidad total</p>
-          <p className="text-xl sm:text-3xl font-bold text-slate-900">
+          <p className="text-lg sm:text-2xl font-bold text-slate-900">
             {loading ? "–" : data?.totalSlots ?? 0}
           </p>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-5">
+        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 sm:px-4">
           <p className="text-xs sm:text-sm text-slate-500">Ocupación</p>
-          <p className={`text-xl sm:text-3xl font-bold ${occupancy >= 80 ? "text-emerald-600" : occupancy >= 50 ? "text-amber-600" : "text-slate-900"}`}>
+          <p className={`text-lg sm:text-2xl font-bold ${occupancy >= 80 ? "text-emerald-600" : occupancy >= 50 ? "text-amber-600" : "text-slate-900"}`}>
             {loading ? "–" : `${occupancy}%`}
           </p>
         </div>
       </div>
 
-      {/* Leyenda de servicios */}
-      <div className="flex flex-wrap gap-3 mb-6">
-        {Object.entries(SERVICE_COLORS).map(([slug, colors]) => (
-          <div key={slug} className="flex items-center gap-1.5 text-xs text-slate-600">
-            <span className={`w-2.5 h-2.5 rounded-full ${colors.dot}`} />
-            {slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-            {serviceCounts[slug] ? (
-              <span className="text-slate-400">({serviceCounts[slug]})</span>
-            ) : null}
-          </div>
-        ))}
-      </div>
-
-      {puedeAgendar && !showAgendar && (
-        <div className="mb-6">
+      {/* Leyenda + agendar en una fila */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div className="flex flex-wrap gap-x-3 gap-y-1">
+          {Object.entries(SERVICE_COLORS).map(([slug, colors]) => (
+            <div key={slug} className="flex items-center gap-1.5 text-xs text-slate-600">
+              <span className={`w-2.5 h-2.5 rounded-full ${colors.dot}`} />
+              {slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              {serviceCounts[slug] ? (
+                <span className="text-slate-400">({serviceCounts[slug]})</span>
+              ) : null}
+            </div>
+          ))}
+        </div>
+        {puedeAgendar && !showAgendar && (
           <button onClick={() => setShowAgendar(true)}
-            className="rounded-full bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-800">
+            className="rounded-full bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800">
             + Agendar sesión o programa
           </button>
-        </div>
-      )}
+        )}
+      </div>
       {showAgendar && (
         <AgendarReserva
           defaultDate={selectedDateStr ?? todayStr}
@@ -195,17 +261,46 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
         />
       )}
 
-      {/* Selector de vista */}
-      <div className="flex justify-center mb-4">
-        <div className="inline-flex rounded-full border border-slate-200 bg-white p-1 text-sm font-semibold">
+      {/* Navegación + selector de vista en una fila */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => (vista === "quincena" ? setInicio(addDays(inicio, -DIAS_VISTA)) : prevMonth())}
+            aria-label="Anterior"
+            className="h-8 w-8 rounded-lg border border-slate-200 text-sm text-slate-600 hover:border-teal-700 hover:text-teal-700"
+          >
+            ←
+          </button>
+          <button
+            onClick={() => (vista === "quincena" ? setInicio(addDays(inicio, DIAS_VISTA)) : nextMonth())}
+            aria-label="Siguiente"
+            className="h-8 w-8 rounded-lg border border-slate-200 text-sm text-slate-600 hover:border-teal-700 hover:text-teal-700"
+          >
+            →
+          </button>
+          <h2 className="ml-1 text-base font-bold text-slate-900">
+            {vista === "quincena"
+              ? `${diasQuincena[0].toLocaleDateString("es-CL", { day: "numeric", month: "short" })} – ${diasQuincena[DIAS_VISTA - 1].toLocaleDateString("es-CL", { day: "numeric", month: "short" })}`
+              : `${MONTH_NAMES[month - 1]} ${year}`}
+          </h2>
+          {vista === "quincena" && ymd(inicio) !== ymd(lunesDeEstaSemana()) && (
+            <button
+              onClick={() => setInicio(lunesDeEstaSemana())}
+              className="ml-1 text-xs font-semibold text-teal-700 hover:underline"
+            >
+              Hoy
+            </button>
+          )}
+        </div>
+        <div className="inline-flex rounded-full border border-slate-200 bg-white p-0.5 text-xs font-semibold">
           {([
-            ["quincena", "15 días"],
+            ["quincena", "Quincena"],
             ["mes", "Mes"],
           ] as const).map(([key, label]) => (
             <button
               key={key}
               onClick={() => { setVista(key); setSelectedDay(null); }}
-              className={`rounded-full px-4 py-1.5 transition ${
+              className={`rounded-full px-3 py-1 transition ${
                 vista === key ? "bg-teal-700 text-white" : "text-slate-600 hover:text-teal-700"
               }`}
             >
@@ -215,95 +310,26 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
         </div>
       </div>
 
-      {/* Navegación */}
-      <div className="flex items-center justify-between gap-2 mb-4">
-        <button
-          onClick={() => (vista === "quincena" ? setInicio(addDays(inicio, -DIAS_VISTA)) : prevMonth())}
-          className="px-3 sm:px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:border-teal-700 hover:text-teal-700"
-        >
-          ← Anterior
-        </button>
-        <div className="text-center">
-          <h2 className="text-base sm:text-lg font-bold text-slate-900">
-            {vista === "quincena"
-              ? `${diasQuincena[0].toLocaleDateString("es-CL", { day: "numeric", month: "short" })} – ${diasQuincena[DIAS_VISTA - 1].toLocaleDateString("es-CL", { day: "numeric", month: "short" })}`
-              : `${MONTH_NAMES[month - 1]} ${year}`}
-          </h2>
-          {vista === "quincena" && ymd(inicio) !== todayStr && (
-            <button
-              onClick={() => { const d = new Date(); d.setHours(12, 0, 0, 0); setInicio(d); }}
-              className="text-xs font-semibold text-teal-700 hover:underline"
-            >
-              Volver a hoy
-            </button>
-          )}
-        </div>
-        <button
-          onClick={() => (vista === "quincena" ? setInicio(addDays(inicio, DIAS_VISTA)) : nextMonth())}
-          className="px-3 sm:px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:border-teal-700 hover:text-teal-700"
-        >
-          Siguiente →
-        </button>
-      </div>
-
       {loading ? (
         <div className="text-center py-16 text-slate-500">Cargando calendario...</div>
       ) : vista === "quincena" ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {diasQuincena.map((d) => {
-            const dateStr = ymd(d);
-            const dayBookings = bookingsByDate[dateStr] ?? [];
-            const isToday = dateStr === todayStr;
-            const isSelected = selectedDay === dateStr;
-            return (
-              <div
-                key={dateStr}
-                className={`rounded-xl border bg-white p-3 ${
-                  isSelected ? "border-teal-600 ring-2 ring-teal-600/30" : isToday ? "border-teal-300" : "border-slate-200"
-                }`}
-              >
-                <button
-                  onClick={() => setSelectedDay(dateStr)}
-                  className="flex w-full items-baseline justify-between gap-2 mb-2 text-left"
-                  title="Seleccionar día para agendar"
-                >
-                  <span className={`text-sm font-bold capitalize ${isToday ? "text-teal-700" : "text-slate-900"}`}>
-                    {d.toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" })}
-                    {isToday && " · hoy"}
-                  </span>
-                  <span className="text-xs text-slate-400">
-                    {dayBookings.length > 0 ? dayBookings.length : ""}
-                  </span>
-                </button>
-                {dayBookings.length === 0 ? (
-                  <p className="text-xs text-slate-400">Sin citas</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {dayBookings.map((b) => {
-                      const colors = SERVICE_COLORS[b.services?.slug] || getDefaultColor();
-                      return (
-                        <button
-                          key={b.id}
-                          onClick={() => setCitaAbierta(b)}
-                          className={`w-full rounded-lg ${colors.bg} px-2.5 py-1.5 text-left transition hover:ring-2 hover:ring-teal-600/40 ${
-                            b.status === "no_show" ? "opacity-60" : ""
-                          }`}
-                        >
-                          <span className={`block text-xs font-semibold ${colors.text}`}>
-                            {b.start_time.slice(0, 5)} · {b.services?.name}
-                            {b.status === "completed" && " ✓"}
-                          </span>
-                          <span className="block text-sm font-medium text-slate-900 truncate">{b.client_name}</span>
-                          <span className="block text-[11px] text-slate-500 truncate">{b.professionals?.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <>
+          {/* Escritorio: 2 semanas × 7 días, una línea por cita */}
+          <div className="hidden md:block">
+            <div className="grid grid-cols-7 gap-1.5 mb-1">
+              {DAY_HEADERS.map((d) => (
+                <div key={d} className="text-center text-[11px] font-semibold uppercase text-slate-500">{d}</div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1.5">
+              {diasQuincena.map((d) => renderDia(d, true))}
+            </div>
+          </div>
+          {/* Móvil: lista por día */}
+          <div className="md:hidden space-y-1.5">
+            {diasQuincena.map((d) => renderDia(d, false))}
+          </div>
+        </>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           {/* Grilla del mes */}
@@ -426,6 +452,7 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
 
       {citaAbierta && (
         <DetalleCita
+          key={citaAbierta.id}
           booking={citaAbierta}
           permissions={permissions}
           onClose={() => setCitaAbierta(null)}

@@ -29,6 +29,23 @@ type Options = {
   links: { professional_id: string; service_id: string }[];
 };
 
+type Payment = {
+  id: string;
+  amount: number;
+  method: string;
+  pack_name: string | null;
+  sessions_purchased: number;
+  service_type: string | null;
+  created_at: string;
+};
+
+const METHOD_LABELS: Record<string, string> = {
+  efectivo: "Efectivo",
+  transferencia: "Transferencia",
+  webpay: "Webpay",
+  otro: "Otro",
+};
+
 type Balance = {
   total_remaining: number;
   balance_detail: { service_type: string; remaining: number }[] | null;
@@ -54,10 +71,12 @@ export default function DetalleCita({
 }) {
   const puedeAgendar = permissions.includes("agendar");
   const puedeVerFicha = permissions.includes("pacientes");
+  const puedeVerPagos = permissions.includes("pagos");
   const fichaId = booking.fichas_patient_id ?? null;
 
   const [verFicha, setVerFicha] = useState(false);
   const [balance, setBalance] = useState<Balance>(null);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loadingBalance, setLoadingBalance] = useState(!!fichaId && puedeVerFicha);
 
   const [editando, setEditando] = useState(false);
@@ -77,7 +96,10 @@ export default function DetalleCita({
     if (!fichaId || !puedeVerFicha) return;
     fetch(`/api/fichas/patients/${fichaId}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => setBalance(d?.balance ?? null))
+      .then((d) => {
+        setBalance(d?.balance ?? null);
+        setPayments(d?.payments ?? []);
+      })
       .catch(() => {})
       .finally(() => setLoadingBalance(false));
   }, [fichaId, puedeVerFicha]);
@@ -152,16 +174,13 @@ export default function DetalleCita({
   });
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 p-0 sm:p-4"
-      onClick={onClose}
-    >
-      <div
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/20" onClick={onClose}>
+      <aside
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
-        className={`w-full bg-white rounded-t-2xl sm:rounded-2xl shadow-xl overflow-y-auto max-h-[92vh] ${
-          verFicha ? "sm:max-w-4xl" : "sm:max-w-lg"
+        className={`h-full w-full bg-white shadow-2xl overflow-y-auto border-l border-slate-200 animate-[slideIn_.2s_ease-out] ${
+          verFicha ? "sm:max-w-3xl" : "sm:max-w-md"
         }`}
       >
         <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-3">
@@ -258,6 +277,42 @@ export default function DetalleCita({
                   <p className="text-sm text-slate-500">
                     Esta cita no está vinculada a una ficha. Búscala en la pestaña Pacientes.
                   </p>
+                )}
+              </div>
+            )}
+
+            {/* Pagos */}
+            {puedeVerFicha && puedeVerPagos && fichaId && !loadingBalance && (
+              <div>
+                <p className="text-xs font-semibold text-slate-500 mb-2">Pagos</p>
+                {payments.length === 0 ? (
+                  <p className="text-sm text-slate-400">Sin pagos registrados.</p>
+                ) : (
+                  <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200">
+                    {payments.slice(0, 4).map((p) => (
+                      <li key={p.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                        <div className="min-w-0">
+                          <p className="font-medium text-slate-900 truncate">
+                            {p.pack_name || p.service_type || "Pago"}
+                            {p.sessions_purchased > 1 && !p.pack_name?.includes(String(p.sessions_purchased)) && ` · ${p.sessions_purchased} sesiones`}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {new Date(p.created_at).toLocaleDateString("es-CL", { day: "numeric", month: "short", year: "numeric" })}
+                            {" · "}
+                            {METHOD_LABELS[p.method] ?? p.method}
+                          </p>
+                        </div>
+                        <span className="shrink-0 font-semibold text-slate-900">
+                          ${Number(p.amount).toLocaleString("es-CL")}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {payments.length > 4 && (
+                  <button onClick={() => setVerFicha(true)} className="mt-2 text-xs font-semibold text-teal-700 hover:underline">
+                    Ver los {payments.length} pagos en la ficha
+                  </button>
                 )}
               </div>
             )}
@@ -416,7 +471,7 @@ export default function DetalleCita({
             {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
         )}
-      </div>
+      </aside>
     </div>
   );
 }
