@@ -93,8 +93,13 @@ export const services: Service[] = [
     shortName: "Osteopatía",
     tagline: "Terapia manual para el dolor y la movilidad",
     description:
-      "Evaluación y tratamiento manual orientado a la persona. Realizamos una evaluación completa de la biomecánica articular y sus restricciones, la movilidad visceral y la adaptabilidad del sistema nervioso central, integrando psiconeuroinmunología clínica, terapia manual ortopédica y razonamiento clínico osteopático. El tratamiento se basa en terapia manual osteopática, enfocada en la causa y no en el síntoma, y se integra con kinesiología y posturología cuando es necesario.",
-    bullets: [],
+      "Evaluación y tratamiento manual orientado a la persona. Integramos distintos enfoques clínicos para entender por qué aparece el dolor o la restricción de movimiento.",
+    bullets: [
+      "Evaluación de la biomecánica articular, la movilidad visceral y la adaptabilidad del sistema nervioso central",
+      "Razonamiento clínico osteopático integrado con psiconeuroinmunología clínica y terapia manual ortopédica",
+      "Terapia manual osteopática enfocada en la causa, no en el síntoma",
+      "Integración con kinesiología y posturología cuando es necesario",
+    ],
     forWho: [
       "Tienes dolor lumbar, cervical o de espalda que vuelve cada cierto tiempo.",
       "Sientes rigidez o poca movilidad en una articulación y no sabes de dónde viene.",
