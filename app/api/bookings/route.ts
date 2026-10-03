@@ -135,6 +135,8 @@ export async function POST(request: Request) {
           "",
           payment_method === "online_webpay" && paymentLinks[service.slug]
             ? `Pago online: ${paymentLinks[service.slug]}`
+            : payment_method === "online_webpay"
+            ? `Pago: online con tarjeta (link en la pantalla de confirmación). Si no alcanzaste a pagar, escríbenos al WhatsApp ${siteConfig.phone}.`
             : payment_method === "online_transfer"
             ? `Pago: transferencia online. Envía tu comprobante al WhatsApp ${siteConfig.phone} para confirmar.`
             : `Pago: en la clínica.`,
@@ -164,7 +166,7 @@ export async function POST(request: Request) {
           `Profesional: ${professional?.name ?? ""}`,
           `Fecha: ${dateFormatted}`,
           `Hora: ${start_time} - ${end_time}`,
-          `Pago: ${payment_method === "online_webpay" ? "Online con Mercado Pago (verificar pago)" : payment_method === "online_transfer" ? "Transferencia (pendiente comprobante)" : "En clínica"}`,
+          `Pago: ${payment_method === "online_webpay" ? "Online con tarjeta (verificar pago)" : payment_method === "online_transfer" ? "Transferencia (pendiente comprobante)" : "En clínica"}`,
           notes ? `Notas: ${notes}` : "",
         ].join("\n"),
       });

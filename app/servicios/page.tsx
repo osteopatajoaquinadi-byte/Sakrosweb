@@ -1,8 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { services } from "@/lib/site-config";
+import ServiceCardHeader from "@/components/ServiceCardHeader";
 
 export const metadata: Metadata = pageMetadata({
   title: "Servicios de osteopatía, kinesiología y posturología en Viña del Mar",
@@ -26,12 +26,10 @@ export default function ServiciosPage() {
             href={`/servicios/${service.slug}`}
             className="block rounded-2xl border border-slate-200 overflow-hidden hover:border-teal-700 hover:shadow-sm transition"
           >
-            <Image
-              src={service.image}
-              alt={service.name}
-              width={1200}
-              height={700}
-              className="w-full h-44 object-cover"
+            <ServiceCardHeader
+              slug={service.slug}
+              name={service.name}
+              tagline={service.tagline}
             />
             <div className="p-5">
               <h2 className="font-semibold text-slate-900 mb-1">{service.name}</h2>
