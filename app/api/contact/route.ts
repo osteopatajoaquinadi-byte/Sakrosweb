@@ -1,3 +1,4 @@
+import { emailFrom } from "@/lib/email";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { siteConfig } from "@/lib/site-config";
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
       // TODO (Juaco/Vercel): "from" debe ser una dirección de un dominio
       // verificado en Resend (ej. contacto@sakros.cl) una vez que exista.
       // Mientras tanto, Resend permite usar su dominio de pruebas.
-      from: "Sakros Web <onboarding@resend.dev>",
+      from: emailFrom("Sakros Web"),
       to: siteConfig.email,
       replyTo: email,
       subject: `Nuevo contacto desde sakros.cl — ${name}`,

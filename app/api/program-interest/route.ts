@@ -1,3 +1,4 @@
+import { emailFrom } from "@/lib/email";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     const resend = new Resend(apiKey);
     try {
       await resend.emails.send({
-        from: "Reservas Sakros <onboarding@resend.dev>",
+        from: emailFrom("Reservas Sakros"),
         to: "osteopatajoaquinadi@gmail.com",
         replyTo: email,
         subject: `Programa de rehabilitación (${prevision.toUpperCase()}): ${name}`,

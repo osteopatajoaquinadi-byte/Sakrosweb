@@ -1,6 +1,7 @@
 "use client";
 
 import { paymentLinks } from "@/lib/site-config";
+import { trackEvent } from "@/components/GoogleAnalytics";
 
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
@@ -153,6 +154,7 @@ export default function BookingFlow() {
       if (!res.ok) {
         setError(data.error || "Error al crear la reserva.");
       } else {
+        trackEvent("reserva_confirmada", { servicio: selectedService, pago: paymentMethod });
         setStep("done");
       }
     } catch {
@@ -306,6 +308,7 @@ export default function BookingFlow() {
                     notes,
                   }),
                 }).catch(() => {});
+                trackEvent("programa_rehab_lead", { prevision: programaPrevision });
                 setStep("program-done");
               } finally {
                 setSubmitting(false);

@@ -45,6 +45,9 @@ test.describe("redirecciones del Wix anterior @prod", () => {
     ["/service-page/osteopat%C3%ADa", "/servicios/osteopatia"],
     ["/service-page/kinesiolog%C3%ADa-vi%C3%B1a-del-mar", "/servicios/kinesiologia"],
     ["/service-page/posturolog%C3%ADa-cl%C3%ADnica-1", "/servicios/posturologia"],
+    ["/service-page/kinesiolog%C3%ADa", "/servicios/kinesiologia"],
+    ["/category/all-products", "/servicios"],
+    ["/general-9", "/"],
   ];
   for (const [from, to] of redirects) {
     test(`${decodeURIComponent(from)} → ${to} (301 o 308)`, async ({ request }) => {
