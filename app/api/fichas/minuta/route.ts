@@ -41,7 +41,7 @@ const PROTEINAS: [string, string][] = [
   ["camarones o choritos", "pechuga de pavo"],
   ["legumbres con proteína (lentejas, garbanzos) en porción controlada", "salmón"],
   ["vacuno magro (carne molida 5%)", "congrio o pescado blanco"],
-  ["pollo entero o pechuga", "tofu o tempeh"],
+  ["pollo entero o pechuga", "pescado blanco (tofu o tempeh solo si es vegetariano o vegano)"],
 ];
 const PREPARACIONES: [string, string][] = [
   ["al horno", "salteado tipo wok"],
@@ -86,6 +86,9 @@ function buildPrompt(dayNum: number, tema: string, c: Config, previos: string[])
       ? `NO repitas ninguno de estos platos de dias anteriores ni combinaciones parecidas: ${previos.join("; ")}. `
       : "") +
     "Si algo asignado choca con una restriccion, reemplazalo por otra opcion permitida que no se haya usado en dias anteriores. " +
+    (/vegetariano|vegano/i.test(c.restr)
+      ? ""
+      : "El paciente NO es vegetariano ni vegano: no uses tofu, tempeh ni proteina vegetal en polvo como proteina principal. ") +
     "REGLAS: nunca pescado en el desayuno. " +
     "PROHIBIDO siempre: azucar, pan de trigo, arroz, pasta, papa, harinas refinadas, jugos, ultraprocesados. " +
     "BASE: verduras no almidonadas. GRASAS: oliva, palta, frutos secos. " +

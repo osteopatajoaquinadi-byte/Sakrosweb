@@ -186,6 +186,15 @@ function permitida(rec: Receta, prohib: Set<Tag>, terminos: string[]) {
   return !terminos.some((t) => texto.includes(t));
 }
 
+// Plato vegano = su proteína es vegetal (tofu, tempeh, lupino, proteína en
+// polvo…) y no lleva nada de origen animal. Solo se ofrecen a pacientes
+// vegetarianos o veganos.
+function esPlatoVegano(rec: Receta) {
+  const tieneProteina = rec.items.some(([, , rol]) => rol === "prot");
+  const sinAnimal = rec.items.every(([ing]) => !(I[ing].tags ?? []).includes("animal"));
+  return tieneProteina && sinAnimal;
+}
+
 // "alergia al kiwi, intolerancia a la fructosa" → ["kiwi", "fructosa"]
 function terminosOtras(otras?: string) {
   if (!otras) return [];
@@ -298,11 +307,13 @@ export function generarMinutaLocal(opts: {
 }): { dias: (DiaMinuta | null)[]; faltantes: number[] } {
   const prohib = prohibidos(opts.restricciones);
   const terminos = terminosOtras(opts.otras);
+  const aceptaVegano = !!(opts.restricciones.vegetariano || opts.restricciones.vegano);
+  const ok = (r: Receta) => permitida(r, prohib, terminos) && (aceptaVegano || !esPlatoVegano(r));
   const pools = {
-    b: DESAYUNOS.filter((r) => permitida(r, prohib, terminos)),
-    a: PRINCIPALES.filter((r) => permitida(r, prohib, terminos)),
-    c: PRINCIPALES.filter((r) => permitida(r, prohib, terminos)),
-    s: SNACKS.filter((r) => permitida(r, prohib, terminos)),
+    b: DESAYUNOS.filter(ok),
+    a: PRINCIPALES.filter(ok),
+    c: PRINCIPALES.filter(ok),
+    s: SNACKS.filter(ok),
   };
   const usadas = new Set<string>();
   let semilla = Math.floor(Math.random() * 1e9);

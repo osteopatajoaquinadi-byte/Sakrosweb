@@ -40,12 +40,15 @@ const RESTRICCIONES = [
   { k: "sinCerdo", l: "🐷 Sin cerdo", prompt: "Sin cerdo" },
 ];
 
+// Proteína según Dietary Guidelines for Americans 2025–2030: 1,2–1,6 g/kg/día
+// en adultos (igual para hombres y mujeres). Se escala por actividad dentro
+// de ese rango; solo el deportista de elite lo supera (rango deportivo).
 const NIVELES: Record<string, { label: string; prot: number; tdee: number; carb: number; corto: string; prompt: string }> = {
   sedF: { label: "Sedentario — Mujer (×1,2 prot)", prot: 1.2, tdee: 26, carb: 60, corto: "Sedentaria", prompt: "Mujer sedentaria" },
-  sedM: { label: "Sedentario — Hombre (×1,6 prot)", prot: 1.6, tdee: 28, carb: 70, corto: "Sedentario", prompt: "Hombre sedentario" },
-  activo3: { label: "Activo 3×/sem fuerza (×1,8 prot)", prot: 1.8, tdee: 32, carb: 100, corto: "Activo 3×/sem", prompt: "Activo 3x sem fuerza" },
-  activo5: { label: "Activo 5×/sem fuerza (×2,0 prot)", prot: 2.0, tdee: 37, carb: 130, corto: "Activo 5×/sem", prompt: "Activo 5x sem fuerza" },
-  elite: { label: "Deportista elite (×2,2 prot)", prot: 2.2, tdee: 42, carb: 160, corto: "Elite", prompt: "Deportista elite" },
+  sedM: { label: "Sedentario — Hombre (×1,2 prot)", prot: 1.2, tdee: 28, carb: 70, corto: "Sedentario", prompt: "Hombre sedentario" },
+  activo3: { label: "Activo 3×/sem fuerza (×1,4 prot)", prot: 1.4, tdee: 32, carb: 100, corto: "Activo 3×/sem", prompt: "Activo 3x sem fuerza" },
+  activo5: { label: "Activo 5×/sem fuerza (×1,6 prot)", prot: 1.6, tdee: 37, carb: 130, corto: "Activo 5×/sem", prompt: "Activo 5x sem fuerza" },
+  elite: { label: "Deportista elite (×2,0 prot)", prot: 2.0, tdee: 42, carb: 160, corto: "Elite", prompt: "Deportista elite" },
 };
 
 const TEMAS = [
@@ -559,11 +562,12 @@ export default function EvalOsteopatia({
                 ))}
               </div>
               <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-700">
-                <p className="mb-1.5 font-bold">Nueva pirámide alimenticia — Low Carb</p>
+                <p className="mb-1.5 font-bold">Nueva pirámide alimenticia (EE. UU. 2025–2030) — adaptada low carb</p>
                 <div className="grid gap-1 sm:grid-cols-2">
                   {[
+                    "Proteína en cada comida: 1,2–1,6 g/kg/día",
                     "Base: verduras no almidonadas (50% del plato)",
-                    "Proteínas de calidad: huevo, pescado, carne magra, legumbres",
+                    "Proteínas de calidad: huevo, pescado, carne, legumbres",
                     "Grasas buenas: oliva, palta, frutos secos, salmón",
                     "Carbohidratos solo integrales y en cantidad limitada",
                     "Fermentados: kéfir, chucrut, yogur natural",
