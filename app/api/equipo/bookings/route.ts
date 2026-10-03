@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { requireStaff } from "@/lib/equipo-auth";
 import { Resend } from "resend";
-import { emailFrom } from "@/lib/email";
+import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
 import { siteConfig } from "@/lib/site-config";
 
 // Agenda interna del panel: a diferencia de /api/bookings (reserva pública),
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
   // Confirmación al paciente, igual que en la reserva pública. Si falla el
   // envío la reserva queda creada igual: el correo es un aviso, no un requisito.
   let emailed = false;
-  if (body.notify !== false && client_email && process.env.RESEND_API_KEY) {
+  if (body.notify !== false && client_email && calendarNotificationsEnabled()) {
     try {
       const [{ data: svc }, { data: pro }] = await Promise.all([
         db.from("services").select("name").eq("id", service_id).single(),

@@ -1,4 +1,4 @@
-import { emailFrom } from "@/lib/email";
+import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
 import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { Resend } from "resend";
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
 
     // Enviar email de confirmación al cliente
     const apiKey = process.env.RESEND_API_KEY;
-    if (apiKey) {
+    if (apiKey && calendarNotificationsEnabled()) {
       const resend = new Resend(apiKey);
       const dateFormatted = new Date(booking_date + "T12:00:00").toLocaleDateString(
         "es-CL",
