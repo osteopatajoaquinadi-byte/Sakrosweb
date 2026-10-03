@@ -68,27 +68,33 @@ test("kinesiología no ofrece pago online mientras no tenga link", async ({ page
   await expect(page.getByRole("button", { name: /Pago en clínica/ })).toBeVisible();
 });
 
+test("programa de rehabilitación: agenda primero y elige FONASA/ISAPRE al final", async ({ page }) => {
+  const posted = await mockBookingApis(page);
+  await page.goto("/reserva");
+  await page.getByRole("button", { name: /Programa de Rehabilitación Kinésica/ }).click();
+  await page.getByRole("button", { name: /Próxima fecha disponible/ }).click();
+  await page.getByRole("button", { name: /10:30/ }).click();
+  await expect(page.getByRole("heading", { name: "Tus datos" })).toBeVisible();
+
+  await page.getByLabel("Nombre completo *").fill("Paciente Programa");
+  await page.getByLabel("Email *").fill("programa@example.com");
+  // Sin previsión no se puede confirmar.
+  await expect(page.getByRole("button", { name: "Confirmar reserva" })).toBeDisabled();
+  await page.getByRole("button", { name: /^FONASA/ }).click();
+  await expect(page.getByText("$190.000").first()).toBeVisible();
+  await page.getByRole("button", { name: /Pago con tarjeta/ }).click();
+  await page.getByRole("button", { name: "Confirmar reserva" }).click();
+
+  await expect(page.getByText("Reserva confirmada")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Pagar \$190\.000 con tarjeta/ })).toHaveAttribute(
+    "href",
+    "https://www.tuu.cl/programafonasa",
+  );
+  expect(posted[0]).toMatchObject({ payment_method: "online_webpay" });
+  expect(String(posted[0].notes)).toContain("[Programa Rehabilitación FONASA]");
+});
+
 test.describe("ofertas visibles @prod", () => {
-  test("programa de rehabilitación kinésica pide datos y lleva al link correcto", async ({ page }) => {
-    // El programa es externo (Tuu), así que Sakros captura los datos primero
-    // y recién al final muestra el link que corresponde a la previsión.
-    await page.route("**/api/program-interest", (r) => r.fulfill({ json: { ok: true } }));
-    await page.goto("/reserva");
-    await page.getByRole("button", { name: /Programa de Rehabilitación Kinésica/ }).click();
-    await expect(page.getByRole("heading", { name: /Programa de Rehabilitación Kinésica/ })).toBeVisible();
-
-    await page.getByLabel("Nombre completo *").fill("Paciente Programa");
-    await page.getByLabel("Email *").fill("programa@example.com");
-    await page.getByLabel("Teléfono *").fill("+56 9 1111 1111");
-    await page.getByRole("button", { name: "FONASA" }).click();
-    await page.getByRole("button", { name: /Continuar al programa/ }).click();
-
-    await expect(page.getByRole("link", { name: /FONASA en Tuu/ })).toHaveAttribute(
-      "href",
-      "https://www.tuu.cl/programafonasa",
-    );
-  });
-
   test("kinesiología muestra valor de sesión y programa Fonasa/Isapre", async ({ page }) => {
     await page.goto("/servicios/kinesiologia");
     await expect(page.getByRole("heading", { name: "Opciones y valores" })).toBeVisible();

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { paymentLinks, servicePacks, services, sessionPrices, siteConfig } from "@/lib/site-config";
 import { conditionsFor } from "@/lib/condiciones";
+import ServiceCardHeader from "@/components/ServiceCardHeader";
 import { breadcrumbJsonLd, businessId, pageMetadata } from "@/lib/seo";
 
 // Imágenes específicas por servicio (solo los que tienen fotos propias)
@@ -57,7 +58,7 @@ export async function generateMetadata({
   if (!service) return {};
   return pageMetadata({
     title: `${service.name} en Viña del Mar`,
-    description: service.description,
+    description: service.metaDescription ?? service.description,
     path: `/servicios/${service.slug}`,
   });
 }
@@ -103,13 +104,11 @@ export default async function ServicePage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbs, faqJsonLd]) }}
       />
-      <Image
-        src={service.image}
-        alt={service.name}
-        width={1200}
-        height={700}
-        className="w-full rounded-2xl mb-8 object-cover max-h-[300px]"
-        priority
+      <ServiceCardHeader
+        slug={service.slug}
+        name={service.name}
+        tagline={service.tagline}
+        variant="hero"
       />
       <p className="text-sm font-semibold uppercase tracking-wide text-teal-700 mb-3">
         {service.tagline}

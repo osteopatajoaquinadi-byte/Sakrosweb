@@ -75,6 +75,8 @@ export type Service = {
   shortName: string;
   tagline: string;
   description: string;
+  // Versión corta para Google (≤ 200 caracteres) cuando description es larga.
+  metaDescription?: string;
   bullets: string[];
   // Contenido SEO por servicio: a quién va dirigido y preguntas frecuentes
   // (también se publican como FAQPage en JSON-LD).
@@ -166,14 +168,16 @@ export const services: Service[] = [
     image: "/images/servicios/posturologia.png",
     name: "Posturología",
     shortName: "Posturología",
-    tagline: "Evaluación y corrección postural",
+    tagline: "Evaluación clínica del sistema nervioso central y sus influencias",
+    metaDescription:
+      "Posturología clínica en Viña del Mar: evaluamos cómo el sistema nervioso integra pies, visión y músculos, y su efecto en la postura, el desarrollo motor y el rendimiento deportivo.",
     description:
-      "Evaluación clínica de la postura y su efecto en el dolor recurrente o en el rendimiento deportivo, considerando pie, visión, oclusión y sistema nervioso central como entradas del sistema postural.",
+      "Evaluación clínica del sistema nervioso central y sus influencias en: postura, desempeño escolar, desarrollo en general del sistema motor y deportivo. Tomando en cuenta para lo anterior la información recibida por captor ocular, los pies, sistema músculo esquelético y la respuesta a estos del sistema nervioso central.",
     bullets: [
-      "Evaluación postural clínica",
-      "Análisis de entradas posturales (pie, visión, oclusión)",
-      "Plan de corrección individualizado",
-      "Seguimiento de la respuesta al tratamiento",
+      "Cambios visibles en alteraciones sensoriales y posturales",
+      "Mejoría en síntomas de TDAH, espectro autista y retraso del desarrollo psicomotor",
+      "Implementación de planes individualizados para el rendimiento deportivo (coordinación ojo-mano, reclutamiento muscular, eficiencia en gasto energético)",
+      "Análisis específico caso a caso de acuerdo a la evaluación del paciente y sus necesidades",
     ],
     forWho: [
       "Tienes un dolor recurrente que no ha respondido bien al tratamiento habitual.",

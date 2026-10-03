@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import ClinicalEvalForm, { ClinicalDataDisplay } from "./ClinicalEvalForm";
+import KinesiologyTab from "./fichas/KinesiologyTab";
+import { blankKine, type KinePlan } from "./fichas/constants";
 import type { Permission } from "@/lib/equipo-auth";
 
 type Patient = {
@@ -17,6 +19,10 @@ type Patient = {
   red_flags: string[] | null;
   yellow_flags: string[] | null;
   notes: string | null;
+  sex?: string | null;
+  address?: string | null;
+  // Planes clínicos por servicio (jsonb). kinePlan: ficha kinésica completa.
+  clinical_plans?: { kinePlan?: KinePlan; [k: string]: unknown } | null;
   created_at: string;
 };
 
@@ -145,7 +151,7 @@ export default function FichaPaciente({
   const [loading, setLoading] = useState(true);
 
   // Subvistas
-  const [activeSection, setActiveSection] = useState<"sesiones" | "pagos">(clinico ? "sesiones" : "pagos");
+  const [activeSection, setActiveSection] = useState<"sesiones" | "kine" | "pagos">(clinico ? "sesiones" : "pagos");
   const [showNewSession, setShowNewSession] = useState(false);
   const [showNewPayment, setShowNewPayment] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -374,6 +380,25 @@ export default function FichaPaciente({
     }
   }
 
+  // Ficha kinésica: se guarda en clinical_plans.kinePlan con un pequeño retraso
+  // para no enviar una petición por cada tecla.
+  const kineSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function handleKineChange(kp: KinePlan) {
+    if (!patient) return;
+    const clinical_plans = { ...(patient.clinical_plans ?? {}), kinePlan: kp };
+    setPatient({ ...patient, clinical_plans });
+    if (kineSaveTimer.current) clearTimeout(kineSaveTimer.current);
+    kineSaveTimer.current = setTimeout(() => {
+      fetch(`/api/fichas/patients/${patientId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clinical_plans }),
+      })
+        .then((r) => { if (!r.ok) setError("No se pudo guardar la ficha kinésica."); })
+        .catch(() => setError("Error de conexión al guardar la ficha kinésica."));
+    }, 800);
+  }
+
   async function handleSaveEdit(e: React.FormEvent) {
     e.preventDefault();
     setSavingEdit(true);
@@ -552,6 +577,18 @@ export default function FichaPaciente({
           Sesiones ({sessions.length})
         </button>
         )}
+        {clinico && (
+        <button
+          onClick={() => setActiveSection("kine")}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+            activeSection === "kine"
+              ? "bg-teal-700 text-white"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+          }`}
+        >
+          Plan kinésico
+        </button>
+        )}
         {puedePagos && (
         <button
           onClick={() => setActiveSection("pagos")}
@@ -702,6 +739,46 @@ export default function FichaPaciente({
             </div>
           )}
         </div>
+      )}
+
+      {/* === PLAN KINÉSICO === */}
+      {clinico && activeSection === "kine" && patient && (
+        <KinesiologyTab
+          plan={patient.clinical_plans?.kinePlan ?? blankKine()}
+          onChange={handleKineChange}
+          sessions={sessions
+            .filter((s) => s.service_type === "Kinesiología")
+            .map((s) => ({
+              id: s.id,
+              date: s.session_date,
+              vas: s.eva_score,
+              professional: s.professional,
+              service_type: s.service_type,
+              notes: s.notes || undefined,
+              clinical_data: s.clinical_data,
+              session_date: s.session_date,
+              eva_score: s.eva_score,
+            }))}
+          isAdmin
+          onNewSession={() => {
+            setSessionForm((f) => ({ ...f, service_type: "Kinesiología" }));
+            setClinicalData({});
+            setActiveSection("sesiones");
+            setShowNewSession(true);
+          }}
+          patient={{
+            name: patient.name,
+            rut: patient.rut,
+            date_of_birth: patient.date_of_birth,
+            sex: patient.sex ?? null,
+            address: patient.address ?? null,
+            occupation: patient.occupation,
+            sport: patient.sport,
+            reason: patient.reason,
+            email: patient.email,
+            phone: patient.phone,
+          }}
+        />
       )}
 
       {/* === PAGOS === */}

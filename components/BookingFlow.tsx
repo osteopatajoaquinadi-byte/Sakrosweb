@@ -20,13 +20,13 @@ type Slot = {
   professional_name: string;
 };
 
-type Step = "service" | "date" | "time" | "details" | "program" | "program-done" | "done";
+type Step = "service" | "date" | "time" | "details" | "done";
 
 const PROGRAMA_REHAB_SLUG = "programa-rehabilitacion-kinesica";
 
-// La reserva real del programa pasa por Tuu (FONASA / ISAPRE). En Sakros
-// capturamos los datos del lead primero y después le mostramos el link que
-// corresponde, para no perder la pista de quien se interesa.
+// El programa se agenda como una hora de kinesiología (la primera sesión):
+// el paciente elige fecha y hora, deja sus datos y al final elige su
+// previsión (FONASA o ISAPRE) y cómo pagar.
 const SERVICES_LIST = [
   { slug: "osteopatia", label: "Osteopatía", price: "$40.000" },
   { slug: "kinesiologia", label: "Kinesiología", price: "$25.000" },
@@ -36,9 +36,9 @@ const SERVICES_LIST = [
   { slug: "actividad-fisica-dirigida", label: "Actividad Física Dirigida", price: "$12.000" },
 ];
 
-const PROGRAMA_LINKS = {
-  fonasa: "https://www.tuu.cl/programafonasa",
-  isapre: "https://www.tuu.cl/programaisapre",
+const PROGRAMA = {
+  fonasa: { label: "FONASA", price: "$190.000", cardUrl: "https://www.tuu.cl/programafonasa" },
+  isapre: { label: "ISAPRE", price: "$230.000", cardUrl: "https://www.tuu.cl/programaisapre" },
 } as const;
 
 const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -76,9 +76,11 @@ export default function BookingFlow() {
   const [paymentMethod, setPaymentMethod] = useState("in_clinic");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  // Programa de rehabilitación kinésica: capturamos los datos antes de
-  // llevarlo al link externo de Tuu, para seguir sabiendo quién pregunta.
+  // Programa de rehabilitación kinésica: misma reserva que kinesiología,
+  // con previsión y precio del programa al final.
+  const [isProgram, setIsProgram] = useState(false);
   const [programaPrevision, setProgramaPrevision] = useState<"fonasa" | "isapre" | "">("");
+  const programa = programaPrevision ? PROGRAMA[programaPrevision] : null;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -94,7 +96,9 @@ export default function BookingFlow() {
     [weekAvailability]
   );
 
-  const serviceName = SERVICES_LIST.find(s => s.slug === selectedService)?.label || "";
+  const serviceName = isProgram
+    ? "Programa de Rehabilitación Kinésica"
+    : SERVICES_LIST.find(s => s.slug === selectedService)?.label || "";
 
   // Pre-cargar disponibilidad de la semana
   useEffect(() => {
@@ -147,14 +151,19 @@ export default function BookingFlow() {
           client_email: clientEmail,
           client_phone: clientPhone || undefined,
           payment_method: paymentMethod,
-          notes: notes || undefined,
+          notes: isProgram && programa
+            ? `[Programa Rehabilitación ${programa.label}] ${notes}`.trim()
+            : notes || undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Error al crear la reserva.");
       } else {
-        trackEvent("reserva_confirmada", { servicio: selectedService, pago: paymentMethod });
+        trackEvent("reserva_confirmada", {
+          servicio: isProgram ? `programa_rehab_${programaPrevision}` : selectedService,
+          pago: paymentMethod,
+        });
         setStep("done");
       }
     } catch {
@@ -182,7 +191,17 @@ export default function BookingFlow() {
         <p className="text-emerald-700 mb-4">
           Te enviamos los detalles a <strong>{clientEmail}</strong>.
         </p>
-        {paymentMethod === "online_webpay" && paymentLinks[selectedService] && (
+        {paymentMethod === "online_webpay" && isProgram && programa && (
+          <a
+            href={programa.cardUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mb-4 rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
+          >
+            Pagar {programa.price} con tarjeta
+          </a>
+        )}
+        {paymentMethod === "online_webpay" && !isProgram && paymentLinks[selectedService] && (
           <a
             href={paymentLinks[selectedService]}
             target="_blank"
@@ -212,6 +231,8 @@ export default function BookingFlow() {
             setClientPhone("");
             setNotes("");
             setError("");
+            setIsProgram(false);
+            setProgramaPrevision("");
           }}
           className="rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
         >
@@ -253,10 +274,12 @@ export default function BookingFlow() {
               <button
                 key={s.slug}
                 onClick={() => {
-                  setSelectedService(s.slug);
-                  // El programa no tiene calendario propio: pide los datos
-                  // directo y después muestra el link de Tuu.
-                  setStep(s.slug === PROGRAMA_REHAB_SLUG ? "program" : "date");
+                  const program = s.slug === PROGRAMA_REHAB_SLUG;
+                  setSelectedService(program ? "kinesiologia" : s.slug);
+                  setIsProgram(program);
+                  setProgramaPrevision("");
+                  setPaymentMethod("in_clinic");
+                  setStep("date");
                 }}
                 className="text-left rounded-xl border border-slate-200 p-4 hover:border-teal-700 hover:shadow-sm transition"
               >
@@ -268,184 +291,14 @@ export default function BookingFlow() {
         </div>
       )}
 
-      {/* Paso programa: datos antes del link de Tuu */}
-      {step === "program" && (
-        <div>
-          <button
-            onClick={() => {
-              setSelectedService("");
-              setProgramaPrevision("");
-              setStep("service");
-            }}
-            className="text-sm text-slate-500 hover:text-teal-700 mb-4"
-          >
-            ← Cambiar servicio
-          </button>
-          <h2 className="text-xl font-semibold text-slate-900 mb-2">
-            Programa de Rehabilitación Kinésica
-          </h2>
-          <p className="text-sm text-slate-600 mb-6">
-            10 sesiones con plan individual. La reserva y el pago se hacen en Tuu, con tu previsión.
-            Déjanos tus datos y te mostramos el link que corresponde.
-          </p>
-
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              if (!programaPrevision) return;
-              setSubmitting(true);
-              setError("");
-              try {
-                // Guardamos el lead best-effort; el link se muestra pase lo que pase.
-                await fetch("/api/program-interest", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    name: clientName,
-                    email: clientEmail,
-                    phone: clientPhone,
-                    prevision: programaPrevision,
-                    notes,
-                  }),
-                }).catch(() => {});
-                trackEvent("programa_rehab_lead", { prevision: programaPrevision });
-                setStep("program-done");
-              } finally {
-                setSubmitting(false);
-              }
-            }}
-            className="space-y-5"
-          >
-            <div>
-              <label htmlFor="pg-nombre" className="block text-sm font-medium text-slate-700 mb-1">
-                Nombre completo *
-              </label>
-              <input
-                id="pg-nombre"
-                type="text"
-                required
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label htmlFor="pg-email" className="block text-sm font-medium text-slate-700 mb-1">
-                Email *
-              </label>
-              <input
-                id="pg-email"
-                type="email"
-                required
-                value={clientEmail}
-                onChange={(e) => setClientEmail(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label htmlFor="pg-telefono" className="block text-sm font-medium text-slate-700 mb-1">
-                Teléfono *
-              </label>
-              <input
-                id="pg-telefono"
-                type="tel"
-                required
-                value={clientPhone}
-                onChange={(e) => setClientPhone(e.target.value)}
-                placeholder="+56 9 1234 5678"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <p className="block text-sm font-medium text-slate-700 mb-2">¿Con qué previsión? *</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {([
-                  { v: "fonasa", t: "FONASA" },
-                  { v: "isapre", t: "ISAPRE" },
-                ] as const).map((o) => (
-                  <button
-                    type="button"
-                    key={o.v}
-                    onClick={() => setProgramaPrevision(o.v)}
-                    className={
-                      "rounded-xl border p-4 text-left transition " +
-                      (programaPrevision === o.v
-                        ? "border-teal-700 bg-teal-50"
-                        : "border-slate-200 hover:border-teal-700")
-                    }
-                  >
-                    <p className="font-semibold text-slate-900">{o.t}</p>
-                    <p className="text-sm text-slate-500">
-                      {o.v === "fonasa" ? "Pago con financiamiento Tuu" : "Convenio con tu Isapre"}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="pg-notas" className="block text-sm font-medium text-slate-700 mb-1">
-                Comentarios (opcional)
-              </label>
-              <textarea
-                id="pg-notas"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none"
-                placeholder="Molestia, lesión previa u objetivo"
-              />
-            </div>
-
-            {error && <p className="text-sm text-red-600">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={submitting || !programaPrevision}
-              className="w-full rounded-xl bg-teal-700 px-6 py-3 text-white font-semibold hover:bg-teal-800 disabled:opacity-50"
-            >
-              {submitting ? "Enviando…" : "Continuar al programa"}
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* Paso programa: link al final */}
-      {step === "program-done" && (
-        <div className="text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-teal-100">
-            <svg className="h-8 w-8 text-teal-700" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            Listo, {clientName.split(" ")[0] || "gracias"}
-          </h2>
-          <p className="text-slate-600 mb-8">
-            Guardamos tus datos. Ahora continúa en Tuu para reservar y pagar tu programa
-            {programaPrevision === "fonasa" ? " con FONASA" : " con tu ISAPRE"}.
-          </p>
-          <a
-            href={programaPrevision === "fonasa" ? PROGRAMA_LINKS.fonasa : PROGRAMA_LINKS.isapre}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block rounded-xl bg-teal-700 px-6 py-3 text-white font-semibold hover:bg-teal-800"
-          >
-            Ir a {programaPrevision === "fonasa" ? "Programa FONASA" : "Programa ISAPRE"} en Tuu
-          </a>
-          <p className="text-xs text-slate-500 mt-6">
-            Si tienes dudas antes de reservar, escríbenos por WhatsApp y te orientamos.
-          </p>
-        </div>
-      )}
-
       {/* Step 2: Date — calendario semanal */}
       {step === "date" && (
         <div>
           <button
             onClick={() => {
               setSelectedService("");
+              setIsProgram(false);
+              setProgramaPrevision("");
               setStep("service");
             }}
             className="text-sm text-slate-500 hover:text-teal-700 mb-4"
@@ -653,12 +506,37 @@ export default function BookingFlow() {
               />
             </div>
 
+            {/* Previsión (solo programa) */}
+            {isProgram && (
+              <div>
+                <p className="block text-sm font-medium text-slate-700 mb-2">Previsión *</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(["fonasa", "isapre"] as const).map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => { setProgramaPrevision(k); setPaymentMethod(""); }}
+                      className={`rounded-lg border p-3 text-left text-sm transition ${
+                        programaPrevision === k
+                          ? "border-teal-700 bg-teal-50 text-teal-800"
+                          : "border-slate-200 hover:border-teal-700"
+                      }`}
+                    >
+                      <p className="font-semibold">{PROGRAMA[k].label}</p>
+                      <p className="text-xs text-slate-500">Programa de 10 sesiones</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(!isProgram || programa) && (
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Modalidad de pago
               </label>
-              <div className={`grid gap-2 ${paymentLinks[selectedService] ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-                {paymentLinks[selectedService] && (
+              <div className={`grid gap-2 ${isProgram || paymentLinks[selectedService] ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+                {(isProgram || paymentLinks[selectedService]) && (
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("online_webpay")}
@@ -668,8 +546,9 @@ export default function BookingFlow() {
                         : "border-slate-200 hover:border-teal-700"
                     }`}
                   >
-                    <p className="font-semibold">Pago online</p>
-                    <p className="text-xs text-slate-500">Tarjeta con Mercado Pago</p>
+                    <p className="font-semibold">{isProgram ? "Pago con tarjeta" : "Pago online"}</p>
+                    <p className="text-xs text-slate-500">{isProgram ? "Online, al confirmar la reserva" : "Tarjeta con Mercado Pago"}</p>
+                    {programa && <p className="text-xs font-semibold text-teal-700 mt-1">{programa.price}</p>}
                   </button>
                 )}
                 <button
@@ -683,6 +562,7 @@ export default function BookingFlow() {
                 >
                   <p className="font-semibold">Pago en clínica</p>
                   <p className="text-xs text-slate-500">Presencial el día de tu hora</p>
+                  {programa && <p className="text-xs font-semibold text-teal-700 mt-1">{programa.price}</p>}
                 </button>
                 <button
                   type="button"
@@ -697,9 +577,25 @@ export default function BookingFlow() {
                   <p className="text-xs text-slate-500">
                     Envía comprobante por WhatsApp
                   </p>
+                  {programa && <p className="text-xs font-semibold text-teal-700 mt-1">{programa.price}</p>}
                 </button>
               </div>
+              {paymentMethod === "online_transfer" && (
+                <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50 p-4 text-sm text-slate-700">
+                  <p className="font-semibold text-slate-900 mb-1">Datos para transferencia</p>
+                  <p>Anikken Arentsen</p>
+                  <p>RUT: 17.751.987-1</p>
+                  <p>Cuenta RUT BancoEstado</p>
+                  <p>N° cuenta: 17751987</p>
+                  {programa && <p className="mt-1 font-semibold text-teal-700">Monto: {programa.price}</p>}
+                  <p className="mt-2 text-xs text-slate-500">
+                    Envía el comprobante al{" "}
+                    <a href="https://wa.me/56945399692" className="text-teal-700 underline">+56 9 4539 9692</a>
+                  </p>
+                </div>
+              )}
             </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -718,7 +614,7 @@ export default function BookingFlow() {
 
             <button
               onClick={handleSubmit}
-              disabled={!clientName || !clientEmail || submitting}
+              disabled={!clientName || !clientEmail || submitting || (isProgram && (!programa || !paymentMethod))}
               className="w-full rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? "Reservando..." : "Confirmar reserva"}

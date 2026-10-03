@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import CalendarioEquipo from "./CalendarioEquipo";
 import PacientesTab from "./PacientesTab";
+import ExerciseBank from "./fichas/ExerciseBank";
 import type { Permission, StaffUser } from "@/lib/equipo-auth";
 
-type Tab = "calendario" | "pacientes";
+type Tab = "calendario" | "pacientes" | "ejercicios";
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Administrador",
@@ -149,6 +150,7 @@ export default function PanelEquipo() {
     ...(permissions.includes("pacientes")
       ? [{ key: "pacientes" as Tab, label: permissions.includes("clinico") ? "Pacientes" : "Pacientes y pagos" }]
       : []),
+    ...(permissions.includes("clinico") ? [{ key: "ejercicios" as Tab, label: "Ejercicios" }] : []),
   ];
 
   return (
@@ -225,6 +227,9 @@ export default function PanelEquipo() {
       )}
       {activeTab === "pacientes" && permissions.includes("pacientes") && (
         <PacientesTab permissions={permissions} />
+      )}
+      {activeTab === "ejercicios" && permissions.includes("clinico") && (
+        <ExerciseBank onBack={() => setActiveTab("pacientes")} />
       )}
     </div>
   );
