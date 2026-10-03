@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { generarMinutaLocal } from "@/lib/minuta-recetario";
 
 /*
  * Ficha de evaluación de osteopatía — portada desde sakros-fichas.
@@ -181,11 +182,41 @@ export default function EvalOsteopatia({
       lbl: macros.nivel.prompt,
       restr: restricciones,
     };
-    const nuevos: Data[] = [];
     // Base que no cambia mientras se generan los días
     const base = { ...d, alimentacion: { ...alim, minutaGenerada: null } };
+    const guardar = (lista: Data[], conIA: number) =>
+      onChange({
+        ...base,
+        alimentacion: {
+          ...base.alimentacion,
+          minutaGenerada: {
+            e: "Plan psiconeuroinmunológico y microbiota — Low Carb adaptado",
+            d: lista,
+            n: `Beber ${macros.aguaL} L de agua al día. Priorizar sueño y manejo del estrés para optimizar el eje intestino-cerebro.`,
+            origen: conIA ? `recetario + IA (${conIA} días)` : "recetario",
+          },
+        },
+      });
+
+    // 1) Recetario precargado: elige platos y calcula porciones sin usar IA
+    const { dias: locales, faltantes } = generarMinutaLocal({
+      temas: TEMAS,
+      prot: macros.prot,
+      fat: macros.fat,
+      restricciones: restr,
+      otras: restr.otras,
+    });
+    const nuevos: Data[] = locales.map((x) => x as Data | null).filter(Boolean) as Data[];
+    setProgreso(Math.round(((10 - faltantes.length) / 10) * 100));
+    if (faltantes.length === 0) {
+      guardar(nuevos, 0);
+      setGenerando(false);
+      return;
+    }
+
+    // 2) Solo los días que el recetario no cubre (restricciones muy estrictas) van a la IA
     try {
-      for (let i = 1; i <= 10; i++) {
+      for (const i of faltantes) {
         const res = await fetch("/api/fichas/minuta", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -200,18 +231,9 @@ export default function EvalOsteopatia({
         const out = await res.json().catch(() => ({}));
         if (!res.ok || !out.day) throw new Error(out.error || `No se pudo generar el día ${i}.`);
         nuevos.push(out.day);
-        setProgreso(i * 10);
-        onChange({
-          ...base,
-          alimentacion: {
-            ...base.alimentacion,
-            minutaGenerada: {
-              e: "Plan psiconeuroinmunológico y microbiota — Low Carb adaptado",
-              d: [...nuevos],
-              n: `Beber ${macros.aguaL} L de agua al día. Priorizar sueño y manejo del estrés para optimizar el eje intestino-cerebro.`,
-            },
-          },
-        });
+        nuevos.sort((x, y) => (x.i ?? 0) - (y.i ?? 0));
+        setProgreso(Math.round((nuevos.length / 10) * 100));
+        guardar([...nuevos], faltantes.length);
       }
     } catch (err) {
       setErrorMinuta(`${(err as Error).message} Puedes intentar de nuevo.`);
@@ -583,7 +605,7 @@ export default function EvalOsteopatia({
               disabled={generando}
               className="rounded-full bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-60"
             >
-              {generando ? `Generando día ${Math.min(progreso / 10 + 1, 10)} de 10…` : dias.length ? "Volver a generar minuta 10 días" : "Generar minuta 10 días"}
+              {generando ? `Generando con IA… ${progreso}%` : dias.length ? "Volver a generar minuta 10 días" : "Generar minuta 10 días"}
             </button>
             {dias.length > 0 && !generando && (
               <>
