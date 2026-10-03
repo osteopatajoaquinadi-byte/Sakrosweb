@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { getServiceClient } from "@/lib/supabase";
-import { emailFrom } from "@/lib/email";
+import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
 import { siteConfig } from "@/lib/site-config";
 import { normalizeChileanPhone, sendWhatsappTemplate, whatsappEnabled } from "@/lib/whatsapp";
 
@@ -24,6 +24,12 @@ export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  // Mientras sakros.cl siga en Wix no se envía nada (ni correo ni WhatsApp)
+  // y las reservas no se marcan, para que reciban su recordatorio después.
+  if (!calendarNotificationsEnabled()) {
+    return NextResponse.json({ skipped: "EMAILS_ENABLED no está activo" });
   }
 
   const date = tomorrowInChile();
