@@ -5,10 +5,13 @@ import { paymentLinks, servicePacks, sessionPrices } from "../../lib/site-config
 async function mockBookingApis(page: Page) {
   const posted: Record<string, unknown>[] = [];
   await page.route("**/api/week-availability**", async (route) => {
-    const weekStart = new URL(route.request().url()).searchParams.get("weekStart")!;
+    const params = new URL(route.request().url()).searchParams;
+    const from = params.get("from")!;
+    const days = Number(params.get("days") || 14);
     const available: Record<string, number> = {};
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(`${weekStart}T12:00:00Z`);
+    // Desde mañana, para no depender de la hora a la que corre la prueba.
+    for (let i = 1; i <= days; i++) {
+      const d = new Date(`${from}T12:00:00Z`);
       d.setUTCDate(d.getUTCDate() + i);
       available[d.toISOString().slice(0, 10)] = 3;
     }
@@ -32,9 +35,7 @@ async function mockBookingApis(page: Page) {
 
 async function bookUntilDetails(page: Page, servicio: string) {
   await page.goto(`/reserva?servicio=${servicio}`);
-  // La semana actual puede no tener días futuros: se avanza una semana.
-  await page.getByRole("button", { name: /Siguiente|→/ }).first().click();
-  await page.locator("button:not([disabled])", { hasText: /3 hrs/ }).first().click();
+  await page.getByRole("button", { name: /Próxima fecha disponible/ }).click();
   await page.getByRole("button", { name: /10:30/ }).click();
   await expect(page.getByRole("heading", { name: "Tus datos" })).toBeVisible();
 }

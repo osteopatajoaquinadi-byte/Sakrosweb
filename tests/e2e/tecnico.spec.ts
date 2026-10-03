@@ -92,6 +92,11 @@ test.describe("API protegidas", () => {
     });
   }
 
+  test("el recordatorio diario exige el secreto del cron", async ({ request }) => {
+    const res = await request.get("/api/cron/recordatorios");
+    expect(res.status()).toBe(401);
+  });
+
   test("el PIN antiguo por URL ya no sirve", async ({ request }) => {
     const res = await request.get("/api/calendar?month=2026-10&pin=Sakros2026");
     expect(res.status()).toBe(401);

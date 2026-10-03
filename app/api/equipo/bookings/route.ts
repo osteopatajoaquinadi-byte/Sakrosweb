@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { requireStaff } from "@/lib/equipo-auth";
+import { Resend } from "resend";
+import { emailFrom } from "@/lib/email";
+import { siteConfig } from "@/lib/site-config";
 
 // Agenda interna del panel: a diferencia de /api/bookings (reserva pública),
 // permite agendar fuera de los horarios publicados y vincular la reserva a
@@ -165,7 +168,58 @@ export async function POST(request: NextRequest) {
       .in("id", ids);
   }
 
-  return NextResponse.json({ ok: true, ids, dates });
+  // Confirmación al paciente, igual que en la reserva pública. Si falla el
+  // envío la reserva queda creada igual: el correo es un aviso, no un requisito.
+  let emailed = false;
+  if (body.notify !== false && client_email && process.env.RESEND_API_KEY) {
+    try {
+      const [{ data: svc }, { data: pro }] = await Promise.all([
+        db.from("services").select("name").eq("id", service_id).single(),
+        db.from("professionals").select("name").eq("id", professional_id).single(),
+      ]);
+      const fmt = (d: string) =>
+        new Date(`${d}T12:00:00`).toLocaleDateString("es-CL", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { error: mailErr } = await resend.emails.send({
+        from: emailFrom("Sakros"),
+        to: client_email,
+        replyTo: siteConfig.email,
+        subject: isProgram
+          ? `Tu programa en Sakros — ${svc?.name ?? ""}, ${count} sesiones`
+          : `Tu reserva en Sakros — ${svc?.name ?? ""} el ${fmt(dates[0])}`,
+        text: [
+          `Hola ${client_name},`,
+          "",
+          isProgram ? `Agendamos tu programa de ${count} sesiones:` : "Tu reserva quedó registrada:",
+          "",
+          `Servicio: ${svc?.name ?? ""}`,
+          `Profesional: ${pro?.name ?? ""}`,
+          `Hora: ${start_time} - ${end_time}`,
+          ...(isProgram
+            ? ["", "Fechas:", ...dates.map((d, i) => `  ${i + 1}. ${fmt(d)}`)]
+            : [`Fecha: ${fmt(dates[0])}`]),
+          "",
+          `Dirección: ${siteConfig.address.street}, ${siteConfig.address.city}`,
+          "",
+          "Política de cancelación: puedes cancelar o reprogramar hasta 24 horas antes sin costo.",
+          `¿Necesitas cambiar la hora? Escríbenos al WhatsApp ${siteConfig.phone}.`,
+          "",
+          "— Equipo Sakros",
+        ].join("\n"),
+      });
+      if (mailErr) console.error("Confirmación panel:", mailErr.message);
+      else emailed = true;
+    } catch (e) {
+      console.error("Confirmación panel:", e);
+    }
+  }
+
+  return NextResponse.json({ ok: true, ids, dates, emailed });
 }
 
 const STATUSES = ["confirmed", "cancelled", "completed", "no_show"];

@@ -27,6 +27,7 @@ export default function AgendarReserva({
   const [date, setDate] = useState(defaultDate);
   const [time, setTime] = useState("09:00");
   const [notes, setNotes] = useState("");
+  const [notify, setNotify] = useState(true);
   const [isProgram, setIsProgram] = useState(false);
   const [sessionsCount, setSessionsCount] = useState("8");
   const [everyDays, setEveryDays] = useState("7");
@@ -88,6 +89,7 @@ export default function AgendarReserva({
           allow_overlap: allowOverlap,
           sessions_count: isProgram ? parseInt(sessionsCount) || 1 : 1,
           every_days: isProgram ? parseInt(everyDays) || 7 : 7,
+          notify,
         }),
       });
       const d = await res.json();
@@ -223,6 +225,10 @@ export default function AgendarReserva({
         )}
         <label className="text-sm font-medium text-slate-700 sm:col-span-2">Notas
           <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} className={`mt-1 ${input}`} />
+        </label>
+        <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+          <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
+          Enviar confirmación por correo al paciente (si tiene email)
         </label>
       </div>
 
