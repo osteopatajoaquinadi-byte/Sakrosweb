@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { paymentLinks, servicePacks, services, sessionPrices, siteConfig } from "@/lib/site-config";
+import { bookingSlug, paymentLinks, servicePacks, services, sessionPrices, siteConfig } from "@/lib/site-config";
 import { conditionsFor } from "@/lib/condiciones";
 import ServiceCardHeader from "@/components/ServiceCardHeader";
 import { breadcrumbJsonLd, businessId, pageMetadata } from "@/lib/seo";
@@ -71,6 +71,7 @@ export default async function ServicePage({
   const { slug } = await params;
   const service = services.find((s) => s.slug === slug);
   if (!service) notFound();
+  const bk = bookingSlug(service.slug);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -197,29 +198,29 @@ export default async function ServicePage({
           </div>
         </section>
       )}
-      {(servicePacks[service.slug] || paymentLinks[service.slug] || sessionPrices[service.slug]) && (
+      {(servicePacks[bk] || paymentLinks[bk] || sessionPrices[bk]) && (
         <section className="mb-10">
           <h2 className="text-xl font-bold text-slate-900 mb-4">Opciones y valores</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-slate-200 p-5">
               <p className="font-semibold text-slate-900">Sesión individual</p>
-              {sessionPrices[service.slug] && (
-                <p className="text-2xl font-bold text-slate-900 mt-1">{sessionPrices[service.slug]}</p>
+              {sessionPrices[bk] && (
+                <p className="text-2xl font-bold text-slate-900 mt-1">{sessionPrices[bk]}</p>
               )}
               <p className="text-sm text-slate-600 mt-1 mb-4">
-                {paymentLinks[service.slug]
+                {paymentLinks[bk]
                   ? "Reserva tu hora y paga online al agendar o en la clínica."
                   : "Reserva tu hora online y paga en la clínica."}
               </p>
               <Link
-                href={`/reserva?servicio=${service.slug}`}
+                href={`/reserva?servicio=${bk}`}
                 className="inline-block rounded-full border border-teal-700 px-5 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50"
               >
                 Reservar sesión
               </Link>
             </div>
-            {servicePacks[service.slug] && (() => {
-              const pack = servicePacks[service.slug];
+            {servicePacks[bk] && (() => {
+              const pack = servicePacks[bk];
               const whatsapp = `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
                 `Hola, me interesa el ${pack.name}.`
               )}`;
@@ -254,7 +255,7 @@ export default async function ServicePage({
       )}
       <div className="flex flex-wrap gap-4">
         <Link
-          href={`/reserva?servicio=${service.slug}`}
+          href={`/reserva?servicio=${bk}`}
           className="rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
         >
           Reserva una evaluación

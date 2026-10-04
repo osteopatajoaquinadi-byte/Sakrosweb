@@ -56,7 +56,18 @@ export const sessionPrices: Record<string, string> = {
   osteopatia: "$40.000",
   kinesiologia: "$25.000",
   posturologia: "$30.000",
+  "estudio-biomecanico": "$40.000",
+  "actividad-fisica-dirigida": "$12.000",
 };
+
+// Páginas de servicio cuyo nombre en el calendario de reservas es distinto.
+const bookingSlugs: Record<string, string> = {
+  "estudio-biomecanico-pie": "estudio-biomecanico",
+};
+
+export function bookingSlug(serviceSlug: string): string {
+  return bookingSlugs[serviceSlug] ?? serviceSlug;
+}
 
 export const servicePacks: Record<string, ServicePack> = {
   osteopatia: {
@@ -70,6 +81,12 @@ export const servicePacks: Record<string, ServicePack> = {
     name: "Programa de 5 sesiones de posturología",
     includes: "5 sesiones de posturología clínica",
     paymentUrl: "https://mpago.la/1N4t6QG",
+  },
+  "actividad-fisica-dirigida": {
+    name: "Programa de 8 sesiones de Actividad Física Dirigida",
+    price: "$90.000",
+    includes: "8 sesiones de actividad física dirigida",
+    paymentUrl: "https://www.tuu.cl/actividadfisica8sesiones",
   },
   kinesiologia: {
     name: "Programa de Rehabilitación Kinésica",

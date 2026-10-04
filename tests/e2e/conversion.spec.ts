@@ -143,6 +143,27 @@ test("actividad física dirigida ofrece pago online con Tuu", async ({ page }) =
   await expect(page.getByRole("button", { name: /Pago online/ })).toContainText("Tuu");
 });
 
+test("estudio biomecánico del pie reserva en el servicio correcto del calendario", async ({ page }) => {
+  await page.goto("/servicios/estudio-biomecanico-pie");
+  await expect(page.getByRole("link", { name: "Reservar sesión" })).toHaveAttribute(
+    "href",
+    "/reserva?servicio=estudio-biomecanico"
+  );
+});
+
+test("un servicio que no está en el calendario parte eligiendo servicio", async ({ page }) => {
+  await mockBookingApis(page);
+  await page.goto("/reserva?servicio=plantillas-ortopedicas");
+  await expect(page.getByText("¿Qué servicio necesitas?")).toBeVisible();
+});
+
+test("actividad física muestra el programa de 8 sesiones con su pago", async ({ page }) => {
+  await page.goto("/servicios/actividad-fisica-dirigida");
+  const pack = servicePacks["actividad-fisica-dirigida"];
+  await expect(page.getByText(pack.price!)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Comprar programa" })).toHaveAttribute("href", pack.paymentUrl!);
+});
+
 test.describe("celular @mobile @prod", () => {
   for (const path of ["/", "/servicios/kinesiologia", "/servicios/osteopatia", "/reserva", "/contacto"]) {
     test(`${path} sin scroll horizontal y con reserva a mano`, async ({ page }) => {

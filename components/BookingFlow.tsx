@@ -1,6 +1,6 @@
 "use client";
 
-import { paymentLinks, paymentProvider } from "@/lib/site-config";
+import { bookingSlug, paymentLinks, paymentProvider } from "@/lib/site-config";
 import { trackEvent } from "@/components/GoogleAnalytics";
 
 import { useState, useEffect, useMemo } from "react";
@@ -55,7 +55,10 @@ function toDateStr(d: Date): string {
 
 export default function BookingFlow() {
   const searchParams = useSearchParams();
-  const preselectedService = searchParams.get("servicio") || "";
+  // Solo se preselecciona un servicio que exista en el calendario; si no,
+  // el paciente parte eligiendo el servicio.
+  const requested = bookingSlug(searchParams.get("servicio") || "");
+  const preselectedService = SERVICES_LIST.some((s) => s.slug === requested) ? requested : "";
 
   const [step, setStep] = useState<Step>(preselectedService ? "date" : "service");
   const [selectedService, setSelectedService] = useState<string>(preselectedService);
