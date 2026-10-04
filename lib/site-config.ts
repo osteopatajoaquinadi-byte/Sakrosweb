@@ -29,6 +29,7 @@ export const siteConfig = {
 export const paymentLinks: Record<string, string> = {
   osteopatia: "https://mpago.la/2tDadem", // sesión unitaria de osteopatía
   posturologia: "https://mpago.la/1ZxDosu", // sesión unitaria de posturología
+  "estudio-biomecanico": "https://mpago.la/26haysY", // evaluación del pie
 };
 
 // Programas (packs) que se ofrecen dentro de la página de cada servicio.

@@ -129,6 +129,12 @@ test("posturología ofrece pago online de sesión y pack de 5", async ({ page })
   await expect(page.getByRole("button", { name: /Pago online/ })).toBeVisible();
 });
 
+test("estudio biomecánico (evaluación del pie) ofrece pago online", async ({ page }) => {
+  await mockBookingApis(page);
+  await bookUntilDetails(page, "estudio-biomecanico");
+  await expect(page.getByRole("button", { name: /Pago online/ })).toBeVisible();
+});
+
 test.describe("celular @mobile @prod", () => {
   for (const path of ["/", "/servicios/kinesiologia", "/servicios/osteopatia", "/reserva", "/contacto"]) {
     test(`${path} sin scroll horizontal y con reserva a mano`, async ({ page }) => {
