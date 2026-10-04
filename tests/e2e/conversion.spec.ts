@@ -57,15 +57,17 @@ test("reserva de osteopatía con pago online muestra el link de Mercado Pago @mo
   expect(posted[0]).toMatchObject({ payment_method: "online_webpay", client_name: "Paciente de Prueba" });
 });
 
-test("kinesiología no ofrece pago online mientras no tenga link", async ({ page }) => {
+test("kinesiología ofrece pago online con Tuu", async ({ page }) => {
   await mockBookingApis(page);
   await bookUntilDetails(page, "kinesiologia");
-  if (paymentLinks.kinesiologia) {
-    await expect(page.getByRole("button", { name: /Pago online/ })).toBeVisible();
-  } else {
-    await expect(page.getByRole("button", { name: /Pago online/ })).toHaveCount(0);
-  }
-  await expect(page.getByRole("button", { name: /Pago en clínica/ })).toBeVisible();
+  await page.getByLabel("Nombre completo *").fill("Paciente Kine");
+  await page.getByLabel("Email *").fill("kine@example.com");
+  await page.getByRole("button", { name: /Pago online/ }).click();
+  await page.getByRole("button", { name: "Confirmar reserva" }).click();
+  await expect(page.getByRole("link", { name: "Pagar ahora con Tuu" })).toHaveAttribute(
+    "href",
+    paymentLinks.kinesiologia
+  );
 });
 
 test("programa de rehabilitación: agenda primero y elige FONASA/ISAPRE al final", async ({ page }) => {

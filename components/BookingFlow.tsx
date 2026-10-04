@@ -1,6 +1,6 @@
 "use client";
 
-import { paymentLinks } from "@/lib/site-config";
+import { paymentLinks, paymentProvider } from "@/lib/site-config";
 import { trackEvent } from "@/components/GoogleAnalytics";
 
 import { useState, useEffect, useMemo } from "react";
@@ -208,7 +208,7 @@ export default function BookingFlow() {
             rel="noopener noreferrer"
             className="inline-block mb-4 rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
           >
-            Pagar ahora con Mercado Pago
+            Pagar ahora con {paymentProvider(paymentLinks[selectedService])}
           </a>
         )}
         {paymentMethod === "online_transfer" && (
@@ -547,7 +547,7 @@ export default function BookingFlow() {
                     }`}
                   >
                     <p className="font-semibold">{isProgram ? "Pago con tarjeta" : "Pago online"}</p>
-                    <p className="text-xs text-slate-500">{isProgram ? "Online, al confirmar la reserva" : "Tarjeta con Mercado Pago"}</p>
+                    <p className="text-xs text-slate-500">{isProgram ? "Online, al confirmar la reserva" : `Tarjeta con ${paymentProvider(paymentLinks[selectedService])}`}</p>
                     {programa && <p className="text-xs font-semibold text-teal-700 mt-1">{programa.price}</p>}
                   </button>
                 )}

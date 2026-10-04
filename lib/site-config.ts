@@ -24,13 +24,19 @@ export const siteConfig = {
   bookingUrl: "https://wa.me/56945399692",
 };
 
-// Links de pago online (Mercado Pago) por servicio de la reserva. Si un
+// Links de pago online (Mercado Pago o Tuu) por servicio de la reserva. Si un
 // servicio tiene link, la reserva ofrece "Pago online" y lo muestra al final.
 export const paymentLinks: Record<string, string> = {
   osteopatia: "https://mpago.la/2tDadem", // sesión unitaria de osteopatía
   posturologia: "https://mpago.la/1ZxDosu", // sesión unitaria de posturología
   "estudio-biomecanico": "https://mpago.la/26haysY", // evaluación del pie
+  kinesiologia: "https://www.tuu.cl/sesionkinesiologia", // sesión unitaria de kinesiología
 };
+
+// Nombre de la plataforma de pago según el link, para los botones.
+export function paymentProvider(url: string): string {
+  return url.includes("tuu.cl") ? "Tuu" : "Mercado Pago";
+}
 
 // Programas (packs) que se ofrecen dentro de la página de cada servicio.
 // Sin paymentUrl, el botón lleva a WhatsApp para coordinar la compra.
