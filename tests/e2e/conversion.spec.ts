@@ -57,15 +57,17 @@ test("reserva de osteopatía con pago online muestra el link de Mercado Pago @mo
   expect(posted[0]).toMatchObject({ payment_method: "online_webpay", client_name: "Paciente de Prueba" });
 });
 
-test("kinesiología no ofrece pago online mientras no tenga link", async ({ page }) => {
+test("kinesiología ofrece pago online con Tuu", async ({ page }) => {
   await mockBookingApis(page);
   await bookUntilDetails(page, "kinesiologia");
-  if (paymentLinks.kinesiologia) {
-    await expect(page.getByRole("button", { name: /Pago online/ })).toBeVisible();
-  } else {
-    await expect(page.getByRole("button", { name: /Pago online/ })).toHaveCount(0);
-  }
-  await expect(page.getByRole("button", { name: /Pago en clínica/ })).toBeVisible();
+  await page.getByLabel("Nombre completo *").fill("Paciente Kine");
+  await page.getByLabel("Email *").fill("kine@example.com");
+  await page.getByRole("button", { name: /Pago online/ }).click();
+  await page.getByRole("button", { name: "Confirmar reserva" }).click();
+  await expect(page.getByRole("link", { name: "Pagar ahora con Tuu" })).toHaveAttribute(
+    "href",
+    paymentLinks.kinesiologia
+  );
 });
 
 test("programa de rehabilitación: agenda primero y elige FONASA/ISAPRE al final", async ({ page }) => {
@@ -94,6 +96,11 @@ test("programa de rehabilitación: agenda primero y elige FONASA/ISAPRE al final
   expect(String(posted[0].notes)).toContain("[Programa Rehabilitación FONASA]");
 });
 
+test("contacto lleva a reservar en el calendario propio @prod", async ({ page }) => {
+  await page.goto("/contacto");
+  await expect(page.getByRole("link", { name: "Reservar hora" })).toHaveAttribute("href", "/reserva");
+});
+
 test.describe("ofertas visibles @prod", () => {
   test("kinesiología muestra valor de sesión y programa Fonasa/Isapre", async ({ page }) => {
     await page.goto("/servicios/kinesiologia");
@@ -114,6 +121,48 @@ test.describe("ofertas visibles @prod", () => {
       pack.paymentUrl!
     );
   });
+});
+
+test("posturología ofrece pago online de sesión y pack de 5", async ({ page }) => {
+  await page.goto("/servicios/posturologia");
+  await expect(page.getByText(servicePacks.posturologia.price!)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Comprar programa" })).toHaveAttribute("href", servicePacks.posturologia.paymentUrl!);
+  await mockBookingApis(page);
+  await bookUntilDetails(page, "posturologia");
+  await expect(page.getByRole("button", { name: /Pago online/ })).toBeVisible();
+});
+
+test("estudio biomecánico (evaluación del pie) ofrece pago online", async ({ page }) => {
+  await mockBookingApis(page);
+  await bookUntilDetails(page, "estudio-biomecanico");
+  await expect(page.getByRole("button", { name: /Pago online/ })).toBeVisible();
+});
+
+test("actividad física dirigida ofrece pago online con Tuu", async ({ page }) => {
+  await mockBookingApis(page);
+  await bookUntilDetails(page, "actividad-fisica-dirigida");
+  await expect(page.getByRole("button", { name: /Pago online/ })).toContainText("Tuu");
+});
+
+test("estudio biomecánico del pie reserva en el servicio correcto del calendario", async ({ page }) => {
+  await page.goto("/servicios/estudio-biomecanico-pie");
+  await expect(page.getByRole("link", { name: "Reservar sesión" })).toHaveAttribute(
+    "href",
+    "/reserva?servicio=estudio-biomecanico"
+  );
+});
+
+test("un servicio que no está en el calendario parte eligiendo servicio", async ({ page }) => {
+  await mockBookingApis(page);
+  await page.goto("/reserva?servicio=plantillas-ortopedicas");
+  await expect(page.getByText("¿Qué servicio necesitas?")).toBeVisible();
+});
+
+test("actividad física muestra el programa de 8 sesiones con su pago", async ({ page }) => {
+  await page.goto("/servicios/actividad-fisica-dirigida");
+  const pack = servicePacks["actividad-fisica-dirigida"];
+  await expect(page.getByText(pack.price!)).toBeVisible();
+  await expect(page.getByRole("link", { name: "Comprar programa" })).toHaveAttribute("href", pack.paymentUrl!);
 });
 
 test.describe("celular @mobile @prod", () => {
