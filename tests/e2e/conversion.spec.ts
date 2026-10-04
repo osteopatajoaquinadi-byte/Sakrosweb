@@ -94,6 +94,11 @@ test("programa de rehabilitación: agenda primero y elige FONASA/ISAPRE al final
   expect(String(posted[0].notes)).toContain("[Programa Rehabilitación FONASA]");
 });
 
+test("contacto lleva a reservar en el calendario propio @prod", async ({ page }) => {
+  await page.goto("/contacto");
+  await expect(page.getByRole("link", { name: "Reservar hora" })).toHaveAttribute("href", "/reserva");
+});
+
 test.describe("ofertas visibles @prod", () => {
   test("kinesiología muestra valor de sesión y programa Fonasa/Isapre", async ({ page }) => {
     await page.goto("/servicios/kinesiologia");
@@ -114,6 +119,14 @@ test.describe("ofertas visibles @prod", () => {
       pack.paymentUrl!
     );
   });
+});
+
+test("posturología ofrece pago online de sesión y pack de 5", async ({ page }) => {
+  await page.goto("/servicios/posturologia");
+  await expect(page.getByRole("link", { name: "Comprar programa" })).toHaveAttribute("href", servicePacks.posturologia.paymentUrl!);
+  await mockBookingApis(page);
+  await bookUntilDetails(page, "posturologia");
+  await expect(page.getByRole("button", { name: /Pago online/ })).toBeVisible();
 });
 
 test.describe("celular @mobile @prod", () => {

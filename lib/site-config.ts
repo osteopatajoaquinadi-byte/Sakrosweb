@@ -20,9 +20,7 @@ export const siteConfig = {
   whatsappNumber: "56945399692",
   email: "sakrosvina@gmail.com",
   instagram: "https://www.instagram.com/sakros_salud",
-  // TODO (Juaco): confirmar si el botón de reserva debe ir a WhatsApp,
-  // a un sistema de agendamiento externo, o a uno propio. Por ahora
-  // apunta a WhatsApp como opción segura y ya operativa.
+  // Botón "Escríbenos por WhatsApp" de Contacto. La reserva va a /reserva.
   bookingUrl: "https://wa.me/56945399692",
 };
 
@@ -30,6 +28,7 @@ export const siteConfig = {
 // servicio tiene link, la reserva ofrece "Pago online" y lo muestra al final.
 export const paymentLinks: Record<string, string> = {
   osteopatia: "https://mpago.la/2tDadem", // sesión unitaria de osteopatía
+  posturologia: "https://mpago.la/1ZxDosu", // sesión unitaria de posturología
 };
 
 // Programas (packs) que se ofrecen dentro de la página de cada servicio.
@@ -58,6 +57,11 @@ export const servicePacks: Record<string, ServicePack> = {
     validity: "Válido por 6 meses",
     includes: "5 sesiones de osteopatía estructural con asesoramiento metabólico",
     paymentUrl: "https://mpago.la/1idmHEA",
+  },
+  posturologia: {
+    name: "Programa de 5 sesiones de posturología",
+    includes: "5 sesiones de posturología clínica",
+    paymentUrl: "https://mpago.la/1N4t6QG",
   },
   kinesiologia: {
     name: "Programa de Rehabilitación Kinésica",

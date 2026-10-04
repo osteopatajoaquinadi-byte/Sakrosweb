@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site-config";
 import ContactForm from "@/components/ContactForm";
@@ -30,14 +31,22 @@ export default function ContactoPage() {
             </a>
           </p>
         </div>
-        <a
-          href={siteConfig.bookingUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
-        >
-          Escríbenos por WhatsApp
-        </a>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/reserva"
+            className="inline-block rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
+          >
+            Reservar hora
+          </Link>
+          <a
+            href={siteConfig.bookingUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block rounded-full border border-teal-700 px-6 py-3 text-sm font-semibold text-teal-700 hover:bg-teal-50"
+          >
+            Escríbenos por WhatsApp
+          </a>
+        </div>
       </div>
       <div>
         <ContactForm />
