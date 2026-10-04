@@ -79,6 +79,8 @@ export const servicePacks: Record<string, ServicePack> = {
   },
   posturologia: {
     name: "Programa de 5 sesiones de posturología",
+    price: "$162.000",
+    validity: "Válido por 6 meses",
     includes: "5 sesiones de posturología clínica",
     paymentUrl: "https://mpago.la/1N4t6QG",
   },

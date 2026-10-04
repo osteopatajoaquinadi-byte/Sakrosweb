@@ -125,6 +125,7 @@ test.describe("ofertas visibles @prod", () => {
 
 test("posturología ofrece pago online de sesión y pack de 5", async ({ page }) => {
   await page.goto("/servicios/posturologia");
+  await expect(page.getByText(servicePacks.posturologia.price!)).toBeVisible();
   await expect(page.getByRole("link", { name: "Comprar programa" })).toHaveAttribute("href", servicePacks.posturologia.paymentUrl!);
   await mockBookingApis(page);
   await bookUntilDetails(page, "posturologia");
