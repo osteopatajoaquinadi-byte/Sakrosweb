@@ -31,6 +31,7 @@ export const paymentLinks: Record<string, string> = {
   posturologia: "https://mpago.la/1ZxDosu", // sesión unitaria de posturología
   "estudio-biomecanico": "https://mpago.la/26haysY", // evaluación del pie
   kinesiologia: "https://www.tuu.cl/sesionkinesiologia", // sesión unitaria de kinesiología
+  "actividad-fisica-dirigida": "https://www.tuu.cl/actividadfisica", // 1 sesión
 };
 
 // Nombre de la plataforma de pago según el link, para los botones.

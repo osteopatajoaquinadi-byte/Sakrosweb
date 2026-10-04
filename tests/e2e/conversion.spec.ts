@@ -137,6 +137,12 @@ test("estudio biomecánico (evaluación del pie) ofrece pago online", async ({ p
   await expect(page.getByRole("button", { name: /Pago online/ })).toBeVisible();
 });
 
+test("actividad física dirigida ofrece pago online con Tuu", async ({ page }) => {
+  await mockBookingApis(page);
+  await bookUntilDetails(page, "actividad-fisica-dirigida");
+  await expect(page.getByRole("button", { name: /Pago online/ })).toContainText("Tuu");
+});
+
 test.describe("celular @mobile @prod", () => {
   for (const path of ["/", "/servicios/kinesiologia", "/servicios/osteopatia", "/reserva", "/contacto"]) {
     test(`${path} sin scroll horizontal y con reserva a mano`, async ({ page }) => {
