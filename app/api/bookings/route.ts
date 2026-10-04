@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { Resend } from "resend";
 import { paymentLinks, siteConfig } from "@/lib/site-config";
+import { sendProfessionalInvites } from "@/lib/calendar-invite";
 
 export async function POST(request: Request) {
   try {
@@ -172,8 +173,8 @@ export async function POST(request: Request) {
       });
     }
 
-    // TODO: crear evento en Google Calendar del profesional
-    // TODO: enviar mensaje de confirmación por WhatsApp (API de WhatsApp Business)
+    // La hora llega como invitación al calendario del profesional.
+    await sendProfessionalInvites(db, [booking.id], "new");
 
     return NextResponse.json({ booking });
   } catch (error) {

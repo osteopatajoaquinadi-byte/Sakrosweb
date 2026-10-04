@@ -4,6 +4,7 @@ import { requireStaff } from "@/lib/equipo-auth";
 import { Resend } from "resend";
 import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
 import { siteConfig } from "@/lib/site-config";
+import { sendProfessionalInvites } from "@/lib/calendar-invite";
 
 // Agenda interna del panel: a diferencia de /api/bookings (reserva pública),
 // permite agendar fuera de los horarios publicados y vincular la reserva a
@@ -219,6 +220,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Cada sesión llega como invitación al calendario del profesional.
+  await sendProfessionalInvites(db, ids, "new");
+
   return NextResponse.json({ ok: true, ids, dates, emailed });
 }
 
@@ -239,7 +243,7 @@ export async function PATCH(request: NextRequest) {
   const db = getServiceClient();
   const { data: current } = await db
     .from("bookings")
-    .select("booking_date, start_time, professional_id, service_id")
+    .select("booking_date, start_time, professional_id, service_id, status")
     .eq("id", id)
     .single();
   if (!current) {
@@ -309,6 +313,21 @@ export async function PATCH(request: NextRequest) {
   const { error } = await db.from("bookings").update(update).eq("id", id);
   if (error) {
     return NextResponse.json({ error: "Error al actualizar la reserva." }, { status: 500 });
+  }
+
+  // Mantener al día el calendario del profesional.
+  const newStatus = status ?? current.status;
+  if (newStatus === "cancelled" && current.status !== "cancelled") {
+    await sendProfessionalInvites(db, [id], "cancel");
+  } else if (newStatus === "confirmed" && current.status === "cancelled") {
+    await sendProfessionalInvites(db, [id], "new");
+  } else if (rescheduling && newStatus !== "cancelled") {
+    if (professional_id !== current.professional_id) {
+      await sendProfessionalInvites(db, [id], "cancel", current.professional_id);
+      await sendProfessionalInvites(db, [id], "new");
+    } else {
+      await sendProfessionalInvites(db, [id], "update");
+    }
   }
   return NextResponse.json({ ok: true });
 }
