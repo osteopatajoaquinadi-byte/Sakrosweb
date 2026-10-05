@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient as getSupabase } from "@/lib/supabase";
+import { releaseExpiredHolds } from "@/lib/payment-holds";
 
 type Slot = {
   time: string; // HH:MM
@@ -75,6 +76,7 @@ export async function GET(request: NextRequest) {
     .in("professional_id", professionalIds);
 
   // 4. Obtener reservas existentes para esa fecha (por profesional, no por servicio)
+  await releaseExpiredHolds(getSupabase());
   const { data: bookings } = await getSupabase()
     .from("bookings")
     .select("professional_id, start_time")

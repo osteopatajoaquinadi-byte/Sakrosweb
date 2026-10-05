@@ -2,7 +2,9 @@ import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
 import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { Resend } from "resend";
-import { paymentLinks, siteConfig } from "@/lib/site-config";
+import { paymentLinks, paymentProvider, siteConfig } from "@/lib/site-config";
+import { PAYMENT_HOLD_MINUTES, createCheckout, mercadoPagoEnabled } from "@/lib/mercadopago";
+import { releaseExpiredHolds } from "@/lib/payment-holds";
 import { sendProfessionalInvites } from "@/lib/calendar-invite";
 
 export async function POST(request: Request) {
@@ -36,6 +38,7 @@ export async function POST(request: Request) {
     }
 
     const db = getServiceClient();
+    await releaseExpiredHolds(db);
 
     // Obtener servicio para calcular end_time
     const { data: service } = await db
@@ -109,6 +112,41 @@ export async function POST(request: Request) {
       );
     }
 
+    // Pago online con Mercado Pago: cobro propio de esta reserva, que se marca
+    // pagada sola al recibir el aviso. Si no se paga en el plazo, la hora se
+    // libera. Los programas y los servicios con link de Tuu siguen con link fijo.
+    let paymentUrl: string | null = null;
+    const fixedLink = paymentLinks[service.slug];
+    const isProgram = typeof notes === "string" && notes.startsWith("[Programa");
+    if (
+      payment_method === "online_webpay" &&
+      !isProgram &&
+      fixedLink &&
+      paymentProvider(fixedLink) === "Mercado Pago" &&
+      mercadoPagoEnabled()
+    ) {
+      try {
+        const expiresAt = new Date(Date.now() + PAYMENT_HOLD_MINUTES * 60_000);
+        const checkout = await createCheckout({
+          bookingId: booking.id,
+          title: `${service.name} — Sakros`,
+          amount: service.price_clp,
+          payerEmail: client_email,
+          payerName: client_name,
+          siteUrl: new URL(request.url).origin,
+          expiresAt,
+        });
+        paymentUrl = checkout.url;
+        await db
+          .from("bookings")
+          .update({ payment_provider_ref: checkout.id, payment_expires_at: expiresAt.toISOString() })
+          .eq("id", booking.id);
+      } catch (e) {
+        // Sin cobro propio se ofrece el link fijo, como antes.
+        console.error("Mercado Pago:", e);
+      }
+    }
+
     // Enviar email de confirmación al cliente
     const apiKey = process.env.RESEND_API_KEY;
     if (apiKey && calendarNotificationsEnabled()) {
@@ -134,7 +172,9 @@ export async function POST(request: Request) {
           `Hora: ${start_time} - ${end_time}`,
           `Valor: $${service.price_clp.toLocaleString("es-CL")} CLP`,
           "",
-          payment_method === "online_webpay" && paymentLinks[service.slug]
+          paymentUrl
+            ? `Pago online: ${paymentUrl}\nTienes ${PAYMENT_HOLD_MINUTES / 60} horas para pagar; si no, la hora se libera.`
+            : payment_method === "online_webpay" && paymentLinks[service.slug]
             ? `Pago online: ${paymentLinks[service.slug]}`
             : payment_method === "online_webpay"
             ? `Pago: online con tarjeta (link en la pantalla de confirmación). Si no alcanzaste a pagar, escríbenos al WhatsApp ${siteConfig.phone}.`
@@ -176,7 +216,7 @@ export async function POST(request: Request) {
     // La hora llega como invitación al calendario del profesional.
     await sendProfessionalInvites(db, [booking.id], "new");
 
-    return NextResponse.json({ booking });
+    return NextResponse.json({ booking, payment_url: paymentUrl });
   } catch (error) {
     console.error("Error en /api/bookings:", error);
     return NextResponse.json(
