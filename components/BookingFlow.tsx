@@ -78,6 +78,9 @@ export default function BookingFlow() {
   const [clientPhone, setClientPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("in_clinic");
   const [notes, setNotes] = useState("");
+  // Cobro propio de la reserva (Mercado Pago); si no hay, se usa el link fijo.
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const pagoRetorno = searchParams.get("pago");
   const [submitting, setSubmitting] = useState(false);
   // Programa de rehabilitación kinésica: misma reserva que kinesiología,
   // con previsión y precio del programa al final.
@@ -167,6 +170,7 @@ export default function BookingFlow() {
           servicio: isProgram ? `programa_rehab_${programaPrevision}` : selectedService,
           pago: paymentMethod,
         });
+        setPaymentUrl(data.payment_url ?? null);
         setStep("done");
       }
     } catch {
@@ -187,6 +191,30 @@ export default function BookingFlow() {
 
   // =================== RENDER ===================
 
+  if (pagoRetorno && step === "service" && !selectedService) {
+    const ok = pagoRetorno === "ok";
+    return (
+      <div className={`rounded-2xl border p-8 text-center ${ok ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
+        <p className={`text-2xl font-bold mb-2 ${ok ? "text-emerald-800" : "text-amber-800"}`}>
+          {ok ? "¡Pago recibido!" : pagoRetorno === "pendiente" ? "Pago en proceso" : "El pago no se completó"}
+        </p>
+        <p className={`mb-4 ${ok ? "text-emerald-700" : "text-amber-700"}`}>
+          {ok
+            ? "Tu reserva quedó confirmada y pagada. Te esperamos."
+            : pagoRetorno === "pendiente"
+            ? "Tu reserva quedará pagada apenas Mercado Pago confirme el pago."
+            : "Puedes volver a intentarlo desde el link del correo de confirmación, o escribirnos por WhatsApp."}
+        </p>
+        <a
+          href="https://wa.me/56945399692"
+          className="inline-block rounded-full border border-teal-700 px-6 py-3 text-sm font-semibold text-teal-700 hover:bg-teal-50"
+        >
+          Escribir por WhatsApp
+        </a>
+      </div>
+    );
+  }
+
   if (step === "done") {
     return (
       <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-8 text-center">
@@ -204,7 +232,20 @@ export default function BookingFlow() {
             Pagar {programa.price} con tarjeta
           </a>
         )}
-        {paymentMethod === "online_webpay" && !isProgram && paymentLinks[selectedService] && (
+        {paymentMethod === "online_webpay" && !isProgram && paymentUrl && (
+          <>
+            <a
+              href={paymentUrl}
+              className="inline-block mb-2 rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
+            >
+              Pagar ahora con Mercado Pago
+            </a>
+            <p className="text-sm text-emerald-700 mb-4">
+              Tienes 2 horas para pagar. Si no se completa el pago, la hora se libera.
+            </p>
+          </>
+        )}
+        {paymentMethod === "online_webpay" && !isProgram && !paymentUrl && paymentLinks[selectedService] && (
           <a
             href={paymentLinks[selectedService]}
             target="_blank"

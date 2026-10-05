@@ -14,6 +14,7 @@ export type CalendarBooking = {
   client_email?: string | null;
   fichas_patient_id?: string | null;
   payment_status: string;
+  payment_method?: string | null;
   notes: string | null;
   status: string;
   service_id: string;
@@ -50,6 +51,12 @@ type Balance = {
   total_remaining: number;
   balance_detail: { service_type: string; remaining: number }[] | null;
 } | null;
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  online_webpay: "eligió pago online",
+  online_transfer: "eligió transferencia",
+  in_clinic: "paga en clínica",
+};
 
 const STATUS_LABELS: Record<string, string> = {
   confirmed: "Confirmada",
@@ -90,6 +97,7 @@ export default function DetalleCita({
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState(booking.payment_status);
 
   // Sesiones restantes del paciente
   useEffect(() => {
@@ -147,6 +155,31 @@ export default function DetalleCita({
       onChanged();
       if (closeAfter) onClose();
       else setEditando(false);
+    } catch {
+      setError("Error de conexión.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function togglePagada() {
+    const next = paymentStatus === "paid" ? "pending" : "paid";
+    if (next === "pending" && !confirm("¿Marcar esta cita como pago pendiente?")) return;
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch("/api/equipo/bookings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: booking.id, payment_status: next }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        setError(d.error || "No se pudo actualizar el pago.");
+        return;
+      }
+      setPaymentStatus(next);
+      onChanged();
     } catch {
       setError("Error de conexión.");
     } finally {
@@ -225,11 +258,24 @@ export default function DetalleCita({
                 </span>
                 <span
                   className={`rounded-full px-2.5 py-1 font-semibold ${
-                    booking.payment_status === "paid" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                    paymentStatus === "paid" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
                   }`}
                 >
-                  {booking.payment_status === "paid" ? "Pagada" : "Pago pendiente"}
+                  {paymentStatus === "paid" ? "Pagada" : "Pago pendiente"}
+                  {booking.payment_method && PAYMENT_METHOD_LABELS[booking.payment_method]
+                    ? ` · ${PAYMENT_METHOD_LABELS[booking.payment_method]}`
+                    : ""}
                 </span>
+                {puedeAgendar && (
+                  <button
+                    type="button"
+                    onClick={togglePagada}
+                    disabled={saving}
+                    className="rounded-full border border-slate-300 px-2.5 py-1 font-semibold text-slate-700 hover:border-teal-700 hover:text-teal-700 disabled:opacity-50"
+                  >
+                    {paymentStatus === "paid" ? "Marcar pendiente" : "Marcar como pagada"}
+                  </button>
+                )}
                 {programa && (
                   <span className="rounded-full bg-teal-100 px-2.5 py-1 font-semibold text-teal-800">
                     Programa: sesión {programa[1]} de {programa[2]}

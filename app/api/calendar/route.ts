@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
       client_email,
       fichas_patient_id,
       payment_status,
+      payment_method,
       notes,
       status,
       service_id,

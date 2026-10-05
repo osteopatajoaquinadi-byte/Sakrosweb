@@ -101,6 +101,28 @@ test("contacto lleva a reservar en el calendario propio @prod", async ({ page })
   await expect(page.getByRole("link", { name: "Reservar hora" })).toHaveAttribute("href", "/reserva");
 });
 
+test("pago con Mercado Pago usa el cobro propio de la reserva y avisa el plazo", async ({ page }) => {
+  await mockBookingApis(page);
+  await page.route("**/api/bookings", (route) =>
+    route.fulfill({ json: { booking: { id: "b-1" }, payment_url: "https://www.mercadopago.cl/checkout/v1/redirect?pref_id=test" } })
+  );
+  await bookUntilDetails(page, "osteopatia");
+  await page.getByLabel("Nombre completo *").fill("Paciente MP");
+  await page.getByLabel("Email *").fill("mp@example.com");
+  await page.getByRole("button", { name: /Pago online/ }).click();
+  await page.getByRole("button", { name: "Confirmar reserva" }).click();
+  await expect(page.getByRole("link", { name: "Pagar ahora con Mercado Pago" })).toHaveAttribute(
+    "href",
+    "https://www.mercadopago.cl/checkout/v1/redirect?pref_id=test"
+  );
+  await expect(page.getByText(/Tienes 2 horas para pagar/)).toBeVisible();
+});
+
+test("al volver de Mercado Pago con el pago aprobado se confirma", async ({ page }) => {
+  await page.goto("/reserva?pago=ok");
+  await expect(page.getByText("¡Pago recibido!")).toBeVisible();
+});
+
 test.describe("ofertas visibles @prod", () => {
   test("kinesiología muestra valor de sesión y programa Fonasa/Isapre", async ({ page }) => {
     await page.goto("/servicios/kinesiologia");

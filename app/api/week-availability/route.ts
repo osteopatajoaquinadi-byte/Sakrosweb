@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient as getSupabase } from "@/lib/supabase";
+import { releaseExpiredHolds } from "@/lib/payment-holds";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest) {
     weekDates.push(d.toISOString().split("T")[0]);
   }
 
+  await releaseExpiredHolds(getSupabase());
   const { data: weekBookings } = await getSupabase()
     .from("bookings").select("professional_id, start_time, booking_date")
     .in("booking_date", weekDates).in("professional_id", profIds).neq("status", "cancelled");

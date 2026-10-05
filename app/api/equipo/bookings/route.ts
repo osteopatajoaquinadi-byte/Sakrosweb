@@ -227,6 +227,7 @@ export async function POST(request: NextRequest) {
 }
 
 const STATUSES = ["confirmed", "cancelled", "completed", "no_show"];
+const PAYMENT_STATUSES = ["pending", "paid", "refunded"];
 
 // Editar una reserva: cambiar estado (cancelar, asistió, no asistió) y/o
 // reagendar (fecha, hora, profesional, servicio) y notas.
@@ -235,8 +236,12 @@ export async function PATCH(request: NextRequest) {
   if (denied) return denied;
 
   const body = await request.json();
-  const { id, status } = body;
-  if (!id || (status !== undefined && !STATUSES.includes(status))) {
+  const { id, status, payment_status } = body;
+  if (
+    !id ||
+    (status !== undefined && !STATUSES.includes(status)) ||
+    (payment_status !== undefined && !PAYMENT_STATUSES.includes(payment_status))
+  ) {
     return NextResponse.json({ error: "Datos inválidos." }, { status: 400 });
   }
 
@@ -256,6 +261,7 @@ export async function PATCH(request: NextRequest) {
     update.cancelled_at = status === "cancelled" ? new Date().toISOString() : null;
   }
   if (typeof body.notes === "string") update.notes = body.notes;
+  if (payment_status !== undefined) update.payment_status = payment_status;
 
   const booking_date = body.booking_date ?? current.booking_date;
   const start_time = String(body.start_time ?? current.start_time).slice(0, 5);
