@@ -26,10 +26,19 @@ export interface Ejercicio {
   region: RegionEjercicio;
   equipo: string;
   descripcion: string;
-  ejecucion: string;
+  /** Posición inicial, escrita para el paciente. */
+  posicion: string;
+  /** Pasos de ejecución en orden. */
+  pasos: string[];
+  /** Puntos clave y sensación esperada. */
+  claves: string[];
+  /** Errores frecuentes a evitar. */
+  evitar: string[];
   dosis: string;
   /** Video propio de Sakros (ruta pública), si existe. */
   video?: string;
+  /** Fotos de posición inicial y final (rutas públicas). */
+  imagenes?: string[];
 }
 
 export interface EjercicioEnFase {
@@ -42,6 +51,8 @@ export interface Fase {
   nombre: string;
   semanas: string;
   objetivos: string[];
+  /** Técnicas manuales que aplica el profesional en la sesión (no van al PDF del paciente). */
+  terapiaManual: string[];
   precauciones: string[];
   criteriosAvance: string[];
   ejercicios: EjercicioEnFase[];

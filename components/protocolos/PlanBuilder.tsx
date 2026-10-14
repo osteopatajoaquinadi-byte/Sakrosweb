@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { EJERCICIOS, REGIONES } from "@/lib/protocolos/ejercicios";
+import { EJERCICIOS, REGIONES, getEjercicio } from "@/lib/protocolos/ejercicios";
 import type { ItemPlan, PerfilProfesional } from "@/lib/protocolos/types";
-import FuentesEjercicio from "./FuentesEjercicio";
-import { generarPlanPdf, nombreArchivo } from "./pdf-plan";
+import FichaEjercicio from "./FichaEjercicio";
+import { cargarImagenes, generarPlanPdf, nombreArchivo } from "./pdf-plan";
 import type { BorradorPlan } from "./storage";
 
 interface Props {
@@ -28,6 +28,7 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
   const [region, setRegion] = useState<string>("todas");
   const [biblioteca, setBiblioteca] = useState(plan.items.length === 0);
   const [msg, setMsg] = useState("");
+  const [creando, setCreando] = useState(false);
 
   const enPlan = useMemo(() => new Set(plan.items.map((i) => i.ejercicioId)), [plan.items]);
   const filtrados = useMemo(() => {
@@ -59,15 +60,24 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
     return { paciente: plan.paciente.trim(), fecha: hoy(), protocolo: plan.protocolo, indicaciones: plan.indicaciones, items: plan.items };
   }
 
-  function descargar() {
+  async function crearPdf() {
     const datos = datosPdf();
-    generarPlanPdf(datos, perfil).save(nombreArchivo(datos));
+    const doc = generarPlanPdf(datos, perfil, await cargarImagenes(datos.items));
+    return { doc, datos };
+  }
+
+  async function descargar() {
+    setCreando(true);
+    const { doc, datos } = await crearPdf();
+    doc.save(nombreArchivo(datos));
+    setCreando(false);
   }
 
   async function compartir() {
     setMsg("");
-    const datos = datosPdf();
-    const doc = generarPlanPdf(datos, perfil);
+    setCreando(true);
+    const { doc, datos } = await crearPdf();
+    setCreando(false);
     const file = new File([doc.output("blob")], nombreArchivo(datos), { type: "application/pdf" });
     if (typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
       try {
@@ -141,11 +151,17 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
             {plan.items.map((it, idx) => (
               <li key={it.uid} className="rounded-xl border border-slate-200 bg-white p-3">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-medium text-slate-900">
-                      {idx + 1}. {it.nombre}
-                    </p>
-                    {it.fase && <p className="text-xs text-teal-700">{it.fase}</p>}
+                  <div className="flex items-start gap-3">
+                    {getEjercicio(it.ejercicioId)?.imagenes?.[0] && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={getEjercicio(it.ejercicioId)!.imagenes![0]} alt="" className="h-10 w-14 shrink-0 rounded object-cover" />
+                    )}
+                    <div>
+                      <p className="font-medium text-slate-900">
+                        {idx + 1}. {it.nombre}
+                      </p>
+                      {it.fase && <p className="text-xs text-teal-700">{it.fase}</p>}
+                    </div>
                   </div>
                   <div className="flex shrink-0 gap-1 text-slate-400">
                     <button onClick={() => mover(idx, -1)} className="px-1.5 hover:text-slate-700" aria-label="Subir">
@@ -172,7 +188,7 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
       {/* ── Biblioteca ── */}
       <section className="rounded-2xl border border-slate-200 bg-white">
         <button onClick={() => setBiblioteca(!biblioteca)} className="flex w-full items-center justify-between px-5 py-4 text-left">
-          <span className="font-semibold text-slate-900">Biblioteca de ejercicios ({EJERCICIOS.length})</span>
+          <span className="font-semibold text-slate-900">Biblioteca de ejercicios ({EJERCICIOS.length}, con instrucciones paso a paso)</span>
           <span className="text-slate-400">{biblioteca ? "−" : "+"}</span>
         </button>
         {biblioteca && (
@@ -194,13 +210,7 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
             <ul className="max-h-[28rem] divide-y divide-slate-100 overflow-y-auto">
               {filtrados.map((e) => (
                 <li key={e.id} className="flex items-start justify-between gap-3 py-2.5 text-sm">
-                  <div className="min-w-0">
-                    <p className="font-medium text-slate-800">{e.nombre}</p>
-                    <p className="text-xs text-slate-500">
-                      {e.descripcion} · {e.dosis}
-                    </p>
-                    <FuentesEjercicio ejercicio={e} />
-                  </div>
+                  <FichaEjercicio ejercicio={e} />
                   <button
                     disabled={enPlan.has(e.id)}
                     onClick={() => onAgregar(e.id, e.dosis, "")}
@@ -214,7 +224,7 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
               ))}
             </ul>
             <p className="text-[11px] text-slate-400">
-              Los enlaces de ExRx, HEP2go y Rehab Hero abren una búsqueda del ejercicio en esos sitios. Su contenido tiene derechos de sus autores y no se copia al PDF.
+              Los enlaces de ExRx, HEP2go y Rehab Hero abren una búsqueda del ejercicio en esos sitios. Su contenido tiene derechos de sus autores y no se copia al PDF. Las fotos incluidas son de free-exercise-db (dominio público).
             </p>
           </div>
         )}
@@ -223,14 +233,14 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
       <div className="sticky bottom-3 flex flex-wrap gap-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur">
         <button
           onClick={descargar}
-          disabled={plan.items.length === 0}
+          disabled={plan.items.length === 0 || creando}
           className="rounded-full bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-40"
         >
-          Descargar PDF
+          {creando ? "Preparando PDF…" : "Descargar PDF"}
         </button>
         <button
           onClick={compartir}
-          disabled={plan.items.length === 0}
+          disabled={plan.items.length === 0 || creando}
           className="rounded-full border border-teal-700 px-5 py-2.5 text-sm font-semibold text-teal-700 hover:bg-teal-50 disabled:opacity-40"
         >
           Compartir (WhatsApp, correo…)

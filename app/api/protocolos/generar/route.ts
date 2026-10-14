@@ -56,6 +56,7 @@ const PROTOCOLO_SCHEMA = {
           nombre: { type: "string" },
           semanas: { type: "string" },
           objetivos: { type: "array", items: { type: "string" } },
+          terapiaManual: { type: "array", items: { type: "string" } },
           precauciones: { type: "array", items: { type: "string" } },
           criteriosAvance: { type: "array", items: { type: "string" } },
           ejercicios: {
@@ -68,7 +69,7 @@ const PROTOCOLO_SCHEMA = {
             },
           },
         },
-        required: ["nombre", "semanas", "objetivos", "precauciones", "criteriosAvance", "ejercicios"],
+        required: ["nombre", "semanas", "objetivos", "terapiaManual", "precauciones", "criteriosAvance", "ejercicios"],
         additionalProperties: false,
       },
     },
@@ -144,6 +145,9 @@ function promptProtocolo(c: Consulta, articulos: (ArticuloPubmed & { resumen: st
     "Si la evidencia es débil o contradictoria, dilo; no exageres. La certeza sigue la lógica GRADE (usa la certeza que informe el artículo si la reporta).\n" +
     "- Las fases (3 a 5) tienen un plazo en semanas, objetivos, precauciones y criterios clínicos medibles para avanzar. " +
     "Cuando la evidencia no cubre un detalle, usa la práctica clínica habitual y deja la recomendación prudente.\n" +
+    "- En las primeras fases, terapiaManual lista las técnicas manuales que el profesional aplica en la sesión " +
+    "(movilizaciones, manipulaciones con su precaución, tejido blando, técnicas viscerales u osteopáticas según el área), " +
+    "aclarando cuando la evidencia es de corto plazo. En fases finales puede quedar vacía si la sesión se centra en el ejercicio.\n" +
     "- En cada fase, de 3 a 8 ejercicios elegidos SOLO del catálogo (usa el id exacto), con dosis concreta (series × repeticiones, tiempo o frecuencia).\n" +
     "- Banderas rojas específicas de la condición que obligan a derivar, y escalas de resultado validadas.\n" +
     "- Español de Chile, frases claras y breves, sin markdown.\n\n" +

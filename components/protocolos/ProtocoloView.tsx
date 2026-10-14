@@ -4,7 +4,7 @@ import { useState } from "react";
 import { getEjercicio } from "@/lib/protocolos/ejercicios";
 import type { ArticuloPubmed } from "@/lib/protocolos/pubmed";
 import type { Certeza, Fase, Protocolo } from "@/lib/protocolos/types";
-import FuentesEjercicio from "./FuentesEjercicio";
+import FichaEjercicio from "./FichaEjercicio";
 
 const CERTEZA_CLASE: Record<Certeza, string> = {
   alta: "bg-emerald-100 text-emerald-800",
@@ -141,6 +141,17 @@ export default function ProtocoloView({ protocolo: p, idsEnPlan, onAgregar, onAg
                     <Lista titulo="Precauciones" items={f.precauciones} />
                     <Lista titulo="Criterios para avanzar" items={f.criteriosAvance} />
                   </div>
+                  {f.terapiaManual?.length > 0 && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-sm">
+                      <p className="mb-1 font-semibold text-amber-950">Terapia manual en sesión</p>
+                      <ul className="list-disc space-y-1 pl-4 text-amber-950/80">
+                        {f.terapiaManual.map((x) => (
+                          <li key={x}>{x}</li>
+                        ))}
+                      </ul>
+                      <p className="mt-1.5 text-[11px] text-amber-900/60">Uso del profesional; no aparece en el PDF del paciente.</p>
+                    </div>
+                  )}
                   <div>
                     <div className="mb-2 flex items-center justify-between">
                       <p className="text-sm font-semibold text-slate-900">Ejercicios sugeridos</p>
@@ -156,16 +167,12 @@ export default function ProtocoloView({ protocolo: p, idsEnPlan, onAgregar, onAg
                         if (!ej) return null;
                         const enPlan = idsEnPlan.has(e.id);
                         return (
-                          <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 text-sm">
-                            <div className="min-w-0">
-                              <p className="font-medium text-slate-800">{ej.nombre}</p>
-                              <p className="text-xs text-slate-500">{e.dosis ?? ej.dosis}</p>
-                              <FuentesEjercicio ejercicio={ej} />
-                            </div>
+                          <li key={e.id} className="flex items-start justify-between gap-2 px-3 py-2.5 text-sm">
+                            <FichaEjercicio ejercicio={ej} dosis={e.dosis ?? ej.dosis} />
                             <button
                               disabled={enPlan}
                               onClick={() => onAgregar(ej.id, e.dosis ?? ej.dosis, f.nombre)}
-                              className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                              className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
                                 enPlan ? "bg-slate-100 text-slate-400" : "bg-teal-50 text-teal-700 hover:bg-teal-100"
                               }`}
                             >
