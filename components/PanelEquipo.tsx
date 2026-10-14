@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import CalendarioEquipo from "./CalendarioEquipo";
 import PacientesTab from "./PacientesTab";
 import ExerciseBank from "./fichas/ExerciseBank";
+import ProtocolosTab from "./protocolos/ProtocolosTab";
 import type { Permission, StaffUser } from "@/lib/equipo-auth";
 
-type Tab = "calendario" | "pacientes" | "ejercicios";
+type Tab = "calendario" | "pacientes" | "ejercicios" | "protocolos";
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Administrador",
@@ -151,6 +152,7 @@ export default function PanelEquipo() {
       ? [{ key: "pacientes" as Tab, label: permissions.includes("clinico") ? "Pacientes" : "Pacientes y pagos" }]
       : []),
     ...(permissions.includes("clinico") ? [{ key: "ejercicios" as Tab, label: "Ejercicios" }] : []),
+    ...(permissions.includes("clinico") ? [{ key: "protocolos" as Tab, label: "Protocolos" }] : []),
   ];
 
   return (
@@ -206,12 +208,12 @@ export default function PanelEquipo() {
         </form>
       )}
 
-      <div className="flex gap-1 mb-6 border-b border-slate-200 pb-px">
+      <div className="flex gap-1 mb-6 border-b border-slate-200 pb-px overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition ${
+            className={`px-5 py-2.5 text-sm font-semibold rounded-t-lg transition whitespace-nowrap ${
               activeTab === tab.key
                 ? "bg-white text-teal-700 border border-slate-200 border-b-white -mb-px"
                 : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
@@ -230,6 +232,9 @@ export default function PanelEquipo() {
       )}
       {activeTab === "ejercicios" && permissions.includes("clinico") && (
         <ExerciseBank onBack={() => setActiveTab("pacientes")} />
+      )}
+      {activeTab === "protocolos" && permissions.includes("clinico") && (
+        <ProtocolosTab nombreProfesional={user.display_name} />
       )}
     </div>
   );
