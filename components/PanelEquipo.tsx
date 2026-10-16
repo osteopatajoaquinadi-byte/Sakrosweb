@@ -4,13 +4,15 @@ import { useState, useEffect } from "react";
 import CalendarioEquipo from "./CalendarioEquipo";
 import PacientesTab from "./PacientesTab";
 import ExerciseBank from "./fichas/ExerciseBank";
+import LeadsTab from "./LeadsTab";
 
-type Tab = "calendario" | "pacientes" | "ejercicios";
+type Tab = "calendario" | "pacientes" | "ejercicios" | "leads";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "calendario", label: "Calendario" },
   { key: "pacientes", label: "Pacientes" },
   { key: "ejercicios", label: "Ejercicios" },
+  { key: "leads", label: "Leads" },
 ];
 
 export default function PanelEquipo() {
@@ -135,6 +137,7 @@ export default function PanelEquipo() {
       {activeTab === "calendario" && <CalendarioEquipo pin={pin} />}
       {activeTab === "pacientes" && <PacientesTab pin={pin} />}
       {activeTab === "ejercicios" && <ExerciseBank onBack={() => setActiveTab("pacientes")} />}
+      {activeTab === "leads" && <LeadsTab pin={pin} />}
     </div>
   );
 }
