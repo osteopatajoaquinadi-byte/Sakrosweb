@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { getServiceClient } from "@/lib/supabase";
 import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
+import { firstNameOf } from "@/lib/booking-emails";
+import { reminderEmail } from "@/lib/patient-emails";
 import { siteConfig } from "@/lib/site-config";
 import { normalizeChileanPhone, sendWhatsappTemplate, whatsappEnabled } from "@/lib/whatsapp";
 
@@ -59,27 +61,20 @@ export async function GET(request: NextRequest) {
     const errors: string[] = [];
 
     if (resend && b.client_email) {
+      const mail = reminderEmail({
+        firstName: firstNameOf(b.client_name),
+        service: servicio,
+        professional: profesional,
+        dateLabel: fecha,
+        start: hora,
+      });
       const { error: mailErr } = await resend.emails.send({
         from: emailFrom("Sakros"),
         to: b.client_email,
         replyTo: siteConfig.email,
-        subject: `Recordatorio: mañana tienes ${servicio} a las ${hora} en Sakros`,
-        text: [
-          `Hola ${nombre},`,
-          "",
-          `Te recordamos tu hora de mañana, ${fecha}:`,
-          "",
-          `Servicio: ${servicio}`,
-          profesional ? `Profesional: ${profesional}` : "",
-          `Hora: ${hora}`,
-          `Dirección: ${siteConfig.address.street}, ${siteConfig.address.city}`,
-          "",
-          `Si necesitas cambiar o cancelar, avísanos por WhatsApp al ${siteConfig.phone}.`,
-          "",
-          "— Equipo Sakros",
-        ]
-          .filter((l) => l !== "")
-          .join("\n"),
+        subject: mail.subject,
+        html: mail.html,
+        text: mail.text,
       });
       if (mailErr) errors.push(`correo: ${mailErr.message}`);
       else channels.push("email");

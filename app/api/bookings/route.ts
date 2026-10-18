@@ -2,10 +2,11 @@ import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
 import { NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { Resend } from "resend";
-import { paymentLinks, paymentProvider, siteConfig } from "@/lib/site-config";
+import { paymentLinks, paymentProvider, programaRehab, siteConfig } from "@/lib/site-config";
+import { bookingCreatedEmail, type BookingInfo, type PaymentPlan } from "@/lib/patient-emails";
 import { PAYMENT_HOLD_MINUTES, createCheckout, mercadoPagoEnabled } from "@/lib/mercadopago";
 import { releaseExpiredHolds } from "@/lib/payment-holds";
-import { firstNameOf } from "@/lib/booking-emails";
+import { firstNameOf, formatBookingDate } from "@/lib/booking-emails";
 import { sendProfessionalInvites } from "@/lib/calendar-invite";
 
 export async function POST(request: Request) {
@@ -152,77 +153,43 @@ export async function POST(request: Request) {
     const apiKey = process.env.RESEND_API_KEY;
     if (apiKey && calendarNotificationsEnabled()) {
       const resend = new Resend(apiKey);
-      const dateFormatted = new Date(booking_date + "T12:00:00").toLocaleDateString(
-        "es-CL",
-        { weekday: "long", year: "numeric", month: "long", day: "numeric" }
-      );
+      const dateFormatted = formatBookingDate(booking_date);
 
-      const firstName = firstNameOf(client_name);
-      const details = [
-        `Servicio: ${service.name}`,
-        `Profesional: ${professional?.name ?? ""}`,
-        `Fecha: ${dateFormatted}`,
-        `Hora: ${start_time} - ${end_time}`,
-        `Valor: $${service.price_clp.toLocaleString("es-CL")}`,
-      ];
-      const footer = [
-        `Dirección: ${siteConfig.address.street}, ${siteConfig.address.city}`,
-        "",
-        `Si necesitas cambiar o cancelar tu hora, avísanos con al menos 24 horas de anticipación por WhatsApp al ${siteConfig.phone}.`,
-        "",
-        "Un abrazo,",
-        "Equipo Sakros",
-      ];
-      const payLink = paymentUrl ?? (payment_method === "online_webpay" ? paymentLinks[service.slug] : undefined);
-
-      // Pago online pendiente: el primer correo solo reserva la hora; la
-      // confirmación llega en un segundo correo cuando se recibe el pago.
-      const mail =
+      const programKey = typeof notes === "string" && notes.startsWith("[Programa")
+        ? (notes.includes("ISAPRE") ? "isapre" : "fonasa")
+        : null;
+      const program = programKey ? programaRehab[programKey] : null;
+      const info: BookingInfo = {
+        firstName: firstNameOf(client_name),
+        service: service.name,
+        professional: professional?.name ?? "",
+        dateLabel: dateFormatted,
+        start: start_time,
+        end: end_time,
+        priceClp: service.price_clp,
+        program: program ? { label: program.label, price: program.price } : undefined,
+      };
+      const fixedUrl = program ? program.cardUrl : paymentLinks[service.slug];
+      const payUrl = paymentUrl ?? fixedUrl;
+      const plan: PaymentPlan =
         payment_method === "online_webpay"
           ? {
-              subject: `Reservamos tu hora — falta completar el pago (${service.name}, ${dateFormatted})`,
-              text: [
-                `Hola ${firstName},`,
-                "",
-                "¡Gracias por reservar en Sakros! Tu hora quedó reservada y está pendiente de pago:",
-                "",
-                ...details,
-                "",
-                payLink
-                  ? `Para confirmarla, completa el pago aquí:\n${payLink}`
-                  : `Para confirmarla, completa el pago desde la pantalla de reserva o escríbenos al WhatsApp ${siteConfig.phone}.`,
-                paymentUrl
-                  ? `\nTienes ${PAYMENT_HOLD_MINUTES / 60} horas para pagar; si no, la hora se libera automáticamente.`
-                  : "",
-                "Apenas recibamos tu pago te enviaremos la confirmación de tu reserva.",
-                "",
-                ...footer,
-              ].join("\n"),
+              method: "online",
+              provider: payUrl ? paymentProvider(payUrl) : "tarjeta",
+              payUrl,
+              holdHours: paymentUrl ? PAYMENT_HOLD_MINUTES / 60 : undefined,
             }
-          : {
-              subject: `Reserva confirmada — ${service.name}, ${dateFormatted}`,
-              text: [
-                `Hola ${firstName},`,
-                "",
-                "¡Gracias por reservar en Sakros! Tu hora quedó confirmada:",
-                "",
-                ...details,
-                "",
-                payment_method === "online_transfer"
-                  ? `Pago: transferencia. Envía tu comprobante al WhatsApp ${siteConfig.phone}.`
-                  : "Pago: en la clínica, el día de tu sesión.",
-                "",
-                "Para tu sesión: llega 5 a 10 minutos antes, con ropa cómoda, y trae tus exámenes o informes si tienes.",
-                "",
-                ...footer,
-              ].join("\n"),
-            };
+          : payment_method === "online_transfer"
+          ? { method: "transfer" }
+          : { method: "clinic" };
+      const mail = bookingCreatedEmail(info, plan);
 
       await resend.emails.send({
         from: emailFrom("Sakros"),
         to: client_email,
         replyTo: siteConfig.email,
         subject: mail.subject,
+        html: mail.html,
         text: mail.text,
       });
 

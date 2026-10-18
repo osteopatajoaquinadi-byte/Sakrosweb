@@ -5,7 +5,8 @@ import { Resend } from "resend";
 import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
 import { siteConfig } from "@/lib/site-config";
 import { sendProfessionalInvites } from "@/lib/calendar-invite";
-import { sendPaymentReceivedEmail } from "@/lib/booking-emails";
+import { firstNameOf, sendPaymentReceivedEmail } from "@/lib/booking-emails";
+import { panelBookingEmail } from "@/lib/patient-emails";
 
 // Agenda interna del panel: a diferencia de /api/bookings (reserva pública),
 // permite agendar fuera de los horarios publicados y vincular la reserva a
@@ -186,33 +187,22 @@ export async function POST(request: NextRequest) {
           month: "long",
           year: "numeric",
         });
+      const mail = panelBookingEmail({
+        firstName: firstNameOf(client_name),
+        service: svc?.name ?? "",
+        professional: pro?.name ?? "",
+        start: start_time,
+        end: end_time,
+        dates: dates.map(fmt),
+      });
       const resend = new Resend(process.env.RESEND_API_KEY);
       const { error: mailErr } = await resend.emails.send({
         from: emailFrom("Sakros"),
         to: client_email,
         replyTo: siteConfig.email,
-        subject: isProgram
-          ? `Tu programa en Sakros — ${svc?.name ?? ""}, ${count} sesiones`
-          : `Tu reserva en Sakros — ${svc?.name ?? ""} el ${fmt(dates[0])}`,
-        text: [
-          `Hola ${client_name},`,
-          "",
-          isProgram ? `Agendamos tu programa de ${count} sesiones:` : "Tu reserva quedó registrada:",
-          "",
-          `Servicio: ${svc?.name ?? ""}`,
-          `Profesional: ${pro?.name ?? ""}`,
-          `Hora: ${start_time} - ${end_time}`,
-          ...(isProgram
-            ? ["", "Fechas:", ...dates.map((d, i) => `  ${i + 1}. ${fmt(d)}`)]
-            : [`Fecha: ${fmt(dates[0])}`]),
-          "",
-          `Dirección: ${siteConfig.address.street}, ${siteConfig.address.city}`,
-          "",
-          "Política de cancelación: puedes cancelar o reprogramar hasta 24 horas antes sin costo.",
-          `¿Necesitas cambiar la hora? Escríbenos al WhatsApp ${siteConfig.phone}.`,
-          "",
-          "— Equipo Sakros",
-        ].join("\n"),
+        subject: mail.subject,
+        html: mail.html,
+        text: mail.text,
       });
       if (mailErr) console.error("Confirmación panel:", mailErr.message);
       else emailed = true;
