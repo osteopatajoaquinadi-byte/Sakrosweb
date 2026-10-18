@@ -156,40 +156,73 @@ export async function POST(request: Request) {
         { weekday: "long", year: "numeric", month: "long", day: "numeric" }
       );
 
+      const firstName = String(client_name).trim().split(/\s+/)[0];
+      const details = [
+        `Servicio: ${service.name}`,
+        `Profesional: ${professional?.name ?? ""}`,
+        `Fecha: ${dateFormatted}`,
+        `Hora: ${start_time} - ${end_time}`,
+        `Valor: $${service.price_clp.toLocaleString("es-CL")}`,
+      ];
+      const footer = [
+        `Dirección: ${siteConfig.address.street}, ${siteConfig.address.city}`,
+        "",
+        `Si necesitas cambiar o cancelar tu hora, avísanos con al menos 24 horas de anticipación por WhatsApp al ${siteConfig.phone}.`,
+        "",
+        "Un abrazo,",
+        "Equipo Sakros",
+      ];
+      const payLink = paymentUrl ?? (payment_method === "online_webpay" ? paymentLinks[service.slug] : undefined);
+
+      // Pago online pendiente: el primer correo solo reserva la hora; la
+      // confirmación llega en un segundo correo cuando se recibe el pago.
+      const mail =
+        payment_method === "online_webpay"
+          ? {
+              subject: `Reservamos tu hora — falta completar el pago (${service.name}, ${dateFormatted})`,
+              text: [
+                `Hola ${firstName},`,
+                "",
+                "¡Gracias por reservar en Sakros! Tu hora quedó reservada y está pendiente de pago:",
+                "",
+                ...details,
+                "",
+                payLink
+                  ? `Para confirmarla, completa el pago aquí:\n${payLink}`
+                  : `Para confirmarla, completa el pago desde la pantalla de reserva o escríbenos al WhatsApp ${siteConfig.phone}.`,
+                paymentUrl
+                  ? `\nTienes ${PAYMENT_HOLD_MINUTES / 60} horas para pagar; si no, la hora se libera automáticamente.`
+                  : "",
+                "Apenas recibamos tu pago te enviaremos la confirmación de tu reserva.",
+                "",
+                ...footer,
+              ].join("\n"),
+            }
+          : {
+              subject: `Reserva confirmada — ${service.name}, ${dateFormatted}`,
+              text: [
+                `Hola ${firstName},`,
+                "",
+                "¡Gracias por reservar en Sakros! Tu hora quedó confirmada:",
+                "",
+                ...details,
+                "",
+                payment_method === "online_transfer"
+                  ? `Pago: transferencia. Envía tu comprobante al WhatsApp ${siteConfig.phone}.`
+                  : "Pago: en la clínica, el día de tu sesión.",
+                "",
+                "Para tu sesión: llega 5 a 10 minutos antes, con ropa cómoda, y trae tus exámenes o informes si tienes.",
+                "",
+                ...footer,
+              ].join("\n"),
+            };
+
       await resend.emails.send({
         from: emailFrom("Sakros"),
         to: client_email,
         replyTo: siteConfig.email,
-        subject: `Tu reserva en Sakros — ${service.name} el ${dateFormatted}`,
-        text: [
-          `Hola ${client_name},`,
-          "",
-          `Tu reserva ha sido registrada:`,
-          "",
-          `Servicio: ${service.name}`,
-          `Profesional: ${professional?.name ?? ""}`,
-          `Fecha: ${dateFormatted}`,
-          `Hora: ${start_time} - ${end_time}`,
-          `Valor: $${service.price_clp.toLocaleString("es-CL")} CLP`,
-          "",
-          paymentUrl
-            ? `Pago online: ${paymentUrl}\nTienes ${PAYMENT_HOLD_MINUTES / 60} horas para pagar; si no, la hora se libera.`
-            : payment_method === "online_webpay" && paymentLinks[service.slug]
-            ? `Pago online: ${paymentLinks[service.slug]}`
-            : payment_method === "online_webpay"
-            ? `Pago: online con tarjeta (link en la pantalla de confirmación). Si no alcanzaste a pagar, escríbenos al WhatsApp ${siteConfig.phone}.`
-            : payment_method === "online_transfer"
-            ? `Pago: transferencia online. Envía tu comprobante al WhatsApp ${siteConfig.phone} para confirmar.`
-            : `Pago: en la clínica.`,
-          "",
-          `Dirección: ${siteConfig.address.street}, ${siteConfig.address.city}`,
-          "",
-          `Política de cancelación: puedes cancelar o reprogramar hasta 24 horas antes sin costo.`,
-          "",
-          `¿Necesitas cambiar la hora? Escríbenos al WhatsApp ${siteConfig.phone}.`,
-          "",
-          "— Equipo Sakros",
-        ].join("\n"),
+        subject: mail.subject,
+        text: mail.text,
       });
 
       // Notificación interna a Sakros

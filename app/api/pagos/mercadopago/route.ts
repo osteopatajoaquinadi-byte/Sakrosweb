@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { getPayment, mercadoPagoEnabled, validSignature } from "@/lib/mercadopago";
 import { sendProfessionalInvites } from "@/lib/calendar-invite";
+import { sendPaymentReceivedEmail } from "@/lib/booking-emails";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -93,6 +94,16 @@ export async function POST(request: NextRequest) {
 
     await db.from("bookings").update(update).eq("id", booking.id);
     if (reactivated) await sendProfessionalInvites(db, [booking.id], "new");
+
+    // Segundo correo al paciente: reserva confirmada y pago recibido (no se
+    // envía si la hora ya la había tomado otra persona).
+    if (booking.status !== "cancelled" || reactivated) {
+      await sendPaymentReceivedEmail(db, booking.id, {
+        amount: payment.transaction_amount,
+        method: "Mercado Pago",
+        reference: `operación #${payment.id}`,
+      });
+    }
 
     // El pago queda en la ficha del paciente (suma la sesión pagada).
     if (booking.fichas_patient_id) {
