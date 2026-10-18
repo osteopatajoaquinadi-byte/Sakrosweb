@@ -12,6 +12,7 @@ export type RegionEjercicio =
   | "cadera"
   | "tobillo"
   | "hombro"
+  | "codo"
   | "cervical"
   | "lumbar"
   | "core"
