@@ -195,12 +195,12 @@ export default function HomePage() {
           </article>
           <article className="rounded-2xl border border-slate-200 overflow-hidden">
             <Image
-              src="/images/anikken-arentsen.jpg"
-              alt="Anikken Arentsen, kinesióloga y posturóloga de Sakros"
-              width={960}
-              height={1280}
+              src="/images/anikken-voley-playa.jpg"
+              alt="Anikken Arentsen atacando en la red en un partido de vóleibol playa"
+              width={1000}
+              height={1250}
               sizes="(min-width: 768px) 560px, 100vw"
-              className="w-full h-80 object-cover object-[50%_25%]"
+              className="w-full h-80 object-cover object-[50%_20%]"
             />
             <div className="p-6">
               <h3 className="font-semibold text-slate-900">Anikken Arentsen</h3>
