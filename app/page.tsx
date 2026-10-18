@@ -164,17 +164,17 @@ export default function HomePage() {
           Antes de tratar a otros, los dos pasamos por una lesión de rodilla que nos alejó
           de la cancha.
         </p>
-        <div className="grid gap-8 md:grid-cols-2">
-          <article className="rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="space-y-6">
+          <article className="rounded-2xl border border-slate-200 overflow-hidden sm:grid sm:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr]">
             <Image
               src="/images/joaquin-voley-playa.jpg"
               alt="Joaquín Adi sacando en un partido de vóleibol playa"
               width={1000}
               height={1500}
-              sizes="(min-width: 768px) 560px, 100vw"
-              className="w-full h-80 object-cover object-[50%_30%]"
+              sizes="(min-width: 1024px) 280px, (min-width: 640px) 240px, 100vw"
+              className="w-full h-auto"
             />
-            <div className="p-6">
+            <div className="p-6 sm:p-8 sm:self-center">
               <h3 className="font-semibold text-slate-900">Joaquín Adi</h3>
               <p className="text-sm text-teal-700 font-medium mb-3">Osteópata y kinesiólogo</p>
               <div className="space-y-3 text-sm text-slate-600">
@@ -193,16 +193,16 @@ export default function HomePage() {
               </div>
             </div>
           </article>
-          <article className="rounded-2xl border border-slate-200 overflow-hidden">
+          <article className="rounded-2xl border border-slate-200 overflow-hidden sm:grid sm:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr]">
             <Image
               src="/images/anikken-voley-playa.jpg"
               alt="Anikken Arentsen atacando en la red en un partido de vóleibol playa"
               width={1000}
               height={1250}
-              sizes="(min-width: 768px) 560px, 100vw"
-              className="w-full h-80 object-cover object-[50%_20%]"
+              sizes="(min-width: 1024px) 280px, (min-width: 640px) 240px, 100vw"
+              className="w-full h-auto"
             />
-            <div className="p-6">
+            <div className="p-6 sm:p-8 sm:self-center">
               <h3 className="font-semibold text-slate-900">Anikken Arentsen</h3>
               <p className="text-sm text-teal-700 font-medium mb-3">Kinesióloga y posturóloga</p>
               <div className="space-y-3 text-sm text-slate-600">
