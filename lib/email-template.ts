@@ -26,7 +26,7 @@ export type BrandedEmail = {
   details?: [string, string][];
   list?: { title: string; items: string[] };
   cta?: { label: string; href: string };
-  box?: { title: string; lines: string[]; tone: Tone };
+  box?: { title: string; lines: string[]; tone: Tone; link?: { label: string; href: string } };
   // Muestra el recuadro antes del botón (ej. datos de transferencia).
   boxFirst?: boolean;
   tips?: string[];
@@ -37,7 +37,7 @@ const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 const whatsappUrl = `https://wa.me/${siteConfig.whatsappNumber}`;
-const phoneLabel = "+56 9 4539 9692";
+export const phoneLabel = "+56 9 4539 9692";
 
 export function renderBrandedEmail(e: BrandedEmail): { html: string; text: string } {
   const p = (t: string) =>
@@ -69,7 +69,7 @@ export function renderBrandedEmail(e: BrandedEmail): { html: string; text: strin
   const box = e.box
     ? `<div style="margin:0 0 20px;padding:14px 16px;border-radius:12px;background:${TONES[e.box.tone].bg};border:1px solid ${TONES[e.box.tone].border}"><p style="margin:0 0 6px;font-size:14px;font-weight:700;color:${TONES[e.box.tone].fg}">${esc(e.box.title)}</p>${e.box.lines
         .map((l) => `<p style="margin:0;font-size:14px;line-height:1.6;color:${INK}">${esc(l)}</p>`)
-        .join("")}</div>`
+        .join("")}${e.box.link ? `<p style="margin:10px 0 0;font-size:14px;font-weight:700"><a href="${esc(e.box.link.href)}" style="color:${TEAL};text-decoration:underline">${esc(e.box.link.label)}</a></p>` : ""}</div>`
     : "";
 
   const tips = e.tips?.length
@@ -114,7 +114,7 @@ ${esc(siteConfig.address.street)}, ${esc(siteConfig.address.city)}<br>
     e.details?.length ? "" : null,
     ...(e.list ? [e.list.title, ...e.list.items.map((i, n) => `  ${n + 1}. ${i}`), ""] : []),
     ...(e.cta ? [`${e.cta.label}: ${e.cta.href}`, ""] : []),
-    ...(e.box ? [e.box.title, ...e.box.lines, ""] : []),
+    ...(e.box ? [e.box.title, ...e.box.lines, ...(e.box.link ? [`${e.box.link.label}: ${e.box.link.href}`] : []), ""] : []),
     ...(e.tips?.length ? ["Para tu sesión:", ...e.tips.map((t) => `- ${t}`), ""] : []),
     ...e.closing,
     "",

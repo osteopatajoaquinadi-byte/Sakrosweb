@@ -49,7 +49,7 @@ test("reserva de osteopatía con pago online muestra el link de Mercado Pago @mo
   await page.getByRole("button", { name: /Pago online/ }).click();
   await page.getByRole("button", { name: "Confirmar reserva" }).click();
 
-  await expect(page.getByText("Reserva confirmada")).toBeVisible();
+  await expect(page.getByText("Hora reservada")).toBeVisible();
   await expect(page.getByRole("link", { name: "Pagar ahora con Mercado Pago" })).toHaveAttribute(
     "href",
     paymentLinks.osteopatia
@@ -68,6 +68,8 @@ test("kinesiología ofrece pago online con Tuu", async ({ page }) => {
     "href",
     paymentLinks.kinesiologia
   );
+  // Tuu no avisa el pago: se pide el comprobante a la secretaria.
+  await expect(page.getByText(/envía el comprobante a nuestra secretaria/)).toBeVisible();
 });
 
 test("programa de rehabilitación: agenda primero y elige FONASA/ISAPRE al final", async ({ page }) => {
@@ -87,7 +89,7 @@ test("programa de rehabilitación: agenda primero y elige FONASA/ISAPRE al final
   await page.getByRole("button", { name: /Pago con tarjeta/ }).click();
   await page.getByRole("button", { name: "Confirmar reserva" }).click();
 
-  await expect(page.getByText("Reserva confirmada")).toBeVisible();
+  await expect(page.getByText("Hora reservada")).toBeVisible();
   await expect(page.getByRole("link", { name: /Pagar \$190\.000 con tarjeta/ })).toHaveAttribute(
     "href",
     "https://www.tuu.cl/programafonasa",
