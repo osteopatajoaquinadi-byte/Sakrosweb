@@ -5,6 +5,7 @@ import { Resend } from "resend";
 import { paymentLinks, paymentProvider, siteConfig } from "@/lib/site-config";
 import { PAYMENT_HOLD_MINUTES, createCheckout, mercadoPagoEnabled } from "@/lib/mercadopago";
 import { releaseExpiredHolds } from "@/lib/payment-holds";
+import { firstNameOf } from "@/lib/booking-emails";
 import { sendProfessionalInvites } from "@/lib/calendar-invite";
 
 export async function POST(request: Request) {
@@ -156,7 +157,7 @@ export async function POST(request: Request) {
         { weekday: "long", year: "numeric", month: "long", day: "numeric" }
       );
 
-      const firstName = String(client_name).trim().split(/\s+/)[0];
+      const firstName = firstNameOf(client_name);
       const details = [
         `Servicio: ${service.name}`,
         `Profesional: ${professional?.name ?? ""}`,
