@@ -215,7 +215,9 @@ export default function BookingFlow() {
   if (step === "done") {
     return (
       <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-8 text-center">
-        <p className="text-2xl font-bold text-emerald-800 mb-2">Reserva confirmada</p>
+        <p className="text-2xl font-bold text-emerald-800 mb-2">
+          {paymentMethod === "in_clinic" ? "Reserva confirmada" : "Hora reservada"}
+        </p>
         <p className="text-emerald-700 mb-4">
           Te enviamos los detalles a <strong>{clientEmail}</strong>.
         </p>
@@ -252,13 +254,14 @@ export default function BookingFlow() {
             Pagar ahora con {paymentProvider(paymentLinks[selectedService])}
           </a>
         )}
-        {paymentMethod === "online_transfer" && (
-          <p className="text-sm text-emerald-600 mb-4">
-            Envía tu comprobante de transferencia al WhatsApp{" "}
+        {(paymentMethod === "online_transfer" || (paymentMethod === "online_webpay" && (isProgram || !paymentUrl))) && (
+          <p className="text-sm text-emerald-700 mb-4">
+            {paymentMethod === "online_transfer" ? "Haz la transferencia y envía" : "Una vez pagado, envía"} el
+            comprobante a nuestra secretaria por WhatsApp al{" "}
             <a href="https://wa.me/56945399692" className="underline">
               +56 9 4539 9692
-            </a>{" "}
-            para confirmar tu pago.
+            </a>
+            . Ella te confirmará la reserva.
           </p>
         )}
         <button

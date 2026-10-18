@@ -1,6 +1,6 @@
 // Correos al paciente según cómo pagó o va a pagar su hora. Todos usan la
 // plantilla de Sakros (lib/email-template.ts).
-import { changePolicy, renderBrandedEmail, sessionTips } from "@/lib/email-template";
+import { changePolicy, phoneLabel, renderBrandedEmail, sessionTips } from "@/lib/email-template";
 import { siteConfig, transferAccount } from "@/lib/site-config";
 
 export type BookingInfo = {
@@ -48,7 +48,14 @@ const signOff = (warm = false) => [
 export function bookingCreatedEmail(b: BookingInfo, plan: PaymentPlan): Mail {
   const hello = `Hola ${b.firstName},`;
 
-  if (plan.method === "online") {
+  // Enlace de WhatsApp a la secretaria con el mensaje ya escrito.
+  const receiptWa = (what: string) =>
+    `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
+      `Hola, envío el comprobante de ${what} de mi hora de ${serviceOf(b)} del ${b.dateLabel} a las ${b.start}.`
+    )}`;
+
+  // Mercado Pago con preferencia (holdHours): el pago se confirma solo.
+  if (plan.method === "online" && plan.holdHours) {
     const r = renderBrandedEmail({
       preheader: `Tu hora del ${b.dateLabel} está reservada. Completa el pago para confirmarla.`,
       badge: { text: "Pendiente de pago", tone: "pending" },
@@ -61,10 +68,7 @@ export function bookingCreatedEmail(b: BookingInfo, plan: PaymentPlan): Mail {
         tone: "pending",
         title: "Para confirmar tu hora",
         lines: [
-          ...(plan.payUrl ? [] : [`Completa el pago desde la pantalla de reserva o escríbenos al WhatsApp.`]),
-          ...(plan.holdHours
-            ? [`Tienes ${plan.holdHours} horas para pagar; si no, la hora se libera automáticamente.`]
-            : []),
+          `Tienes ${plan.holdHours} horas para pagar; si no, la hora se libera automáticamente.`,
           "Apenas recibamos tu pago te enviaremos la confirmación de tu reserva.",
         ],
       },
@@ -73,17 +77,41 @@ export function bookingCreatedEmail(b: BookingInfo, plan: PaymentPlan): Mail {
     return { subject: `Reservamos tu hora — falta completar el pago (${serviceOf(b)}, ${b.dateLabel})`, ...r };
   }
 
-  if (plan.method === "transfer") {
-    const wa = `https://wa.me/${siteConfig.whatsappNumber}?text=${encodeURIComponent(
-      `Hola, envío el comprobante de transferencia de mi hora del ${b.dateLabel} a las ${b.start}.`
-    )}`;
+  // Tuu, programas y enlaces fijos: no sabemos si pagó hasta ver el comprobante.
+  if (plan.method === "online") {
     const r = renderBrandedEmail({
-      preheader: `Tu hora del ${b.dateLabel} está reservada. Falta tu transferencia.`,
+      preheader: `Tu hora del ${b.dateLabel} está reservada. Paga y envía el comprobante a nuestra secretaria.`,
       badge: { text: "Pendiente de pago", tone: "pending" },
       title: "Reservamos tu hora",
       greeting: hello,
       paragraphs: [
-        "¡Gracias por reservar en Sakros! Tu hora quedó reservada. Para confirmarla, haz la transferencia y envíanos el comprobante.",
+        "¡Gracias por reservar en Sakros! Tu hora quedó reservada y está pendiente de pago.",
+      ],
+      details: details(b),
+      cta: plan.payUrl ? { label: `Pagar ${amountOf(b)} con ${plan.provider}`, href: plan.payUrl } : undefined,
+      box: {
+        tone: "pending",
+        title: "Para confirmar tu hora",
+        lines: [
+          ...(plan.payUrl ? [] : ["Completa el pago desde la pantalla de reserva o escríbenos al WhatsApp."]),
+          `Una vez pagado, envía el comprobante a nuestra secretaria por WhatsApp al ${phoneLabel}.`,
+          "Ella revisará tu pago y te confirmará la reserva.",
+        ],
+        link: { label: "Enviar comprobante por WhatsApp", href: receiptWa("pago") },
+      },
+      closing: signOff(),
+    });
+    return { subject: `Reservamos tu hora — paga y envía tu comprobante (${serviceOf(b)}, ${b.dateLabel})`, ...r };
+  }
+
+  if (plan.method === "transfer") {
+    const r = renderBrandedEmail({
+      preheader: `Tu hora del ${b.dateLabel} está reservada. Transfiere y envía el comprobante a nuestra secretaria.`,
+      badge: { text: "Pendiente de pago", tone: "pending" },
+      title: "Reservamos tu hora",
+      greeting: hello,
+      paragraphs: [
+        `¡Gracias por reservar en Sakros! Tu hora quedó reservada. Para confirmarla, haz la transferencia y envía el comprobante a nuestra secretaria por WhatsApp al ${phoneLabel}.`,
       ],
       details: details(b),
       box: {
@@ -97,9 +125,9 @@ export function bookingCreatedEmail(b: BookingInfo, plan: PaymentPlan): Mail {
           `Monto: ${amountOf(b)}`,
         ],
       },
-      cta: { label: "Enviar comprobante por WhatsApp", href: wa },
+      cta: { label: "Enviar comprobante a la secretaria", href: receiptWa("transferencia") },
       boxFirst: true,
-      closing: ["Apenas confirmemos tu pago te enviaremos la confirmación de tu reserva.", ...signOff()],
+      closing: ["Nuestra secretaria revisará tu transferencia y te confirmará la reserva.", ...signOff()],
     });
     return { subject: `Reservamos tu hora — falta tu transferencia (${serviceOf(b)}, ${b.dateLabel})`, ...r };
   }
