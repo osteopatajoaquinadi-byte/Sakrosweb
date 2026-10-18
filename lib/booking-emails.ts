@@ -17,6 +17,12 @@ export function formatBookingDate(date: string): string {
   });
 }
 
+// Primer nombre con mayúscula inicial: "joaquin adi" → "Joaquin".
+export function firstNameOf(fullName: string | null | undefined): string {
+  const first = String(fullName ?? "").trim().split(/\s+/)[0] ?? "";
+  return first ? first.charAt(0).toLocaleUpperCase("es-CL") + first.slice(1).toLocaleLowerCase("es-CL") : "";
+}
+
 export const clp = (n: number) => `$${Math.round(n).toLocaleString("es-CL")}`;
 
 export async function sendPaymentReceivedEmail(
@@ -36,7 +42,7 @@ export async function sendPaymentReceivedEmail(
     const pro = b.professionals as unknown as { name: string } | null;
     const amount = payment.amount ?? service?.price_clp ?? null;
     const fecha = formatBookingDate(b.booking_date);
-    const firstName = String(b.client_name ?? "").trim().split(/\s+/)[0] || "";
+    const firstName = firstNameOf(b.client_name);
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { error } = await resend.emails.send({
