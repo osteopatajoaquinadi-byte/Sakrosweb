@@ -5,6 +5,7 @@ import { Resend } from "resend";
 import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
 import { siteConfig } from "@/lib/site-config";
 import { sendProfessionalInvites } from "@/lib/calendar-invite";
+import { sendPaymentReceivedEmail } from "@/lib/booking-emails";
 
 // Agenda interna del panel: a diferencia de /api/bookings (reserva pública),
 // permite agendar fuera de los horarios publicados y vincular la reserva a
@@ -248,7 +249,7 @@ export async function PATCH(request: NextRequest) {
   const db = getServiceClient();
   const { data: current } = await db
     .from("bookings")
-    .select("booking_date, start_time, professional_id, service_id, status")
+    .select("booking_date, start_time, professional_id, service_id, status, payment_status")
     .eq("id", id)
     .single();
   if (!current) {
@@ -319,6 +320,18 @@ export async function PATCH(request: NextRequest) {
   const { error } = await db.from("bookings").update(update).eq("id", id);
   if (error) {
     return NextResponse.json({ error: "Error al actualizar la reserva." }, { status: 500 });
+  }
+
+  // Pago marcado desde el panel (Tuu, transferencia): si la cita aún no
+  // ocurre, el paciente recibe la confirmación con el pago recibido.
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Santiago" });
+  if (
+    payment_status === "paid" &&
+    current.payment_status !== "paid" &&
+    (status ?? current.status) === "confirmed" &&
+    booking_date >= today
+  ) {
+    await sendPaymentReceivedEmail(db, id, { method: "registrado por el equipo Sakros" });
   }
 
   // Mantener al día el calendario del profesional.
