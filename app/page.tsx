@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { services, siteConfig } from "@/lib/site-config";
@@ -121,39 +122,121 @@ export default function HomePage() {
       {/* Espejo de frustración */}
       <section className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="text-2xl font-bold text-slate-900 mb-3">
-          Sabemos lo que es sentir que tu cuerpo ya no te responde igual
+          Sabemos lo que es sentir que tu cuerpo ya no responde igual
         </h2>
         <p className="text-slate-600 mb-10 max-w-3xl">
-          Pasar horas sentado frente a una pantalla y después querer rendir en la cancha,
-          en el gimnasio o en el asfalto es la receta perfecta para la frustración. Las
-          lesiones mal curadas del pasado vuelven a aparecer y el cuerpo empieza a mandar alertas.
+          Pasar horas frente a una pantalla y después querer rendir en la cancha, en el
+          gimnasio o en el asfalto es la receta perfecta para la frustración. Las lesiones
+          mal resueltas vuelven a aparecer y el cuerpo empieza a mandar alertas.
         </p>
         <div className="grid gap-6 sm:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 p-6">
             <p className="text-2xl mb-3">😣</p>
             <h3 className="font-semibold text-slate-900 mb-2">El dolor del lunes</h3>
             <p className="text-sm text-slate-600">
-              Molestias en la espalda o rodillas que aparecen dos días después de haber
-              jugado o corrido el fin de semana.
+              Molestias en la espalda o en las rodillas que aparecen uno o dos días después
+              de jugar o correr el fin de semana.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 p-6">
             <p className="text-2xl mb-3">🛑</p>
-            <h3 className="font-semibold text-slate-900 mb-2">Miedo a romperte otra vez</h3>
+            <h3 className="font-semibold text-slate-900 mb-2">Miedo a lesionarte otra vez</h3>
             <p className="text-sm text-slate-600">
-              Entrenás con el freno de mano puesto porque tenés miedo de que esa vieja
-              lesión te vuelva a dejar parado.
+              Entrenas con el freno de mano puesto, porque temes que esa vieja lesión te
+              vuelva a dejar fuera.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-200 p-6">
             <p className="text-2xl mb-3">⏰</p>
             <h3 className="font-semibold text-slate-900 mb-2">Falta de tiempo</h3>
             <p className="text-sm text-slate-600">
-              No quieres perder meses en sesiones donde solo te ponen electrodos
-              acostado en una camilla. Quieres soluciones dinámicas.
+              No quieres pasar meses acostado en una camilla con electrodos. Buscas un
+              tratamiento activo, que te devuelva a lo tuyo.
             </p>
           </div>
         </div>
+      </section>
+
+      {/* Nuestra historia */}
+      <section className="mx-auto max-w-6xl px-4 pb-16">
+        <h2 className="text-2xl font-bold text-slate-900 mb-3">Lo sabemos porque lo vivimos</h2>
+        <p className="text-slate-600 mb-10 max-w-3xl">
+          Antes de tratar a otros, los dos pasamos por una lesión de rodilla que nos alejó
+          de la cancha.
+        </p>
+        <div className="grid gap-8 md:grid-cols-2">
+          <article className="rounded-2xl border border-slate-200 overflow-hidden">
+            <Image
+              src="/images/joaquin-voley-playa.jpg"
+              alt="Joaquín Adi sacando en un partido de vóleibol playa"
+              width={1000}
+              height={1500}
+              sizes="(min-width: 768px) 560px, 100vw"
+              className="w-full h-80 object-cover object-[50%_30%]"
+            />
+            <div className="p-6">
+              <h3 className="font-semibold text-slate-900">Joaquín Adi</h3>
+              <p className="text-sm text-teal-700 font-medium mb-3">Osteópata y kinesiólogo</p>
+              <div className="space-y-3 text-sm text-slate-600">
+                <p>
+                  En 2009 se rompió el ligamento cruzado anterior y el menisco. En 2010 lo
+                  operaron por una rotura en asa de balde y le retiraron el 45% del menisco
+                  externo. La rehabilitación kinésica fue un éxito: recuperó fuerza y
+                  movilidad, y la rodilla dejó de bloquearse. Pero el dolor seguía ahí.
+                </p>
+                <p>
+                  La respuesta llegó con la osteopatía. Al tratar la pelvis, el tobillo y la
+                  zona lumbar con técnicas manuales, y liberar el tensor de la fascia lata, el
+                  dolor se fue. Luego sumó control motor de la pelvis para que no volviera:
+                  no ha tenido recaídas importantes y volvió a competir en vóleibol playa.
+                </p>
+              </div>
+            </div>
+          </article>
+          <article className="rounded-2xl border border-slate-200 overflow-hidden">
+            <Image
+              src="/images/anikken-arentsen.jpg"
+              alt="Anikken Arentsen, kinesióloga y posturóloga de Sakros"
+              width={960}
+              height={1280}
+              sizes="(min-width: 768px) 560px, 100vw"
+              className="w-full h-80 object-cover object-[50%_25%]"
+            />
+            <div className="p-6">
+              <h3 className="font-semibold text-slate-900">Anikken Arentsen</h3>
+              <p className="text-sm text-teal-700 font-medium mb-3">Kinesióloga y posturóloga</p>
+              <div className="space-y-3 text-sm text-slate-600">
+                <p>
+                  Sufrió una rotura del 90% de su ligamento cruzado anterior. Al mes de la
+                  lesión su rodilla no mostraba inestabilidad, así que su traumatólogo
+                  decidió no operar y optar por un tratamiento conservador.
+                </p>
+                <p>
+                  Su rehabilitación se centró en la fuerza y el control de la cadena
+                  posterior y lateral de la pelvis y la rodilla. Hoy sigue jugando vóleibol,
+                  en playa y en cancha, sin sensación de inestabilidad.
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div className="mt-8 rounded-2xl bg-teal-50 p-6 md:flex md:items-center md:justify-between gap-6">
+          <p className="text-slate-700 max-w-3xl">
+            <strong className="text-slate-900">Por eso trabajamos así.</strong> Recuperar la
+            fuerza no siempre basta, y el dolor a veces viene de otra parte del cuerpo. En
+            Sakros miramos el cuerpo completo: osteopatía, kinesiología y control motor para
+            que vuelvas a hacer lo que te gusta, sin miedo.
+          </p>
+          <Link
+            href="/reserva"
+            className="mt-4 md:mt-0 inline-block shrink-0 rounded-full bg-teal-700 px-6 py-3 text-sm font-semibold text-white hover:bg-teal-800"
+          >
+            Reserva tu evaluación
+          </Link>
+        </div>
+        <p className="mt-3 text-xs text-slate-500">
+          Cada caso es distinto: el tratamiento se decide después de evaluarte.
+        </p>
       </section>
 
       {/* Áreas de tratamiento */}
