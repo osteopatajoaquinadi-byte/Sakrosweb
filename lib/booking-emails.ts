@@ -4,7 +4,8 @@
 import { Resend } from "resend";
 import { getServiceClient } from "@/lib/supabase";
 import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
-import { siteConfig } from "@/lib/site-config";
+import { programaRehab, siteConfig } from "@/lib/site-config";
+import { paymentReceivedEmail } from "@/lib/patient-emails";
 
 type Db = ReturnType<typeof getServiceClient>;
 
@@ -34,47 +35,38 @@ export async function sendPaymentReceivedEmail(
   try {
     const { data: b } = await db
       .from("bookings")
-      .select("booking_date, start_time, end_time, client_name, client_email, services(name, price_clp), professionals(name)")
+      .select("booking_date, start_time, end_time, client_name, client_email, notes, services(name, price_clp), professionals(name)")
       .eq("id", bookingId)
       .single();
     if (!b?.client_email) return false;
     const service = b.services as unknown as { name: string; price_clp: number } | null;
     const pro = b.professionals as unknown as { name: string } | null;
-    const amount = payment.amount ?? service?.price_clp ?? null;
-    const fecha = formatBookingDate(b.booking_date);
-    const firstName = firstNameOf(b.client_name);
+    const notes = String(b.notes ?? "");
+    const program = notes.startsWith("[Programa")
+      ? programaRehab[notes.includes("ISAPRE") ? "isapre" : "fonasa"]
+      : null;
+    const mail = paymentReceivedEmail(
+      {
+        firstName: firstNameOf(b.client_name),
+        service: service?.name ?? "tu sesión",
+        professional: pro?.name ?? "",
+        dateLabel: formatBookingDate(b.booking_date),
+        start: String(b.start_time).slice(0, 5),
+        end: String(b.end_time).slice(0, 5),
+        priceClp: service?.price_clp ?? 0,
+        program: program ? { label: program.label, price: program.price } : undefined,
+      },
+      payment
+    );
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { error } = await resend.emails.send({
       from: emailFrom("Sakros"),
       to: b.client_email,
       replyTo: siteConfig.email,
-      subject: `Reserva confirmada y pago recibido — ${service?.name ?? "tu sesión"}, ${fecha}`,
-      text: [
-        `Hola ${firstName},`,
-        "",
-        "¡Muchas gracias! Recibimos tu pago y tu hora quedó confirmada.",
-        "",
-        `Servicio: ${service?.name ?? ""}`,
-        `Profesional: ${pro?.name ?? ""}`,
-        `Fecha: ${fecha}`,
-        `Hora: ${String(b.start_time).slice(0, 5)} - ${String(b.end_time).slice(0, 5)}`,
-        amount ? `Pago recibido: ${clp(amount)} (${payment.method}${payment.reference ? `, ${payment.reference}` : ""})` : `Pago recibido (${payment.method})`,
-        "",
-        `Dirección: ${siteConfig.address.street}, ${siteConfig.address.city}`,
-        "",
-        "Para tu sesión:",
-        "- Llega 5 a 10 minutos antes.",
-        "- Usa ropa cómoda que permita moverte.",
-        "- Si tienes exámenes, imágenes o informes médicos relacionados, tráelos.",
-        "",
-        `Si necesitas cambiar o cancelar tu hora, avísanos con al menos 24 horas de anticipación por WhatsApp al ${siteConfig.phone}.`,
-        "",
-        "Te esperamos.",
-        "",
-        "Un abrazo,",
-        "Equipo Sakros",
-      ].join("\n"),
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
     });
     if (error) {
       console.error("Correo pago recibido:", error.message);

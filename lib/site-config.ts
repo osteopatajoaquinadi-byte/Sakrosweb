@@ -24,6 +24,20 @@ export const siteConfig = {
   bookingUrl: "https://wa.me/56945399692",
 };
 
+// Datos para pagar por transferencia (pantalla de reserva y correos).
+export const transferAccount = {
+  holder: "Anikken Arentsen",
+  rut: "17.751.987-1",
+  bank: "Cuenta RUT BancoEstado",
+  number: "17751987",
+};
+
+// Programa de Rehabilitación Kinésica: precio y pago con tarjeta según previsión.
+export const programaRehab = {
+  fonasa: { label: "FONASA", price: "$190.000", priceClp: 190000, cardUrl: "https://www.tuu.cl/programafonasa" },
+  isapre: { label: "ISAPRE", price: "$230.000", priceClp: 230000, cardUrl: "https://www.tuu.cl/programaisapre" },
+} as const;
+
 // Links de pago online (Mercado Pago o Tuu) por servicio de la reserva. Si un
 // servicio tiene link, la reserva ofrece "Pago online" y lo muestra al final.
 export const paymentLinks: Record<string, string> = {

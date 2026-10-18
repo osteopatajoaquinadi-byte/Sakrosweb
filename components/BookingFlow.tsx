@@ -1,6 +1,6 @@
 "use client";
 
-import { bookingSlug, paymentLinks, paymentProvider } from "@/lib/site-config";
+import { bookingSlug, paymentLinks, paymentProvider, programaRehab, transferAccount } from "@/lib/site-config";
 import { trackEvent } from "@/components/GoogleAnalytics";
 
 import { useState, useEffect, useMemo } from "react";
@@ -36,10 +36,7 @@ const SERVICES_LIST = [
   { slug: "actividad-fisica-dirigida", label: "Actividad Física Dirigida", price: "$12.000" },
 ];
 
-const PROGRAMA = {
-  fonasa: { label: "FONASA", price: "$190.000", cardUrl: "https://www.tuu.cl/programafonasa" },
-  isapre: { label: "ISAPRE", price: "$230.000", cardUrl: "https://www.tuu.cl/programaisapre" },
-} as const;
+const PROGRAMA = programaRehab;
 
 const DAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -627,10 +624,10 @@ export default function BookingFlow() {
               {paymentMethod === "online_transfer" && (
                 <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50 p-4 text-sm text-slate-700">
                   <p className="font-semibold text-slate-900 mb-1">Datos para transferencia</p>
-                  <p>Anikken Arentsen</p>
-                  <p>RUT: 17.751.987-1</p>
-                  <p>Cuenta RUT BancoEstado</p>
-                  <p>N° cuenta: 17751987</p>
+                  <p>{transferAccount.holder}</p>
+                  <p>RUT: {transferAccount.rut}</p>
+                  <p>{transferAccount.bank}</p>
+                  <p>N° cuenta: {transferAccount.number}</p>
                   {programa && <p className="mt-1 font-semibold text-teal-700">Monto: {programa.price}</p>}
                   <p className="mt-2 text-xs text-slate-500">
                     Envía el comprobante al{" "}
