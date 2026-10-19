@@ -54,6 +54,9 @@ export const PERFIL_VACIO: PerfilProfesional = {
 
 export interface BorradorPlan {
   paciente: string;
+  // Contacto del paciente elegido desde las fichas (para enviarle el PDF).
+  pacienteEmail?: string;
+  pacienteTelefono?: string;
   protocolo: string;
   indicaciones: string;
   items: ItemPlan[];
