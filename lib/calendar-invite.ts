@@ -183,3 +183,31 @@ export async function sendProfessionalInvites(
   }
   return sent;
 }
+
+// Calendario con varias citas (METHOD:PUBLISH) para importarlas de una vez en
+// Google Calendar. Usa los mismos UID que las invitaciones, así un cambio o
+// cancelación posterior actualiza el evento importado.
+export function buildIcsBundle(
+  events: { uid: string; start: Date; end: Date; summary: string; description: string; location: string }[]
+): string {
+  const lines = ["BEGIN:VCALENDAR", "PRODID:-//Sakros//Reservas//ES", "VERSION:2.0", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
+  const now = stamp(new Date());
+  for (const e of events) {
+    lines.push(
+      "BEGIN:VEVENT",
+      `UID:${e.uid}`,
+      "SEQUENCE:0",
+      `DTSTAMP:${now}`,
+      `DTSTART:${stamp(e.start)}`,
+      `DTEND:${stamp(e.end)}`,
+      `SUMMARY:${esc(e.summary)}`,
+      `DESCRIPTION:${esc(e.description)}`,
+      `LOCATION:${esc(e.location)}`,
+      "STATUS:CONFIRMED",
+      "TRANSP:OPAQUE",
+      "END:VEVENT"
+    );
+  }
+  lines.push("END:VCALENDAR");
+  return lines.map(fold).join("\r\n") + "\r\n";
+}
