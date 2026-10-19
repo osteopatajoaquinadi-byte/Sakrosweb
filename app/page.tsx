@@ -121,14 +121,26 @@ export default function HomePage() {
 
       {/* Espejo de frustración */}
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="text-2xl font-bold text-slate-900 mb-3">
-          Sabemos lo que es sentir que tu cuerpo ya no responde igual
-        </h2>
-        <p className="text-slate-600 mb-10 max-w-3xl">
-          Pasar horas frente a una pantalla y después querer rendir en la cancha, en el
-          gimnasio o en el asfalto es la receta perfecta para la frustración. Las lesiones
-          mal resueltas vuelven a aparecer y el cuerpo empieza a mandar alertas.
-        </p>
+        <div className="mb-10 grid items-center gap-8 md:grid-cols-[1fr_340px]">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-3">
+              Sabemos lo que es sentir que tu cuerpo ya no responde igual
+            </h2>
+            <p className="text-slate-600 max-w-3xl">
+              Pasar horas frente a una pantalla y después querer rendir en la cancha, en el
+              gimnasio o en el asfalto es la receta perfecta para la frustración. Las lesiones
+              mal resueltas vuelven a aparecer y el cuerpo empieza a mandar alertas.
+            </p>
+          </div>
+          <Image
+            src="/images/dolor-espalda-escritorio.jpg"
+            alt="Persona con dolor lumbar sentada frente al computador"
+            width={1200}
+            height={675}
+            sizes="(min-width: 768px) 340px, 100vw"
+            className="w-full h-auto rounded-2xl object-cover"
+          />
+        </div>
         <div className="grid gap-6 sm:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 p-6">
             <p className="text-2xl mb-3">😣</p>
