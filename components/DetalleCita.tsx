@@ -95,6 +95,7 @@ export default function DetalleCita({
     service_id: booking.service_id,
     notes: booking.notes ?? "",
   });
+  const [avisar, setAvisar] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [paymentStatus, setPaymentStatus] = useState(booking.payment_status);
@@ -189,7 +190,16 @@ export default function DetalleCita({
 
   function setStatus(status: string) {
     if (status === "cancelled" && !confirm("¿Cancelar esta cita?")) return;
-    patch({ status }, true);
+    // Cancelar y "No asistió" envían un correo al paciente; se puede omitir.
+    const notify =
+      status === "cancelled" || status === "no_show"
+        ? confirm(
+            status === "cancelled"
+              ? "¿Avisar al paciente por correo que su hora fue cancelada?"
+              : "¿Enviar al paciente un correo para reagendar su hora?"
+          )
+        : true;
+    patch({ status, notify }, true);
   }
 
   // Servicios que ofrece el profesional elegido
@@ -433,7 +443,7 @@ export default function DetalleCita({
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  patch(form);
+                  patch({ ...form, notify: avisar });
                 }}
                 className="space-y-3 rounded-xl border border-slate-200 p-4"
               >
@@ -502,6 +512,10 @@ export default function DetalleCita({
                     onChange={(e) => setForm({ ...form, notes: e.target.value })}
                     className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none"
                   />
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" checked={avisar} onChange={(e) => setAvisar(e.target.checked)} />
+                  Avisar al paciente por correo si cambia la fecha, hora o profesional
                 </label>
                 <div className="flex gap-2">
                   <button
