@@ -30,6 +30,11 @@ export async function POST(request: NextRequest) {
   try {
     payment = await getPayment(paymentId);
   } catch (e) {
+    // Pago inexistente (p. ej. la simulación del panel con id 123456): no hay
+    // nada que registrar y no sirve que Mercado Pago reintente.
+    if (String(e).includes("Mercado Pago 404")) {
+      return NextResponse.json({ ok: true, ignored: "pago no encontrado" });
+    }
     console.error("Mercado Pago, consultar pago:", e);
     // 500 para que Mercado Pago reintente más tarde.
     return NextResponse.json({ error: "No se pudo consultar el pago." }, { status: 500 });
