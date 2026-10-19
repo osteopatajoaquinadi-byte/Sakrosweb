@@ -5,7 +5,7 @@ import { Resend } from "resend";
 import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
 import { siteConfig } from "@/lib/site-config";
 import { sendProfessionalInvites } from "@/lib/calendar-invite";
-import { firstNameOf, sendPaymentReceivedEmail } from "@/lib/booking-emails";
+import { firstNameOf, sendBookingNotice, sendPaymentReceivedEmail } from "@/lib/booking-emails";
 import { panelBookingEmail } from "@/lib/patient-emails";
 
 // Agenda interna del panel: a diferencia de /api/bookings (reserva pública),
@@ -324,8 +324,24 @@ export async function PATCH(request: NextRequest) {
     await sendPaymentReceivedEmail(db, id, { method: "registrado por el equipo Sakros" });
   }
 
-  // Mantener al día el calendario del profesional.
+  // Avisos al paciente por correo (el panel puede desactivarlos con notify: false).
   const newStatus = status ?? current.status;
+  const notify = body.notify !== false;
+  if (notify && booking_date >= today) {
+    if (newStatus === "cancelled" && current.status !== "cancelled") {
+      await sendBookingNotice(db, id, { kind: "cancelled" });
+    } else if (rescheduling && newStatus === "confirmed" && current.status === "confirmed") {
+      await sendBookingNotice(db, id, {
+        kind: "rescheduled",
+        before: { booking_date: current.booking_date, start_time: current.start_time },
+      });
+    }
+  }
+  if (notify && newStatus === "no_show" && current.status !== "no_show") {
+    await sendBookingNotice(db, id, { kind: "no_show" });
+  }
+
+  // Mantener al día el calendario del profesional.
   if (newStatus === "cancelled" && current.status !== "cancelled") {
     await sendProfessionalInvites(db, [id], "cancel");
   } else if (newStatus === "confirmed" && current.status === "cancelled") {

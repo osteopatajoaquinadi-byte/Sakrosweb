@@ -6,6 +6,9 @@ import { getServiceClient } from "@/lib/supabase";
 import { getPayment, mercadoPagoEnabled, validSignature } from "@/lib/mercadopago";
 import { sendProfessionalInvites } from "@/lib/calendar-invite";
 import { sendPaymentReceivedEmail } from "@/lib/booking-emails";
+import { Resend } from "resend";
+import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
+import { siteConfig } from "@/lib/site-config";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -93,6 +96,25 @@ export async function POST(request: NextRequest) {
     }
 
     await db.from("bookings").update(update).eq("id", booking.id);
+
+    // Pagó, pero otra persona tomó la hora: la clínica debe contactarlo.
+    if (booking.status === "cancelled" && !reactivated && calendarNotificationsEnabled()) {
+      try {
+        await new Resend(process.env.RESEND_API_KEY).emails.send({
+          from: emailFrom("Sakros web"),
+          to: siteConfig.email,
+          subject: `Pago recibido sin hora disponible — contactar al paciente`,
+          text: [
+            `Mercado Pago aprobó el pago #${payment.id} ($${Math.round(payment.transaction_amount).toLocaleString("es-CL")}),`,
+            `pero la hora del ${booking.booking_date} a las ${String(booking.start_time).slice(0, 5)} ya la había tomado otra persona.`,
+            `Pagador: ${payment.payer?.email ?? "sin email"}.`,
+            `Hay que contactar al paciente para reagendar o devolver el pago.`,
+          ].join("\n"),
+        });
+      } catch (e) {
+        console.error("Aviso pago sin hora:", e);
+      }
+    }
     if (reactivated) await sendProfessionalInvites(db, [booking.id], "new");
 
     // Segundo correo al paciente: reserva confirmada y pago recibido (no se

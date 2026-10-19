@@ -24,7 +24,7 @@ type Mail = { subject: string; html: string; text: string };
 
 const clp = (n: number) => `$${Math.round(n).toLocaleString("es-CL")}`;
 const amountOf = (b: BookingInfo) => b.program?.price ?? clp(b.priceClp);
-const serviceOf = (b: BookingInfo) =>
+const serviceOf = (b: Pick<BookingInfo, "service" | "program">) =>
   b.program ? `Programa de Rehabilitación Kinésica (${b.program.label})` : b.service;
 
 function details(b: BookingInfo, extra: [string, string][] = []): [string, string][] {
@@ -223,4 +223,91 @@ export function reminderEmail(b: Omit<BookingInfo, "priceClp" | "end"> & { end?:
     closing: signOff(true),
   });
   return { subject: `Recordatorio: mañana tienes ${b.service} a las ${b.start} en Sakros`, ...r };
+}
+
+const bookUrl = `${siteConfig.url}/reserva`;
+
+// La clínica canceló la hora, o se liberó porque el pago online no llegó a tiempo.
+export function cancelledEmail(
+  b: Omit<BookingInfo, "priceClp">,
+  reason: "team" | "unpaid"
+): Mail {
+  const unpaid = reason === "unpaid";
+  const r = renderBrandedEmail({
+    preheader: unpaid
+      ? `No recibimos el pago y tu hora del ${b.dateLabel} quedó liberada.`
+      : `Tu hora del ${b.dateLabel} a las ${b.start} fue cancelada.`,
+    badge: { text: unpaid ? "Hora liberada" : "Reserva cancelada", tone: "pending" },
+    title: unpaid ? "Liberamos tu hora" : "Tu hora fue cancelada",
+    greeting: `Hola ${b.firstName},`,
+    paragraphs: [
+      unpaid
+        ? "No recibimos el pago dentro del plazo, así que la hora quedó disponible para otros pacientes."
+        : "Te confirmamos que esta hora quedó cancelada:",
+    ],
+    details: [
+      ["Servicio", serviceOf(b)],
+      ["Profesional", b.professional],
+      ["Fecha", b.dateLabel],
+      ["Hora", `${b.start} - ${b.end}`],
+    ],
+    cta: { label: "Reservar otra hora", href: bookUrl },
+    closing: [
+      unpaid
+        ? `Si ya pagaste, escríbenos por WhatsApp al ${phoneLabel} con tu comprobante y lo solucionamos.`
+        : `Si tienes dudas, escríbenos por WhatsApp al ${phoneLabel}.`,
+      "Un abrazo,",
+      "Equipo Sakros",
+    ],
+  });
+  return {
+    subject: unpaid
+      ? `Liberamos tu hora del ${b.dateLabel} — no recibimos el pago`
+      : `Reserva cancelada — ${serviceOf(b)}, ${b.dateLabel}`,
+    ...r,
+  };
+}
+
+// El equipo cambió la fecha, hora o profesional de la cita.
+export function rescheduledEmail(
+  b: Omit<BookingInfo, "priceClp">,
+  before: { dateLabel: string; start: string }
+): Mail {
+  const r = renderBrandedEmail({
+    preheader: `Tu hora ahora es el ${b.dateLabel} a las ${b.start}.`,
+    badge: { text: "Reserva modificada", tone: "confirmed" },
+    title: "Cambiamos tu hora",
+    greeting: `Hola ${b.firstName},`,
+    paragraphs: [`Tu hora del ${before.dateLabel} a las ${before.start} quedó cambiada. Estos son los datos nuevos:`],
+    details: [
+      ["Servicio", serviceOf(b)],
+      ["Profesional", b.professional],
+      ["Fecha", b.dateLabel],
+      ["Hora", `${b.start} - ${b.end}`],
+    ],
+    tips: sessionTips,
+    closing: signOff(true),
+  });
+  return { subject: `Cambio de hora — ${serviceOf(b)}, ${b.dateLabel} a las ${b.start}`, ...r };
+}
+
+// El paciente no llegó a su hora: se le ofrece reagendar.
+export function noShowEmail(b: Omit<BookingInfo, "priceClp">): Mail {
+  const r = renderBrandedEmail({
+    preheader: "No alcanzamos a verte hoy. Te ayudamos a reagendar.",
+    badge: { text: "Te esperábamos", tone: "info" },
+    title: "No alcanzamos a verte",
+    greeting: `Hola ${b.firstName},`,
+    paragraphs: [
+      `Te esperábamos el ${b.dateLabel} a las ${b.start} para tu sesión de ${serviceOf(b)} y no alcanzamos a verte.`,
+      "Esperamos que estés bien. Si quieres retomar, puedes reservar una nueva hora cuando te acomode.",
+    ],
+    cta: { label: "Reservar nueva hora", href: bookUrl },
+    closing: [
+      `Si tuviste un imprevisto o prefieres coordinar por WhatsApp, escríbenos al ${phoneLabel}.`,
+      "Un abrazo,",
+      "Equipo Sakros",
+    ],
+  });
+  return { subject: `Te esperábamos — ¿reagendamos tu hora de ${serviceOf(b)}?`, ...r };
 }

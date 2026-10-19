@@ -3,6 +3,7 @@
 // a estar disponible apenas vence el plazo, sin depender de un cron.
 import { getServiceClient } from "@/lib/supabase";
 import { sendProfessionalInvites } from "@/lib/calendar-invite";
+import { sendBookingNotice } from "@/lib/booking-emails";
 
 type Db = ReturnType<typeof getServiceClient>;
 
@@ -25,6 +26,8 @@ export async function releaseExpiredHolds(db: Db): Promise<void> {
       )
     );
     await sendProfessionalInvites(db, data.map((b) => b.id), "cancel");
+    // El paciente sabe que su hora se liberó y puede volver a reservar.
+    await Promise.all(data.map((b) => sendBookingNotice(db, b.id, { kind: "unpaid" })));
   } catch (e) {
     console.error("Liberar horas sin pago:", e);
   }
