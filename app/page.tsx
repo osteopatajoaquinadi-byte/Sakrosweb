@@ -3,7 +3,6 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { services, siteConfig } from "@/lib/site-config";
-import ServiceCardHeader from "@/components/ServiceCardHeader";
 import LeadMagnet from "@/components/LeadMagnet";
 
 export const metadata: Metadata = pageMetadata({
@@ -267,10 +266,13 @@ export default function HomePage() {
               href={`/servicios/${service.slug}`}
               className="block rounded-2xl border border-slate-200 overflow-hidden hover:border-teal-700 hover:shadow-sm transition"
             >
-              <ServiceCardHeader
-                slug={service.slug}
-                name={service.shortName}
-                tagline={service.tagline}
+              <Image
+                src={service.image}
+                alt={service.shortName}
+                width={800}
+                height={600}
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                className="w-full"
               />
               <div className="p-5">
                 <h3 className="font-semibold text-slate-900 mb-1">{service.shortName}</h3>
