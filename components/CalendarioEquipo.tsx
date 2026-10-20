@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import AgendarReserva from "./AgendarReserva";
+import BloquearHorario from "./BloquearHorario";
 import DetalleCita, { type CalendarBooking as Booking } from "./DetalleCita";
 import type { Permission } from "@/lib/equipo-auth";
 
@@ -27,8 +28,22 @@ function addDays(d: Date, n: number) {
   return r;
 }
 
+type Bloqueo = {
+  id: string;
+  block_date: string;
+  start_time: string | null; // null = día completo
+  end_time: string | null;
+  reason: string | null;
+  professionals: { name: string; slug: string } | null;
+};
+
+const horarioBloqueo = (b: Bloqueo) =>
+  b.start_time ? `${b.start_time.slice(0, 5)}–${b.end_time?.slice(0, 5)}` : "Día completo";
+const primerNombre = (b: Bloqueo) => b.professionals?.name.split(" ")[0] ?? "";
+
 type CalendarData = {
   bookings: Booking[];
+  blocks?: Bloqueo[];
   totalSlots: number;
   bookedSlots: number;
 };
@@ -61,6 +76,7 @@ const STATUS_LABELS: Record<string, string> = {
 export default function CalendarioEquipo({ permissions }: { permissions: Permission[] }) {
   const puedeAgendar = permissions.includes("agendar");
   const [showAgendar, setShowAgendar] = useState(false);
+  const [showBloquear, setShowBloquear] = useState(false);
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1); // 1-based
@@ -132,6 +148,40 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
     }
   }
 
+  const blocksByDate: Record<string, Bloqueo[]> = {};
+  for (const b of data?.blocks ?? []) {
+    (blocksByDate[b.block_date] ??= []).push(b);
+  }
+
+  async function quitarBloqueo(b: Bloqueo) {
+    if (!puedeAgendar) {
+      alert(`Bloqueado: ${b.professionals?.name} · ${horarioBloqueo(b)}\n${b.reason ?? ""}`);
+      return;
+    }
+    if (!confirm(`Horario bloqueado\n${b.professionals?.name} · ${horarioBloqueo(b)}\n${b.reason ?? ""}\n\n¿Quitar este bloqueo?`)) return;
+    const res = await fetch(`/api/equipo/bloqueos?id=${b.id}`, { method: "DELETE" });
+    if (!res.ok) alert("No se pudo quitar el bloqueo.");
+    fetchData();
+  }
+
+  function chipBloqueo(b: Bloqueo, grande = false) {
+    return (
+      <button
+        key={b.id}
+        type="button"
+        onClick={(e) => { e.stopPropagation(); quitarBloqueo(b); }}
+        title={`Bloqueado · ${b.professionals?.name} · ${horarioBloqueo(b)} · ${b.reason ?? ""}`}
+        className={`flex w-full items-center gap-1 rounded border border-dashed border-slate-400 bg-slate-200/70 text-left text-slate-700 hover:ring-1 hover:ring-slate-500 ${
+          grande ? "px-3 py-2 text-sm" : "px-1 py-0.5 text-[11px] leading-tight"
+        }`}
+      >
+        <span aria-hidden>🔒</span>
+        <span className="font-semibold tabular-nums">{horarioBloqueo(b)}</span>
+        <span className="truncate">{primerNombre(b)}{grande && b.reason ? ` · ${b.reason}` : ""}</span>
+      </button>
+    );
+  }
+
   const todayStr = ymd(now);
   const occupancy = data && data.totalSlots > 0
     ? Math.round((data.bookedSlots / data.totalSlots) * 100)
@@ -154,10 +204,11 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
   function renderDia(d: Date, enGrilla: boolean) {
     const dateStr = ymd(d);
     const dayBookings = bookingsByDate[dateStr] ?? [];
+    const dayBlocks = blocksByDate[dateStr] ?? [];
     const isToday = dateStr === todayStr;
     const isPast = dateStr < todayStr;
     const isSelected = selectedDay === dateStr;
-    if (!enGrilla && dayBookings.length === 0 && !isToday) {
+    if (!enGrilla && dayBookings.length === 0 && dayBlocks.length === 0 && !isToday) {
       return (
         <p key={dateStr} className="px-1 text-[11px] text-slate-400 first-letter:uppercase">
           {d.toLocaleDateString("es-CL", { weekday: "short", day: "numeric", month: "short" })} · sin citas
@@ -191,6 +242,7 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
           {dayBookings.length > 0 && <span className="text-[10px] text-slate-400">{dayBookings.length}</span>}
         </button>
         <div className="space-y-0.5">
+          {dayBlocks.map((b) => chipBloqueo(b))}
           {dayBookings.map((b) => {
             const colors = SERVICE_COLORS[b.services?.slug] || getDefaultColor();
             const abierta = citaAbierta?.id === b.id;
@@ -253,13 +305,26 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
             </div>
           ))}
         </div>
-        {puedeAgendar && !showAgendar && (
-          <button onClick={() => setShowAgendar(true)}
-            className="rounded-full bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800">
-            + Agendar sesión o programa
-          </button>
+        {puedeAgendar && !showAgendar && !showBloquear && (
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setShowBloquear(true)}
+              className="rounded-full border border-slate-400 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-slate-700">
+              🔒 Bloquear horario
+            </button>
+            <button onClick={() => setShowAgendar(true)}
+              className="rounded-full bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800">
+              + Agendar sesión o programa
+            </button>
+          </div>
         )}
       </div>
+      {showBloquear && (
+        <BloquearHorario
+          defaultDate={selectedDateStr ?? todayStr}
+          onCancel={() => setShowBloquear(false)}
+          onDone={() => { setShowBloquear(false); fetchData(); }}
+        />
+      )}
       {showAgendar && (
         <AgendarReserva
           defaultDate={selectedDateStr ?? todayStr}
@@ -337,7 +402,8 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
       ) : vista === "dia" ? (
         (() => {
           const citas = bookingsByDate[ymd(dia)] ?? [];
-          if (citas.length === 0) {
+          const bloqueos = blocksByDate[ymd(dia)] ?? [];
+          if (citas.length === 0 && bloqueos.length === 0) {
             return (
               <div className="rounded-xl border border-slate-200 bg-white py-12 text-center text-sm text-slate-400">
                 Sin citas para este día.
@@ -345,6 +411,8 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
             );
           }
           return (
+            <>
+            {bloqueos.length > 0 && <div className="mb-2 space-y-1">{bloqueos.map((b) => chipBloqueo(b, true))}</div>}
             <div className="rounded-xl border border-slate-200 bg-white divide-y divide-slate-100 overflow-hidden">
               {citas.map((b) => {
                 const colors = SERVICE_COLORS[b.services?.slug] || getDefaultColor();
@@ -384,6 +452,7 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
                 );
               })}
             </div>
+            </>
           );
         })()
       ) : vista === "quincena" ? (
@@ -445,6 +514,11 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
                       {day}
                     </span>
                     <div className="mt-1 space-y-0.5">
+                      {(blocksByDate[dateStr] ?? []).map((b) => (
+                        <div key={b.id} className="truncate rounded bg-slate-200 px-1 py-0.5 text-[10px] leading-tight text-slate-700">
+                          🔒 {b.start_time ? b.start_time.slice(0, 5) : "Día"} {primerNombre(b)}
+                        </div>
+                      ))}
                       {dayBookings.slice(0, 4).map((b) => {
                         const colors = SERVICE_COLORS[b.services?.slug] || getDefaultColor();
                         return (
@@ -482,6 +556,11 @@ export default function CalendarioEquipo({ permissions }: { permissions: Permiss
                 <p className="text-xs text-slate-500 mb-4">
                   {selectedBookings.length} reserva{selectedBookings.length !== 1 ? "s" : ""}
                 </p>
+                {(blocksByDate[selectedDateStr] ?? []).length > 0 && (
+                  <div className="mb-3 space-y-1">
+                    {(blocksByDate[selectedDateStr] ?? []).map((b) => chipBloqueo(b, true))}
+                  </div>
+                )}
                 {selectedBookings.length === 0 ? (
                   <p className="text-sm text-slate-400">Sin reservas este día.</p>
                 ) : (
