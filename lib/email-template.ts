@@ -41,7 +41,7 @@ export const phoneLabel = "+56 9 4539 9692";
 
 export function renderBrandedEmail(e: BrandedEmail): { html: string; text: string } {
   const p = (t: string) =>
-    `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:${MUTED}">${esc(t)}</p>`;
+    `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:${MUTED};white-space:pre-line">${esc(t)}</p>`;
 
   const badge = e.badge
     ? `<span style="display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.3px;background:${TONES[e.badge.tone].bg};color:${TONES[e.badge.tone].fg};border:1px solid ${TONES[e.badge.tone].border}">${esc(e.badge.text)}</span>`

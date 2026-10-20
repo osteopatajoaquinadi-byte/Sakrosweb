@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { requireStaff } from "@/lib/equipo-auth";
 import { siteConfig } from "@/lib/site-config";
+import { emailFrom } from "@/lib/email";
 
 // Envía la minuta generada al correo del paciente.
 
@@ -62,8 +63,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { error } = await new Resend(apiKey).emails.send({
-      // Mientras no haya dominio verificado en Resend se usa su dominio de pruebas.
-      from: "Sakros <onboarding@resend.dev>",
+      from: emailFrom("Sakros"),
       to,
       replyTo: siteConfig.email,
       subject: `Plan nutricional Sakros — ${name || "Paciente"}`,

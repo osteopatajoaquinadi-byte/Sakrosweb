@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import ClinicalEvalForm, { ClinicalDataDisplay } from "./ClinicalEvalForm";
 import KinesiologyTab from "./fichas/KinesiologyTab";
 import SesionesDesdePago from "./fichas/SesionesDesdePago";
+import CorreoPaciente from "./fichas/CorreoPaciente";
 import { blankKine, type KinePlan } from "./fichas/constants";
 import type { Permission } from "@/lib/equipo-auth";
 
@@ -195,6 +196,7 @@ export default function FichaPaciente({
   const [savingEdit, setSavingEdit] = useState(false);
 
   const [error, setError] = useState("");
+  const [showCorreo, setShowCorreo] = useState(false);
 
   const fetchData = useCallback(() => {
     setLoading(true);
@@ -465,12 +467,20 @@ export default function FichaPaciente({
               {clinico && patient.sport && <span>Deporte: {patient.sport}</span>}
             </div>
           </div>
-          <button
-            onClick={() => setEditing(!editing)}
-            className="text-sm text-teal-700 hover:text-teal-900 font-medium"
-          >
-            {editing ? "Cancelar" : "Editar"}
-          </button>
+          <div className="flex shrink-0 items-center gap-3">
+            <button
+              onClick={() => setShowCorreo(!showCorreo)}
+              className="rounded-full border border-teal-700 px-3 py-1 text-sm font-medium text-teal-700 hover:bg-teal-50"
+            >
+              ✉ Enviar correo
+            </button>
+            <button
+              onClick={() => setEditing(!editing)}
+              className="text-sm text-teal-700 hover:text-teal-900 font-medium"
+            >
+              {editing ? "Cancelar" : "Editar"}
+            </button>
+          </div>
         </div>
 
         {/* Contacto */}
@@ -514,6 +524,15 @@ export default function FichaPaciente({
             )}
         </div>
       </div>
+
+      {showCorreo && (
+        <CorreoPaciente
+          patientId={patientId}
+          email={patient.email}
+          nombre={patient.name}
+          onClose={() => setShowCorreo(false)}
+        />
+      )}
 
       {/* Formulario de edición */}
       {editing && (
