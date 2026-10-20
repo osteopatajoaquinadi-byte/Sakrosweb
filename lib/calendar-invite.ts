@@ -11,6 +11,8 @@ type Db = ReturnType<typeof getServiceClient>;
 export type InviteKind = "new" | "update" | "cancel";
 
 const TZ = "America/Santiago";
+// Recibe una copia de todas las invitaciones del equipo.
+const SECRETARY_EMAIL = siteConfig.email;
 const FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || "onboarding@resend.dev";
 
 // Hora local de Chile (YYYY-MM-DD + HH:MM) a instante UTC, respetando el
@@ -132,10 +134,16 @@ export async function sendProfessionalInvites(
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     const sequence = Math.floor(Date.now() / 1000);
-    for (const b of rows) {
-      const to = b.professionals?.email;
-      if (!to) continue;
+    // Cada cita va al profesional y, en copia aparte, a la secretaría
+    // (para que tenga la agenda de todo el equipo en su calendario).
+    const envios = rows.flatMap((b) =>
+      [b.professionals?.email, SECRETARY_EMAIL]
+        .filter((to, i, arr): to is string => !!to && arr.indexOf(to) === i)
+        .map((to) => ({ b, to, copia: to === SECRETARY_EMAIL && to !== b.professionals?.email }))
+    );
+    for (const { b, to, copia } of envios) {
       const service = b.services?.name ?? "Sesión";
+      const pro = b.professionals?.name ?? "";
       const time = b.start_time.slice(0, 5);
       const dateLabel = new Date(`${b.booking_date}T12:00:00`).toLocaleDateString("es-CL", {
         weekday: "long",
@@ -156,7 +164,7 @@ export async function sendProfessionalInvites(
         sequence,
         start: chileToUtc(b.booking_date, b.start_time),
         end: chileToUtc(b.booking_date, b.end_time),
-        summary: `${service} — ${b.client_name}`,
+        summary: copia && pro ? `${service} — ${b.client_name} (${pro.split(" ")[0]})` : `${service} — ${b.client_name}`,
         description: details,
         location: `Sakros, ${siteConfig.address.street}, ${siteConfig.address.city}`,
         attendee: to,
@@ -165,8 +173,8 @@ export async function sendProfessionalInvites(
       const { error } = await resend.emails.send({
         from: emailFrom("Sakros Reservas"),
         to,
-        subject: `${verb}: ${service} — ${b.client_name}, ${dateLabel} ${time}`,
-        text: `${verb} en tu agenda de Sakros.\n\n${service}\n${dateLabel} a las ${time}\n${details}\n`,
+        subject: `${verb}: ${service} — ${b.client_name}, ${dateLabel} ${time}${copia && pro ? ` (${pro})` : ""}`,
+        text: `${verb} en ${copia ? `la agenda de ${pro || "Sakros"}` : "tu agenda de Sakros"}.\n\n${service}\n${dateLabel} a las ${time}\n${details}\n`,
         attachments: [
           {
             filename: kind === "cancel" ? "cancel.ics" : "invite.ics",
