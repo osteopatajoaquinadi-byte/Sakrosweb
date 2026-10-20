@@ -2,16 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient as getSupabase } from "@/lib/supabase";
 import { requireStaff } from "@/lib/equipo-auth";
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 export async function POST(request: NextRequest) {
   const { user, denied } = requireStaff(request, "pagos");
   if (denied) return denied;
 
   const body = await request.json();
-  const { patient_id, amount, method, payment_type, pack_name, sessions_purchased, service_type, reference, notes } = body;
+  const { patient_id, amount, method, payment_type, pack_name, sessions_purchased, service_type, reference, notes, paid_on, sessions_used } = body;
   const registered_by = user.display_name;
 
   if (!patient_id || !amount || !method || !payment_type) {
     return NextResponse.json({ error: "Faltan campos obligatorios." }, { status: 400 });
+  }
+  if (paid_on && !DATE_RE.test(paid_on)) {
+    return NextResponse.json({ error: "Fecha de pago inválida." }, { status: 400 });
   }
 
   const { data, error } = await getSupabase()
@@ -27,12 +32,22 @@ export async function POST(request: NextRequest) {
       reference: reference || null,
       notes: notes || null,
       registered_by,
+      ...(paid_on ? { paid_on } : {}),
     })
     .select()
     .single();
 
   if (error) {
     return NextResponse.json({ error: "Error al registrar pago." }, { status: 500 });
+  }
+
+  // Sesiones ya realizadas antes de registrar el pago (contadas en el calendario).
+  const used = Number(sessions_used);
+  if (Number.isInteger(used) && used > 0) {
+    await getSupabase()
+      .from("fichas_session_balance")
+      .update({ sessions_used: Math.min(used, data.sessions_purchased) })
+      .eq("payment_id", data.id);
   }
 
   return NextResponse.json({ payment: data });
@@ -47,6 +62,7 @@ const EDITABLE_FIELDS = [
   "service_type",
   "reference",
   "notes",
+  "paid_on",
 ] as const;
 
 // Editar un pago. Mantiene sincronizado el saldo de sesiones que generó
@@ -64,6 +80,9 @@ export async function PATCH(request: NextRequest) {
   const update: Record<string, unknown> = {};
   for (const field of EDITABLE_FIELDS) {
     if (field in body) update[field] = body[field] === "" ? null : body[field];
+  }
+  if ("paid_on" in update && (typeof update.paid_on !== "string" || !DATE_RE.test(update.paid_on))) {
+    return NextResponse.json({ error: "Fecha de pago inválida." }, { status: 400 });
   }
   if ("sessions_purchased" in update) {
     const n = Number(update.sessions_purchased);
@@ -93,6 +112,11 @@ export async function PATCH(request: NextRequest) {
     balanceUpdate.service_type = payment.service_type;
     if ("payment_type" in update && payment.payment_type !== "pack") {
       balanceUpdate.expires_at = null;
+    } else if (payment.payment_type === "pack" && ("paid_on" in update || "payment_type" in update)) {
+      // El pack vence 6 meses después de la fecha de pago.
+      const d = new Date(`${payment.paid_on}T12:00:00Z`);
+      d.setUTCMonth(d.getUTCMonth() + 6);
+      balanceUpdate.expires_at = `${d.toISOString().slice(0, 10)}T00:00:00-03:00`;
     }
   }
   if (sessions_used !== undefined) {

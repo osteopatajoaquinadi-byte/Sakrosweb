@@ -97,8 +97,18 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Horarios bloqueados del rango
+  const { data: blocks } = await getSupabase()
+    .from("schedule_blocks")
+    .select("id, block_date, start_time, end_time, reason, professional_id, professionals ( name, slug )")
+    .gte("block_date", firstDay)
+    .lte("block_date", lastDay)
+    .order("block_date")
+    .order("start_time", { nullsFirst: true });
+
   return NextResponse.json({
     bookings: bookings ?? [],
+    blocks: blocks ?? [],
     totalSlots,
     bookedSlots: (bookings ?? []).length,
   });

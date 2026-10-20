@@ -36,6 +36,7 @@ export async function GET(
           .from("fichas_payments")
           .select("*")
           .eq("patient_id", id)
+          .order("paid_on", { ascending: false })
           .order("created_at", { ascending: false })
       : none,
     getSupabase()
