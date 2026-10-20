@@ -7,7 +7,7 @@ import type { Area, Protocolo } from "@/lib/protocolos/types";
 import PerfilForm from "./PerfilForm";
 import PlanBuilder from "./PlanBuilder";
 import ProtocoloView from "./ProtocoloView";
-import { useGenerados, usePerfil, usePlan } from "./storage";
+import { PLAN_VACIO, useGenerados, usePerfil, usePlan } from "./storage";
 
 type Vista = { tipo: "inicio" } | { tipo: "protocolo"; protocolo: Protocolo } | { tipo: "plan" } | { tipo: "perfil" };
 
@@ -88,7 +88,11 @@ export default function ProtocolosTab({ nombreProfesional }: { nombreProfesional
         onCambiar={plan.guardar}
         onAgregar={(id, dosis, fase) => agregar(id, dosis, fase)}
         onEditarPerfil={() => setVista({ tipo: "perfil" })}
-        onVolver={() => setVista({ tipo: "inicio" })}
+        onVolver={() => {
+          // Plan ya enviado: se vacía para el próximo paciente.
+          if (plan.valor.enviadoEn) plan.guardar(PLAN_VACIO);
+          setVista({ tipo: "inicio" });
+        }}
       />
     );
   }

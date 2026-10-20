@@ -67,11 +67,16 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
     return { doc, datos };
   }
 
+  function marcarEnviado() {
+    onCambiar({ ...plan, enviadoEn: new Date().toISOString() });
+  }
+
   async function descargar() {
     setCreando(true);
     const { doc, datos } = await crearPdf();
     doc.save(nombreArchivo(datos));
     setCreando(false);
+    marcarEnviado();
   }
 
   // Envía el PDF adjunto al correo del paciente (sin descargarlo).
@@ -96,7 +101,8 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
         body: JSON.stringify({ to, paciente: datos.paciente, filename: nombreArchivo(datos), pdf }),
       });
       const d = await res.json().catch(() => ({}));
-      setMsg(res.ok ? `Plan enviado a ${to}.` : d.error || "No se pudo enviar el correo.");
+      setMsg(res.ok ? `Plan enviado a ${to}. Al salir, el plan se vacía para el próximo paciente.` : d.error || "No se pudo enviar el correo.");
+      if (res.ok) marcarEnviado();
     } catch {
       setMsg("Error de conexión al enviar el correo.");
     } finally {
@@ -116,6 +122,7 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
     if (typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: "Plan de ejercicios" });
+        marcarEnviado();
       } catch {
         /* el usuario canceló */
       }
@@ -183,7 +190,9 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
                   <button
                     type="button"
                     onClick={() => {
-                      onCambiar({ ...plan, paciente: p.name, pacienteEmail: p.email ?? "", pacienteTelefono: p.phone ?? "" });
+                      // Si el plan anterior ya se envió, el nuevo paciente parte de cero.
+                      const base = plan.enviadoEn ? { protocolo: "", indicaciones: "", items: [] } : {};
+                      onCambiar({ ...plan, ...base, enviadoEn: undefined, paciente: p.name, pacienteEmail: p.email ?? "", pacienteTelefono: p.phone ?? "" });
                       setBuscarPaciente("");
                       setSugerencias([]);
                     }}
