@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import "./globals.css";
@@ -6,6 +6,12 @@ import { siteConfig, services } from "@/lib/site-config";
 import MobileNav from "@/components/MobileNav";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { businessId } from "@/lib/seo";
+
+/** El sitio es solo claro: así Safari/Chrome no aplican su tema oscuro. */
+export const viewport: Viewport = {
+  colorScheme: "light",
+  themeColor: "#ffffff",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
