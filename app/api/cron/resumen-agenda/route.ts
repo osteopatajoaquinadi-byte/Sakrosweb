@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { getServiceClient } from "@/lib/supabase";
 import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
-import { buildIcsBundle, chileToUtc } from "@/lib/calendar-invite";
+import { buildIcsBundle, chileToUtc, recibeAviso } from "@/lib/calendar-invite";
 import { renderBrandedEmail } from "@/lib/email-template";
 import { siteConfig } from "@/lib/site-config";
 import { requireStaff } from "@/lib/equipo-auth";
@@ -22,7 +22,7 @@ type Row = {
   client_name: string;
   client_phone: string | null;
   notes: string | null;
-  services: { name: string } | null;
+  services: { name: string; slug: string } | null;
   professionals: { slug: string; name: string; email: string | null } | null;
 };
 
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
   const db = getServiceClient();
   const { data, error } = await db
     .from("bookings")
-    .select("id, booking_date, start_time, end_time, client_name, client_phone, notes, services(name), professionals(slug, name, email)")
+    .select("id, booking_date, start_time, end_time, client_name, client_phone, notes, services(name, slug), professionals(slug, name, email)")
     .eq("status", "confirmed")
     .gte("booking_date", tomorrow)
     .order("booking_date")
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       byPro.set("secretaria", [...(byPro.get("secretaria") ?? []), r]);
       continue;
     }
-    if (!p?.email || (only && p.slug !== only)) continue;
+    if (!p?.email || (only && p.slug !== only) || !recibeAviso(p.slug, r.services?.slug)) continue;
     byPro.set(p.slug, [...(byPro.get(p.slug) ?? []), r]);
   }
 

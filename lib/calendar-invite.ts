@@ -13,6 +13,17 @@ export type InviteKind = "new" | "update" | "cancel";
 const TZ = "America/Santiago";
 // Recibe una copia de todas las invitaciones del equipo.
 const SECRETARY_EMAIL = siteConfig.email;
+
+// Profesionales que solo quieren en su correo las citas de ciertos servicios
+// (el resto le llega solo a la secretaría). Joaquín: solo Osteopatía.
+const SOLO_SERVICIOS: Record<string, string[]> = {
+  joaquin: ["osteopatia"],
+};
+
+export function recibeAviso(proSlug?: string | null, serviceSlug?: string | null) {
+  const solo = proSlug ? SOLO_SERVICIOS[proSlug] : undefined;
+  return !solo || (!!serviceSlug && solo.includes(serviceSlug));
+}
 const FROM_ADDRESS = process.env.EMAIL_FROM_ADDRESS || "onboarding@resend.dev";
 
 // Hora local de Chile (YYYY-MM-DD + HH:MM) a instante UTC, respetando el
@@ -99,8 +110,8 @@ type BookingRow = {
   client_phone: string | null;
   client_email: string | null;
   notes: string | null;
-  services: { name: string } | null;
-  professionals: { name: string; email: string | null } | null;
+  services: { name: string; slug: string } | null;
+  professionals: { name: string; email: string | null; slug: string } | null;
 };
 
 // Envía la invitación (o su cancelación) al profesional de cada reserva.
@@ -118,7 +129,7 @@ export async function sendProfessionalInvites(
     const { data } = await db
       .from("bookings")
       .select(
-        "id, booking_date, start_time, end_time, client_name, client_phone, client_email, notes, services(name), professionals(name, email)"
+        "id, booking_date, start_time, end_time, client_name, client_phone, client_email, notes, services(name, slug), professionals(name, email, slug)"
       )
       .in("id", bookingIds);
     let rows = (data ?? []) as unknown as BookingRow[];
@@ -126,7 +137,7 @@ export async function sendProfessionalInvites(
     if (overrideProfessionalId) {
       const { data: pro } = await db
         .from("professionals")
-        .select("name, email")
+        .select("name, email, slug")
         .eq("id", overrideProfessionalId)
         .single();
       rows = rows.map((r) => ({ ...r, professionals: pro ?? null }));
@@ -137,7 +148,7 @@ export async function sendProfessionalInvites(
     // Cada cita va al profesional y, en copia aparte, a la secretaría
     // (para que tenga la agenda de todo el equipo en su calendario).
     const envios = rows.flatMap((b) =>
-      [b.professionals?.email, SECRETARY_EMAIL]
+      [recibeAviso(b.professionals?.slug, b.services?.slug) ? b.professionals?.email : null, SECRETARY_EMAIL]
         .filter((to, i, arr): to is string => !!to && arr.indexOf(to) === i)
         .map((to) => ({ b, to, copia: to === SECRETARY_EMAIL && to !== b.professionals?.email }))
     );
