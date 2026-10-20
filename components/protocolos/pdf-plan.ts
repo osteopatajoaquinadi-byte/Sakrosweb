@@ -2,7 +2,7 @@
 
 import jsPDF from "jspdf";
 import { siteConfig } from "@/lib/site-config";
-import { CREDITO_IMAGENES, getEjercicio } from "@/lib/protocolos/ejercicios";
+import { creditoImagenes, getEjercicio } from "@/lib/protocolos/ejercicios";
 import type { ItemPlan, PerfilProfesional } from "@/lib/protocolos/types";
 
 export interface DatosPlan {
@@ -308,14 +308,14 @@ export function generarPlanPdf(datos: DatosPlan, perfil: PerfilProfesional, imag
 
   // Pie de página en todas las hojas
   const total = doc.getNumberOfPages();
-  const hayFotos = imagenes.size > 0;
+  const credito = imagenes.size > 0 ? creditoImagenes(datos.items.map((i) => i.ejercicioId)) : "";
   for (let p = 1; p <= total; p++) {
     doc.setPage(p);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(150, 150, 150);
     doc.text(t(`${perfil.centro || perfil.nombre} · Página ${p} de ${total}`), W / 2, H - 6, { align: "center" });
-    if (hayFotos && p === total) doc.text(t(CREDITO_IMAGENES), M, H - 6);
+    if (credito && p === total) doc.text(t(credito), W / 2, H - 9.5, { align: "center" });
   }
   return doc;
 }

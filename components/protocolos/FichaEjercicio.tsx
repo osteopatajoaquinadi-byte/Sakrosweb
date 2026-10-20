@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CREDITO_IMAGENES } from "@/lib/protocolos/ejercicios";
+import { creditoImagenes } from "@/lib/protocolos/ejercicios";
 import type { Ejercicio } from "@/lib/protocolos/types";
 import FuentesEjercicio from "./FuentesEjercicio";
 
@@ -41,7 +41,7 @@ export default function FichaEjercicio({ ejercicio: e, dosis }: { ejercicio: Eje
                   </figure>
                 ))}
               </div>
-              <p className="mt-1 text-[10px] text-slate-400">{CREDITO_IMAGENES}</p>
+              <p className="mt-1 text-[10px] text-slate-400">{creditoImagenes([e.id])}</p>
             </div>
           )}
           {e.video && (

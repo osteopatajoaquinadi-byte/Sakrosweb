@@ -22,16 +22,23 @@ export const REGIONES: { id: RegionEjercicio; label: string }[] = [
   { id: "general", label: "General / aeróbico" },
 ];
 
-export const CREDITO_IMAGENES = "Fotos: free-exercise-db (dominio público)";
-
-/** Ejercicios con fotos de inicio y final en /public/images/ejercicios. */
-const CON_FOTOS = new Set([
+/** Ejercicios con fotos de free-exercise-db (dominio público). El resto usa ilustraciones propias de Sakros. */
+const FOTOS_LIBRES = new Set([
   "bridge", "single-bridge", "side-plank", "mini-squat", "squat", "leg-press", "knee-ext", "step-up",
   "split-squat", "hamstring-curl", "nordic", "rdl", "hip-flexor-stretch", "er-band", "side-lying-er",
   "ir-band", "scaption", "row-band", "overhead-press", "upper-trap-stretch", "shrug", "dead-bug",
   "plank", "cat-camel", "knee-to-chest", "bike", "yoga-flow",
   "wrist-ext-ecc", "wrist-flex", "ankle-rom", "calf-stretch", "standing-hip-abd", "standing-hip-ext", "adductor-band",
+  "calf-raise", "hop-progression", "agility", "running-prog", "askling-extender", "sprint-prog",
 ]);
+
+/** Crédito de las imágenes de una lista de ejercicios (vacío si no hay ninguno). */
+export function creditoImagenes(ids: string[]): string {
+  const partes: string[] = [];
+  if (ids.some((id) => FOTOS_LIBRES.has(id))) partes.push("Fotos: free-exercise-db (dominio público)");
+  if (ids.some((id) => !FOTOS_LIBRES.has(id))) partes.push("Ilustraciones: Sakros");
+  return partes.join(" · ");
+}
 
 type Base = Omit<Ejercicio, "imagenes">;
 
@@ -1157,7 +1164,7 @@ const LISTA: Base[] = [
 ];
 
 export const EJERCICIOS: Ejercicio[] = LISTA.map((e) =>
-  CON_FOTOS.has(e.id) ? { ...e, imagenes: [`/images/ejercicios/${e.id}-1.jpg`, `/images/ejercicios/${e.id}-2.jpg`] } : e,
+  ({ ...e, imagenes: [`/images/ejercicios/${e.id}-1.jpg`, `/images/ejercicios/${e.id}-2.jpg`] }),
 );
 
 const BY_ID = new Map(EJERCICIOS.map((e) => [e.id, e]));
