@@ -100,8 +100,8 @@ function drawHeader(doc: jsPDF, logoData: string, y: number): number {
     "Clinica Sakros",
     "Adi y Arentsen Limitada",
     "Vina del Mar, Chile",
-    "+56 9 6847 7060",
-    "contacto@sakros.cl",
+    "+56 9 4539 9692",
+    "sakrosvina@gmail.com",
   ];
   info.forEach((line, i) => {
     doc.text(line, 196, y + 6 + i * 4, { align: "right" });
