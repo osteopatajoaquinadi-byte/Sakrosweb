@@ -5,6 +5,7 @@ import ClinicalEvalForm, { ClinicalDataDisplay } from "./ClinicalEvalForm";
 import KinesiologyTab from "./fichas/KinesiologyTab";
 import SesionesDesdePago from "./fichas/SesionesDesdePago";
 import CorreoPaciente from "./fichas/CorreoPaciente";
+import CuestionariosPaciente from "./cuestionarios/CuestionariosPaciente";
 import { blankKine, type KinePlan } from "./fichas/constants";
 import type { Permission } from "@/lib/equipo-auth";
 
@@ -155,7 +156,7 @@ export default function FichaPaciente({
   const [loading, setLoading] = useState(true);
 
   // Subvistas
-  const [activeSection, setActiveSection] = useState<"sesiones" | "kine" | "pagos">(clinico ? "sesiones" : "pagos");
+  const [activeSection, setActiveSection] = useState<"sesiones" | "kine" | "cuestionarios" | "pagos">(clinico ? "sesiones" : "pagos");
   const [showNewSession, setShowNewSession] = useState(false);
   const [showNewPayment, setShowNewPayment] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -596,7 +597,7 @@ export default function FichaPaciente({
       )}
 
       {/* Tabs sesiones / pagos */}
-      <div className="flex gap-1 mb-4">
+      <div className="flex flex-wrap gap-1 mb-4">
         {clinico && (
         <button
           onClick={() => setActiveSection("sesiones")}
@@ -619,6 +620,18 @@ export default function FichaPaciente({
           }`}
         >
           Plan kinésico
+        </button>
+        )}
+        {clinico && (
+        <button
+          onClick={() => setActiveSection("cuestionarios")}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+            activeSection === "cuestionarios"
+              ? "bg-teal-700 text-white"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+          }`}
+        >
+          Cuestionarios
         </button>
         )}
         {puedePagos && (
@@ -771,6 +784,11 @@ export default function FichaPaciente({
             </div>
           )}
         </div>
+      )}
+
+      {/* === CUESTIONARIOS === */}
+      {clinico && activeSection === "cuestionarios" && patient && (
+        <CuestionariosPaciente patientId={patientId} email={patient.email} />
       )}
 
       {/* === PLAN KINÉSICO === */}
