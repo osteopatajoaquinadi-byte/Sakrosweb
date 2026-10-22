@@ -118,11 +118,27 @@ function drawHeader(doc: jsPDF, logoData: string, y: number): number {
 /* ══════════════════════════════════════════════════════════
    1. CERTIFICADO DE ATENCIONES KINESICAS
    ══════════════════════════════════════════════════════════ */
+export type CertOptions = {
+  // Sesiones reales del calendario (fecha y hora). Si no se indican, se
+  // listan `cantidad` días hábiles seguidos desde la fecha de pago.
+  sesiones?: { date: string; time?: string }[];
+  cantidad?: number;
+};
+
+export function certificadoFilename(name: string) {
+  return `Certificado_Kine_${name.replace(/\s+/g, "_")}.pdf`;
+}
+
+export function informeFilename(name: string) {
+  return `Informe_Kine_${name.replace(/\s+/g, "_")}.pdf`;
+}
+
 export async function generateCertificado(
   patient: PatientInfo,
   startDate: string,
   professional: string,
-): Promise<void> {
+  opts: CertOptions = {},
+): Promise<jsPDF> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   const logoData = await loadLogo();
   const pageW = 216;
@@ -171,9 +187,11 @@ export async function generateCertificado(
   y += 4;
 
   // Certificate body text
-  const businessDays = getBusinessDays(startDate, 10);
-  const firstDate = fmtDate(businessDays[0]);
-  const lastDate = fmtDate(businessDays[9]);
+  const reales = opts.sesiones && opts.sesiones.length > 0 ? opts.sesiones : null;
+  const atenciones = reales ?? getBusinessDays(startDate, opts.cantidad ?? 10).map((date) => ({ date, time: undefined as string | undefined }));
+  const total = atenciones.length;
+  const firstDate = fmtDate(atenciones[0].date);
+  const lastDate = fmtDate(atenciones[total - 1].date);
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
@@ -182,7 +200,7 @@ export async function generateCertificado(
   const bodyText =
     `Por medio del presente certificado, se deja constancia que el/la paciente ` +
     `${patient.name}, RUT ${patient.rut || "no registrado"}, ha realizado un plan de ` +
-    `tratamiento kinesico de 10 sesiones en Clinica Sakros, desde el ${firstDate} ` +
+    `tratamiento kinesico de ${total} ${total === 1 ? "sesion" : "sesiones"} en Clinica Sakros, desde el ${firstDate} ` +
     `hasta el ${lastDate}.`;
 
   const lines = doc.splitTextToSize(bodyText, 170);
@@ -195,9 +213,9 @@ export async function generateCertificado(
   doc.text("DETALLE DE ATENCIONES", 14, y);
   y += 4;
 
-  const tableData = businessDays.map((d, i) => [
+  const tableData = atenciones.map((a, i) => [
     String(i + 1),
-    fmtDateLong(d),
+    a.time ? `${fmtDateLong(a.date)} - ${a.time} hrs` : fmtDateLong(a.date),
     "Kinesioterapia",
     "Realizada",
   ]);
@@ -215,8 +233,8 @@ export async function generateCertificado(
     alternateRowStyles: { fillColor: [245, 245, 240] },
     columnStyles: {
       0: { halign: "center", cellWidth: 12 },
-      1: { cellWidth: 55 },
-      2: { cellWidth: 50 },
+      1: { cellWidth: 70 },
+      2: { cellWidth: 45 },
       3: { halign: "center", cellWidth: 28 },
     },
     margin: { left: 14, right: 14 },
@@ -252,8 +270,7 @@ export async function generateCertificado(
   doc.setFontSize(9);
   doc.text("Kinesiologo/a - Clinica Sakros", 14, y);
 
-  // Download
-  doc.save(`Certificado_Kine_${patient.name.replace(/\s+/g, "_")}.pdf`);
+  return doc;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -286,7 +303,7 @@ export async function generateInforme(
   plan: KinePlan,
   sessions: SessionInfo[],
   professional: string,
-): Promise<void> {
+): Promise<jsPDF> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   const logoData = await loadLogo();
   const pageW = 216;
@@ -576,6 +593,5 @@ export async function generateInforme(
   doc.setFontSize(9);
   doc.text("Kinesiologo/a - Clinica Sakros", 14, y);
 
-  // Download
-  doc.save(`Informe_Kine_${patient.name.replace(/\s+/g, "_")}.pdf`);
+  return doc;
 }

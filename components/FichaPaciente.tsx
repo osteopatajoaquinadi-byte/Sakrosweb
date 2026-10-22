@@ -798,6 +798,7 @@ export default function FichaPaciente({
             setActiveSection("sesiones");
             setShowNewSession(true);
           }}
+          patientId={patientId}
           patient={{
             name: patient.name,
             rut: patient.rut,
