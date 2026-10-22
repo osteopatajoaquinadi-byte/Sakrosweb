@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { getPayment, mercadoPagoEnabled, validSignature } from "@/lib/mercadopago";
+import { preapprovalDeCobro, sincronizarSuscripcion } from "@/lib/go-suscripcion";
 import { sendProfessionalInvites } from "@/lib/calendar-invite";
 import { sendPaymentReceivedEmail } from "@/lib/booking-emails";
 import { Resend } from "resend";
@@ -19,6 +20,22 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const type = body.type ?? body.topic ?? url.searchParams.get("type") ?? url.searchParams.get("topic");
   const paymentId = String(body.data?.id ?? url.searchParams.get("data.id") ?? url.searchParams.get("id") ?? "");
+
+  // Sakros Go: suscripción mensual (cambios de estado y cobros).
+  if ((type === "subscription_preapproval" || type === "subscription_authorized_payment") && paymentId) {
+    if (!validSignature(request.headers, paymentId)) {
+      return NextResponse.json({ error: "Firma inválida." }, { status: 401 });
+    }
+    try {
+      const pre = type === "subscription_preapproval" ? paymentId : await preapprovalDeCobro(paymentId);
+      if (pre) await sincronizarSuscripcion(getServiceClient(), pre);
+    } catch (e) {
+      if (String(e).includes("Mercado Pago 404")) return NextResponse.json({ ok: true, ignored: "no encontrado" });
+      console.error("Mercado Pago, suscripción Sakros Go:", e);
+      return NextResponse.json({ error: "No se pudo consultar la suscripción." }, { status: 500 });
+    }
+    return NextResponse.json({ ok: true });
+  }
 
   // Solo interesan los pagos; el resto de los avisos se confirma y se ignora.
   if (type !== "payment" || !paymentId) return NextResponse.json({ ok: true });
