@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EJERCICIOS, REGIONES, getEjercicio } from "@/lib/protocolos/ejercicios";
 import type { ItemPlan, PerfilProfesional } from "@/lib/protocolos/types";
 import FichaEjercicio from "./FichaEjercicio";
@@ -29,6 +29,7 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
   const [biblioteca, setBiblioteca] = useState(plan.items.length === 0);
   const [msg, setMsg] = useState("");
   const [creando, setCreando] = useState(false);
+  const [enviando, setEnviando] = useState(false);
 
   const enPlan = useMemo(() => new Set(plan.items.map((i) => i.ejercicioId)), [plan.items]);
   const filtrados = useMemo(() => {
@@ -66,14 +67,53 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
     return { doc, datos };
   }
 
+  function marcarEnviado() {
+    onCambiar({ ...plan, enviadoEn: new Date().toISOString() });
+  }
+
   async function descargar() {
     setCreando(true);
     const { doc, datos } = await crearPdf();
     doc.save(nombreArchivo(datos));
     setCreando(false);
+    marcarEnviado();
   }
 
-  async function compartir() {
+  // Envía el PDF adjunto al correo del paciente (sin descargarlo).
+  async function enviarCorreo() {
+    setMsg("");
+    const to = (plan.pacienteEmail ?? "").trim();
+    if (!to) {
+      setMsg("Falta el correo del paciente: búscalo en las fichas o escríbelo arriba.");
+      return;
+    }
+    setEnviando(true);
+    try {
+      const { doc, datos } = await crearPdf();
+      const pdf = doc.output("datauristring").split(",")[1];
+      if (pdf.length > 4_200_000) {
+        setMsg("El PDF es demasiado grande para enviarlo por correo (muchas fotos). Descárgalo y adjúntalo a mano, o quita algunos ejercicios.");
+        return;
+      }
+      const res = await fetch("/api/protocolos/enviar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to, paciente: datos.paciente, filename: nombreArchivo(datos), pdf }),
+      });
+      const d = await res.json().catch(() => ({}));
+      setMsg(res.ok ? `Plan enviado a ${to}. Al salir, el plan se vacía para el próximo paciente.` : d.error || "No se pudo enviar el correo.");
+      if (res.ok) marcarEnviado();
+    } catch {
+      setMsg("Error de conexión al enviar el correo.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  // WhatsApp: desde el celular se abre la hoja de compartir con el PDF
+  // adjunto. En computador todavía no hay envío directo (requiere la API de
+  // WhatsApp Business), así que no se descarga nada.
+  async function enviarWhatsapp() {
     setMsg("");
     setCreando(true);
     const { doc, datos } = await crearPdf();
@@ -82,14 +122,30 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
     if (typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: "Plan de ejercicios" });
+        marcarEnviado();
       } catch {
         /* el usuario canceló */
       }
     } else {
-      doc.save(nombreArchivo(datos));
-      setMsg("Este navegador no permite compartir archivos: se descargó el PDF para que lo adjuntes por WhatsApp o correo.");
+      setMsg("El envío directo por WhatsApp estará disponible pronto. Por ahora funciona desde el celular: abre el panel en tu teléfono y este botón te deja elegir WhatsApp con el PDF adjunto.");
     }
   }
+
+  // Búsqueda de pacientes en las fichas para completar nombre y correo.
+  const [buscarPaciente, setBuscarPaciente] = useState("");
+  const [sugerencias, setSugerencias] = useState<{ id: string; name: string; email: string | null; phone: string | null }[]>([]);
+  useEffect(() => {
+    const q = buscarPaciente.trim();
+    if (q.length < 2) return;
+    const t = setTimeout(() => {
+      fetch(`/api/fichas/patients?q=${encodeURIComponent(q)}`)
+        .then((r) => (r.ok ? r.json() : { patients: [] }))
+        .then((d) => setSugerencias((d.patients ?? []).slice(0, 8)))
+        .catch(() => setSugerencias([]));
+    }, 250);
+    return () => clearTimeout(t);
+  }, [buscarPaciente]);
+  const visibles = buscarPaciente.trim().length >= 2 ? sugerencias : [];
 
   return (
     <div className="space-y-6">
@@ -99,7 +155,7 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
         </button>
         {plan.items.length > 0 && (
           <button
-            onClick={() => window.confirm("¿Vaciar el plan actual?") && onCambiar({ paciente: "", protocolo: "", indicaciones: "", items: [] })}
+            onClick={() => window.confirm("¿Vaciar el plan actual?") && onCambiar({ paciente: "", pacienteEmail: "", pacienteTelefono: "", protocolo: "", indicaciones: "", items: [] })}
             className="text-sm text-slate-500 hover:text-red-600"
           >
             Vaciar plan
@@ -119,9 +175,50 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
+        <div className="relative text-sm sm:col-span-2">
+          <span className="text-slate-600">Buscar paciente en las fichas</span>
+          <input
+            className={INPUT}
+            value={buscarPaciente}
+            onChange={(e) => setBuscarPaciente(e.target.value)}
+            placeholder="Nombre, RUT o correo…"
+          />
+          {visibles.length > 0 && (
+            <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
+              {visibles.map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Si el plan anterior ya se envió, el nuevo paciente parte de cero.
+                      const base = plan.enviadoEn ? { protocolo: "", indicaciones: "", items: [] } : {};
+                      onCambiar({ ...plan, ...base, enviadoEn: undefined, paciente: p.name, pacienteEmail: p.email ?? "", pacienteTelefono: p.phone ?? "" });
+                      setBuscarPaciente("");
+                      setSugerencias([]);
+                    }}
+                    className="block w-full px-3 py-2 text-left hover:bg-teal-50"
+                  >
+                    <span className="font-medium text-slate-900">{p.name}</span>
+                    {p.email && <span className="ml-2 text-xs text-slate-500">{p.email}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <label className="text-sm">
           <span className="text-slate-600">Nombre del paciente</span>
           <input className={INPUT} value={plan.paciente} onChange={(e) => onCambiar({ ...plan, paciente: e.target.value })} />
+        </label>
+        <label className="text-sm">
+          <span className="text-slate-600">Correo del paciente</span>
+          <input
+            type="email"
+            className={INPUT}
+            value={plan.pacienteEmail ?? ""}
+            onChange={(e) => onCambiar({ ...plan, pacienteEmail: e.target.value })}
+            placeholder="Para enviarle el PDF"
+          />
         </label>
         <label className="text-sm">
           <span className="text-slate-600">Protocolo de referencia</span>
@@ -239,11 +336,19 @@ export default function PlanBuilder({ plan, perfil, onCambiar, onAgregar, onEdit
           {creando ? "Preparando PDF…" : "Descargar PDF"}
         </button>
         <button
-          onClick={compartir}
-          disabled={plan.items.length === 0 || creando}
+          onClick={enviarCorreo}
+          disabled={plan.items.length === 0 || creando || enviando}
           className="rounded-full border border-teal-700 px-5 py-2.5 text-sm font-semibold text-teal-700 hover:bg-teal-50 disabled:opacity-40"
         >
-          Compartir (WhatsApp, correo…)
+          {enviando ? "Enviando…" : plan.pacienteEmail ? `Enviar por correo a ${plan.pacienteEmail}` : "Enviar por correo"}
+        </button>
+        <button
+          onClick={enviarWhatsapp}
+          disabled={plan.items.length === 0 || creando || enviando}
+          className="rounded-full border border-emerald-600 px-5 py-2.5 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-40"
+          title="Desde el celular abre WhatsApp con el PDF adjunto"
+        >
+          WhatsApp
         </button>
         {msg && <p className="w-full text-sm text-slate-600">{msg}</p>}
       </div>

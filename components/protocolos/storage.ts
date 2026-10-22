@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ItemPlan, PerfilProfesional, Protocolo } from "@/lib/protocolos/types";
 
 // Guardado local en el navegador del profesional. El logo, la firma, el
@@ -54,9 +54,15 @@ export const PERFIL_VACIO: PerfilProfesional = {
 
 export interface BorradorPlan {
   paciente: string;
+  // Contacto del paciente elegido desde las fichas (para enviarle el PDF).
+  pacienteEmail?: string;
+  pacienteTelefono?: string;
   protocolo: string;
   indicaciones: string;
   items: ItemPlan[];
+  // Fecha en que se envió o descargó. Al salir del plan después de eso,
+  // el borrador se vacía para el próximo paciente.
+  enviadoEn?: string;
 }
 
 export const PLAN_VACIO: BorradorPlan = { paciente: "", protocolo: "", indicaciones: "", items: [] };
@@ -83,7 +89,15 @@ export function usePerfil() {
 }
 
 export function usePlan() {
-  return usePersistente<BorradorPlan>(KEYS.plan, PLAN_VACIO);
+  const plan = usePersistente<BorradorPlan>(KEYS.plan, PLAN_VACIO);
+  const { valor, guardar } = plan;
+  // Un plan ya enviado no se vuelve a mostrar al entrar de nuevo.
+  useEffect(() => {
+    if (valor.enviadoEn) guardar(PLAN_VACIO);
+    // Solo al montar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return plan;
 }
 
 export function useGenerados() {

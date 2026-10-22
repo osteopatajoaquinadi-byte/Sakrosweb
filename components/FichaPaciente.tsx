@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import ClinicalEvalForm, { ClinicalDataDisplay } from "./ClinicalEvalForm";
 import KinesiologyTab from "./fichas/KinesiologyTab";
+import SesionesDesdePago from "./fichas/SesionesDesdePago";
+import CorreoPaciente from "./fichas/CorreoPaciente";
+import CuestionariosPaciente from "./cuestionarios/CuestionariosPaciente";
 import { blankKine, type KinePlan } from "./fichas/constants";
 import type { Permission } from "@/lib/equipo-auth";
 
@@ -48,6 +51,7 @@ type Payment = {
   reference: string | null;
   notes: string | null;
   registered_by: string;
+  paid_on: string | null;
   created_at: string;
 };
 
@@ -59,6 +63,7 @@ type BalanceRow = {
 };
 
 type PaymentEditForm = {
+  paid_on: string;
   amount: string;
   method: string;
   payment_type: string;
@@ -151,7 +156,7 @@ export default function FichaPaciente({
   const [loading, setLoading] = useState(true);
 
   // Subvistas
-  const [activeSection, setActiveSection] = useState<"sesiones" | "kine" | "pagos">(clinico ? "sesiones" : "pagos");
+  const [activeSection, setActiveSection] = useState<"sesiones" | "kine" | "cuestionarios" | "pagos">(clinico ? "sesiones" : "pagos");
   const [showNewSession, setShowNewSession] = useState(false);
   const [showNewPayment, setShowNewPayment] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -165,6 +170,8 @@ export default function FichaPaciente({
 
   // Formulario de pago
   const [paymentForm, setPaymentForm] = useState({
+    paid_on: hoyLocal(),
+    descontar: true,
     amount: "",
     method: PAYMENT_METHODS[0].value,
     payment_type: PAYMENT_TYPES[0].value,
@@ -175,6 +182,8 @@ export default function FichaPaciente({
     notes: "",
   });
   const [savingPayment, setSavingPayment] = useState(false);
+  // Sesiones realizadas en el calendario desde la fecha del pago
+  const [sesionesCalendario, setSesionesCalendario] = useState(0);
 
   // Edición de pagos existentes
   const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
@@ -188,6 +197,7 @@ export default function FichaPaciente({
   const [savingEdit, setSavingEdit] = useState(false);
 
   const [error, setError] = useState("");
+  const [showCorreo, setShowCorreo] = useState(false);
 
   const fetchData = useCallback(() => {
     setLoading(true);
@@ -277,6 +287,8 @@ export default function FichaPaciente({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           patient_id: patientId,
+          paid_on: paymentForm.paid_on,
+          sessions_used: paymentForm.descontar ? sesionesCalendario : 0,
           amount: parseInt(paymentForm.amount),
           method: paymentForm.method,
           payment_type: paymentForm.payment_type,
@@ -293,6 +305,8 @@ export default function FichaPaciente({
       } else {
         setShowNewPayment(false);
         setPaymentForm({
+          paid_on: hoyLocal(),
+          descontar: true,
           amount: "",
           method: PAYMENT_METHODS[0].value,
           payment_type: PAYMENT_TYPES[0].value,
@@ -315,6 +329,7 @@ export default function FichaPaciente({
     const row = balanceRows.find((b) => b.payment_id === p.id);
     setEditingPaymentId(p.id);
     setPaymentEdit({
+      paid_on: p.paid_on ?? p.created_at.slice(0, 10),
       amount: String(p.amount),
       method: p.method,
       payment_type: p.payment_type,
@@ -338,6 +353,7 @@ export default function FichaPaciente({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: editingPaymentId,
+          paid_on: paymentEdit.paid_on,
           amount: parseInt(paymentEdit.amount),
           method: paymentEdit.method,
           payment_type: paymentEdit.payment_type,
@@ -452,12 +468,20 @@ export default function FichaPaciente({
               {clinico && patient.sport && <span>Deporte: {patient.sport}</span>}
             </div>
           </div>
-          <button
-            onClick={() => setEditing(!editing)}
-            className="text-sm text-teal-700 hover:text-teal-900 font-medium"
-          >
-            {editing ? "Cancelar" : "Editar"}
-          </button>
+          <div className="flex shrink-0 items-center gap-3">
+            <button
+              onClick={() => setShowCorreo(!showCorreo)}
+              className="rounded-full border border-teal-700 px-3 py-1 text-sm font-medium text-teal-700 hover:bg-teal-50"
+            >
+              ✉ Enviar correo
+            </button>
+            <button
+              onClick={() => setEditing(!editing)}
+              className="text-sm text-teal-700 hover:text-teal-900 font-medium"
+            >
+              {editing ? "Cancelar" : "Editar"}
+            </button>
+          </div>
         </div>
 
         {/* Contacto */}
@@ -501,6 +525,15 @@ export default function FichaPaciente({
             )}
         </div>
       </div>
+
+      {showCorreo && (
+        <CorreoPaciente
+          patientId={patientId}
+          email={patient.email}
+          nombre={patient.name}
+          onClose={() => setShowCorreo(false)}
+        />
+      )}
 
       {/* Formulario de edición */}
       {editing && (
@@ -564,7 +597,7 @@ export default function FichaPaciente({
       )}
 
       {/* Tabs sesiones / pagos */}
-      <div className="flex gap-1 mb-4">
+      <div className="flex flex-wrap gap-1 mb-4">
         {clinico && (
         <button
           onClick={() => setActiveSection("sesiones")}
@@ -587,6 +620,18 @@ export default function FichaPaciente({
           }`}
         >
           Plan kinésico
+        </button>
+        )}
+        {clinico && (
+        <button
+          onClick={() => setActiveSection("cuestionarios")}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+            activeSection === "cuestionarios"
+              ? "bg-teal-700 text-white"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+          }`}
+        >
+          Cuestionarios
         </button>
         )}
         {puedePagos && (
@@ -741,6 +786,11 @@ export default function FichaPaciente({
         </div>
       )}
 
+      {/* === CUESTIONARIOS === */}
+      {clinico && activeSection === "cuestionarios" && patient && (
+        <CuestionariosPaciente patientId={patientId} email={patient.email} />
+      )}
+
       {/* === PLAN KINÉSICO === */}
       {clinico && activeSection === "kine" && patient && (
         <KinesiologyTab
@@ -766,6 +816,7 @@ export default function FichaPaciente({
             setActiveSection("sesiones");
             setShowNewSession(true);
           }}
+          patientId={patientId}
           patient={{
             name: patient.name,
             rut: patient.rut,
@@ -797,6 +848,13 @@ export default function FichaPaciente({
           {showNewPayment && (
             <form onSubmit={handleSavePayment} className="rounded-xl border border-slate-200 bg-white p-5 mb-4">
               <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Fecha del pago *</label>
+                  <input type="date" required max={hoyLocal()} value={paymentForm.paid_on}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, paid_on: e.target.value })}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+                  <p className="mt-1 text-xs text-slate-500">Si pagó antes (ej. paciente antiguo), pon la fecha real.</p>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Monto (CLP) *</label>
                   <input type="number" min="1" value={paymentForm.amount}
@@ -851,6 +909,20 @@ export default function FichaPaciente({
                     onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
                 </div>
+                <div className="sm:col-span-2 space-y-2">
+                  <SesionesDesdePago
+                    patientId={patientId}
+                    from={paymentForm.paid_on}
+                    service={paymentForm.service_type}
+                    purchased={parseInt(paymentForm.sessions_purchased) || 1}
+                    onCount={setSesionesCalendario}
+                  />
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <input type="checkbox" checked={paymentForm.descontar}
+                      onChange={(e) => setPaymentForm({ ...paymentForm, descontar: e.target.checked })} />
+                    Descontar del pack las sesiones ya realizadas ({Math.min(sesionesCalendario, parseInt(paymentForm.sessions_purchased) || 1)})
+                  </label>
+                </div>
               </div>
               <button type="submit" disabled={savingPayment || !paymentForm.amount}
                 className="mt-4 rounded-full bg-teal-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50">
@@ -870,6 +942,11 @@ export default function FichaPaciente({
                     <form key={p.id} onSubmit={handleUpdatePayment}
                       className="rounded-xl border border-teal-300 bg-white p-4">
                       <div className="grid gap-3 sm:grid-cols-2">
+                        <label className="text-sm text-slate-700">Fecha del pago
+                          <input type="date" required max={hoyLocal()} value={paymentEdit.paid_on}
+                            onChange={(e) => setPaymentEdit({ ...paymentEdit, paid_on: e.target.value })}
+                            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
+                        </label>
                         <label className="text-sm text-slate-700">Monto (CLP)
                           <input type="number" min="0" value={paymentEdit.amount}
                             onChange={(e) => setPaymentEdit({ ...paymentEdit, amount: e.target.value })}
@@ -922,6 +999,19 @@ export default function FichaPaciente({
                             onChange={(e) => setPaymentEdit({ ...paymentEdit, notes: e.target.value })}
                             className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-teal-700 focus:outline-none" />
                         </label>
+                        <div className="sm:col-span-2">
+                          <SesionesDesdePago
+                            patientId={patientId}
+                            from={paymentEdit.paid_on}
+                            service={paymentEdit.service_type}
+                            purchased={parseInt(paymentEdit.sessions_purchased) || 0}
+                            actionLabel="Usar como sesiones usadas"
+                            onCount={(n) => setPaymentEdit((pe) => pe && {
+                              ...pe,
+                              sessions_used: String(Math.min(n, parseInt(pe.sessions_purchased) || 0)),
+                            })}
+                          />
+                        </div>
                       </div>
                       <div className="mt-4 flex flex-wrap gap-2">
                         <button type="submit" disabled={savingPayment}
@@ -948,7 +1038,7 @@ export default function FichaPaciente({
                       </span>
                     </div>
                     <span className="text-xs text-slate-500">
-                      {new Date(p.created_at).toLocaleDateString("es-CL", {
+                      {(p.paid_on ? new Date(`${p.paid_on}T12:00:00`) : new Date(p.created_at)).toLocaleDateString("es-CL", {
                         day: "numeric",
                         month: "short",
                         year: "numeric",

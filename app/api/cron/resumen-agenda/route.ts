@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { getServiceClient } from "@/lib/supabase";
 import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
-import { buildIcsBundle, chileToUtc } from "@/lib/calendar-invite";
+import { buildIcsBundle, chileToUtc, recibeAviso } from "@/lib/calendar-invite";
 import { renderBrandedEmail } from "@/lib/email-template";
 import { siteConfig } from "@/lib/site-config";
+import { requireStaff } from "@/lib/equipo-auth";
 
 // Envío único: a cada profesional le llega UN correo con cuántas citas tiene
 // agendadas desde mañana, la lista y un archivo .ics para cargarlas todas en
@@ -21,7 +22,7 @@ type Row = {
   client_name: string;
   client_phone: string | null;
   notes: string | null;
-  services: { name: string } | null;
+  services: { name: string; slug: string } | null;
   professionals: { slug: string; name: string; email: string | null } | null;
 };
 
@@ -29,9 +30,14 @@ export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   const url = new URL(request.url);
   const given = request.headers.get("authorization")?.replace(/^Bearer /, "") ?? url.searchParams.get("key");
-  if (!secret || given !== secret) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  // También puede lanzarlo un administrador con sesión abierta en el panel.
+  const staff = requireStaff(request, "agendar");
+  const esAdmin = !staff.denied && staff.user.role === "admin";
+  if (!esAdmin && (!secret || given !== secret)) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   const dry = url.searchParams.get("dry") === "1";
   const only = url.searchParams.get("pro"); // opcional: un solo profesional
+  // ?pro=secretaria: un solo correo a la secretaría con las citas de todo el equipo.
+  const secretaria = only === "secretaria";
 
   const tomorrow = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(
     new Date(Date.now() + 24 * 3600 * 1000)
@@ -39,7 +45,7 @@ export async function GET(request: NextRequest) {
   const db = getServiceClient();
   const { data, error } = await db
     .from("bookings")
-    .select("id, booking_date, start_time, end_time, client_name, client_phone, notes, services(name), professionals(slug, name, email)")
+    .select("id, booking_date, start_time, end_time, client_name, client_phone, notes, services(name, slug), professionals(slug, name, email)")
     .eq("status", "confirmed")
     .gte("booking_date", tomorrow)
     .order("booking_date")
@@ -49,7 +55,11 @@ export async function GET(request: NextRequest) {
   const byPro = new Map<string, Row[]>();
   for (const r of (data ?? []) as unknown as Row[]) {
     const p = r.professionals;
-    if (!p?.email || (only && p.slug !== only)) continue;
+    if (secretaria) {
+      byPro.set("secretaria", [...(byPro.get("secretaria") ?? []), r]);
+      continue;
+    }
+    if (!p?.email || (only && p.slug !== only) || !recibeAviso(p.slug, r.services?.slug)) continue;
     byPro.set(p.slug, [...(byPro.get(p.slug) ?? []), r]);
   }
 
@@ -58,8 +68,11 @@ export async function GET(request: NextRequest) {
   const result: { pro: string; to: string; citas: number; enviado: boolean; error?: string }[] = [];
 
   for (const [, rows] of byPro) {
-    const pro = rows[0].professionals!;
+    const pro = secretaria
+      ? { slug: "secretaria", name: "Secretaría", email: siteConfig.email }
+      : rows[0].professionals!;
     const firstName = pro.name.split(" ")[0];
+    const quien = (r: Row) => (secretaria && r.professionals ? ` · ${r.professionals.name.split(" ")[0]}` : "");
     const n = rows.length;
     const items = rows.map((r) => {
       const d = new Date(`${r.booking_date}T12:00:00`).toLocaleDateString("es-CL", {
@@ -67,17 +80,19 @@ export async function GET(request: NextRequest) {
         day: "numeric",
         month: "short",
       });
-      return `${d} · ${r.start_time.slice(0, 5)} — ${r.client_name} (${r.services?.name ?? "Sesión"})`;
+      return `${d} · ${r.start_time.slice(0, 5)} — ${r.client_name} (${r.services?.name ?? "Sesión"}${quien(r)})`;
     });
     const mail = renderBrandedEmail({
-      preheader: `${firstName}, tienes ${n} citas agendadas en Sakros.`,
+      preheader: secretaria ? `Agenda del equipo: ${n} citas en Sakros.` : `${firstName}, tienes ${n} citas agendadas en Sakros.`,
       badge: { text: "Tu agenda", tone: "info" },
-      title: `${firstName}, tienes ${n} citas agendadas`,
-      greeting: `Hola ${firstName},`,
+      title: secretaria ? `Agenda del equipo: ${n} citas` : `${firstName}, tienes ${n} citas agendadas`,
+      greeting: secretaria ? "Hola," : `Hola ${firstName},`,
       paragraphs: [
-        `Estas son tus ${n} citas desde mañana en la agenda nueva de Sakros. Adjuntamos un archivo para cargarlas todas de una vez en tu Google Calendar.`,
+        secretaria
+          ? `Estas son las ${n} citas de todo el equipo desde mañana en la agenda nueva de Sakros. Adjuntamos un archivo para cargarlas todas de una vez en tu Google Calendar.`
+          : `Estas son tus ${n} citas desde mañana en la agenda nueva de Sakros. Adjuntamos un archivo para cargarlas todas de una vez en tu Google Calendar.`,
       ],
-      list: { title: "Tus citas", items },
+      list: { title: secretaria ? "Citas del equipo" : "Tus citas", items },
       box: {
         tone: "info",
         title: "Cómo cargarlas en Google Calendar (una sola vez, desde el computador)",
@@ -95,7 +110,7 @@ export async function GET(request: NextRequest) {
         uid: `${r.id}@sakros.cl`,
         start: chileToUtc(r.booking_date, r.start_time),
         end: chileToUtc(r.booking_date, r.end_time),
-        summary: `${r.services?.name ?? "Sesión"} — ${r.client_name}`,
+        summary: `${r.services?.name ?? "Sesión"} — ${r.client_name}${secretaria && r.professionals ? ` (${r.professionals.name.split(" ")[0]})` : ""}`,
         description: [`Paciente: ${r.client_name}`, r.client_phone ? `Teléfono: ${r.client_phone}` : "", r.notes ? `Notas: ${r.notes}` : ""]
           .filter(Boolean)
           .join("\n"),
@@ -108,7 +123,9 @@ export async function GET(request: NextRequest) {
       const { error: sendErr } = await resend.emails.send({
         from: emailFrom("Sakros Reservas"),
         to: pro.email!,
-        subject: `${firstName}, tienes ${n} citas agendadas en Sakros`,
+        subject: secretaria
+          ? `Agenda del equipo: ${n} citas agendadas en Sakros`
+          : `${firstName}, tienes ${n} citas agendadas en Sakros`,
         html: mail.html,
         text: mail.text,
         attachments: [{ filename: "agenda-sakros.ics", content: Buffer.from(ics), contentType: "text/calendar; charset=utf-8" }],
