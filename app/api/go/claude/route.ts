@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { goMiembro } from "@/lib/go-auth";
+import { accesoActivo } from "@/lib/go-suscripcion";
 
 // Coach de Sakros Go. La página arma la conversación y ejecuta sus propias
 // herramientas (ajustar la prescripción); aquí solo se valida la sesión, se
@@ -11,8 +12,9 @@ export const maxDuration = 60;
 
 const MODEL = process.env.GO_MODEL || process.env.ANTHROPIC_MODEL || "claude-opus-5-5";
 const TOOLS_PERMITIDAS = new Set(["ajustar_prescripcion", "quitar_ajuste"]);
-// Llamadas a Claude por día (cada vuelta con herramientas cuenta una).
-const LIMITE = { coach: 400, cliente: 60 };
+// Llamadas a Claude por día y por persona (cada vuelta con herramientas
+// cuenta una): así el costo del Coach queda acotado.
+const LIMITE = { coach: 400, suscriptor: 40, prueba: 5 };
 
 export async function POST(request: NextRequest) {
   const m = await goMiembro(request);
@@ -39,13 +41,15 @@ export async function POST(request: NextRequest) {
       !!t && typeof t === "object" && TOOLS_PERMITIDAS.has((t as { name?: string }).name ?? ""))
     .map((t) => ({ name: t.name, description: String(t.description || ""), input_schema: t.input_schema }));
 
-  const { data: permitido } = await getServiceClient().rpc("go_usar", {
-    p_user: m.userId,
-    p_max: LIMITE[m.rol],
-  });
+  const db = getServiceClient();
+  const tipo = m.rol === "coach" ? "coach" : (await accesoActivo(db, m.atleta)) ? "suscriptor" : "prueba";
+  const { data: permitido } = await db.rpc("go_usar", { p_user: m.userId, p_max: LIMITE[tipo] });
   if (permitido === false) {
     return NextResponse.json(
-      { error: "Llegaste al límite de mensajes de hoy. Mañana sigues.", code: "rate_limited" },
+      {
+        error: tipo === "prueba" ? "En la prueba gratis el Coach tiene 5 mensajes al día." : "Llegaste al límite de mensajes de hoy.",
+        code: tipo === "prueba" ? "limite_prueba" : "limite_diario",
+      },
       { status: 429 },
     );
   }

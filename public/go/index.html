@@ -158,6 +158,9 @@ details.card>summary{font-weight:700}
 .opt{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;font:600 .82rem var(--body);cursor:pointer}
 .opt[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 /* vista cliente */
+.tcrow{display:flex;gap:10px;align-items:flex-start;font-size:.95rem}
+.tcrow input{width:22px;height:22px;flex:none;margin-top:2px}
+.precio{margin:0;font-size:1.05rem}.precio b{font-family:var(--display);font-size:2rem}
 .onb{gap:14px}
 .onbhead{display:grid;gap:6px;justify-items:start}
 .brandline{margin:0;font-weight:600}
@@ -1096,18 +1099,21 @@ function done(s,d){const it=rows(d,s);const n=it.filter(x=>S.registro[key(s,d,x.
 function render(){
   const cli=modoCli();
   if(cli&&atlListo&&needsOnb()&&UI.tab!=='onb')UI.tab='onb';
+  else if(cli&&atlListo&&necesitaTerminos()&&!['onb','terminos'].includes(UI.tab))UI.tab='terminos';
   if(cli&&['salud','perfil','nuevo'].includes(UI.tab))UI.tab='hoy';
   if(!cli&&['hoy','onb'].includes(UI.tab))UI.tab='tests';
   if(UI.tab==='play'&&!UI.play)UI.tab=cli?'hoy':'sesion';
   const vis=cli?['hoy','progreso','tests','coach']:['tests','progreso','sesion','salud','coach'];
-  document.querySelectorAll('.tab').forEach(b=>{b.hidden=!vis.includes(b.dataset.tab)||UI.tab==='onb'||UI.tab==='play';b.setAttribute('aria-selected',b.dataset.tab===UI.tab||(b.dataset.tab==='hoy'&&UI.tab==='sesion'&&cli))});
+  document.querySelectorAll('.tab').forEach(b=>{b.hidden=!vis.includes(b.dataset.tab)||['onb','play','terminos'].includes(UI.tab);b.setAttribute('aria-selected',b.dataset.tab===UI.tab||(b.dataset.tab==='hoy'&&UI.tab==='sesion'&&cli))});
   const ml=$('#modo-link');if(ml){ml.hidden=MODO_FIJO;ml.textContent=cli?'Vista entrenador':'Vista cliente';ml.onclick=()=>setModo(cli?'coach':'cliente')}
   if(atlListo&&!DIAS().includes(UI.dia))UI.dia=DIAS()[0];
   renderWho();renderSelectors();
   const m=$('#main');m.replaceChildren();
   if(UI.tab==='onb'){renderOnb(m);return}
+  if(UI.tab==='terminos'){renderTerminos(m);return}
+  if(UI.tab==='paywall'){renderPaywall(m);return}
   if(UI.tab==='play'){renderPlay(m);return}
-  if(mode==='local')m.append(cli?(UI.tab==='hoy'?h('p',{class:'note',text:'Tus datos se guardan en este teléfono.'}):null):h('div',{class:'banner'},'Modo sin nube: lo que registres queda guardado en este navegador.'));
+  if(mode==='local'){const nb=cli?(UI.tab==='hoy'?h('p',{class:'note',text:'Tus datos se guardan en este teléfono.'}):null):h('div',{class:'banner'},'Modo sin nube: lo que registres queda guardado en este navegador.');if(nb)m.append(nb)}
   const a=atl();
   if(UI.tab==='hoy'){renderHoy(m);return}
   if(!cli&&UI.tab!=='perfil'&&UI.tab!=='nuevo'&&(!a.sexo||(UI.atleta!=='yo'&&(!a.edad||!a.sesiones))))m.append(h('div',{class:'banner'},'Faltan datos del perfil de '+a.nombre+' (sexo'+(UI.atleta!=='yo'?', edad o sesiones por semana':'')+'). ',h('button',{class:'linkbtn',onclick:()=>{UI.tab='perfil';render()}},'Completar perfil')));
@@ -1172,10 +1178,11 @@ function renderPerfil(m,nuevo){
     row.append(del);
   }
   m.append(h('section',{class:'card'},err,row));
+  if(!nuevo&&SB&&ROL==='coach'){if(UI.atleta==='yo')cardVenta().then(c=>m.append(c));else cardAcceso(UI.atleta).then(c=>m.append(c))}
 }
 function renderSelectors(){
   const box=$('#selectors');box.replaceChildren();
-  if(['tests','progreso','salud','perfil','nuevo','hoy','play','onb'].includes(UI.tab))return;
+  if(['tests','progreso','salud','perfil','nuevo','hoy','play','onb','terminos','paywall'].includes(UI.tab))return;
   const lanes=h('div',{class:'lanes',role:'group','aria-label':'Semana'});
   for(let s=1;s<=8;s++){
     const dd=DIAS().map(x=>done(s,x));const pct=Math.round(dd.reduce((q,x)=>q+x[0],0)/dd.reduce((q,x)=>q+x[1],0)*100);
@@ -1196,6 +1203,7 @@ function field(lbl,id,val,on,opts={}){
   return h('label',{class:'f',for:id},lbl,inp);
 }
 function renderSesion(m){
+  if(bloqueada(UI.sem)){renderPaywall(m);return}
   const s=UI.sem,d=UI.dia,core=esCore(),sk=sesKey(s,d),ses=S.sesiones[sk]||{};
   const upd=(k,v)=>{const cur={...(S.sesiones[sk]||{semana:s,dia:d}),[k]:v,t:Date.now()};S.sesiones[sk]=cur;debounce('s'+sk,()=>write('sesiones',sk,cur))};
   const fase=faseTxt(s),src=srcDia(d,s);
@@ -2046,7 +2054,7 @@ async function addMsg(rol,texto){
   S.chat.push(m);renderChatLog();
   try{await db.collection(P('chat')).doc(String(t)+rol).set(m)}catch(e){setSync('No se pudo guardar el chat')}
 }
-const ERR={not_granted:'No diste permiso para usar Claude en esta página. Recarga para volver a intentarlo.',rate_limited:'Demasiados mensajes seguidos. Espera un momento y vuelve a enviar.',sampling_disabled:'Tu cuenta no tiene disponible esta función ahora.',prompt_too_large:'Hay demasiado historial. Escribe un mensaje más corto.',refused:'Claude no pudo responder a ese mensaje.'};
+const ERR={not_granted:'No diste permiso para usar Claude en esta página. Recarga para volver a intentarlo.',rate_limited:'Demasiados mensajes seguidos. Espera un momento y vuelve a enviar.',sampling_disabled:'Tu cuenta no tiene disponible esta función ahora.',prompt_too_large:'Hay demasiado historial. Escribe un mensaje más corto.',refused:'Claude no pudo responder a ese mensaje.',limite_prueba:'En la prueba gratis el Coach tiene 5 mensajes al día. Con la suscripción tienes más.',limite_diario:'Llegaste al límite de mensajes de hoy con el Coach. Mañana sigues.'};
 async function ask(text){
   if(busy)return;
   if(!sample){setSync('El chat no está disponible en esta vista');return}
@@ -2074,6 +2082,7 @@ const needsOnb=()=>{const a=atl();return !a.onb&&!a.programa&&!a.sexo};
 function nextSes(){for(let s=1;s<=8;s++)for(const d of DIAS()){const [n,t]=done(s,d);if(n<t)return {s,d,n,t}}const d=DIAS()[DIAS().length-1];return {s:8,d,n:1,t:1,fin:true}}
 function progTotal(){let n=0,t=0;for(let s=1;s<=8;s++)DIAS().forEach(d=>{const x=done(s,d);n+=x[0];t+=x[1]});return t?Math.round(n/t*100):0}
 function iniciarSesion(s,d){
+  if(bloqueada(s)){UI.tab='paywall';render();scrollTo(0,0);return}
   const steps=pasosDe(s,d);let i=steps.findIndex(g=>g.some(it=>!S.registro[key(s,d,it.id)]?.hecho));if(i<0)i=0;
   UI.play={atleta:UI.atleta,s,d,i,t0:Date.now()};savePlay();UI.prevTab=UI.tab;UI.tab='play';saveUI();render();scrollTo(0,0);
 }
@@ -2121,14 +2130,18 @@ function renderOnb(m){
       h('p',{text:PDESC[prog]}),h('p',{class:'note',text:O.dias+(O.dias===1?' día':' días')+' por semana · sesiones de '+durs[prog]+' min'+(adapt.length?' · adaptado a: '+adapt.join(', '):'')}));
     card.append(h('div',{class:'onbhead'},h('span',{class:'chip ok',text:'Listo'}),h('h2',{text:'Este es tu plan'})),res);
     if(sugCore)card.append(h('p',{class:'dxline'},'Por lo que marcaste, te conviene empezar por ',h('strong',{text:PROG.core.split(' (')[0]}),'. ',h('button',{class:'linkbtn',onclick:()=>{O.obj='core';render()}},'Cambiar a ese plan')));
-    card.append(h('div',{class:'row'},h('label',{class:'f',for:'onb-nom'},'Nombre',nom),h('label',{class:'f',for:'onb-edad'},'Edad',ed)),h('label',{class:'f',for:'onb-sexo'},'Sexo',sx),err,
+    const tc=h('input',{type:'checkbox',id:'onb-tc'});
+    card.append(h('div',{class:'row'},h('label',{class:'f',for:'onb-nom'},'Nombre',nom),h('label',{class:'f',for:'onb-edad'},'Edad',ed)),h('label',{class:'f',for:'onb-sexo'},'Sexo',sx),
+      h('details',{},h('summary',{},'Términos y descargo de salud'),puntosTerminos(),h('p',{},h('a',{href:'/go/terminos.html',target:'_blank',rel:'noopener'},'Leer los términos completos'))),
+      h('label',{class:'tcrow',for:'onb-tc'},tc,h('span',{text:'Leí y acepto los términos y el descargo de salud.'})),err,
       h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async e=>{
         const nombre=nom.value.trim();if(!nombre){err.textContent='Escribe tu nombre.';return}
         if(!sx.value){err.textContent='Elige el sexo: ajusta la zona media y la prevención de lesiones.';return}
+        if(!tc.checked){err.textContent='Acepta los términos y el descargo de salud para crear tu plan.';return}
         const edad=parseInt(ed.value,10);
         const cond=prog==='core'?(les.includes('espalda')&&les.includes('escapes')?'ambas':les.includes('escapes')?'iue':les.includes('espalda')?'hernia':'otra'):a.condicion;
         const data={...a,nombre,sexo:sx.value,edad:edad>=5&&edad<=100?edad:(a.edad||''),programa:prog,frecuencia:O.dias,sesiones:a.sesiones||O.dias,condicion:cond||'',objetivo:a.objetivo||({rend:'Rendir más en mi deporte',core:'Fortalecer espalda, abdomen y suelo pélvico',global:'Empezar a entrenar o mantenerme'})[prog],
-          notas:[a.notas,les.includes('otra')?'Marcó otra molestia en la bienvenida: revisar.':''].filter(Boolean).join(' '),onb:Date.now(),t:Date.now()};
+          notas:[a.notas,les.includes('otra')?'Marcó otra molestia en la bienvenida: revisar.':''].filter(Boolean).join(' '),onb:Date.now(),terminos:terminosOk(),t:Date.now()};
         e.target.disabled=true;const ok=await saveAtleta(UI.atleta,data);e.target.disabled=false;
         if(!ok){err.textContent='No se pudo guardar. Revisa la conexión y vuelve a intentarlo.';return}
         const dxm={rodilla:'rodilla',hombro:'hombro',tobillo:'tobillo'};if(prog!=='core')dxm.espalda='lumbar';
@@ -2144,6 +2157,7 @@ function renderOnb(m){
 function renderHoy(m){
   const a=atl(),N=nextSes(),{s,d}=N,r=rows(d,s);
   const pt=progTotal();
+  if(!N.fin&&bloqueada(s)){m.append(cardPaywall());return}
   m.append(h('section',{class:'card hero'},
     h('span',{class:'wholbl',text:PROG[prog()].split(' (')[0]}),
     h('div',{class:'bar','aria-label':'Avance del programa: '+pt+' %'},h('i',{style:'width:'+pt+'%'})),
@@ -2155,6 +2169,7 @@ function renderHoy(m){
     N.fin?null:h('details',{},h('summary',{},'Qué vas a hacer hoy'),h('ol',{},r.map(it=>{const A=autoEj(s,d,it);return h('li',{},A.n+' · ',h('span',{class:'note',text:A.pres}))}))),
     N.fin?null:h('div',{class:'row'},h('button',{class:'linkbtn',onclick:()=>{UI.sem=s;UI.dia=d;UI.tab='sesion';saveUI();render()}},'Ver la sesión completa'),
       DIAS().length>1?h('span',{class:'note'},'Otro día: ',...DIAS().filter(x=>x!==d).map(x=>h('button',{class:'linkbtn',style:'margin-left:8px',onclick:()=>iniciarSesion(s,x)},dayName(x)))):null)));
+  const cs=cardMiSuscripcion();if(cs)m.append(cs);
   const T=S.tests||{};
   if(!Object.keys(T).some(k=>k!=='t'&&T[k]))m.append(h('section',{class:'card'},h('h2',{text:'Antes de empezar: tus tests'}),
     h('p',{class:'note',text:'Mídete ahora para comparar en la semana 8. Así ves tu progreso con números.'}),h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='tests';render()}},'Hacer los tests'))));
@@ -2308,6 +2323,106 @@ goSample.json=async(prompt)=>{
   return JSON.parse(t.slice(i,j+1));
 };
 
+/* ---------- Suscripción, términos y acceso ---------- */
+let ACC=null;
+const clp=n=>'$'+Math.round(n).toLocaleString('es-CL');
+const fechaCorta=iso=>{try{return new Date(iso).toLocaleDateString('es-CL',{day:'numeric',month:'long'})}catch(e){return iso}};
+async function authHeaders(){const{data:{session}}=await SB.auth.getSession();return{'Content-Type':'application/json',Authorization:'Bearer '+(session?session.access_token:'')}}
+async function cargarAcceso(){if(!SB)return;try{const r=await fetch('/api/go/acceso',{headers:await authHeaders()});if(r.ok)ACC=await r.json()}catch(e){}}
+const bloqueada=s=>ROL==='cliente'&&s>1&&!(ACC&&ACC.activo);
+const necesitaTerminos=()=>ROL==='cliente'&&!!ACC&&((atl().terminos||{}).v!==ACC.terminosV);
+const terminosOk=()=>({v:(ACC&&ACC.terminosV)||'2026-10',t:Date.now()});
+function puntosTerminos(){return h('ul',{class:'medir'},
+  ['Sakros Go es un programa de entrenamiento. No reemplaza una evaluación ni un tratamiento de salud.',
+   'Si tienes una lesión, una enfermedad o estás embarazada, consulta con un profesional antes de empezar.',
+   'Detén el ejercicio y consulta si sientes dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta, hormigueo o escape de orina que no cede.',
+   'El Coach usa inteligencia artificial: orienta, pero no diagnostica. Ante dudas de salud, consulta a tu profesional.',
+   'La suscripción es mensual y se renueva sola. Puedes cancelarla cuando quieras desde la app; el acceso sigue hasta el final del mes pagado.',
+   'El mes corre igual aunque no completes tus entrenamientos.'].map(x=>h('li',{text:x})))}
+function renderTerminos(m){
+  const ck=h('input',{type:'checkbox',id:'tc-ok'});const err=h('p',{class:'note err',role:'alert'});
+  m.append(h('section',{class:'card onb'},h('h2',{text:'Antes de empezar'}),
+    h('p',{class:'note',text:'Lee los puntos clave de los términos y el descargo de salud.'}),puntosTerminos(),
+    h('p',{},h('a',{href:'/go/terminos.html',target:'_blank',rel:'noopener'},'Leer los términos completos')),
+    h('label',{class:'tcrow',for:'tc-ok'},ck,h('span',{text:'Leí y acepto los términos y el descargo de salud.'})),err,
+    h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async e=>{
+      if(!ck.checked){err.textContent='Marca la casilla para continuar.';return}
+      e.target.disabled=true;const ok=await saveAtleta(UI.atleta,{...atl(),terminos:terminosOk()});e.target.disabled=false;
+      if(!ok){err.textContent='No se pudo guardar. Revisa la conexión.';return}
+      UI.tab='hoy';render();scrollTo(0,0)}},'Aceptar y continuar'))));
+}
+async function suscribirme(btn,st){
+  btn.disabled=true;st.textContent='Abriendo Mercado Pago…';
+  try{const r=await fetch('/api/go/suscripcion',{method:'POST',headers:await authHeaders()});const j=await r.json().catch(()=>({}));
+    if(r.ok&&j.url){location.href=j.url;return}
+    st.textContent=j.error||'No se pudo iniciar el pago.';}catch(e){st.textContent='Sin conexión. Inténtalo de nuevo.'}
+  btn.disabled=false;
+}
+function cardPaywall(){
+  const v=(ACC&&ACC.venta)||{};const st=h('p',{class:'note',role:'status'});
+  const btn=h('button',{class:'btn primary big',onclick:()=>suscribirme(btn,st)},'Suscribirme con Mercado Pago');
+  return h('section',{class:'card hero'},h('span',{class:'chip',text:'Terminaste tu semana de prueba'}),
+    h('h2',{text:'Sigue con tu plan'}),
+    h('p',{text:'Activa tu suscripción para seguir con las semanas 2 a 8, tu registro y el Coach.'}),
+    v.activo?h('p',{class:'precio'},h('b',{text:clp(v.precio)}),' al mes'):null,
+    h('ul',{class:'medir'},['Entrena 1, 2 o 3 veces por semana, como te acomode.','El mes corre igual aunque no completes los entrenamientos.','Cancela cuando quieras desde la app.'].map(x=>h('li',{text:x}))),
+    v.activo?h('div',{class:'row'},btn):h('p',{class:'dxline',text:'La suscripción abre muy pronto. Pregúntale a tu entrenador cómo continuar.'}),st,
+    h('p',{class:'note'},'Al suscribirte aceptas los ',h('a',{href:'/go/terminos.html',target:'_blank',rel:'noopener'},'términos y el descargo de salud'),'.'));
+}
+function renderPaywall(m){m.append(cardPaywall());m.append(h('div',{class:'row'},h('button',{class:'linkbtn',onclick:()=>{UI.tab='hoy';UI.sem=1;render()}},'← Volver a la semana 1')))}
+function cardMiSuscripcion(){
+  if(ROL!=='cliente'||!ACC)return null;
+  const st=h('p',{class:'note',role:'status'});
+  if(ACC.activo){
+    const renueva=ACC.origen==='mercadopago'&&ACC.estado==='authorized';
+    let armed=false;
+    const cancel=renueva?h('button',{class:'linkbtn',onclick:async e=>{
+      if(!armed){armed=true;e.target.textContent='Confirmar: cancelar la renovación';return}
+      e.target.disabled=true;st.textContent='Cancelando…';
+      try{const r=await fetch('/api/go/suscripcion',{method:'DELETE',headers:await authHeaders()});const j=await r.json().catch(()=>({}));
+        if(r.ok){await cargarAcceso();render()}else{st.textContent=j.error||'No se pudo cancelar.';e.target.disabled=false}}catch(x){st.textContent='Sin conexión.';e.target.disabled=false}}},'Cancelar renovación'):null;
+    return h('section',{class:'card'},h('h2',{text:'Tu suscripción'}),
+      h('p',{class:'note',text:ACC.origen==='coach'?'Acceso activo hasta el '+fechaCorta(ACC.hasta)+' (te lo dio tu entrenador).':renueva?'Activa. Se renueva sola el '+fechaCorta(ACC.hasta)+'.':'Activa hasta el '+fechaCorta(ACC.hasta)+'. No se renovará.'}),
+      h('div',{class:'row'},cancel),st);
+  }
+  return h('section',{class:'card'},h('h2',{text:'Prueba gratis'}),h('p',{class:'note',text:'Tienes la semana 1 completa para probar. Desde la semana 2 necesitas la suscripción.'}));
+}
+/* Vista del entrenador: precio de venta y acceso de cada atleta */
+async function cardVenta(){
+  const card=h('section',{class:'card'},h('h2',{text:'Venta de Sakros Go'}),h('p',{class:'note',text:'Cargando…'}));
+  const{data}=await SB.from('go_docs').select('data').eq('path','config').eq('id','venta').maybeSingle();
+  const v=(data&&data.data)||{};
+  const pr=h('input',{id:'v-precio',inputmode:'numeric',placeholder:'ej.: 19990'});pr.value=v.precio||'';
+  const on=h('input',{type:'checkbox',id:'v-on'});on.checked=v.activo===true;
+  const st=h('p',{class:'note',role:'status'});
+  card.replaceChildren(h('h2',{text:'Venta de Sakros Go'}),
+    h('p',{class:'note',text:'Precio de la suscripción mensual en pesos (CLP). Los cambios valen para las suscripciones nuevas; las que ya existen mantienen su precio.'}),
+    h('label',{class:'f',for:'v-precio'},'Precio mensual (CLP)',pr),
+    h('label',{class:'tcrow',for:'v-on'},on,h('span',{text:'Venta abierta (los clientes pueden suscribirse)'})),
+    h('div',{class:'row'},h('button',{class:'btn primary',onclick:async()=>{
+      const n=Math.round(Number(String(pr.value).replace(/[^\d]/g,'')));
+      if(on.checked&&!(n>=1000)){st.textContent='Escribe un precio de al menos $1.000.';return}
+      try{await db.collection('config').doc('venta').set({precio:n||0,activo:on.checked,t:Date.now()});st.textContent='Guardado.'}catch(e){st.textContent='No se pudo guardar.'}}},'Guardar')),st);
+  return card;
+}
+async function cardAcceso(id){
+  const card=h('section',{class:'card'},h('h2',{text:'Acceso a Sakros Go'}),h('p',{class:'note',text:'Cargando…'}));
+  const pintar=async()=>{
+    const{data:a}=await SB.from('go_accesos').select('*').eq('atleta',id).maybeSingle();
+    const activo=a&&a.hasta&&new Date(a.hasta)>new Date();
+    const dar=async meses=>{const base=activo?new Date(a.hasta):new Date();base.setMonth(base.getMonth()+meses);
+      const{error}=await SB.from('go_accesos').upsert({atleta:id,hasta:base.toISOString(),origen:'coach',mp_preapproval_id:a?a.mp_preapproval_id:null,mp_estado:a?a.mp_estado:null,updated_at:new Date().toISOString()});
+      if(error)st.textContent='No se pudo guardar.';else pintar()};
+    const st=h('p',{class:'note',role:'status'});
+    card.replaceChildren(h('h2',{text:'Acceso a Sakros Go'}),
+      h('p',{class:'note',text:activo?('Activo hasta el '+fechaCorta(a.hasta)+(a.origen==='coach'?' (dado por ti)':' (suscripción Mercado Pago'+(a.mp_estado==='authorized'?', se renueva sola)':', sin renovación)'))):'Sin acceso: solo ve la semana 1 de prueba.'}),
+      h('p',{class:'note',text:'Para tus pacientes: dales acceso sin que paguen (por ejemplo, incluido en un pack). Anota su correo en el perfil para que puedan entrar.'}),
+      h('div',{class:'row'},h('button',{class:'btn',onclick:()=>dar(1)},'Dar 1 mes'),h('button',{class:'btn',onclick:()=>dar(3)},'Dar 3 meses'),
+        activo?h('button',{class:'btn danger',onclick:async()=>{const{error}=await SB.from('go_accesos').update({hasta:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('atleta',id);if(error)st.textContent='No se pudo quitar.';else pintar()}},'Quitar acceso'):null),st);
+  };
+  pintar();return card;
+}
+
 /* Inicio de sesión con enlace por correo */
 function pantallaLogin(msg){
   setSync('');document.querySelectorAll('.tab').forEach(b=>b.hidden=true);
@@ -2352,6 +2467,8 @@ async function salir(){try{await SB.auth.signOut()}catch(e){}try{localStorage.re
   ROL=me.rol;YO=me;
   if(ROL==='cliente'){MODO='cliente';MODO_FIJO=true;UI.atleta=me.atleta;UI.tab=['hoy','progreso','tests','coach','sesion','play','onb'].includes(UI.tab)?UI.tab:'hoy'}
   const cr=$('.credit');if(cr&&!$('#salir-link'))cr.append(' · ',h('button',{class:'linkbtn',id:'salir-link',onclick:salir},'Cerrar sesión ('+me.email+')'));
+  await cargarAcceso();
+  if(qs.get('sub')){history.replaceState(null,'',location.pathname);if(ROL==='cliente'){UI.tab='hoy';if(!(ACC&&ACC.activo)){setTimeout(async()=>{await cargarAcceso();render()},4000)}}}
   db=makeDb(SB);sample=goSample;mode='nube';setSync('Sincronizado');
   subAtletas();subscribe();render();
   SB.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT')location.href='/go'});
