@@ -15,6 +15,10 @@ import type { NextConfig } from "next";
 // plantillas-ortopedicas por ser la página de conversión; si prefieres que
 // vaya a estudio-biomecanico-pie, se cambia en un minuto.
 const nextConfig: NextConfig = {
+  // Sakros Go: app estática en public/go (index, fotos y video).
+  async rewrites() {
+    return [{ source: "/go", destination: "/go/index.html" }];
+  },
   async redirects() {
     return [
       { source: "/treatments", destination: "/servicios", permanent: true },
