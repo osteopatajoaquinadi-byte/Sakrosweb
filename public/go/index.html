@@ -935,16 +935,231 @@ function tminG(it,s){
   const sr=p.match(/^(\d)×/);const n=sr?+sr[1]:3;
   return (/A$/.test(it.b)?2:0)+(n===2?3:4);
 }
-const prog=()=>['core','global'].includes(atl().programa)?atl().programa:'rend';
+/* ---------- Programa Sakros Base (control motor) ---------- */
+PROG.base='Sakros Base: aprende a moverte bien (control motor, 8 semanas)';PROGC.base='Base';
+const MOD={aterrizar:'Aterrizar y frenar',suelo:'Suelo pélvico y espalda',equilibrio:'Equilibrio y suelo'};
+const NIVEL=['','Nivel 1','Nivel 2','Nivel 3'];
+const CTRL='Control: si pierdes la posición, la serie termina ahí. Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control.';
+Object.assign(EX,{
+ xprep:{n:'Respiración y activación',img:[['gato-0','Gato-camello'],['puente-1','Puente con braceo']],pasos:[
+  'Respiración 90/90: boca arriba con los pies en la pared, 5 respiraciones. Inhala expandiendo las costillas hacia los lados y exhala lento.',
+  'Braceo suave (30 %): tensa el abdomen en todo su contorno sin hundirlo y respira manteniéndolo, 3 veces de 10 s.',
+  'Gato-camello ×6 y puente de glúteo ×8 con braceo suave.'],
+  clave:'Es el momento de «encender» la postura y la respiración que vas a usar en toda la sesión.'},
+ xbisagra:{n:'Bisagra de cadera con palo',niv:['palo, frente al espejo','palo, sin espejo','con kettlebell liviana'],img:[['sakbisagra-2','De pie, columna neutra'],['sakbisagra-3','Cadera atrás sin perder la neutra']],pasos:[
+  'Palo apoyado en la espalda con 3 contactos: cabeza, espalda alta y sacro.',
+  'Rodillas suaves. Lleva la cadera atrás como si cerraras una puerta con el glúteo, sin perder ningún contacto.',
+  'Baja hasta sentir el estiramiento atrás del muslo y vuelve apretando el glúteo.',
+  'Puntos de control: los 3 contactos, rodillas quietas, peso en el medio del pie.'],clave:CTRL},
+ xsent:{n:'Sentadilla con tempo',niv:['silla alta, con manos','cajón, sin manos','goblet liviana, cajón bajo'],img:[['goblet-0','Tronco erguido'],['goblet-1','Abajo: rodillas hacia los pies']],pasos:[
+  'Pies a la anchura de los hombros, apoyo en trípode: talón, base del dedo gordo y del meñique.',
+  'Baja en 3 s llevando la cadera atrás y abajo, pausa de 1 s al tocar el asiento sin relajarte, y sube en 1 s.',
+  'Puntos de control: rodilla sobre el 2.º–3.º dedo, pie sin colapsar hacia dentro, costillas sobre la pelvis.'],clave:CTRL},
+ xzanc:{n:'Zancada estática',niv:['con apoyo en la pared','sin apoyo','con mancuernas livianas'],img:[['split-0','Arriba: pies separados'],['split-1','Abajo: rodilla trasera cerca del suelo']],pasos:[
+  'Un pie adelante y otro atrás, separados como para un paso largo.',
+  'Baja en vertical en 3 s hasta que la rodilla de atrás casi toque el suelo y sube.',
+  'Puntos de control: rodilla delantera sobre el pie, pelvis nivelada, tronco erguido.'],clave:CTRL},
+ xequi:{n:'Equilibrio (desafío del día)',niv:['pies juntos o semitándem, cerca de la pared','tándem o una pierna','una pierna con el desafío del día'],img:[],pasos:[
+  'Cerca de una pared o una silla. Mira un punto fijo al frente.',
+  'Mantén la posición del día respirando normal: el pie «agarra» el suelo sin encoger los dedos.',
+  'Puntos de control: pelvis nivelada, rodilla suave, tronco quieto. Si tocas el apoyo, vuelve a empezar el tiempo.'],clave:'Progresión: pies juntos → semitándem → tándem → una pierna → ojos cerrados → con perturbación → con doble tarea.'},
+ xrdl1:{n:'Peso muerto rumano a una pierna',niv:['dos pies con palo','una pierna con apoyo de mano','una pierna libre'],img:[['rdl-0','Bisagra con carga']],pasos:[
+  'De pie sobre una pierna, rodilla suave.',
+  'Lleva el tronco adelante y la otra pierna atrás como un sube y baja, con la pelvis paralela al suelo.',
+  'Vuelve apretando el glúteo de la pierna de apoyo.',
+  'Puntos de control: pelvis sin girar, espalda neutra, rodilla de apoyo sobre el pie.'],clave:CTRL},
+ xstepdown:{n:'Bajada controlada de escalón',niv:['escalón de 10 cm','escalón de 15 cm','escalón de 20–25 cm'],img:[['stepup-0','Un pie en el escalón']],pasos:[
+  'De pie sobre un escalón, con la otra pierna en el aire.',
+  'Baja el talón libre hacia el suelo en 3 s, tócalo apenas y vuelve a subir.',
+  'Hazlo hacia delante y hacia el lado.',
+  'Puntos de control: rodilla de apoyo sobre el pie, pelvis nivelada, sin dejarte caer.'],clave:CTRL},
+ xsent1:{n:'Sentadilla a una pierna a cajón',niv:['sentarse y pararse sin manos, lento','a una pierna, cajón alto con apoyo','a una pierna, cajón sin apoyo'],img:[],pasos:[
+  'De pie delante de un cajón o una silla, apoyado en una pierna.',
+  'Baja en 3 s hasta tocar el asiento y sube sin impulso.',
+  'Puntos de control: rodilla sobre el pie, pelvis nivelada, tronco quieto, sin dejarte caer al final.'],clave:CTRL},
+ xbis1:{n:'Bisagra a una pierna',niv:['con apoyo de mano en la pared','libre','libre con kettlebell liviana'],img:[['rdl-1','De pie, cadera extendida']],pasos:[
+  'Igual que el peso muerto rumano a una pierna, ahora con más rango y control.',
+  'Vuelve arriba y aguanta 2 s sobre una pierna antes de la siguiente.',
+  'Puntos de control: pelvis paralela al suelo, espalda neutra.'],clave:CTRL},
+ xstepup:{n:'Subida a escalón',niv:['escalón bajo','escalón medio','escalón medio con mancuernas'],img:[['stepup-0','Un pie en el escalón'],['stepup-1','Arriba: cadera extendida']],pasos:[
+  'Pie completo en el escalón. Sube empujando con esa pierna, sin impulsarte con la de abajo.',
+  'Arriba, aguanta 1 s sobre una pierna. Baja en 3 s.',
+  'Puntos de control: rodilla sobre el pie, pelvis nivelada.'],clave:CTRL},
+ xzancdin:{n:'Zancada dinámica',niv:['hacia atrás, con apoyo','atrás y adelante, sin apoyo','caminando, con mancuernas livianas'],img:[['split-1','Abajo, tronco erguido']],pasos:[
+  'Da un paso, baja controlado y vuelve con un impulso firme.',
+  'Más rápido que en las fases anteriores, pero con la misma alineación.',
+  'Puntos de control: rodilla sobre el pie, tronco erguido, frenar sin tambalearte.'],clave:CTRL},
+ xlevantar:{n:'Levantar del suelo y dejar en una mesa',niv:['caja liviana desde una silla','caja liviana desde el suelo','caja mediana desde el suelo'],img:[['sakbisagra-3','Bisagra con la espalda neutra']],pasos:[
+  'La caja delante de tus pies. Bisagra de cadera y rodillas, espalda neutra.',
+  'Braceo y exhala al levantar. Gira con los pies (no con la cintura) y déjala en la mesa.',
+  'Puntos de control: espalda neutra, caja cerca del cuerpo, giro con los pies.'],clave:'Es el movimiento del día a día que más protege la espalda.'},
+ xreact:{n:'Respuesta a una señal',niv:['paso a la señal y estabiliza 2 s','paso y frenada a la señal','cambio de dirección a la señal'],img:[['salida-1','Salida y frenada']],pasos:[
+  'Un compañero (o una app de señales) indica una dirección.',
+  'Reacciona rápido: da el paso o el cambio de dirección y estabiliza 2 s en buena posición.',
+  'Puntos de control: rodilla sobre el pie, cadera atrás, tronco quieto al frenar.'],clave:'La técnica tiene que aparecer sola, sin pensarla: esa es la meta del control motor.'},
+ xdeadbug:{n:'Dead bug',niv:['solo piernas','completo','completo con banda'],img:[['deadbug-0','Brazos al techo, caderas y rodillas a 90°'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
+  'Boca arriba, brazos al techo y caderas y rodillas a 90°. Braceo suave.',
+  'Exhala mientras extiendes brazo y pierna contrarios, despacio, y vuelve.',
+  'Puntos de control: la zona lumbar no se despega, el abdomen no se abomba, respiras sin aguantar el aire.'],clave:CTRL},
+ xbirddog:{n:'Bird dog',niv:['por partes (brazos, luego piernas)','completo','completo con banda'],img:[],pasos:[
+  'En cuatro apoyos, manos bajo los hombros y rodillas bajo las caderas.',
+  'Extiende brazo y pierna contrarios hasta la horizontal y aguanta 3 s.',
+  'Puntos de control: la pelvis no rota (prueba con un vaso de plástico en la zona lumbar).'],clave:CTRL},
+ xplancha:{n:'Plancha (variante del día)',niv:['con rodillas apoyadas','completa','completa con desafío'],img:[['plancha-0','Rodillas apoyadas'],['plancha-1','Plancha completa'],['sidebridge-1','Plancha lateral']],pasos:[
+  'Antebrazos bajo los hombros, cuerpo recto. Braceo y respira durante toda la serie.',
+  'Variante del día: frontal, lateral o con toque de hombro según la semana.',
+  'Puntos de control: sin hundir la zona lumbar, cadera quieta, respiración continua.'],clave:CTRL},
+ xpallof:{n:'Pallof press',niv:['de pie, banda suave','semirrodillas','de pie, banda dura'],img:[['pallof-0','Manos en el esternón'],['pallof-1','Brazos extendidos']],pasos:[
+  'De lado al anclaje de la banda. Exhala mientras extiendes los brazos al frente y aguanta 2 s.',
+  'Puntos de control: el tronco no gira, la pelvis no se mueve.'],clave:CTRL},
+ xempuje:{n:'Flexión de brazos',niv:['en la pared','en mesa o banco','de rodillas o en el suelo'],img:[['flexinc-0','Manos en un apoyo alto'],['flexinc-1','Cuerpo recto']],pasos:[
+  'Manos algo más anchas que los hombros, cuerpo recto de los talones a la cabeza.',
+  'Baja en 3 s con los codos a unos 45° del cuerpo y empuja exhalando.',
+  'Puntos de control: escápulas que se mueven (se juntan al bajar y se separan al subir), sin hundir la zona lumbar.'],clave:CTRL},
+ xtiron:{n:'Remo',niv:['banda suave','banda media','banda dura o mancuerna con apoyo'],img:[['remo-0','Brazos extendidos'],['remo-1','Codos atrás']],pasos:[
+  'Tira llevando los codos atrás y junta las escápulas. Aguanta la pausa indicada.',
+  'Vuelve en 2 s.',
+  'Puntos de control: hombros lejos de las orejas, tronco quieto.'],clave:CTRL},
+ xcarry:{n:'Paseo con carga',niv:['carga liviana','carga media','carga pesada'],img:[['granjero-1','Paseo con carga']],pasos:[
+  'Maleta: una carga en una mano. Granjero: una en cada mano.',
+  'Camina erguido con pasos cortos y braceo, respirando.',
+  'Puntos de control: el tronco no se inclina hacia la carga, hombros nivelados.'],clave:CTRL},
+ xlanz:{n:'Lanzamiento con balón medicinal',niv:['balón de 1–2 kg','balón de 3 kg','balón de 4 kg'],img:[['lanzpecho-0','Balón en el pecho'],['lanzpecho-1','Empuje explosivo']],pasos:[
+  'Pase de pecho o lanzamiento rotacional contra la pared, según la semana.',
+  'Braceo y exhala fuerte al lanzar. Recibe amortiguando.',
+  'Puntos de control: la fuerza sale de piernas y tronco firme; la zona lumbar no se arquea ni se tuerce.'],clave:CTRL},
+ xcalma:{n:'Cierre y autoevaluación',img:[['flexor-0','Estiramiento del flexor de cadera']],pasos:[
+  'Respiración lenta: 4 s inhalar, 6 s exhalar, 5 veces.',
+  'Pregúntate: ¿qué ejercicio me costó controlar? Anótalo en «Cómo te sentiste»; es lo que tu entrenador y el Coach van a revisar.'],clave:'Aprender a darte cuenta de cómo te mueves es parte del entrenamiento.'},
+ xmat:{n:'Módulo: aterrizar y frenar',img:[['salto-0','Snap-down: posición de aterrizaje'],['drop-1','Aterrizaje a dos pies'],['caida-1','Aterrizaje a una pierna']],pasos:[
+  'Snap-down: de puntillas con los brazos arriba, baja de golpe a la posición de aterrizaje y congela 2 s.',
+  'Aterrizaje: caída silenciosa, cadera atrás, rodillas sobre los pies, aguanta 2 s.',
+  'Hop and stick: salto corto a una pierna y caída en la misma pierna, aguanta 2 s.',
+  'Cambio de dirección reactivo: frena y sal hacia la dirección que te indican.',
+  'Puntos de control: rodilla sobre el pie (nunca hacia dentro), tronco quieto, caída sin ruido.'],clave:'Una caída que no se aguanta 2 s no cuenta. Con antecedente de LCA, empieza por la pierna operada.'},
+ xmsuelo:{n:'Módulo: suelo pélvico y espalda',img:[['puente-1','Puente con Knack']],pasos:[
+  'Knack: cierra y eleva el piso pélvico (como cortar el chorro de orina y subir), sin aguantar el aire ni empujar hacia abajo.',
+  'Progresión: acostado → sentado → de pie → con tos → al levantar una caja → con saltitos.',
+  'Orden en el esfuerzo: Knack, braceo y después el movimiento; exhala en el esfuerzo.',
+  'Puntos de control: sin apnea, sin escape, sin sensación de peso perineal.'],clave:'Los saltitos solo si en las semanas anteriores no hubo escape. Si hay dolor irradiado, para y consulta.'},
+ xmequi:{n:'Módulo: equilibrio y suelo',img:[],pasos:[
+  'Equilibrio con la progresión del día, siempre cerca de una pared o una silla.',
+  'Caminar talón con punta o girando la cabeza: mira a los lados mientras caminas en línea.',
+  'Bajar al suelo y levantarse: usa los apoyos que necesites y en cada semana intenta usar uno menos.',
+  'Puntos de control: movimientos lentos, sin impulso, respirando.'],clave:'Levantarse del suelo con soltura es uno de los mejores indicadores de autonomía.'}
+});
+const x8=a=>a.length===8?a:a.concat(Array(8-a.length).fill(a[a.length-1]));
+const PLANX={
+ A:[
+  {id:'xprep',b:'1',tm:5,p:fill('5 min')},
+  {id:'xbisagra',b:'2A',tm:4,w:[1,2],p:x8(['3×8 · tempo 3-1-1','3×8 · tempo 3-1-1'])},
+  {id:'xsent',b:'2B',tm:4,w:[1,4],p:x8(['3×8 · tempo 3-1-1','3×10 · tempo 3-1-1','3×8 · tempo 3-1-1 · +carga liviana','3×10 · tempo 3-1-1 · +carga liviana'])},
+  {id:'xzanc',b:'3',tm:4,w:[1,2],p:x8(['2×6/lado','3×6/lado'])},
+  {id:'xrdl1',b:'2A',tm:4,w:[3,4],p:W3(3,['3×6/lado','3×8/lado'])},
+  {id:'xstepdown',b:'3',tm:4,w:[3,4],p:W3(3,['3×6/lado · adelante y al lado','3×8/lado · adelante y al lado'])},
+  {id:'xsent1',b:'2A',tm:4,w:[5,6],p:W3(5,['3×5/lado','3×6/lado'])},
+  {id:'xbis1',b:'2B',tm:4,w:[5,6],p:W3(5,['3×6/lado · 2 s arriba','3×8/lado · 2 s arriba'])},
+  {id:'xstepup',b:'3',tm:4,w:[5,6],p:W3(5,['3×8/lado','3×8/lado · más alto o con carga'])},
+  {id:'xzancdin',b:'2A',tm:4,w:[7,8],p:W3(7,['3×6/lado','3×8/lado'])},
+  {id:'xlevantar',b:'2B',tm:4,w:[7,8],p:W3(7,['3×6','3×8'])},
+  {id:'xreact',b:'3',tm:4,w:[7,8],p:W3(7,['5×3 señales','6×3 señales'])},
+  {id:'xequi',b:'4',tm:4,p:['3×20 s · pies juntos o semitándem','3×30 s','3×20 s · tándem o una pierna','3×20 s · ojos cerrados (si tu nivel lo permite)','3×20 s · con banda que tira hacia un lado','3×30 s · con banda','3×20 s · recibiendo una pelota','3×30 s · con pelota y contando hacia atrás']},
+  {id:'xcalma',b:'6',tm:2,p:fill('2 min')}],
+ B:[
+  {id:'xprep',b:'1',tm:5,p:fill('5 min')},
+  {id:'xdeadbug',b:'2A',tm:4,p:['3×6/lado · lento','3×6/lado · lento','3×8/lado','3×8/lado · 3 s de pausa','3×8/lado','3×10/lado','3×8/lado · ritmo continuo','3×10/lado · ritmo continuo']},
+  {id:'xbirddog',b:'2B',tm:4,p:['3×6/lado · 3 s','3×6/lado · 3 s','3×6/lado · con vaso','3×8/lado · con vaso','3×8/lado · 3 s','3×8/lado · 5 s','3×8/lado · lento continuo','3×10/lado · lento continuo']},
+  {id:'xpallof',b:'3',tm:4,w:[1,2],p:x8(['3×8/lado · 2 s','3×10/lado · 2 s'])},
+  {id:'xplancha',b:'3',tm:4,w:[3,8],p:W3(3,['Frontal 3×20 s','Frontal 3×30 s','Lateral 3×20 s/lado','Lateral 3×30 s/lado','Con toque de hombro 3×6/lado','Con toque de hombro 3×8/lado'])},
+  {id:'xempuje',b:'4A',tm:6,w:[1,4],p:x8(['2×8 · tempo 3-0-1','3×8 · tempo 3-0-1','3×8 · tempo 3-1-1','3×10 · tempo 3-1-1'])},
+  {id:'xcarry',b:'4A',tm:6,w:[5,8],p:W3(5,['Maleta 3×20 m/lado','Maleta 3×30 m/lado','Granjero → maleta 3×30 m','Granjero → maleta 4×30 m'])},
+  {id:'xtiron',b:'4B',tm:0,w:[1,6],p:x8(['2×10 · pausa 2 s','3×10 · pausa 2 s','3×10 · pausa 2 s','3×12 · pausa 2 s','3×10 · pausa 3 s','3×12 · pausa 3 s'])},
+  {id:'xlanz',b:'4B',tm:0,w:[7,8],p:W3(7,['Pase de pecho 3×6','Rotacional 3×5/lado'])},
+  {id:'xcalma',b:'6',tm:2,p:fill('2 min')}]
+};
+const MODROW={
+ aterrizar:{id:'xmat',b:'5',tm:5,p:['Snap-down 3×5','Snap-down 3×6','Aterrizaje a dos pies (20–30 cm) 3×5 + frenada en 3 pasos ×3','Aterrizaje a dos pies 3×6 + frenada ×4','Aterrizaje a una pierna 3×4/lado + hop and stick 2×3/lado','Aterrizaje a una pierna 3×5/lado + hop and stick 3×3/lado','Cambio de dirección reactivo 5×2 + drop jump estable 3×4','Cambio de dirección reactivo 6×2 + drop jump estable 3×4']},
+ suelo:{id:'xmsuelo',b:'5',tm:5,p:['Knack acostado 10×3 s + 5×10 s','Knack acostado 10×3 s + 6×10 s','Knack sentado y de pie 10×3 s + tos suave 3×5','Knack de pie 10×3 s + tos suave 3×6','Knack al levantar una caja 3×6','Knack al levantar una caja 3×8','Knack con tos fuerte 3×5 + saltitos 3×10 (solo sin escape)','Knack con tos fuerte 3×5 + saltitos 3×15 (solo sin escape)']},
+ equilibrio:{id:'xmequi',b:'5',tm:5,p:['Pies juntos → semitándem 3×20 s + bajar al suelo con silla 2×','Semitándem 3×30 s + bajar al suelo con silla 3×','Tándem 3×20 s + talón-punta 2×5 m + suelo con silla 3×','Tándem 3×30 s + talón-punta 3×5 m + suelo con silla 3×','Una pierna con apoyo de dedo 3×15 s + caminar girando la cabeza 3×10 m + suelo sin silla 3×','Una pierna 3×20 s + girando la cabeza 3×10 m + suelo sin silla 4×','Una pierna recibiendo una pelota 3×20 s + paso de recuperación 3×6 + suelo con menos apoyos 4×','Una pierna con pelota 3×30 s + paso de recuperación 3×8 + suelo con menos apoyos 4×']}
+};
+const FASEX=['Fase 1 · Aprender','Fase 1 · Aprender','Fase 2 · Automatizar','Fase 2 · Automatizar','Fase 3 · Desafiar','Fase 3 · Desafiar','Fase 4 · Transferir','Fase 4 · Transferir y retest'];
+const DIAX={A:'Tren inferior y equilibrio',B:'Tronco, braceo y tren superior'};
+const modulos=()=>{const m=(atl().modulos||[]).filter(k=>MODROW[k]);return m.length?m.slice(0,2):['equilibrio']};
+function rowsBase(src){const mods=modulos();const mk=mods.length>1?(src==='A'?mods[0]:mods[1]):mods[0];
+  const r=PLANX[src].slice();const i=r.findIndex(x=>x.id==='xcalma');r.splice(i,0,MODROW[mk]);return r}
+const nivelDe=id=>{const a=atl(),n=(a.niveles||{})[id]||a.nivel||1;return Math.min(3,Math.max(1,n))};
+const TESTSX=[['silla','Sentarse y pararse en 30 s (reps)',1],['equi','Equilibrio a una pierna, mejor lado (s, máx. 30)',1],['equid','Equilibrio a una pierna, peor lado (s, máx. 30)',1],
+ ['sent1','Sentadilla a una pierna: calidad del peor lado (0–5)',1],['bisagra','Bisagra con palo: contactos que mantiene (0–3)',1],['birddog','Bird dog: segundos sin rotar la pelvis (0–10)',1]];
+const TESTSXM={aterrizar:[['drop','Drop landing: calidad (0–5)',1],['hop','Hop and stick: calidad de la peor pierna (0–5)',1]],
+ suelo:[['tos','Escape al toser de pie (0 = no, 1 = sí)',-1],['iciq','ICIQ-SF (0–21)',-1]],
+ equilibrio:[['tug','Timed Up and Go (s)',-1],['suelo','Levantarse del suelo: apoyos que usa (0–5)',-1]]};
+const testsBase=()=>[...TESTSX,...modulos().flatMap(k=>TESTSXM[k])];
+function nivelSugerido(T){
+  const n=k=>{const x=parseFloat(String(T['x_'+k+'_0']??'').replace(',','.'));return isNaN(x)?null:x};
+  const c=[];const si=n('silla'),eq=n('equi'),s1=n('sent1');
+  if(si!=null)c.push(si<10?1:si<=15?2:3);if(eq!=null)c.push(eq<10?1:eq<30?2:3);if(s1!=null)c.push(s1<=2?1:s1<=4?2:3);
+  return c.length?Math.min(...c):null;
+}
+function ctrlBox(s,d,it){
+  const id=it.id;if(!String(id).startsWith('x')||id==='xprep'||id==='xcalma')return null;
+  const k=key(s,d,id),reg=S.registro[k]||{};
+  const tog=h('button',{class:'opt','aria-pressed':!!reg.limpia,onclick:()=>{const cur={...(S.registro[k]||{semana:s,dia:d,ej:id}),limpia:!reg.limpia,t:Date.now()};S.registro[k]=cur;write('registro',k,cur);render()}},'✓ Técnica limpia');
+  const box=h('div',{class:'freq',role:'group','aria-label':'Control motor'},tog);
+  if(EX[id].niv){
+    const n=nivelDe(id),set=async v=>{await saveAtleta(UI.atleta,{...atl(),niveles:{...(atl().niveles||{}),[id]:v},t:Date.now()});render()};
+    box.append(h('span',{class:'wholbl',text:NIVEL[n]}),n>1?h('button',{class:'opt',onclick:()=>set(n-1)},'− Bajar'):null,n<3?h('button',{class:'opt',onclick:()=>set(n+1)},'+ Subir'):null);
+    const ult=Object.values(S.registro).filter(r=>r.ej===id&&r.hecho&&!(Number(r.semana)===s&&r.dia===d)).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,2);
+    if(n<3&&ult.length===2&&ult.every(r=>r.limpia))box.append(h('span',{class:'note',text:'Técnica limpia 2 veces seguidas: ya puedes subir de nivel.'}));
+  }
+  return box;
+}
+function limpiaFase(s){// técnica limpia en las 2 semanas anteriores
+  let n=0,t=0;Object.values(S.registro).forEach(r=>{if(!String(r.ej).startsWith('x')||!r.hecho)return;const w=Number(r.semana);if(w===s-1||w===s-2){t++;if(r.limpia)n++}});return [n,t];
+}
+function renderTestsBase(m){
+  const T=S.tests||{};
+  const upd=(f,v)=>{const cur={...(S.tests||{}),[f]:v,t:Date.now()};S.tests=cur;debounce('tests',()=>write('tests','datos',cur))};
+  m.append(h('section',{class:'card'},h('h2',{text:'Tests Sakros Base · '+atl().nombre}),
+    h('p',{class:'note',text:'Semana 0 antes de empezar, retest en las semanas 4 y 8. Grábate de frente y de perfil: es tu mejor comparación.'})));
+  const inp=k=>{const e=h('input',{id:'xt-'+k,'aria-label':k,inputmode:'decimal'});e.value=T[k]??'';e.addEventListener('input',()=>upd(k,e.value));return e};
+  const L=testsBase();
+  m.append(h('section',{class:'card'},h('h2',{text:'Resultados'}),
+    h('div',{class:'scroll'},h('table',{class:'iso'},h('thead',{},h('tr',{},h('th',{text:'Test'}),h('th',{text:'S0'}),h('th',{text:'S4'}),h('th',{text:'S8'}))),
+      h('tbody',{},L.map(([id,l])=>h('tr',{},h('td',{text:l}),[0,4,8].map(mo=>h('td',{},inp('x_'+id+'_'+mo))))))))));
+  const sug=nivelSugerido(T),a=atl();
+  const nv=h('section',{class:'card'},h('h2',{text:'Tu nivel de partida'}),
+    h('p',{class:'note',text:sug?'Según tus tests de la semana 0, te sugerimos el '+NIVEL[sug]+'. Tu nivel actual es el '+NIVEL[a.nivel||1]+'. Después cada ejercicio sube de nivel por separado, cuando la técnica sale limpia.':'Anota los tests de la semana 0 (sentarse y pararse, equilibrio y sentadilla a una pierna) para sugerirte un nivel.'}),
+    h('div',{class:'opts'},[1,2,3].map(n=>h('button',{class:'opt','aria-pressed':(a.nivel||1)===n,onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),nivel:n,t:Date.now()});render()}},NIVEL[n]))));
+  m.append(nv);
+  const num=k=>{const x=parseFloat(String(T[k]??'').replace(',','.'));return isNaN(x)?null:x};
+  const chip=(lv,txt)=>h('span',{class:'sem '+(lv==='ok'?'v':lv==='amb'?'a':'r'),text:txt});
+  const res=h('section',{class:'card'},h('h2',{text:'Evolución'}));let c=0;
+  L.forEach(([id,l,dir])=>{const a0=num('x_'+id+'_0');let b=null,mo=null;[8,4].forEach(x=>{if(b==null&&num('x_'+id+'_'+x)!=null){b=num('x_'+id+'_'+x);mo=x}});
+    if(a0==null||b==null)return;c++;const d=(b-a0)*dir;
+    res.append(h('div',{class:'balrow'},h('span',{text:l+' (S0 → S'+mo+')'}),chip(d>0?'ok':d===0?'amb':'rojo',String(a0).replace('.',',')+' → '+String(b).replace('.',','))))});
+  if(!c)res.append(h('p',{class:'note',text:'Anota la semana 0 y un retest para ver la evolución.'}));
+  m.append(res);
+  m.append(h('details',{class:'card'},h('summary',{},'Cómo hacer los tests'),h('ul',{class:'medir'},
+    h('li',{},h('strong',{text:'Sentarse y pararse en 30 s: '}),'silla de unos 43 cm, brazos cruzados. Cuenta cuántas veces te pones de pie completo.'),
+    h('li',{},h('strong',{text:'Equilibrio a una pierna: '}),'brazos cruzados, ojos abiertos. Tiempo hasta que apoyas el otro pie o mueves los brazos (máximo 30 s). Cada lado.'),
+    h('li',{},h('strong',{text:'Sentadilla a una pierna a cajón: '}),'5 repeticiones por lado. Un punto por cada uno: rodilla sobre el pie, pelvis nivelada, tronco quieto, llega al cajón y sube sin caerse. Anota el peor lado.'),
+    h('li',{},h('strong',{text:'Bisagra con palo: '}),'8 repeticiones. Anota cuántos de los 3 contactos (cabeza, espalda alta y sacro) mantiene todo el tiempo.'),
+    h('li',{},h('strong',{text:'Bird dog: '}),'cada lado, hasta 10 s. Anota los segundos sin que la pelvis rote (el peor lado).'),
+    h('li',{},h('strong',{text:'Módulo aterrizar: '}),'drop landing desde 30 cm y hop and stick, con video de frente. Un punto por: rodilla sobre el pie, caída silenciosa, cadera atrás, tronco quieto, aguanta 2 s.'),
+    h('li',{},h('strong',{text:'Módulo suelo pélvico: '}),'tos fuerte de pie con la vejiga cómoda (escape sí o no) y cuestionario ICIQ-SF.'),
+    h('li',{},h('strong',{text:'Módulo equilibrio: '}),'Timed Up and Go (pararse, caminar 3 m, volver y sentarse) y levantarse del suelo contando los apoyos que usa (manos, rodillas, silla).'))));
+}
+const prog=()=>['core','global','base'].includes(atl().programa)?atl().programa:'rend';
+const esBase=()=>prog()==='base';
 const esCore=()=>prog()==='core';
 const esGlob=()=>prog()==='global';
 const alt=()=>prog()!=='rend';
-const progOf=id=>String(id).startsWith('k')?'core':String(id).startsWith('g')?'global':'rend';
+const progOf=id=>String(id).startsWith('k')?'core':String(id).startsWith('g')?'global':String(id).startsWith('x')?'base':'rend';
 const srcDia=(d,s)=>alt()&&(d==='C'||d==='U')?(s%2?'A':'B'):d;
-function rows(d,s){if(!alt())return PLAN[d];const src=srcDia(d,s);return (esCore()?PLANC:PLANG)[src].filter(it=>!it.w||(s>=it.w[0]&&s<=it.w[1]))}
-function allRows(){const out=[],seen=new Set();const P0=esCore()?PLANC:esGlob()?PLANG:PLAN;Object.keys(P0).forEach(d=>P0[d].forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);out.push([d,it])}}));return out}
-const faseTxt=s=>(esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
-const sesKey=(s,d)=>(esCore()?'c':esGlob()?'g':'')+s+d;
+function rows(d,s){if(!alt())return PLAN[d];const src=srcDia(d,s);return (esBase()?rowsBase(src):(esCore()?PLANC:PLANG)[src]).filter(it=>!it.w||(s>=it.w[0]&&s<=it.w[1]))}
+function allRows(){const out=[],seen=new Set();const P0=esBase()?{A:rowsBase('A'),B:rowsBase('B')}:esCore()?PLANC:esGlob()?PLANG:PLAN;Object.keys(P0).forEach(d=>P0[d].forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);out.push([d,it])}}));return out}
+const faseTxt=s=>(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
+const sesKey=(s,d)=>(esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
 function coreT(){
   const T=S.tests||{},v=k=>{const x=parseFloat(String(T[k]??'').replace(',','.'));return isNaN(x)?null:x};
   let m=null;[0,4,8].forEach(mo=>{if(['flex','ext','lati','latd'].some(k=>v('k_'+k+'_'+mo)!=null))m=mo});
@@ -988,7 +1203,7 @@ const P=c=>UI.atleta==='yo'?c:'a/'+UI.atleta+'/'+c;
 const CARGABLES=['cargada','sentadilla','pushpress','frontal','muerto','hipthrust'];
 function fmtKg(v){const st=v<20?0.5:v<40?1:2.5;const r=Math.round(v/st)*st;return String(Math.round(r*10)/10).replace('.',',')}
 function escalar(str,id){
-  if(!/kg/.test(str)||/^[kg]/.test(String(id)))return str;
+  if(!/kg/.test(str)||/^[kgx]/.test(String(id)))return str;
   const base=BASE1[id];const ref=parseFloat(String((atl().cargas||{})[id]||'').replace(',','.'));
   if(base&&ref>0){const f=ref/base;return str.replace(/(\d+(?:,\d+)?) kg/g,(m,n)=>fmtKg(parseFloat(n.replace(',','.'))*f)+' kg')}
   return UI.atleta==='yo'?str:str.replace(/(\d+(?:,\d+)?) kg/g,'carga según RPE');
@@ -1002,10 +1217,11 @@ const saveUI=()=>{try{localStorage.setItem('exos8-ui',JSON.stringify({tab:UI.tab
 let db=null, mode='cargando', dirty=false;
 const key=(s,d,id)=>`${s}${d}-${id}`;
 const PP=it=>(atl().sexo==='M'&&it.pM)?it.pM:it.p;
-const pres=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];return a?a.pres:escalar(PP(it)[s-1],it.id)};
+const pres=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const p=escalar(PP(it)[s-1],it.id);const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
 
 const TM={tejido:3,mov:4,pilar:3,act:2,cajon:5,puenteexp:3,cargada:7,sentadilla:10,pallof:2,regen:2,salidas:4,sprint:3,pushpress:6,skater:2,frontal:8,dominadas:2,muerto:8,hipthrust:3,zona2:0,intervalos:0,t3030:0};
 function tmin(it,s){
+  if(it.tm!=null)return it.tm;
   if(String(it.id).startsWith('g'))return tminG(it,s);
   const id=it.id,base=id.replace(/[AB]$/,'');let m=TM[base];if(m==null)m=TM[id];
   const p=String(PP(it)[s-1]||'');
@@ -1140,13 +1356,17 @@ function renderPerfil(m,nuevo){
   m.append(h('section',{class:'card'},h('h2',{text:nuevo?'Nuevo atleta':'Perfil de '+a.nombre}),
     h('div',{class:'row'},inp('nombre','Nombre',a.nombre,{ph:'Ej.: Moira'})),
     h('div',{class:'row'},inp('edad','Edad *',a.edad,{num:1,ph:'años'}),inp('sesiones','Entrenamientos por semana *',a.sesiones,{num:1,ph:'ej.: 2'})),
-    (()=>{const sel=h('select',{id:'pf-prog'},[['rend',PROG.rend],['core',PROG.core],['global',PROG.global]].map(([v,l])=>{const o=h('option',{value:v},l);if((a.programa||'rend')===v)o.selected=true;return o}));f.prog=sel;
+    (()=>{const sel=h('select',{id:'pf-prog'},[['base',PROG.base],['rend',PROG.rend],['core',PROG.core],['global',PROG.global]].map(([v,l])=>{const o=h('option',{value:v},l);if((a.programa||'rend')===v)o.selected=true;return o}));f.prog=sel;
+      f.mods={};const mb=h('div',{class:'opts'},Object.entries(MOD).map(([k,l])=>{const c=h('input',{type:'checkbox',id:'pf-mod-'+k});c.checked=(a.modulos||[]).includes(k);f.mods[k]=c;return h('label',{class:'tcrow',for:'pf-mod-'+k},c,h('span',{text:l}))}));
+      const nvs=h('select',{id:'pf-nivel'},[1,2,3].map(n=>{const o=h('option',{value:n},NIVEL[n]);if((a.nivel||1)===n)o.selected=true;return o}));f.nivel=nvs;
+      const sig=h('select',{id:'pf-sig'},[['rend',PROGC.rend],['core',PROGC.core],['global',PROGC.global]].map(([v,l])=>{const o=h('option',{value:v},l);if((a.siguiente||'global')===v)o.selected=true;return o}));f.sig=sig;
+      const bl=h('div',{style:'display:grid;gap:10px'},h('span',{class:'wholbl',text:'Módulos de Sakros Base (máximo 2)'}),mb,h('label',{class:'f',for:'pf-nivel'},'Nivel de partida',nvs),h('label',{class:'f',for:'pf-sig'},'Programa al terminar la Base',sig));
       const cs=h('select',{id:'pf-cond'},[['','Elegir…'],...Object.entries(COND)].map(([v,l])=>{const o=h('option',{value:v},l);if((a.condicion||'')===v)o.selected=true;return o}));f.cond=cs;
       const cl=h('label',{class:'f',for:'pf-cond'},'Condición (espalda y suelo pélvico)',cs);
-      const sync=()=>{cl.hidden=sel.value!=='core';if(f.cgCard)f.cgCard.hidden=sel.value!=='rend'};
+      const sync=()=>{cl.hidden=sel.value!=='core';bl.hidden=sel.value!=='base';if(f.cgCard)f.cgCard.hidden=sel.value!=='rend'};
       sel.addEventListener('change',sync);f.syncProg=sync;
-      return h('div',{style:'display:grid;gap:10px'},h('label',{class:'f',for:'pf-prog'},'Programa de entrenamiento',sel),cl,
-        h('p',{class:'note',text:'Espalda y suelo pélvico: core con énfasis en el braceo, para hernia lumbar o incontinencia de esfuerzo. Empezar a entrenar: cuerpo completo para personas sedentarias. Rendir más: potencia, salto y cardio (método EXOS).'}))})(),
+      return h('div',{style:'display:grid;gap:10px'},h('label',{class:'f',for:'pf-prog'},'Programa de entrenamiento',sel),cl,bl,
+        h('p',{class:'note',text:'Base: 8 semanas de control motor con las que empieza todo cliente nuevo. Espalda y suelo pélvico: core con énfasis en el braceo, para hernia lumbar o incontinencia de esfuerzo. Empezar a entrenar: cuerpo completo para personas sedentarias. Rendir más: potencia, salto y cardio (método EXOS).'}))})(),
     (()=>{const sel=h('select',{id:'pf-freq'},[['','Elegir…'],['1','1 vez por semana'],['2','2 veces por semana'],['3','3 veces por semana']].map(([v,l])=>{const o=h('option',{value:v},l);if(String(a.frecuencia||(nuevo?'':'2'))===v)o.selected=true;return o}));f.freq=sel;return h('label',{class:'f',for:'pf-freq'},'Sesiones de este plan por semana *',sel)})(),
     (()=>{const sel=h('select',{id:'pf-sexo'},[['','Elegir…'],['M','Mujer'],['H','Hombre']].map(([v,l])=>{const o=h('option',{value:v},l);if((a.sexo||'')===v)o.selected=true;return o}));f.sexo=sel;return h('label',{class:'f',for:'pf-sexo'},'Sexo *',sel)})(),
     h('p',{class:'note',text:'En mujeres el plan suma más activación de zona media y de aterrizajes y frenadas (prevención de LCA).'}),
@@ -1167,7 +1387,7 @@ function renderPerfil(m,nuevo){
     if(!f.freq.value){err.textContent='Elige cuántas sesiones de este plan hará por semana (1 a 3).';return}
     const cargas={};CARGABLES.forEach(id=>{const v=f['c-'+id].value.trim();if(v)cargas[id]=v.replace('.',',')});
     const id=nuevo?'a'+Date.now().toString(36):UI.atleta;
-    const data={...(nuevo?{}:a),nombre,edad:ne,sesiones:ns,sexo:f.sexo.value,frecuencia:parseInt(f.freq.value,10),programa:f.prog.value,condicion:f.cond.value,email:f.email.value.trim().toLowerCase(),objetivo:f.objetivo.value.trim(),notas:f.notas.value.trim(),cargas,t:Date.now()};
+    const data={...(nuevo?{}:a),nombre,edad:ne,sesiones:ns,sexo:f.sexo.value,frecuencia:parseInt(f.freq.value,10),programa:f.prog.value,condicion:f.cond.value,modulos:Object.keys(MOD).filter(k=>f.mods[k].checked).slice(0,2),nivel:parseInt(f.nivel.value,10)||1,siguiente:f.sig.value,email:f.email.value.trim().toLowerCase(),objetivo:f.objetivo.value.trim(),notas:f.notas.value.trim(),cargas,t:Date.now()};
     save.disabled=true;const ok=await saveAtleta(id,data);save.disabled=false;
     if(!ok){err.textContent='No se pudo guardar. Revisa la conexión y vuelve a intentarlo.';return}
     if(nuevo)switchAtleta(id);else{UI.tab='tests';render()}
@@ -1186,12 +1406,12 @@ function renderSelectors(){
   const lanes=h('div',{class:'lanes',role:'group','aria-label':'Semana'});
   for(let s=1;s<=8;s++){
     const dd=DIAS().map(x=>done(s,x));const pct=Math.round(dd.reduce((q,x)=>q+x[0],0)/dd.reduce((q,x)=>q+x[1],0)*100);
-    lanes.append(h('button',{class:'lane'+(esGlob()?(s<=2?' descarga':''):esCore()?(s===1?' descarga':''):(s===4||s===8?' descarga':'')),'aria-pressed':UI.sem===s,onclick:()=>{UI.sem=s;saveUI();render()}},
-      h('b',{text:'S'+s}),h('small',{text:esGlob()?(s<=2?'Adapt.':s<=4?'Base':s===8?'Retest':'Progreso'):esCore()?(s===1?'Control':s<=4?'Carga':s<=6?'Fuerza':s===8?'Retest':'Potencia'):s===4?'Descarga':s===8?'Test':s>4?'Intensa':'Carga'}),pct?h('span',{class:'pct',text:pct+'%'}):null));
+    lanes.append(h('button',{class:'lane'+(esBase()?(s<=2?' descarga':''):esGlob()?(s<=2?' descarga':''):esCore()?(s===1?' descarga':''):(s===4||s===8?' descarga':'')),'aria-pressed':UI.sem===s,onclick:()=>{UI.sem=s;saveUI();render()}},
+      h('b',{text:'S'+s}),h('small',{text:esBase()?(s<=2?'Aprender':s<=4?'Automat.':s<=6?'Desafiar':s===8?'Retest':'Transferir'):esGlob()?(s<=2?'Adapt.':s<=4?'Base':s===8?'Retest':'Progreso'):esCore()?(s===1?'Control':s<=4?'Carga':s<=6?'Fuerza':s===8?'Retest':'Potencia'):s===4?'Descarga':s===8?'Test':s>4?'Intensa':'Carga'}),pct?h('span',{class:'pct',text:pct+'%'}):null));
   }
   box.append(lanes);
   if(UI.tab==='sesion'&&!modoCli()){
-    box.append(h('div',{class:'freq',role:'group','aria-label':'Programa'},h('span',{class:'wholbl',text:'Programa'}),[['rend',PROGC.rend],['core',PROGC.core],['global',PROGC.global]].map(([p,l])=>h('button',{class:'opt','aria-pressed':prog()===p,onclick:async()=>{if(prog()===p)return;await saveAtleta(UI.atleta,{...atl(),programa:p,t:Date.now()});UI.orig={};render()}},l))));
+    box.append(h('div',{class:'freq',role:'group','aria-label':'Programa'},h('span',{class:'wholbl',text:'Programa'}),[['base',PROGC.base],['rend',PROGC.rend],['core',PROGC.core],['global',PROGC.global]].map(([p,l])=>h('button',{class:'opt','aria-pressed':prog()===p,onclick:async()=>{if(prog()===p)return;await saveAtleta(UI.atleta,{...atl(),programa:p,t:Date.now()});UI.orig={};render()}},l))));
     box.append(h('div',{class:'freq',role:'group','aria-label':'Sesiones por semana'},h('span',{class:'wholbl',text:'Plan'}),[1,2,3].map(n=>h('button',{class:'opt','aria-pressed':freq()===n,onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),frecuencia:n,t:Date.now()});if(!DIAS().includes(UI.dia))UI.dia=DIAS()[0];saveUI();render()}},n+'× semana'))));
     box.append(h('div',{class:'days'},DIAS().map(d=>{const [n,t]=done(UI.sem,d);
       return h('button',{class:'day','aria-pressed':UI.dia===d,onclick:()=>{UI.dia=d;saveUI();render()}},h('b',{text:dayName(d)+(n===t?'  ✓':'')}),h('span',{text:`${n}/${t} hechos · ~${dur(d,UI.sem)} min`}))})));
@@ -1207,11 +1427,23 @@ function renderSesion(m){
   const s=UI.sem,d=UI.dia,core=esCore(),sk=sesKey(s,d),ses=S.sesiones[sk]||{};
   const upd=(k,v)=>{const cur={...(S.sesiones[sk]||{semana:s,dia:d}),[k]:v,t:Date.now()};S.sesiones[sk]=cur;debounce('s'+sk,()=>write('sesiones',sk,cur))};
   const fase=faseTxt(s),src=srcDia(d,s);
-  const titulo=esGlob()?(d==='U'?'Sesión '+src+': '+DIAG[src]:d==='C'?'Día C (repite el día '+src+'): '+DIAG[src]:dayName(d)+': '+DIAG[d]):core?(d==='U'?'Sesión '+src+': '+DIAC[src]:d==='C'?'Día C (repite el día '+src+'): '+DIAC[src]:dayName(d)+': '+DIAC[d]):(d==='U'?DIA[d]:dayName(d)+': '+DIA[d]);
+  const DM=esBase()?DIAX:DIAG;
+  const titulo=(esGlob()||esBase())?(d==='U'?'Sesión '+src+': '+DM[src]:d==='C'?'Día C (repite el día '+src+'): '+DM[src]:dayName(d)+': '+DM[d]):core?(d==='U'?'Sesión '+src+': '+DIAC[src]:d==='C'?'Día C (repite el día '+src+'): '+DIAC[src]:dayName(d)+': '+DIAC[d]):(d==='U'?DIA[d]:dayName(d)+': '+DIA[d]);
   const sec=h('section',{class:'sess'},
     h('div',{class:'row'},h('span',{class:'chip'+(!core&&(s===4||s===8)?' descarga':''),text:'Semana '+s+' · '+fase}),done(s,d)[0]===done(s,d)[1]?h('span',{class:'chip ok',text:'Sesión completa'}):null),
     h('h2',{text:titulo}));
   if(!core){
+    if(esBase()){
+      const mods=modulos();
+      sec.append(h('p',{class:'dxline'},h('strong',{text:'Módulo de hoy: '}),MOD[mods.length>1?(src==='A'?mods[0]:mods[1]):mods[0]]+'. ',h('strong',{text:'Tu nivel: '}),NIVEL[atl().nivel||1]+' (cada ejercicio puede subir por separado).'));
+      if(s===3||s===5||s===7){const [n,tt]=limpiaFase(s);const pct=tt?Math.round(n/tt*100):0;
+        sec.append(h('p',{class:'dxline'},h('strong',{text:'Nueva fase: '+faseTxt(s).split(' · ')[1]+'. '}),tt?('En las 2 semanas anteriores marcaste técnica limpia en '+n+' de '+tt+' ejercicios ('+pct+' %). '+(pct>=80?'Puedes avanzar.':'Te conviene repetir la fase anterior: vuelve a la semana '+(s-2)+'.')):'Avanza si la técnica salió limpia en la mayoría de los ejercicios de las 2 semanas anteriores; si no, repite la fase.'))}
+      if(s===8)sec.append(h('p',{class:'dxline',text:'Última semana: al terminarla, repite los tests y pasa a tu programa de entrenamiento.'}));
+      const bd=h('details',{},h('summary',{},'Cómo se trabaja el control motor'),h('ul',{class:'medir'},
+        ['Intensidad baja (RPE 4–6): es aprendizaje, no cansancio. Si la técnica se pierde, la serie termina.','Respeta el tempo: 3 s bajando, 1 s de pausa, 1 s subiendo.','Usa el espejo o grábate de perfil una serie por sesión.','Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control. Con técnica limpia 2 sesiones seguidas, sube ese ejercicio de nivel.','Para la sesión si aparece dolor que aumenta, mareo o dolor en el pecho.'].map(x=>h('li',{text:x}))));
+      if(s===1&&!ses.fecha)bd.open=true;
+      sec.append(bd);
+    }
     if(esGlob()){
       if(d==='U')sec.append(h('p',{class:'dxline',text:'Con una sola sesión por semana se alternan los días A (semanas impares) y B (semanas pares). Suma 2 o 3 caminatas de 20–30 min en la semana.'}));
       if(d==='C')sec.append(h('p',{class:'dxline',text:'Con 3 sesiones por semana, el día C repite el día A en las semanas impares y el día B en las pares.'}));
@@ -1223,12 +1455,12 @@ function renderSesion(m){
       if(s===1&&!ses.fecha)bd.open=true;
       sec.append(bd);
     }
-    if(d==='U'&&!esGlob())sec.append(h('p',{class:'dxline',text:'Con una sola sesión por semana, suma por tu cuenta 1 o 2 salidas de 30–40 min en zona 2 (60–70 % de la FC máxima): es lo que más sostiene la resistencia.'}));
+    if(d==='U'&&!esGlob()&&!esBase())sec.append(h('p',{class:'dxline',text:'Con una sola sesión por semana, suma por tu cuenta 1 o 2 salidas de 30–40 min en zona 2 (60–70 % de la FC máxima): es lo que más sostiene la resistencia.'}));
     const dl=dxLine();if(dl)sec.append(dl);
     sec.append(h('div',{class:'row'},
       field('Fecha','s-fecha',ses.fecha,v=>upd('fecha',v),{ph:'dd/mm'}),
       field('Minutos','s-min',ses.min,v=>upd('min',v),{num:1,ph:String(dur(d,s))}),
-      field('RPE sesión','s-rpe',ses.rpe,v=>upd('rpe',v),{num:1,ph:esGlob()?(s<=4?'5–6':'6–7'):'1–10'})),
+      field('RPE sesión','s-rpe',ses.rpe,v=>upd('rpe',v),{num:1,ph:esBase()?'4–6':esGlob()?(s<=4?'5–6':'6–7'):'1–10'})),
       field('Cómo te sentiste','s-nota',ses.nota,v=>upd('nota',v),{area:1,ph:'Sueño, molestias, energía…'}));
   }else{
     const a=atl(),cond=a.condicion;
@@ -1295,6 +1527,7 @@ function exCard(s,d,it){
       aj?h('div',{class:'adj'},h('span',{},h('strong',{text:'Ajustado por el Coach. '}),aj.motivo||'',' Plan original: '+escalar(it.p[s-1],it.id)+'.'),h('button',{class:'btn',onclick:()=>remove('ajustes',k).then(render)},'Volver al plan')):null,
       dxBox(it.id),
       h('div',{class:'row'},btn),
+      ctrlBox(s,d,it),
       !esClave(it.id)?null:h('div',{class:'row'},
         field('Kg reales','kg-'+k,reg.kg,v=>{const c=upd('kg',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:kgPh}),
         field('RPE','rpe-'+k,reg.rpe,v=>{const c=upd('rpe',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:'1–10'}),
@@ -1305,6 +1538,7 @@ function exCard(s,d,it){
 function renderTests(m){
   if(esCore())return renderTestsCore(m);
   if(esGlob())return renderTestsGlob(m);
+  if(esBase())return renderTestsBase(m);
   m.append(h('section',{class:'card'},h('h2',{text:'Tests · '+atl().nombre}),
     h('p',{class:'note',text:'Haz la semana 0 antes de empezar el bloque y repítelos en la semana 8 para ver cuánto mejoraste.'})));
   const T=S.tests||{};
@@ -1464,6 +1698,12 @@ function renderProgreso(m){
   const aj=Object.entries(S.ajustes).filter(([k,a])=>progOf(a.ej)===prog());
   m.append(h('section',{class:'card'},h('h2',{text:'Ajustes al plan'}),
     aj.length?h('ul',{},aj.sort().map(([k,a])=>h('li',{},`S${a.semana} día ${a.dia} · ${EX[a.ej]?.n||a.ej}: ${a.pres}`,a.motivo?` (${a.motivo})`:''))):h('p',{class:'note',text:'Todavía no hay cambios. Pídelos en la pestaña Coach.'})));
+  if(esBase()){m.append(h('section',{class:'card'},h('h2',{text:'Reglas de Sakros Base'}),h('ul',{},
+    h('li',{text:'Cuatro fases de 2 semanas: aprender, automatizar, desafiar y transferir.'}),
+    h('li',{text:'Pasa de fase si marcaste técnica limpia en al menos el 80 % de los ejercicios de las 2 semanas anteriores. Si no, repite la fase.'}),
+    h('li',{text:'Cada ejercicio sube de nivel por separado, con técnica limpia en 2 sesiones seguidas.'}),
+    h('li',{text:'RPE 4–6: es aprendizaje, no cansancio.'}),
+    h('li',{text:'Al terminar la semana 8, repite los tests y pasa a tu programa de entrenamiento.'}))));return}
   if(esGlob()){m.append(h('section',{class:'card'},h('h2',{text:'Reglas del programa Global'}),h('ul',{},
     h('li',{text:'Fases: adaptación (S1–2) con 2 series, base (S3–4) con 3 series y progreso (S5–8) con más peso o un ejercicio más difícil.'}),
     h('li',{text:'Sube el peso o la dificultad solo cuando completes todas las repeticiones con buena técnica y te sobren 3 o más.'}),
@@ -1489,7 +1729,8 @@ function renderProgreso(m){
 const LVL={ok:'Apto',adaptar:'Adaptar',sustituir:'Sustituir'};
 const ALIASC={kmuertobarra:'muerto',ksentbarra:'frontal',kpuentex:'puenteexp',kswing:'cargada',klanzatras:'cargada',klanzscoop:'cargada',klanzover:'pushpress',klandmine:'pushpress',kjammer:'pushpress',kremobarra:'dominadas',kprep:'prep',kpuente:'pilar',kpuente1:'pilar',kdeadbug:'pallof',kdeadbugc:'pallof',kplanchar:'pilar',kplanchat:'pilar',klateralr:'pallof',klateral:'pallof',klateralabd:'pallof',kpallofsr:'pallof',kpallofpaso:'pallof',khipthrust:'hipthrust',khipthrustp:'hipthrust',krdl:'muerto',ktrapbar:'muerto',kgoblet:'frontal',kgobletp:'frontal',kjalon:'dominadas',kremoinv:'dominadas'};
 const ALIASG={gcalor:'prep',gsilla:'sentadilla',gbisagra:'muerto',gpuente:'pilar',gcorea:'pilar',gcoreb:'pallof',gpress:'pushpress',gflex:'pushpress',gremob:'dominadas',gremom:'dominadas',gcaminata:'zona2',ginterv:'intervalos'};
-const aliasOf=id=>(String(id).startsWith('k')?ALIASC[id]:String(id).startsWith('g')?ALIASG[id]:ALIAS[id])||id;
+const ALIASX={xprep:'prep',xbisagra:'muerto',xrdl1:'muerto',xbis1:'muerto',xlevantar:'muerto',xsent:'frontal',xsent1:'frontal',xdeadbug:'pallof',xbirddog:'pallof',xplancha:'pilar',xpallof:'pallof',xempuje:'pushpress',xtiron:'dominadas',xmat:'cajon',xreact:'skater'};
+const aliasOf=id=>(String(id).startsWith('k')?ALIASC[id]:String(id).startsWith('g')?ALIASG[id]:String(id).startsWith('x')?ALIASX[id]:ALIAS[id])||id;
 const ALIAS={actA:'act',actB:'act',prepA:'prep',prepB:'prep',movA:'prep',movB:'prep',tejidoA:'tejido',tejidoB:'tejido',pilarA:'pilar',pilarB:'pilar'};
 const DX={
  lca:{n:'LCA (ligamento cruzado anterior)',corto:'LCA',lado:true,
@@ -1770,14 +2011,14 @@ function balRules(){
   return out;
 }
 function rulesFor(ej){
-  const out=[],sal=S.salud||{},id=aliasOf(ej),core=/^[kg]/.test(String(ej));
+  const out=[],sal=S.salud||{},id=aliasOf(ej),core=/^[kgx]/.test(String(ej));
   for(const [k,dx] of Object.entries(DX)){
     const st=sal[k];if(!st||!st.on)continue;
     const fase=st.fase||dx.fases[0][0];let r=dx.reglas[id];
     if(r&&!Array.isArray(r))r=r[fase];
     if(r)out.push({dx:dx.corto+(st.lado&&st.lado!=='ambos'?' '+st.lado:''),lvl:r[0],txt:r[1],o:core?undefined:r[2]});
   }
-  (esCore()?coreRules():esGlob()?[]:balRules()).forEach(b=>{const r=b.reglas[id];if(r)out.push({dx:(esCore()?'':'Balance · ')+b.dx,lvl:r[0],txt:r[1],o:r[2]})});
+  (esCore()?coreRules():(esGlob()||esBase())?[]:balRules()).forEach(b=>{const r=b.reglas[id];if(r)out.push({dx:(esCore()?'':'Balance · ')+b.dx,lvl:r[0],txt:r[1],o:r[2]})});
   const o=sal.otro;
   if(o&&Array.isArray(o.reglas))o.reglas.filter(x=>x.ej===id||x.ej===ej).forEach(x=>out.push({dx:'Otro',lvl:LVL[x.nivel]?x.nivel:'adaptar',txt:x.texto}));
   return out;
@@ -1787,7 +2028,7 @@ function dxActivos(){
   const sal=S.salud||{},l=[];
   for(const [k,dx] of Object.entries(DX)){const st=sal[k];if(st&&st.on){const f=dx.fases.find(x=>x[0]===(st.fase||dx.fases[0][0]));l.push(dx.corto+(st.lado&&st.lado!=='ambos'?' '+st.lado:'')+' ('+f[1].toLowerCase()+')')}}
   if(sal.otro&&sal.otro.texto&&sal.otro.reglas)l.push('Otro: '+sal.otro.texto);
-  (esCore()?coreRules():esGlob()?[]:balRules()).forEach(b=>l.push((esCore()?'':'Balance: ')+b.dx));
+  (esCore()?coreRules():(esGlob()||esBase())?[]:balRules()).forEach(b=>l.push((esCore()?'':'Balance: ')+b.dx));
   return l;
 }
 function dxBox(ej){
@@ -1805,7 +2046,7 @@ function renderSalud(m){
     h('p',{class:'note',text:'Activa lo que aplique y elige la fase. Cada ejercicio del plan mostrará si se mantiene, se adapta o se sustituye, y el Coach lo tendrá en cuenta. Es orientativo: ajústalo con tu valoración clínica.'}),
     h('div',{class:'dxhead'},h('div',{},h('strong',{text:'Modo automático'}),h('p',{class:'note',text:sal.auto===false?'Desactivado: el plan no cambia, solo ves las indicaciones.':'Activado: el plan cambia solo. Sustituye ejercicios y baja cargas según cada diagnóstico; si hay varios, aplica el más restrictivo.'})),
       h('button',{class:'check','aria-pressed':sal.auto!==false,onclick:()=>saveSalud({auto:sal.auto===false})},h('span',{class:'box',text:'✓'}),sal.auto===false?'Activar':'Activo'))));
-  if(esGlob())m.append(h('section',{class:'card'},h('h2',{text:'Programa Global'}),h('p',{class:'note',text:'Si activas diagnósticos, cada ejercicio muestra sus indicaciones y el Coach las tiene en cuenta. En Global no cambian el ejercicio automáticamente: adapta el rango o la carga según la indicación.'})));
+  if(esGlob()||esBase())m.append(h('section',{class:'card'},h('h2',{text:esBase()?'Sakros Base':'Programa Global'}),h('p',{class:'note',text:'Si activas diagnósticos, cada ejercicio muestra sus indicaciones y el Coach las tiene en cuenta. En Global no cambian el ejercicio automáticamente: adapta el rango o la carga según la indicación.'})));
   if(esCore())m.append(h('section',{class:'card'},h('h2',{text:'Programa Core'}),h('p',{class:'note',text:'Este programa ya está diseñado para hernia lumbar e incontinencia de esfuerzo (elige la condición en el perfil). Si activas otros diagnósticos, cada ejercicio muestra sus indicaciones y el Coach las tiene en cuenta; en Core no cambian el ejercicio automáticamente, para no romper la progresión del braceo.'})));
   for(const [k,dx] of Object.entries(DX)){
     const st=sal[k]||{},on=!!st.on,fase=st.fase||dx.fases[0][0];
@@ -1839,7 +2080,7 @@ async function buscarOtro(texto,status,btn){
   btn.disabled=true;status.textContent='Revisando el plan ejercicio por ejercicio. Puede tardar un minuto…';
   const ids=[];const seen=new Set();
   allRows().forEach(([d,it])=>{const id=ALIAS[it.id]||it.id;if(seen.has(id))return;seen.add(id);ids.push(`${id}: ${EX[it.id].n} (día ${d}${it.w?', semanas '+it.w[0]+'–'+it.w[1]:''}). ${EX[it.id].pasos.slice(0,2).join(' ')}`)});
-  const prompt=`Eres fisioterapeuta deportivo y preparador físico. El atleta (${atl().nombre}${atl().sexo?', '+(atl().sexo==='M'?'mujer':'hombre'):''}${atl().edad?', '+atl().edad+' años':''}${atl().sesiones?', '+atl().sesiones+' entrenamientos por semana':''}) sigue ${esGlob()?'un programa de 8 semanas de cuerpo completo para personas sedentarias (piernas, empuje, tirón, brazos, abdomen y cardio suave), con mancuernas livianas, bandas y peso corporal. Sesiones de 40–50 min':esCore()?'un programa de 8 semanas de core (abdomen, glúteo y espalda) con énfasis en el braceo coordinado con el piso pélvico y la respiración, pensado para hernia lumbar e incontinencia de esfuerzo. Sesiones de 45–55 min':'un plan de 8 semanas, 2 días por semana, para potencia, aceleración, salto y resistencia cardiovascular. Sesiones de 50–60 min'}.
+  const prompt=`Eres fisioterapeuta deportivo y preparador físico. El atleta (${atl().nombre}${atl().sexo?', '+(atl().sexo==='M'?'mujer':'hombre'):''}${atl().edad?', '+atl().edad+' años':''}${atl().sesiones?', '+atl().sesiones+' entrenamientos por semana':''}) sigue ${esBase()?'un programa de 8 semanas de control motor (patrones de sentadilla, bisagra, zancada, equilibrio, estabilidad de tronco y un módulo de aterrizajes, suelo pélvico o equilibrio), con niveles por ejercicio y RPE 4–6. Sesiones de 30–35 min':esGlob()?'un programa de 8 semanas de cuerpo completo para personas sedentarias (piernas, empuje, tirón, brazos, abdomen y cardio suave), con mancuernas livianas, bandas y peso corporal. Sesiones de 40–50 min':esCore()?'un programa de 8 semanas de core (abdomen, glúteo y espalda) con énfasis en el braceo coordinado con el piso pélvico y la respiración, pensado para hernia lumbar e incontinencia de esfuerzo. Sesiones de 45–55 min':'un plan de 8 semanas, 2 días por semana, para potencia, aceleración, salto y resistencia cardiovascular. Sesiones de 50–60 min'}.
 Diagnóstico o condición del atleta: "${texto}".
 Revisa cada ejercicio y di si se mantiene ("ok"), se adapta ("adaptar") o se sustituye ("sustituir"). Incluye solo los que necesiten un cambio o una precaución concreta. Para cada uno, 1–2 frases concretas: rango, carga, volumen o alternativa exacta. Añade 2–4 reglas generales (criterio de dolor, señales para parar, progresión).
 Escribe en español latinoamericano neutro, con tuteo.
@@ -1957,6 +2198,13 @@ Cambios al plan: para cambiar lo que aparece en una sesión usa la herramienta a
 Los ajustes que haces con la herramienta tienen prioridad sobre la adaptación automática; úsalos solo si el atleta quiere algo distinto a lo que ya muestra el plan.
 Balance de fuerza: si hay desbalances isométricos (H:Q, ADD:ABD o asimetrías), el plan ya suma trabajo correctivo de forma automática; respétalo y comenta el retest de la semana 4.
 Diagnósticos: si el atleta tiene diagnósticos activos (te los paso con las adaptaciones de cada ejercicio), respétalos en cada consejo y en cada ajuste de carga, y no propongas nada que contradiga esas adaptaciones.`;
+const RULES_BASE=`Eres el entrenador de control motor de la persona, en Sakros Base. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varias personas (su propio perfil es «Mi perfil»), o la propia persona desde la vista de cliente.
+Programa: 8 semanas de control motor con las que empieza todo cliente antes de su entrenamiento. Cuatro fases de 2 semanas: aprender (apoyo estable, tempo 3-1-1, espejo), automatizar (menos ayudas, una pierna), desafiar (menos apoyo, ojos cerrados en equilibrio, perturbaciones, carga liviana) y transferir (más rápido, reactivo, doble tarea). Día A: tren inferior y equilibrio; día B: tronco, braceo y tren superior. Cada sesión suma un módulo de 5 minutos: aterrizar y frenar, suelo pélvico y espalda, o equilibrio y suelo. RPE 4–6.
+Cada ejercicio tiene 3 niveles y sube por separado con técnica limpia en 2 sesiones seguidas. Se pasa de fase con técnica limpia en al menos el 80 % de los ejercicios de las 2 semanas anteriores; si no, se repite la fase.
+Cómo corregir: ante una dificultad, primero la corrección de control (posición de referencia, tempo, feedback con espejo, video, palo o vaso, foco externo), después bajar el nivel, y solo al final cambiar el ejercicio. Una o dos claves por vez, en lenguaje simple.
+Seguridad: dolor que aumenta, mareo, dolor en el pecho, dolor irradiado o escape de orina persistente → parar y consultar.
+Cómo responder: breve y concreto. Basa tus consejos en el registro (técnica limpia, niveles, notas).
+Cambios al plan: usa la herramienta ajustar_prescripcion, una vez por semana y ejercicio, cuando la persona lo pida o acepte tu propuesta. Después de ajustar, di en una línea qué cambiaste.`;
 const RULES_GLOB=`Eres el entrenador personal de la persona, en el programa Sakros Global. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varias personas (su propio perfil es «Mi perfil»). Habla de la persona seleccionada; con ella, lenguaje simple.
 Programa: 8 semanas de cuerpo completo para población sedentaria que empieza a entrenar o quiere mantenerse: piernas, empuje, tirón, brazos, abdomen y cardio suave. Material: mancuernas livianas, bandas, silla y escalón. Sesiones de 40–50 min. Fase 1 (S1–2) adaptación con 2 series y RPE 5; fase 2 (S3–4) base con 3 series y RPE 5–6; fase 3 (S5–8) progreso con más peso o variantes más difíciles y RPE 6–7. Día A: sentadilla a silla → goblet, flexiones progresivas, remo con banda, puente, curl + tríceps, dead bug + plancha, caminata. Día B: step-up, press de hombros sentado, remo con mancuerna, bisagra → peso muerto rumano, curl martillo + patada de tríceps, bird dog + plancha lateral, intervalos suaves. Con 3 sesiones el día C repite A en semanas impares y B en pares; con 1, se alternan.
 Prioridades: adherencia, técnica y progresión gradual. Nunca al fallo. Subir peso solo cuando sobran 3 o más repeticiones. Respirar siempre (exhalar en el esfuerzo). Animar a caminar 20–30 min los días sin entrenamiento.
@@ -1973,7 +2221,7 @@ Cambios al plan: usa la herramienta ajustar_prescripcion, una vez por semana y e
 function contexto(){
   const a=atl(),c=a.cargas||{};
   const core=alt(),pg=prog();
-  const L=[`PROGRAMA: ${pg==='core'?PROG.core+(a.condicion?' · condición: '+COND[a.condicion]:''):PROG[pg]}.`,`FRECUENCIA DEL PLAN: ${freq()} sesión(es) por semana (días ${DIAS().join(', ')}).`,`ATLETA: ${a.nombre}${a.sexo?', '+(a.sexo==='M'?'mujer':'hombre'):''}${a.edad?', '+a.edad+' años':''}${a.sesiones?', '+a.sesiones+' entrenamientos por semana':''}.${a.objetivo?' Objetivo: '+a.objetivo+'.':''}${a.notas?' Notas: '+a.notas+'.':''}`,
+  const L=[`PROGRAMA: ${pg==='base'?PROG.base+' · módulos: '+modulos().map(k=>MOD[k]).join(' y ')+' · nivel general: '+(a.nivel||1)+(a.niveles?' · niveles por ejercicio: '+JSON.stringify(a.niveles):'')+' · después sigue con: '+(PROGC[a.siguiente]||'Empezar a entrenar'):pg==='core'?PROG.core+(a.condicion?' · condición: '+COND[a.condicion]:''):PROG[pg]}.`,`FRECUENCIA DEL PLAN: ${freq()} sesión(es) por semana (días ${DIAS().join(', ')}).`,`ATLETA: ${a.nombre}${a.sexo?', '+(a.sexo==='M'?'mujer':'hombre'):''}${a.edad?', '+a.edad+' años':''}${a.sesiones?', '+a.sesiones+' entrenamientos por semana':''}.${a.objetivo?' Objetivo: '+a.objetivo+'.':''}${a.notas?' Notas: '+a.notas+'.':''}`,
     core?'Programa '+PROGC[pg]+': sin cargas de referencia; la carga se ajusta a la RPE de la fase.':UI.atleta==='yo'?'Referencias de partida: sentadilla posterior 120 kg ×5 (1RM ≈135), frontal 90 kg ×5–6 (1RM ≈105), peso muerto 120 kg ×3–4 (1RM ≈130).':'Cargas de la semana 1: '+(Object.keys(c).length?CARGABLES.filter(k=>c[k]).map(k=>EX[k].n+' '+c[k]+' kg').join(', '):'sin definir (las sesiones dicen «carga según RPE»)')+'.',
     `Semana que tiene abierta: S${UI.sem}, día ${UI.dia}.`,'','PLAN ACTUAL (* = ajustado por ti con la herramienta; [auto] = adaptado automáticamente por diagnóstico):'];
   if(core)DIAS().forEach(d=>{for(let s=1;s<=8;s++)L.push(`${dayName(d)} S${s} (${faseTxt(s)}): `+rows(d,s).map(it=>{const A=autoEj(s,d,it);return `${it.id} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))});
@@ -1982,9 +2230,9 @@ function contexto(){
   const regs=Object.values(S.registro).filter(r=>progOf(r.ej)===pg).filter(r=>r.hecho||r.kg||r.rpe||r.nota).sort((a,b)=>a.semana-b.semana||a.dia.localeCompare(b.dia));
   if(!regs.length)L.push('(sin registros todavía)');
   regs.forEach(r=>L.push(`S${r.semana}${r.dia} ${r.ej}: ${r.hecho?'hecho':'pendiente'}${r.kg?', '+r.kg+' kg':''}${r.rpe?', RPE '+r.rpe:''}${r.nota?', nota: '+r.nota:''}`));
-  const ses=Object.entries(S.sesiones).filter(([k])=>(k[0]==='c'?'core':k[0]==='g'?'global':'rend')===pg);
+  const ses=Object.entries(S.sesiones).filter(([k])=>(k[0]==='c'?'core':k[0]==='g'?'global':k[0]==='x'?'base':'rend')===pg);
   if(ses.length){L.push('','SESIONES:');ses.sort().forEach(([k,v])=>L.push(`S${v.semana||k}${v.dia||''}: ${v.fecha||''} ${v.min?v.min+' min':''} ${v.rpe?'RPE sesión '+v.rpe:''}${pg==='core'?` dolor lumbar ${v.dolor||'-'}/10, escape ${v.escape||'-'}, peso perineal ${v.peso||'-'}, irradiado ${v.irradiado||'-'}`:''} ${v.nota?'· '+v.nota:''}`))}
-  const T=S.tests||{};const tl=pg==='global'?TESTSG.map(([id,l])=>[0,4,8].some(m=>T['g_'+id+'_'+m])?`${l}: S0 ${T['g_'+id+'_0']||'-'} / S4 ${T['g_'+id+'_4']||'-'} / S8 ${T['g_'+id+'_8']||'-'}`:null).filter(Boolean):core?TESTSC.map(([id,l])=>[0,4,8].some(m=>T['k_'+id+'_'+m])?`${l}: S0 ${T['k_'+id+'_0']||'-'} / S4 ${T['k_'+id+'_4']||'-'} / S8 ${T['k_'+id+'_8']||'-'}`:null).filter(Boolean):TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean);
+  const T=S.tests||{};const tl=pg==='base'?testsBase().map(([id,l])=>[0,4,8].some(m=>T['x_'+id+'_'+m])?`${l}: S0 ${T['x_'+id+'_0']||'-'} / S4 ${T['x_'+id+'_4']||'-'} / S8 ${T['x_'+id+'_8']||'-'}`:null).filter(Boolean):pg==='global'?TESTSG.map(([id,l])=>[0,4,8].some(m=>T['g_'+id+'_'+m])?`${l}: S0 ${T['g_'+id+'_0']||'-'} / S4 ${T['g_'+id+'_4']||'-'} / S8 ${T['g_'+id+'_8']||'-'}`:null).filter(Boolean):core?TESTSC.map(([id,l])=>[0,4,8].some(m=>T['k_'+id+'_'+m])?`${l}: S0 ${T['k_'+id+'_0']||'-'} / S4 ${T['k_'+id+'_4']||'-'} / S8 ${T['k_'+id+'_8']||'-'}`:null).filter(Boolean):TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean);
   if(tl.length){L.push('','TESTS:',...tl)}
   const dl=dxActivos();
   if(dl.length){L.push('','DIAGNÓSTICOS ACTIVOS: '+dl.join(' · '));
@@ -2037,7 +2285,7 @@ function renderCoach(m){
   ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send.click()}});
   const q=t=>h('button',{class:'btn',onclick:()=>ask(t)},t);
   m.append(h('div',{class:'composer'},
-    h('div',{class:'quick'},...(esGlob()?[q('Revisa mi última sesión'),q('¿Subo el peso la próxima semana?'),q('Hoy tengo solo 25 minutos'),q('Me duele una articulación, adapta la sesión')]:esCore()?[q('Revisa mi última sesión'),q('¿Paso a la siguiente fase?'),q('Tuve escape en la sesión, ¿qué ajusto?'),q('Hoy tengo solo 30 minutos')]:[q('Revisa mi última sesión'),q('¿Subo cargas la próxima semana?'),q('Hoy tengo solo 40 minutos'),q('Tengo una molestia, adapta la sesión')])),
+    h('div',{class:'quick'},...(esBase()?[q('Revisa mi última sesión'),q('¿Subo de nivel algún ejercicio?'),q('¿Paso a la siguiente fase?'),q('Me cuesta un ejercicio, ¿qué corrijo?')]:esGlob()?[q('Revisa mi última sesión'),q('¿Subo el peso la próxima semana?'),q('Hoy tengo solo 25 minutos'),q('Me duele una articulación, adapta la sesión')]:esCore()?[q('Revisa mi última sesión'),q('¿Paso a la siguiente fase?'),q('Tuve escape en la sesión, ¿qué ajusto?'),q('Hoy tengo solo 30 minutos')]:[q('Revisa mi última sesión'),q('¿Subo cargas la próxima semana?'),q('Hoy tengo solo 40 minutos'),q('Tengo una molestia, adapta la sesión')])),
     h('div',{class:'send'},ta,send,stop)));
   renderChatLog();
 }
@@ -2059,7 +2307,7 @@ async function ask(text){
   if(busy)return;
   if(!sample){setSync('El chat no está disponible en esta vista');return}
   busy=true;await addMsg('u',text);
-  const turns=[{role:'user',content:(esGlob()?RULES_GLOB:esCore()?RULES_CORE:RULES)+(modoCli()?'\n\nIMPORTANTE: ahora te escribe la propia persona desde su vista de cliente, no el entrenador. Háblale directo, con lenguaje simple y sin tecnicismos. Si pide un cambio grande o describe dolor, síntomas de alarma o algo clínico, sugiérele consultarlo con su entrenador antes de cambiar el plan.':'')+'\n\nDATOS DEL ATLETA:\n'+contexto()},...S.chat.slice(-20).map(c=>({role:c.rol==='u'?'user':'assistant',content:c.texto}))];
+  const turns=[{role:'user',content:(esBase()?RULES_BASE:esGlob()?RULES_GLOB:esCore()?RULES_CORE:RULES)+(modoCli()?'\n\nIMPORTANTE: ahora te escribe la propia persona desde su vista de cliente, no el entrenador. Háblale directo, con lenguaje simple y sin tecnicismos. Si pide un cambio grande o describe dolor, síntomas de alarma o algo clínico, sugiérele consultarlo con su entrenador antes de cambiar el plan.':'')+'\n\nDATOS DEL ATLETA:\n'+contexto()},...S.chat.slice(-20).map(c=>({role:c.rol==='u'?'user':'assistant',content:c.texto}))];
   liveBubble=h('div',{class:'msg a'},h('p',{class:'tool',text:'Pensando…'}));renderChatLog();liveBubble.scrollIntoView({block:'end'});
   ctl=new AbortController();const stop=$('#chat-stop');if(stop)stop.hidden=false;
   let finalText='';
@@ -2075,7 +2323,7 @@ async function ask(text){
 }
 
 /* ---------- Vista cliente: bienvenida, Hoy y modo sesión ---------- */
-const PDESC={rend:'8 semanas de potencia, velocidad y resistencia con el método EXOS.',core:'8 semanas para una espalda fuerte y un suelo pélvico que responde: fuerza real, sin miedo.',global:'8 semanas de cuerpo completo desde cero, con una progresión segura.'};
+const PDESC={base:'8 semanas para aprender a moverte bien antes de entrenar: postura, equilibrio y movimientos básicos.',rend:'8 semanas de potencia, velocidad y resistencia con el método EXOS.',core:'8 semanas para una espalda fuerte y un suelo pélvico que responde: fuerza real, sin miedo.',global:'8 semanas de cuerpo completo desde cero, con una progresión segura.'};
 const KEYLIFT=new Set([...CARGABLES,'khipthrust','khipthrustp','krdl','kgoblet','kgobletp','ksentbarra','kmuertobarra','kremobarra','kremomanc','ktrapbar','kgranjero','kswing','kstepup','ksplit','klandmine','kjammer','gsilla','gbisagra','gpress','gremom','gstep','gcurl','gmartillo']);
 const esClave=id=>KEYLIFT.has(id);
 const needsOnb=()=>{const a=atl();return !a.onb&&!a.programa&&!a.sexo};
@@ -2120,14 +2368,16 @@ function renderOnb(m){
   }else{
     let prog=O.obj;const les=O.les.filter(x=>x!=='ninguna');
     const sugCore=prog!=='core'&&les.some(x=>x==='escapes'||x==='espalda');
-    const durs={rend:'50–60',core:'45–55',global:'40–50'};
+    const durs={rend:'50–60',core:'45–55',global:'40–50',base:'30–35'};
     const adapt=les.map(k=>({espalda:'espalda',escapes:'suelo pélvico',rodilla:'rodilla',hombro:'hombro',tobillo:'tobillo',otra:'tu molestia (la revisa tu entrenador)'})[k]);
     const nom=h('input',{id:'onb-nom',placeholder:'Tu nombre'});nom.value=a.nombre&&a.nombre!=='Mi perfil'&&a.nombre!=='Atleta'?a.nombre:'';
     const sx=h('select',{id:'onb-sexo'},[['','Elegir…'],['M','Mujer'],['H','Hombre']].map(([v,l])=>{const o=h('option',{value:v},l);if((a.sexo||'')===v)o.selected=true;return o}));
     const ed=h('input',{id:'onb-edad',inputmode:'numeric',placeholder:'años'});ed.value=a.edad||'';
     const err=h('p',{class:'note err',role:'alert'});
-    const res=h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),h('h2',{text:PROG[prog].split(' (')[0]}),
-      h('p',{text:PDESC[prog]}),h('p',{class:'note',text:O.dias+(O.dias===1?' día':' días')+' por semana · sesiones de '+durs[prog]+' min'+(adapt.length?' · adaptado a: '+adapt.join(', '):'')}));
+    const res=h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),
+      h('h2',{text:'1. Sakros Base · 8 semanas'}),h('p',{text:'Aprende a moverte bien: control de la postura, el equilibrio y los movimientos básicos, con un módulo según tu objetivo. Sesiones de 30–35 min.'}),
+      h('h2',{text:'2. '+PROG[prog].split(' (')[0]}),h('p',{text:PDESC[prog]}),
+      h('p',{class:'note',text:O.dias+(O.dias===1?' día':' días')+' por semana'+(adapt.length?' · adaptado a: '+adapt.join(', '):'')}));
     card.append(h('div',{class:'onbhead'},h('span',{class:'chip ok',text:'Listo'}),h('h2',{text:'Este es tu plan'})),res);
     if(sugCore)card.append(h('p',{class:'dxline'},'Por lo que marcaste, te conviene empezar por ',h('strong',{text:PROG.core.split(' (')[0]}),'. ',h('button',{class:'linkbtn',onclick:()=>{O.obj='core';render()}},'Cambiar a ese plan')));
     const tc=h('input',{type:'checkbox',id:'onb-tc'});
@@ -2140,7 +2390,8 @@ function renderOnb(m){
         if(!tc.checked){err.textContent='Acepta los términos y el descargo de salud para crear tu plan.';return}
         const edad=parseInt(ed.value,10);
         const cond=prog==='core'?(les.includes('espalda')&&les.includes('escapes')?'ambas':les.includes('escapes')?'iue':les.includes('espalda')?'hernia':'otra'):a.condicion;
-        const data={...a,nombre,sexo:sx.value,edad:edad>=5&&edad<=100?edad:(a.edad||''),programa:prog,frecuencia:O.dias,sesiones:a.sesiones||O.dias,condicion:cond||'',objetivo:a.objetivo||({rend:'Rendir más en mi deporte',core:'Fortalecer espalda, abdomen y suelo pélvico',global:'Empezar a entrenar o mantenerme'})[prog],
+        const mods=[];if(prog==='core'||les.includes('escapes')||les.includes('espalda'))mods.push('suelo');if(prog==='rend')mods.push('aterrizar');if(prog==='global'||edad>=60)mods.push('equilibrio');
+        const data={...a,nombre,sexo:sx.value,edad:edad>=5&&edad<=100?edad:(a.edad||''),programa:'base',siguiente:prog,modulos:mods.length?mods.slice(0,2):['equilibrio'],nivel:a.nivel||((prog==='global'||edad>=60)?1:2),frecuencia:O.dias,sesiones:a.sesiones||O.dias,condicion:cond||'',objetivo:a.objetivo||({rend:'Rendir más en mi deporte',core:'Fortalecer espalda, abdomen y suelo pélvico',global:'Empezar a entrenar o mantenerme'})[prog],
           notas:[a.notas,les.includes('otra')?'Marcó otra molestia en la bienvenida: revisar.':''].filter(Boolean).join(' '),onb:Date.now(),terminos:terminosOk(),t:Date.now()};
         e.target.disabled=true;const ok=await saveAtleta(UI.atleta,data);e.target.disabled=false;
         if(!ok){err.textContent='No se pudo guardar. Revisa la conexión y vuelve a intentarlo.';return}
@@ -2162,10 +2413,10 @@ function renderHoy(m){
     h('span',{class:'wholbl',text:PROG[prog()].split(' (')[0]}),
     h('div',{class:'bar','aria-label':'Avance del programa: '+pt+' %'},h('i',{style:'width:'+pt+'%'})),
     h('p',{class:'note',text:'Semana '+s+' de 8 · '+faseTxt(s)+' · '+pt+' % del programa'}),
-    h('h2',{text:N.fin?'¡Terminaste las 8 semanas!':'Hoy toca: '+dayName(d)}),
-    N.fin?h('p',{text:'Repite los tests para ver cuánto mejoraste y habla con tu entrenador sobre el siguiente bloque.'}):h('p',{class:'hoytit',text:(esGlob()?DIAG:esCore()?DIAC:DIA)[srcDia(d,s)]||''}),
+    h('h2',{text:N.fin?(esBase()?'¡Terminaste Sakros Base!':'¡Terminaste las 8 semanas!'):'Hoy toca: '+dayName(d)}),
+    N.fin?h('p',{text:esBase()?'Haz tus tests de salida para ver cuánto mejoraste y empieza tu programa de entrenamiento.':'Repite los tests para ver cuánto mejoraste y habla con tu entrenador sobre el siguiente bloque.'}):h('p',{class:'hoytit',text:((esBase()?DIAX:esGlob()?DIAG:esCore()?DIAC:DIA)[srcDia(d,s)]||'')+(esBase()?' · módulo '+MOD[(modulos().length>1&&srcDia(d,s)==='B')?modulos()[1]:modulos()[0]].toLowerCase():'')}),
     N.fin?null:h('p',{class:'meta',text:'≈ '+dur(d,s)+' min · '+r.length+' ejercicios'+(N.n?' · '+N.n+' hechos':'')}),
-    N.fin?h('button',{class:'btn primary big',onclick:()=>{UI.tab='tests';render()}},'Ir a los tests'):h('button',{class:'btn primary big',onclick:()=>iniciarSesion(s,d)},N.n?'Continuar sesión':'Empezar'),
+    N.fin&&esBase()?h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),programa:atl().siguiente||'global',t:Date.now()});UI.sem=1;UI.dia=DIAS()[0];saveUI();render();scrollTo(0,0)}},'Empezar '+(PROGC[atl().siguiente]||PROGC.global)),h('button',{class:'linkbtn',onclick:()=>{UI.tab='tests';render()}},'Antes, mis tests de salida')):N.fin?h('button',{class:'btn primary big',onclick:()=>{UI.tab='tests';render()}},'Ir a los tests'):h('button',{class:'btn primary big',onclick:()=>iniciarSesion(s,d)},N.n?'Continuar sesión':'Empezar'),
     N.fin?null:h('details',{},h('summary',{},'Qué vas a hacer hoy'),h('ol',{},r.map(it=>{const A=autoEj(s,d,it);return h('li',{},A.n+' · ',h('span',{class:'note',text:A.pres}))}))),
     N.fin?null:h('div',{class:'row'},h('button',{class:'linkbtn',onclick:()=>{UI.sem=s;UI.dia=d;UI.tab='sesion';saveUI();render()}},'Ver la sesión completa'),
       DIAS().length>1?h('span',{class:'note'},'Otro día: ',...DIAS().filter(x=>x!==d).map(x=>h('button',{class:'linkbtn',style:'margin-left:8px',onclick:()=>iniciarSesion(s,x)},dayName(x)))):null)));
@@ -2220,6 +2471,7 @@ function renderPlay(m){
       const rp=h('input',{id:'pr-'+it.id,inputmode:'decimal',placeholder:'1–10'});rp.value=reg.rpe||'';inputs.push([k,it,kg,rp]);
       card.querySelector('.body').append(h('div',{class:'row'},h('label',{class:'f',for:'pk-'+it.id},'Kg que usaste',kg),h('label',{class:'f',for:'pr-'+it.id},'Esfuerzo (RPE)',rp)));}
     else inputs.push([k,it,null,null]);
+    {const cb=ctrlBox(s,d,it);if(cb)card.querySelector('.body').append(cb)}
     m.append(card);
   });
   m.append(restBox());
