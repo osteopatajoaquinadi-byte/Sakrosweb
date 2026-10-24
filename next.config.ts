@@ -17,7 +17,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Sakros Go: app estática en public/go (index, fotos y video).
   async rewrites() {
-    return [{ source: "/go", destination: "/go/index.html" }];
+    return [
+      { source: "/go", destination: "/go/index.html" },
+      // Landing de venta de Sakros Go (página estática).
+      { source: "/sakros-go", destination: "/sakros-go/index.html" },
+    ];
   },
   async redirects() {
     return [

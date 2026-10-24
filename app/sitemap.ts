@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/reserva",
     "/contacto",
     "/blog",
+    "/sakros-go",
   ].map((path) => ({
     url: `${siteConfig.url}${path}`,
     lastModified: new Date(),
