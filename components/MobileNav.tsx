@@ -13,6 +13,7 @@ const navLinks = [
   { href: "/quienes-somos", label: "Quiénes Somos" },
   { href: "/blog", label: "Blog" },
   { href: "/packs-tratamiento", label: "Packs" },
+  { href: "/sakros-go", label: "Sakros Go" },
   { href: "/contacto", label: "Contacto" },
 ];
 

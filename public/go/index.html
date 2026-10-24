@@ -3058,7 +3058,7 @@ function pantallaLogin(msg){
   em.addEventListener('keydown',e=>{if(e.key==='Enter')btn.click()});
   const card=h('section',{class:'card onb'},h('h2',{text:'Entra a Sakros Go'}),
     h('p',{class:'note',text:'Tu plan de entrenamiento, tu registro y tu Coach. Escribe tu correo y te enviamos un enlace para entrar, sin contraseña.'}),
-    h('label',{class:'f',for:'login-email'},'Correo',em),st,h('div',{class:'row'},btn));
+    h('label',{class:'f',for:'login-email'},'Correo',em),st,h('div',{class:'row'},btn),h('p',{class:'note'},'¿Primera vez? ',h('a',{href:'/sakros-go'},'Conoce Sakros Go y sus planes')));
   m.append(card);
 }
 async function salir(){try{await SB.auth.signOut()}catch(e){}try{localStorage.removeItem('exos8-play')}catch(e){}location.href='/go'}
