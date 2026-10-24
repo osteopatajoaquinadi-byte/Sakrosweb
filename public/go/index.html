@@ -202,6 +202,13 @@ details.card>summary{font-weight:700}
   .media.tall{aspect-ratio:3/4;height:auto;align-self:start}
 }
 @media (prefers-reduced-motion:no-preference){.check,.lane,.cell{transition:background .15s,border-color .15s}}
+.fmsstrip{display:flex;gap:4px;overflow-x:auto;margin:8px 0}.fmsstrip img,.fmsstrip .ph{width:64px;height:84px;object-fit:cover;border-radius:6px;background:var(--sunk);flex:0 0 auto}
+.fmslado{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}.fmslado h3{margin:0 0 6px;font-size:1rem}
+.fmsclear{border-top:1px solid var(--line);padding-top:8px;margin-top:8px}
+details.card.fms{grid-template-columns:minmax(0,1fr)}.fmslado{min-width:0}
+details.card.fms>summary{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;font-weight:700}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+h2.sec{margin:18px 4px 8px;font-size:1.1rem}p.big{font-family:var(--display);font-size:2rem;margin:4px 0}
 </style>
 </head>
 <body>
@@ -1105,9 +1112,9 @@ function nivelSugerido(T){
   return c.length?Math.min(...c):null;
 }
 function ctrlBox(s,d,it){
-  const id=it.id;if(!String(id).startsWith('x')||id==='xcalma')return null;
+  const id=it.id;if(esCorr(id))return ctrlCorr(s,d,it);if(!String(id).startsWith('x')||id==='xcalma')return null;
   const k=key(s,d,id),reg=S.registro[k]||{};
-  const tog=h('button',{class:'opt','aria-pressed':!!reg.limpia,onclick:()=>{const cur={...(S.registro[k]||{semana:s,dia:d,ej:id}),limpia:!reg.limpia,t:Date.now()};S.registro[k]=cur;write('registro',k,cur);render()}},'✓ Técnica limpia');
+  const tog=h('button',{class:'opt','aria-pressed':!!reg.limpia,onclick:()=>{const cur={...(S.registro[k]||{semana:semReg(s),dia:d,ej:id}),limpia:!reg.limpia,t:Date.now()};S.registro[k]=cur;write('registro',k,cur);render()}},'✓ Técnica limpia');
   const box=h('div',{class:'freq',role:'group','aria-label':'Control motor'},tog);
   if(EX[id].niv){
     const n=nivelDe(id),set=async v=>{await saveAtleta(UI.atleta,{...atl(),niveles:{...(atl().niveles||{}),[id]:v},t:Date.now()});render()};
@@ -1154,17 +1161,350 @@ function renderTestsBase(m){
     h('li',{},h('strong',{text:'Módulo suelo pélvico: '}),'tos fuerte de pie con la vejiga cómoda (escape sí o no) y cuestionario ICIQ-SF.'),
     h('li',{},h('strong',{text:'Módulo equilibrio: '}),'Timed Up and Go (pararse, caminar 3 m, volver y sentarse) y levantarse del suelo contando los apoyos que usa (manos, rodillas, silla).'))));
 }
-const prog=()=>['core','global','base'].includes(atl().programa)?atl().programa:'rend';
+/* ---------- FMS por video y Sakros Go Prep ---------- */
+PROG.prep='Sakros Go Prep: 10 minutos de preparación antes de tu entrenamiento';PROGC.prep='Prep';
+const ZONA={PI:'Piernas',PS:'Tren superior',PC:'Cuerpo completo',PR:'Correr o deporte'};
+const ZDESC={PI:'Sentadilla, peso muerto, zancadas, máquinas de pierna.',PS:'Press, remo, dominadas, hombros y brazos.',PC:'Circuito, funcional o cuerpo completo.',PR:'Trote, fútbol, tenis, pádel u otro deporte.'};
+const ZTEST={PI:['aslr','rs','il','hs','ds'],PS:['sm','rs','tspu'],PC:['aslr','sm','rs','tspu','il','hs','ds'],PR:['aslr','rs','il','hs','ds']};
+const ZDEF={PI:['aslr','ds'],PS:['sm','tspu'],PC:['aslr','sm'],PR:['hs','il']};
+const FMSH=['aslr','sm','rs','tspu','il','hs','ds'];// orden de prioridad: movilidad, estabilidad, patrones
+const LADOX={u:'',d:'derecha',i:'izquierda'};
+const FMSL=[
+ {id:'ds',n:'Sentadilla profunda',lados:['u'],lt:{u:'3 repeticiones'},mat:'Un palo de escoba y un libro o tabla de unos 5 cm.',cam:'De lado (de perfil), a 2–3 m, con todo el cuerpo y el palo en el cuadro.',pasos:[
+  'Pies al ancho de los hombros, con las puntas hacia delante. Toma el palo y súbelo sobre la cabeza con los codos estirados.',
+  'Baja lento lo más profundo que puedas, con los talones en el suelo y el palo arriba. Sube. Haz 3 repeticiones.',
+  'En el mismo video, pon los talones sobre el libro o la tabla y haz 3 repeticiones más.']},
+ {id:'hs',n:'Paso de valla',lados:['d','i'],lt:{d:'Pierna derecha pasa',i:'Pierna izquierda pasa'},mat:'Un palo, y un elástico o cuerda entre dos sillas a la altura de la parte de abajo de tu rodilla.',cam:'De frente, a 2–3 m, con todo el cuerpo en el cuadro.',pasos:[
+  'Pies juntos, con las puntas justo bajo la valla. Palo sobre los hombros, detrás del cuello.',
+  'Sube una pierna por encima de la valla, toca el suelo con el talón al otro lado y vuelve, sin tocar la valla. La pierna de apoyo queda estirada.',
+  '3 repeticiones con cada pierna: un video por pierna.']},
+ {id:'il',n:'Estocada en línea',lados:['d','i'],lt:{d:'Pierna derecha adelante',i:'Pierna izquierda adelante'},mat:'Un palo y una línea en el suelo (cinta o la junta de las baldosas). Mide tu tibia: del suelo a la parte de abajo de la rodilla.',cam:'De lado, a 2–3 m, con todo el cuerpo en el cuadro.',pasos:[
+  'Pon la punta del pie de atrás y el talón del pie de adelante sobre la línea, separados el largo de tu tibia.',
+  'Palo vertical en la espalda, tocando la cabeza, la espalda alta y el sacro. La mano del lado contrario a la pierna de adelante va arriba (detrás del cuello) y la otra abajo (en la zona lumbar).',
+  'Baja la rodilla de atrás hasta tocar el suelo (o una toalla) detrás del talón de adelante y sube. 3 repeticiones por lado: un video por lado.']},
+ {id:'sm',n:'Movilidad de hombro',lados:['d','i'],lt:{d:'Mano derecha arriba',i:'Mano izquierda arriba'},mat:'Una cinta métrica y alguien que te mida.',cam:'De espalda, a 1,5–2 m, desde la cabeza hasta la cadera.',pasos:[
+  'Mide tu mano: del pliegue de la muñeca a la punta del dedo medio.',
+  'De pie, puños cerrados con el pulgar adentro. En un solo movimiento lleva un puño por arriba detrás del cuello y el otro por abajo detrás de la espalda, buscando juntarlos.',
+  'No acerques las manos después de llegar. Que te midan la distancia entre los puños. 3 intentos por lado: un video por lado y anota el mejor.'],med:true},
+ {id:'aslr',n:'Elevación de pierna extendida',lados:['d','i'],lt:{d:'Sube la pierna derecha',i:'Sube la pierna izquierda'},mat:'Una colchoneta.',cam:'De lado, a la altura del suelo, a 2 m, con todo el cuerpo en el cuadro.',pasos:[
+  'Boca arriba, piernas estiradas y brazos al costado con las palmas hacia arriba.',
+  'Sube una pierna estirada, con la punta del pie hacia ti, lo más alto que puedas. La otra pierna queda apoyada y estirada.',
+  '3 repeticiones por pierna: un video por pierna.']},
+ {id:'tspu',n:'Flexión de estabilidad de tronco',lados:['u'],lt:{u:'3 intentos'},mat:'Una colchoneta.',cam:'De lado, a la altura del suelo, a 2 m.',pasos:[
+  'Boca abajo, manos al ancho de los hombros. Hombres: pulgares a la altura de la frente. Mujeres: pulgares a la altura del mentón.',
+  'Piernas juntas y estiradas, puntas de los pies apoyadas. Sube el cuerpo entero en bloque, como una tabla, sin que la zona lumbar se quede atrás.',
+  'Si no te sale, en el mismo video repite con las manos más abajo (hombres: a la altura del mentón; mujeres: de la clavícula). 3 intentos.']},
+ {id:'rs',n:'Estabilidad en rotación',lados:['d','i'],lt:{d:'Lado derecho',i:'Lado izquierdo'},mat:'Una colchoneta.',cam:'De lado, a la altura del suelo, a 2 m, del lado que se mueve.',pasos:[
+  'En cuatro apoyos, manos bajo los hombros y rodillas bajo las caderas.',
+  'Extiende al mismo tiempo el brazo y la pierna del mismo lado y después junta el codo con la rodilla bajo el cuerpo. 3 repeticiones.',
+  'Si no te sale, en el mismo video hazlo con el brazo y la pierna contrarios (en diagonal), también 3 veces. Un video por lado.']}];
+const fmsT=id=>FMSL.find(t=>t.id===id);
+const CLEARL=[
+ {id:'hombro',lados:['d','i'],n:'Descarte de hombro',txt:'Pon la palma de la mano en el hombro contrario y sube el codo lo más alto que puedas, sin despegar la mano.',afecta:'sm'},
+ {id:'ext',lados:['u'],n:'Descarte de extensión lumbar',txt:'Boca abajo, manos bajo los hombros: estira los codos y sube el pecho dejando la pelvis en el suelo.',afecta:'tspu'},
+ {id:'flex',lados:['u'],n:'Descarte de flexión lumbar',txt:'En cuatro apoyos, lleva la cola a los talones y el pecho a los muslos, con los brazos estirados adelante.',afecta:'rs'}];
+
+/* Correctivos (progresiones del FMS de Sakros) */
+const CORRN={ds:4,hs:4,il:4,sm:4,aslr:4,tspu:4,rs:4};
+Object.assign(EX,{
+ fds1:{n:'Toque de pies con rodillo',img:[],pasos:['De pie con las puntas de los pies sobre un libro o tabla y un rodillo o un cojín entre las rodillas.','Brazos arriba e inhala. Exhala y baja a tocar las puntas de los pies apretando el cojín, con las rodillas estiradas.','Sube desenrollando la columna. Alterna series con las puntas y con los talones elevados.'],clave:'Prepara la flexión de cadera y el control del tronco de la sentadilla profunda.'},
+ fds2:{n:'Toque de pies a sentadilla profunda',img:[],pasos:['Pies al ancho de los hombros. Baja a tocar las puntas de los pies con las rodillas estiradas.','Sin soltar los pies, baja la cadera a una sentadilla profunda: los codos empujan las rodillas hacia fuera y el pecho sube.','Desde abajo, sube la cadera sin soltar los pies y vuelve a bajar.'],clave:'Talones siempre en el suelo.'},
+ fds3:{n:'Sentadilla con apoyo y brazos arriba',img:[],pasos:['De pie frente a un rodillo vertical o una silla firme, con las manos apoyadas.','Baja a una sentadilla profunda apoyado, con los talones en el suelo.','Abajo, suelta un brazo y llévalo arriba, luego el otro. Sube con los brazos arriba.'],clave:'Busca el tronco recto y las rodillas sobre los pies.'},
+ fds4:{n:'Sentadilla profunda con banda en las rodillas',img:[['monster-0','Mini banda sobre las rodillas']],pasos:['Mini banda sobre las rodillas y brazos arriba.','Baja lento a una sentadilla profunda empujando las rodillas contra la banda, con los talones en el suelo.','Sube sin dejar que las rodillas se junten.'],clave:'Es la sentadilla del test: hazla con la misma técnica.'},
+ fhs1:{n:'Rotaciones de cadera sobre cajón',img:[],pasos:['De pie, con un pie sobre un cajón o escalón alto (cadera y rodilla a 90°) y las manos en la rodilla.','Gira la rodilla hacia dentro y hacia fuera desde la cadera, sin mover la pelvis ni el pie de apoyo.'],clave:'Movimiento lento, solo desde la cadera.'},
+ fhs2:{n:'Puente de glúteo con pierna elevada',img:[['puentepierna-0','Abajo'],['puentepierna-1','Arriba']],pasos:['Boca arriba, un pie apoyado y la otra rodilla abrazada al pecho para fijar la pelvis.','Sube la cadera apretando el glúteo de la pierna apoyada, sin arquear la espalda. Baja lento.'],clave:'La rodilla abrazada no se separa del pecho.'},
+ fhs3:{n:'Elevación a una pierna con pausa',img:[],pasos:['De pie, palo sobre los hombros.','Sube una rodilla a 90° con la punta del pie hacia arriba y aguanta 3 s sin que la pelvis ni el palo se inclinen.','Baja controlado y cambia de pierna.'],clave:'Pelvis nivelada y pierna de apoyo estirada.'},
+ fhs4:{n:'Elevación a una pierna con rotación',img:[],pasos:['Igual que la anterior: sube la rodilla a 90° con el palo sobre los hombros.','Arriba, abre la rodilla hacia el lado y vuelve al centro antes de bajar.'],clave:'El palo y la pelvis no se mueven.'},
+ fil1:{n:'Dorsiflexión de tobillo arrodillado',img:[['tobillo-0','Rodilla adelante sin levantar el talón']],pasos:['Arrodillado, con un pie adelante y un palo apoyado en el suelo junto al dedo pequeño de ese pie.','Lleva la rodilla adelante, por fuera del palo, sin levantar el talón. Aguanta 2 s y vuelve.'],clave:'El talón no se despega del suelo.'},
+ fil2:{n:'Estocada arrodillada con despegue',img:[['split-1','Rodilla de atrás cerca del suelo']],pasos:['En posición de estocada con la rodilla de atrás en el suelo y el tronco erguido.','Despega la rodilla de atrás unos centímetros y aguanta 2 s sin que el tronco se mueva. Vuelve a apoyarla suave.'],clave:'Pies en línea, como en el test.'},
+ fil3:{n:'Rotación de tronco arrodillado',img:[],pasos:['Rodilla de atrás en el suelo, pies en línea y palo sobre los hombros.','Gira el tronco hacia el lado de la pierna de adelante y vuelve, sin mover la pelvis.'],clave:'Gira desde la espalda alta; la pelvis queda mirando al frente.'},
+ fil4:{n:'Estocada isométrica con banda',img:[['chop-0','Tirón de banda en diagonal']],pasos:['En estocada, con la rodilla de atrás cerca del suelo y una banda anclada al lado, a la altura del pecho.','Mantén la posición y tira de la banda hacia el pecho, sin que el tronco gire ni se incline.'],clave:'El tronco queda quieto mientras los brazos trabajan.'},
+ fsm1:{n:'Brazos contra la pared',img:[],pasos:['Sentado con la espalda contra la pared y las piernas cruzadas. Brazos en «W» contra la pared.','Desliza los brazos hacia arriba sin despegar codos, muñecas ni la zona lumbar de la pared, y vuelve.'],clave:'Exhala al subir; no fuerces si el hombro molesta.'},
+ fsm2:{n:'Remo con palo contra la pared',img:[],pasos:['Sentado con la espalda contra la pared. Toma un palo por detrás de la espalda, una mano arriba y la otra abajo, en diagonal.','Con la mano de abajo tira del palo para llevar el brazo de arriba más alto, sin despegar la espalda de la pared. Aguanta 2 s.'],clave:'Hazlo con ambos lados; más series del lado que cuesta más.'},
+ fsm3:{n:'Apertura de brazo de lado',img:[],pasos:['De lado, con las rodillas dobladas a 90° apoyadas sobre un cojín y los brazos estirados adelante.','Abre el brazo de arriba hacia el otro lado siguiéndolo con la mirada, sin que las rodillas se despeguen. Exhala al abrir.'],clave:'Gira la espalda alta, no la zona lumbar.'},
+ fsm4:{n:'Círculo de hombro con tronco rotado',img:[],pasos:['En la misma posición de lado, con las rodillas apoyadas.','Lleva el brazo de arriba en un círculo grande por encima de la cabeza y por detrás de la espalda, sin despegar las rodillas.'],clave:'Movimiento lento y amplio, respirando.'},
+ faslr1:{n:'Elevación de pierna con ayuda de las manos',img:[],pasos:['Boca arriba, una pierna estirada en el suelo.','Toma la otra pierna por detrás del muslo y súbela estirada lo más que puedas. Aguanta 2 s mientras empujas la pierna del suelo contra el suelo.'],clave:'La pierna de abajo no se dobla.'},
+ faslr2:{n:'Elevación de pierna con banda',img:[],pasos:['Boca arriba, con una banda o toalla en el pie de la pierna que sube.','Sube la pierna estirada con ayuda de la banda. Arriba, dobla la rodilla y vuelve a estirarla; baja lento.'],clave:'Gana rango sin que la pelvis se mueva.'},
+ faslr3:{n:'Bajada de la pierna contraria',img:[],pasos:['Boca arriba, sostén una pierna arriba con la banda.','Baja la otra pierna estirada hasta casi tocar el suelo y vuelve a subirla, sin que la zona lumbar se despegue.'],clave:'Braceo suave y respiración continua.'},
+ faslr4:{n:'Bajada de pierna con el core activo',img:[],pasos:['Boca arriba, con una pesa liviana sostenida arriba con el brazo estirado. Braceo suave.','Sube y baja una pierna estirada sin que la zona lumbar se despegue ni la pesa se mueva.'],clave:'Es la elevación del test, ahora con el tronco desafiado.'},
+ ftspu1:{n:'Brazos al frente arrodillado',img:[],pasos:['Arrodillado, tronco erguido y una pesa liviana pegada al pecho.','Estira los brazos al frente y vuelve, sin arquear la zona lumbar ni mover la pelvis. Braceo.'],clave:'Costillas abajo, glúteos apretados.'},
+ ftspu2:{n:'Caminata de manos con rodillas apoyadas',img:[['plancha-0','Plancha sobre rodillas']],pasos:['En cuatro apoyos, con braceo.','Camina con las manos adelante hasta una plancha sobre las rodillas y vuelve, sin que la cadera se hunda.'],clave:'El cuerpo se mueve en bloque.'},
+ ftspu3:{n:'Flexión de brazos en cajón',img:[['flexinc-0','Manos en un apoyo alto'],['flexinc-1','Cuerpo recto']],pasos:['Manos en un cajón o banco firme, cuerpo recto de los talones a la cabeza.','Baja el pecho al borde y empuja, sin que la cadera se quede atrás.'],clave:'Sube en bloque, como en el test.'},
+ ftspu4:{n:'Bajada lenta de flexión',img:[['flexsuelo-0','Plancha alta'],['flexsuelo-1','Abajo, en bloque']],pasos:['Desde la plancha alta, baja lento en 3–4 s hasta el suelo, en bloque.','Apoya las rodillas para volver arriba y repite.'],clave:'Sin que la zona lumbar se hunda.'},
+ frs1:{n:'Plancha alta con rodilla al codo',img:[['plancha-1','Plancha alta']],pasos:['En plancha alta, manos bajo los hombros.','Lleva una rodilla hacia el codo del mismo lado, lento, sin que la cadera rote ni suba. Alterna.'],clave:'La pelvis queda paralela al suelo.'},
+ frs2:{n:'Elevación de cadera de lado',img:[['sidebridge-0','Apoyo en antebrazo y rodillas'],['sidebridge-1','Cadera arriba']],pasos:['De lado, apoyado en el antebrazo y con las rodillas dobladas.','Sube la cadera hasta alinear el cuerpo y aguanta 2 s. Baja lento.'],clave:'El hombro queda sobre el codo.'},
+ frs3:{n:'Bird dog con codo a rodilla',img:[],pasos:['En cuatro apoyos, braceo suave.','Extiende brazo y pierna contrarios hasta la horizontal, aguanta 2 s y junta el codo con la rodilla bajo el cuerpo.'],clave:'Prueba con un vaso en la zona lumbar: no se debe caer.'},
+ frs4:{n:'Gateo con rodillas suspendidas',img:[],pasos:['En cuatro apoyos, despega las rodillas 2–3 cm del suelo.','Avanza mano y pie contrarios a la vez, adelante y atrás, sin que la cadera se mueva.'],clave:'Pasos cortos y lentos.'},
+ frodPI:{n:'Rodillo: piernas',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en cuádriceps, aductores, pantorrillas y glúteo: unos 30 s por zona, lento.','En un punto sensible, quédate encima 2–3 respiraciones. Molestia tolerable, nunca dolor fuerte.'],clave:'Prepara el tejido de lo que vas a entrenar hoy.'},
+ frodPS:{n:'Rodillo: espalda alta y hombros',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo']],pasos:['Rodillo bajo la espalda alta: extiéndete sobre él en 3–4 alturas, con las manos detrás de la cabeza.','De lado, rodillo bajo la axila para el dorsal. Pelota contra la pared para el pectoral: unos 30 s por zona.'],clave:'Respira lento y suelta el peso sobre el rodillo.'},
+ frodPC:{n:'Rodillo: cuerpo completo',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en espalda alta, glúteo, cuádriceps y pantorrillas: unos 20–30 s por zona.','Quédate un poco más donde sientas más tensión.'],clave:'Rápido y amplio: es preparación, no un masaje largo.'},
+ frodPR:{n:'Rodillo: pies y piernas',img:[['sakrodillo-1','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Pelota bajo la planta del pie, 30 s por pie.','Rodillo en pantorrillas, cuádriceps y glúteo, unos 30 s por zona.'],clave:'Los pies y las pantorrillas son los que más reciben en la carrera y el salto.'},
+ factPI:{n:'Activación: braceo y patrón de piernas',img:[['goblet-0','Sentadilla'],['puente-1','Puente']],pasos:['5 respiraciones boca arriba con braceo suave.','Sentadilla lenta ×8, bisagra de cadera ×8 y puente de glúteo ×8, con braceo.'],clave:'Ensaya con el cuerpo lo que vas a cargar después.'},
+ factPS:{n:'Activación: braceo y patrón de tren superior',img:[['flexinc-0','Flexión en apoyo alto'],['remo-1','Remo con banda']],pasos:['5 respiraciones con braceo suave.','Flexión en pared o mesa ×8, remo con banda ×10 y brazos en «Y» y «T» con banda ×8.'],clave:'Hombros lejos de las orejas y costillas abajo.'},
+ factPC:{n:'Activación: braceo y cuerpo completo',img:[['goblet-0','Sentadilla'],['flexinc-0','Flexión en apoyo alto']],pasos:['5 respiraciones con braceo suave.','Sentadilla ×8, flexión en apoyo alto ×8, remo con banda ×10 y bird dog ×5 por lado.'],clave:'Ritmo tranquilo, técnica limpia.'},
+ factPR:{n:'Activación: carrera y saltos',img:[['skip-0','Skipping']],pasos:['5 respiraciones con braceo suave.','Skipping suave 2×20 s, zancadas caminando ×6 por lado y saltitos en el lugar 2×20 s.'],clave:'Aterriza suave, con las rodillas sobre los pies.'}
+});
+const CORRP={ds:'2×6–10',hs:'2×6–10/lado',il:'2×6–10/lado',sm:'2×8–12/lado',aslr:'2×6–10/lado',tspu:'2×6–10',rs:'2×6–10/lado'};
+const esCorr=id=>/^f(ds|hs|il|sm|aslr|tspu|rs)\d$/.test(String(id));
+const corrTest=id=>String(id).replace(/^f/,'').replace(/\d$/,'');
+
+/* Resultados */
+const FF=()=>S.fms||{};
+function ladoScore(id,l){
+  const F=FF(),r=(F.r||{})[id]||{},c=F.clear||{};
+  if((r.dolor||{})[l]==='si')return 0;
+  if(id==='sm'&&c['hombro_'+l]==='si')return 0;
+  if(id==='tspu'&&c.ext==='si')return 0;
+  if(id==='rs'&&c.flex==='si')return 0;
+  const rv=(r.rev||{})[l];if(rv!=null&&rv!=='')return +rv;
+  if(id==='sm'){const m=r.med||{},mano=parseFloat(String(m.mano||'').replace(',','.')),dd=parseFloat(String(m[l]??'').replace(',','.'));if(mano>0&&dd>=0)return dd<=mano?3:dd<=1.5*mano?2:1}
+  const p=r.ia&&r.ia.lados&&r.ia.lados[l]&&r.ia.lados[l].puntaje;return p>=1&&p<=3?p:null;
+}
+function fmsRes(id){const t=fmsT(id),L={};t.lados.forEach(l=>L[l]=ladoScore(id,l));const v=Object.values(L),ok=v.every(x=>x!=null);
+  return {L,score:ok?Math.min(...v):null,asym:t.lados.length>1&&ok&&L.d!==L.i,dolor:v.some(x=>x===0),debil:t.lados.length>1&&ok&&L.d!==L.i?(L.d<L.i?'d':'i'):null}}
+function fmsTotal(){let s=0;for(const t of FMSL){const r=fmsRes(t.id);if(r.score==null)return null;s+=r.score}return s}
+const fmsListo=()=>fmsTotal()!=null;
+const fmsAlguno=()=>FMSL.some(t=>fmsRes(t.id).score!=null);
+const fmsDolor=()=>FMSL.filter(t=>fmsRes(t.id).dolor).map(t=>t.n);
+function fmsPrioridad(zona){return FMSH.filter(id=>ZTEST[zona].includes(id)).map(id=>({id,...fmsRes(id)})).filter(r=>r.score!=null&&r.score>0&&(r.score<3||r.asym))}
+function nivCorr(id){const v=(atl().corr||{})[id];if(v>=1&&v<=4)return v;const r=fmsRes(id);if(r.score===3&&!r.asym)return 4;return r.score===1?1:2}
+function corrDe(zona,n){
+  const c=fmsPrioridad(zona).map(r=>r.id);// primero lo que más necesita; después, mantención
+  const resto=fmsAlguno()?FMSH.filter(id=>ZTEST[zona].includes(id)&&!fmsRes(id).dolor):ZDEF[zona];
+  return [...new Set([...c,...resto])].slice(0,n).map(id=>'f'+id+nivCorr(id));
+}
+function corrPres(id){const t=corrTest(id),r=fmsRes(t);let p=CORRP[t];if(r.debil)p+=' · empieza por el lado '+LADOX[r.debil]+' y haz una serie extra de ese lado';return p}
+const prepFill=(s,v)=>Array(Math.max(8,s)).fill(v);
+function prepRows(z,s){
+  if(!ZONA[z])z='PC';
+  return [{id:'frod'+z,b:'1',tm:3,p:prepFill(s,'3 min')},...corrDe(z,2).map((id,i)=>({id,b:String(i+2),tm:2,p:prepFill(s,corrPres(id))})),{id:'fact'+z,b:'4',tm:3,p:prepFill(s,'3 min')}];
+}
+const zonaDia=(d,s)=>{const x=srcDia(d,s);return x==='A'?'PI':x==='B'?'PS':'PC'};
+function conCorr(r,d,s){// Entrenamiento: un correctivo del FMS después de la preparación del programa
+  if(!fmsListo())return r;const c=corrDe(zonaDia(d,s),1);if(!c.length)return r;
+  let i=-1;r.forEach((it,j)=>{if(String(it.b).startsWith('1'))i=j});
+  const out=r.slice();out.splice(i+1,0,{id:c[0],b:'1z',tm:3,p:prepFill(s,corrPres(c[0]))});return out;
+}
+const semReg=s=>esPrep()?Math.ceil(s/3):s;
+function prepN(){let n=0;Object.keys(S.sesiones).forEach(k=>{const m=/^p(\d+)/.exec(k);if(m)n=Math.max(n,+m[1])});return n+1}
+function ctrlCorr(s,d,it){
+  const id=it.id,t=corrTest(id),k=key(s,d,id),reg=S.registro[k]||{};
+  const tog=h('button',{class:'opt','aria-pressed':!!reg.limpia,onclick:()=>{const cur={...(S.registro[k]||{semana:semReg(s),dia:d,ej:id}),limpia:!reg.limpia,t:Date.now()};S.registro[k]=cur;write('registro',k,cur);render()}},'✓ Técnica limpia');
+  const n=nivCorr(t),set=async v=>{await saveAtleta(UI.atleta,{...atl(),corr:{...(atl().corr||{}),[t]:v},t:Date.now()});render()};
+  const box=h('div',{class:'freq',role:'group','aria-label':'Progresión del correctivo'},tog,h('span',{class:'wholbl',text:'Paso '+n+' de 4'}),
+    n>1?h('button',{class:'opt',onclick:()=>set(n-1)},'− Bajar'):null,n<4?h('button',{class:'opt',onclick:()=>set(n+1)},'+ Subir'):null);
+  const ult=Object.values(S.registro).filter(r=>r.ej===id&&r.hecho&&r!==reg).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,2);
+  if(n<4&&ult.length===2&&ult.every(r=>r.limpia))box.append(h('span',{class:'note',text:'Técnica limpia 2 veces seguidas: ya puedes pasar al paso siguiente.'}));
+  return box;
+}
+
+/* Guardado del FMS */
+async function saveFms(cur){
+  cur={...cur,t:Date.now()};S.fms=cur;
+  if(!db){localSave();render();return true}
+  try{await db.collection(P('tests')).doc('fms').set(cur);setSync('Guardado');return true}catch(e){setSync('No se pudo guardar el FMS');return false}
+}
+const patchR=(id,fn)=>{const F=FF(),r={...((F.r||{})[id]||{})};fn(r);return saveFms({...F,r:{...(F.r||{}),[id]:r},revisado:null})};
+const FMSMEM={};// cuadros en memoria (base64) de esta visita: test-lado -> [b64]
+const FMSURL={};// rutas -> URL firmada
+const FMSBUSY={};
+function b64De(blob){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob)})}
+async function framesDe(file,n=10,maxW=640){
+  const url=URL.createObjectURL(file),v=document.createElement('video');
+  v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='auto';v.src=url;
+  try{
+    await new Promise((res,rej)=>{v.onloadeddata=res;v.onerror=()=>rej(new Error('formato'));setTimeout(()=>rej(new Error('tiempo')),20000)});
+    try{await v.play();v.pause()}catch(e){}
+    const dur=v.duration;if(!isFinite(dur)||dur<=0)throw new Error('formato');if(dur>90)throw new Error('largo');
+    const w=Math.min(maxW,v.videoWidth||maxW),hh=Math.round(w*(v.videoHeight||maxW)/(v.videoWidth||maxW));
+    const c=document.createElement('canvas');c.width=w;c.height=hh;const g=c.getContext('2d');const out=[];
+    for(let i=0;i<n;i++){
+      const t=Math.min(dur-0.05,dur*(0.04+0.92*i/(n-1)));
+      await new Promise(res=>{const done=()=>{v.removeEventListener('seeked',done);res()};v.addEventListener('seeked',done);v.currentTime=t;setTimeout(done,4000)});
+      g.drawImage(v,0,0,w,hh);
+      out.push(await new Promise(res=>c.toBlob(res,'image/jpeg',0.72)));
+    }
+    return out;
+  }finally{URL.revokeObjectURL(url)}
+}
+async function subirVideo(id,l,file){
+  const k=id+'-'+l;FMSBUSY[k]='Sacando los cuadros del video…';render();
+  try{
+    const blobs=await framesDe(file);
+    FMSMEM[k]=await Promise.all(blobs.map(b64De));
+    let paths=[];
+    if(SB){
+      FMSBUSY[k]='Subiendo…';render();
+      const ts=Date.now(),base=UI.atleta+'/'+id+'-'+l+'-'+ts;
+      for(let i=0;i<blobs.length;i++){const p=base+'-'+i+'.jpg';const{error}=await SB.storage.from('go-fms').upload(p,blobs[i],{contentType:'image/jpeg',upsert:true});if(error)throw new Error('subida');paths.push(p);FMSURL[p]=URL.createObjectURL(blobs[i])}
+    }else{paths=blobs.map((b,i)=>{const p='local/'+k+'-'+i;FMSURL[p]=URL.createObjectURL(b);return p})}
+    await patchR(id,r=>{r.frames={...(r.frames||{}),[l]:paths};const ia=r.ia;if(ia&&ia.lados){r.ia={...ia,lados:{...ia.lados}};delete r.ia.lados[l]}});
+    delete FMSBUSY[k];
+    const t=fmsT(id),r=(FF().r||{})[id]||{};
+    if(t.lados.every(x=>(r.dolor||{})[x]==='si'||((r.frames||{})[x]||[]).length))await analizarFms(id);else render();
+  }catch(e){
+    FMSBUSY[k]=null;delete FMSBUSY[k];
+    const msg=e.message==='largo'?'El video dura más de 90 s: graba solo las 3 repeticiones.':e.message==='subida'?'No se pudo subir. Revisa la conexión y vuelve a intentarlo.':'No se pudo leer el video. Prueba grabarlo de nuevo con la cámara del teléfono.';
+    UI.fmsErr={...(UI.fmsErr||{}),[k]:msg};render();
+  }
+}
+async function cuadrosB64(id,l){
+  const k=id+'-'+l;if(FMSMEM[k])return FMSMEM[k];
+  const paths=(((FF().r||{})[id]||{}).frames||{})[l]||[];if(!paths.length||!SB)return [];
+  const out=[];for(const p of paths){const{data,error}=await SB.storage.from('go-fms').download(p);if(error||!data)throw new Error('descarga');out.push(await b64De(data))}
+  FMSMEM[k]=out;return out;
+}
+async function analizarFms(id){
+  const t=fmsT(id),r=(FF().r||{})[id]||{};
+  FMSBUSY[id]='El Coach está revisando tu video…';render();
+  try{
+    const lados={};for(const l of t.lados){if((r.dolor||{})[l]==='si')continue;const f=await cuadrosB64(id,l);if(f.length)lados[l]=f}
+    if(!Object.keys(lados).length){delete FMSBUSY[id];render();return}
+    if(!SB)throw {msg:'El análisis necesita conexión con Sakros.'};
+    const body={test:id,sexo:atl().sexo||'',lados};if(id==='sm')body.medidas=Object.fromEntries(Object.entries(r.med||{}).map(([k,v])=>[k,parseFloat(String(v).replace(',','.'))]));
+    const res=await fetch('/api/go/fms',{method:'POST',headers:await authHeaders(),body:JSON.stringify(body)});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok)throw {msg:j.error||'No se pudo analizar el video.'};
+    await patchR(id,x=>{x.ia={...j,lados:{...((x.ia||{}).lados||{}),...j.lados},t:Date.now()}});
+    delete FMSBUSY[id];UI.fmsErr={...(UI.fmsErr||{}),[id]:null};render();
+  }catch(e){delete FMSBUSY[id];UI.fmsErr={...(UI.fmsErr||{}),[id]:e.msg||'No se pudo analizar. Revisa la conexión y vuelve a intentarlo.'};render()}
+}
+async function urlsFms(paths){
+  const faltan=paths.filter(p=>!FMSURL[p]&&!p.startsWith('local/'));
+  if(faltan.length&&SB){const{data}=await SB.storage.from('go-fms').createSignedUrls(faltan,3600);(data||[]).forEach(x=>{if(x.signedUrl)FMSURL[x.path]=x.signedUrl})}
+}
+
+/* Pantalla FMS */
+const scoreTxt=v=>v==null?'—':String(v);
+function chipScore(v){return h('span',{class:'sem '+(v==null?'n':v>=3?'v':v===2?'a':'r'),text:v==null?'pendiente':v===0?'0 · dolor':v+' de 3'})}
+function cardFms(){
+  const tot=fmsTotal(),F=FF(),al=fmsAlguno(),dol=fmsDolor();
+  return h('section',{class:'card'},h('h2',{text:'Evaluación FMS'+(tot!=null?' · '+tot+' de 21':'')}),
+    h('p',{class:'note',text:!al?'Opcional. 7 pruebas de movimiento grabadas con tu teléfono (3 repeticiones cada una). El Coach revisa los videos, te da tu puntaje y arma tu preparación según lo que más necesitas.':tot==null?'En curso: completa las pruebas que faltan.':(F.revisado?'Revisada por tu kinesiólogo.':'Resultado preliminar del Coach. Tu kinesiólogo puede revisarlo.')}),
+    dol.length?h('p',{class:'dxline',text:'Con dolor en: '+dol.join(', ')+'. El dolor no se corrige con ejercicio: coméntalo con tu kinesiólogo.'}):null,
+    h('div',{class:'row'},h('button',{class:al?'btn':'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},al?'Ver mi FMS':'Hacer mi FMS'),
+      h('a',{class:'linkbtn',href:'/reserva',target:'_blank',rel:'noopener'},'Prefiero evaluarme presencial en Sakros')));
+}
+function renderFms(m){
+  const F=FF(),coach=!modoCli(),tot=fmsTotal();
+  m.append(h('div',{class:'row'},h('button',{class:'linkbtn',onclick:()=>{UI.tab=modoCli()&&esPrep()?'hoy':'tests';saveUI();render();scrollTo(0,0)}},'← Volver')));
+  m.append(h('section',{class:'card hero'},h('span',{class:'wholbl',text:'Evaluación FMS por video'}),
+    h('h2',{text:tot!=null?'Tu FMS: '+tot+' de 21':'Tu evaluación de movimiento'}),
+    h('p',{text:'Son 7 pruebas que muestran cómo te mueves. Grabas cada una con tu teléfono (3 repeticiones; las de un lado, un video por lado) y el Coach compara tu movimiento con el patrón óptimo.'}),
+    h('ol',{class:'medir'},['Responde las 3 preguntas de dolor.','Graba cada prueba siguiendo las instrucciones y sube el video.','El Coach revisa el video y te da el puntaje (de 1 a 3 por prueba).','Tu preparación se arma sola con los correctivos que más necesitas.'].map(x=>h('li',{text:x}))),
+    h('p',{class:'note',text:'Es menos precisa que una evaluación presencial, pero mucho más que una autoevaluación. Los videos no se guardan: solo algunos cuadros, en tu carpeta privada.'}),
+    h('p',{},h('a',{href:'/reserva',target:'_blank',rel:'noopener'},'Prefiero evaluarme presencial en Sakros'))));
+  // Preguntas de dolor
+  const c=F.clear||{};
+  const yn=(k,lbl)=>h('div',{class:'freq',role:'group','aria-label':lbl},h('span',{class:'wholbl',text:lbl}),[['no','No'],['si','Sí']].map(([v,t])=>h('button',{class:'opt','aria-pressed':c[k]===v,onclick:()=>saveFms({...FF(),clear:{...(FF().clear||{}),[k]:v},revisado:null})},t)));
+  m.append(h('section',{class:'card'},h('h2',{text:'1. Preguntas de dolor'}),h('p',{class:'note',text:'Haz cada movimiento una vez. Si duele, esa prueba vale 0 y conviene que lo vea tu kinesiólogo.'}),
+    ...CLEARL.map(x=>h('div',{class:'fmsclear'},h('p',{},h('strong',{text:x.n+': '}),x.txt),...x.lados.map(l=>yn(x.id+(l==='u'?'':'_'+l),l==='u'?'¿Duele?':'¿Duele el '+(l==='d'?'derecho':'izquierdo')+'?'))))));
+  // Pruebas
+  m.append(h('h2',{class:'sec',text:'2. Las 7 pruebas'}));
+  FMSL.forEach(t=>m.append(cardPrueba(t,coach)));
+  // Resultado
+  const res=h('section',{class:'card'},h('h2',{text:'3. Tu resultado'}));
+  if(tot==null)res.append(h('p',{class:'note',text:'Aparece cuando estén las 7 pruebas.'}));
+  else{
+    res.append(h('p',{class:'big',text:tot+' de 21'}),h('p',{class:'note',text:F.revisado?'Revisado por tu kinesiólogo.':'Preliminar del Coach.'}));
+    const asy=FMSL.filter(t=>fmsRes(t.id).asym).map(t=>t.n),pr=fmsPrioridad('PC').slice(0,3).map(x=>fmsT(x.id).n),dol=fmsDolor();
+    if(dol.length)res.append(h('p',{class:'dxline',text:'Dolor en: '+dol.join(', ')+'. Esas pruebas no se corrigen con ejercicio: agenda una evaluación con tu kinesiólogo.'}));
+    if(asy.length)res.append(h('p',{text:'Diferencia entre lados en: '+asy.join(', ')+'. Se trabaja primero el lado más débil.'}));
+    res.append(h('p',{text:pr.length?'Tu preparación se enfoca en: '+pr.join(', ')+'.':'Sin puntos débiles: tu preparación es de mantención.'}));
+  }
+  if(coach&&tot!=null)res.append(h('div',{class:'row'},h('button',{class:'btn primary',onclick:()=>saveFms({...FF(),revisado:{t:Date.now()}})},F.revisado?'Revisado ✓':'Marcar como revisado')));
+  m.append(res);
+}
+function cardPrueba(t,coach){
+  const r=(FF().r||{})[t.id]||{},R=fmsRes(t.id),err=(UI.fmsErr||{});
+  const card=h('details',{class:'card fms'});if(UI.fmsOpen===t.id)card.open=true;
+  card.addEventListener('toggle',()=>{if(card.open)UI.fmsOpen=t.id});
+  card.append(h('summary',{},h('span',{text:t.n}),chipScore(R.score)));
+  card.append(h('p',{class:'note'},h('strong',{text:'Material: '}),t.mat),h('p',{class:'note'},h('strong',{text:'Cámara: '}),t.cam+' Buena luz y ropa ajustada.'),
+    h('ol',{},t.pasos.map(p=>h('li',{text:p}))));
+  if(t.med){const m0=r.med||{};const inp=(k,lbl)=>{const e=h('input',{id:'fm-'+k,inputmode:'decimal',placeholder:'cm'});e.value=m0[k]??'';e.addEventListener('change',()=>patchR('sm',x=>{x.med={...(x.med||{}),[k]:e.value.trim()}}));return h('label',{class:'f',for:'fm-'+k},lbl,e)};
+    card.append(h('div',{class:'row'},inp('mano','Largo de la mano'),inp('d','Puños, derecha arriba'),inp('i','Puños, izquierda arriba')))}
+  t.lados.forEach(l=>{
+    const k=t.id+'-'+l,paths=(r.frames||{})[l]||[],dol=(r.dolor||{})[l],ia=r.ia&&r.ia.lados&&r.ia.lados[l],sc=ladoScore(t.id,l);
+    const box=h('div',{class:'fmslado'},h('h3',{text:t.lt[l]}));
+    box.append(h('div',{class:'freq',role:'group','aria-label':'Dolor'},h('span',{class:'wholbl',text:'¿Te dolió?'}),[['no','No'],['si','Sí']].map(([v,tx])=>h('button',{class:'opt','aria-pressed':dol===v,onclick:()=>patchR(t.id,x=>{x.dolor={...(x.dolor||{}),[l]:v}})},tx))));
+    if(dol==='si')box.append(h('p',{class:'note',text:'Con dolor la prueba vale 0. No hace falta el video: coméntalo con tu kinesiólogo.'}));
+    else{
+      const inp=h('input',{type:'file',accept:'video/*',id:'fv-'+k,class:'vh'});inp.addEventListener('change',()=>{const f=inp.files&&inp.files[0];if(f){UI.fmsOpen=t.id;UI.fmsErr={...(UI.fmsErr||{}),[k]:null};subirVideo(t.id,l,f)}});
+      box.append(h('div',{class:'row'},h('label',{class:'btn'+(paths.length?'':' primary'),for:'fv-'+k},paths.length?'Cambiar video':'Grabar o subir video'),inp));
+      if(FMSBUSY[k])box.append(h('p',{class:'note',role:'status',text:FMSBUSY[k]}));
+      if(err[k])box.append(h('p',{class:'note err',role:'alert',text:err[k]}));
+      if(paths.length){const strip=h('div',{class:'fmsstrip'});box.append(strip);
+        const pinta=()=>strip.replaceChildren(...paths.map((p,i)=>FMSURL[p]?h('img',{src:FMSURL[p],alt:'Cuadro '+(i+1),loading:'lazy'}):h('span',{class:'ph'})));
+        pinta();if(paths.some(p=>!FMSURL[p]))urlsFms(paths).then(pinta)}
+    }
+    if(ia&&dol!=='si')box.append(h('p',{},h('strong',{text:'Coach: '+(ia.puntaje?ia.puntaje+' de 3':'no se pudo evaluar')+'. '}),ia.obs||''));
+    if(coach){const sel=h('select',{'aria-label':'Puntaje revisado '+t.lt[l]},[['','Revisión: usar el del Coach'],['3','3'],['2','2'],['1','1'],['0','0 (dolor)']].map(([v,tx])=>{const o=h('option',{value:v},tx);if(String((r.rev||{})[l]??'')===v)o.selected=true;return o}));
+      sel.addEventListener('change',()=>patchR(t.id,x=>{x.rev={...(x.rev||{}),[l]:sel.value===''?null:+sel.value}}));box.append(h('label',{class:'f'},'Tu puntaje (kinesiólogo)',sel))}
+    box.append(h('p',{class:'note',text:'Puntaje de este lado: '+scoreTxt(sc)}));
+    card.append(box);
+  });
+  if(FMSBUSY[t.id])card.append(h('p',{class:'note',role:'status',text:FMSBUSY[t.id]}));
+  if(err[t.id])card.append(h('p',{class:'note err',role:'alert',text:err[t.id]}));
+  if(r.ia){card.append(h('p',{class:'note',text:'Confianza del análisis: '+r.ia.confianza+'.'+(r.ia.resumen?' '+r.ia.resumen:'')}));if(r.ia.regrabar)card.append(h('p',{class:'dxline',text:'Para regrabar: '+r.ia.regrabar}))}
+  const listo=t.lados.some(l=>((r.frames||{})[l]||[]).length&&(r.dolor||{})[l]!=='si');
+  if(listo&&!FMSBUSY[t.id])card.append(h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.fmsOpen=t.id;analizarFms(t.id)}},r.ia?'Volver a analizar':'Analizar con el Coach')));
+  return card;
+}
+
+/* Sakros Go Prep: Hoy, sesión (entrenador) y progreso */
+function renderHoyPrep(m){
+  const n=prepN(),hist=Object.entries(S.sesiones).filter(([k])=>/^p\d/.test(k)).sort((a,b)=>(b[1].t||0)-(a[1].t||0));
+  if(bloqueada(n)){m.append(cardPaywall());return}
+  const enCurso=UI.play&&UI.play.atleta===UI.atleta&&ZONA[UI.play.d];
+  m.append(h('section',{class:'card hero'},h('span',{class:'wholbl',text:'Sakros Go Prep'}),
+    h('h2',{text:'¿Qué vas a entrenar hoy?'}),h('p',{class:'note',text:'10 minutos antes de entrenar: rodillo, 2 correctivos de tu FMS y activación.'}),
+    enCurso?h('div',{class:'row'},h('button',{class:'btn primary big',onclick:()=>{UI.prevTab='hoy';UI.tab='play';saveUI();render();scrollTo(0,0)}},'Continuar: '+ZONA[UI.play.d])):null,
+    ...Object.keys(ZONA).map(z=>h('button',{class:'bigopt',onclick:()=>iniciarSesion(n,z)},h('b',{text:ZONA[z]}),h('span',{text:ZDESC[z]+' Hoy: '+corrDe(z,2).map(id=>EX[id].n.toLowerCase()).join(' y ')+'.'})))));
+  m.append(cardFms());
+  const cs=cardMiSuscripcion();if(cs)m.append(cs);
+  if(hist.length)m.append(h('section',{class:'card'},h('h2',{text:'Tus preparaciones'}),h('ul',{},hist.slice(0,6).map(([k,v])=>h('li',{text:(v.fecha||'')+' · '+(ZONA[v.dia]||'')+(v.min?' · '+v.min+' min':'')+(v.nota?' · '+v.nota:'')})))));
+  m.append(h('section',{class:'card'},h('h2',{text:'Tu entrenador'}),h('p',{class:'note',text:'¿Dudas sobre tu FMS, una molestia o tu rutina del gimnasio? Escríbele al Coach.'}),
+    h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:'prep',dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mi plan'))));
+}
+function renderSesionPrep(m){
+  m.append(cardFms());
+  Object.keys(ZONA).forEach(z=>m.append(h('section',{class:'card'},h('h2',{text:'Prep · '+ZONA[z]}),h('p',{class:'note',text:ZDESC[z]}),
+    h('ol',{},prepRows(z,1).map(it=>h('li',{},EX[it.id].n+' · ',h('span',{class:'note',text:pres(1,z,it)})))))));
+}
+function renderProgresoPrep(m){
+  const hist=Object.entries(S.sesiones).filter(([k])=>/^p\d/.test(k)).sort((a,b)=>(b[1].t||0)-(a[1].t||0));
+  m.append(h('section',{class:'card'},h('h2',{text:'Preparaciones hechas: '+hist.length}),hist.length?h('ul',{},hist.map(([k,v])=>h('li',{text:(v.fecha||'')+' · '+(ZONA[v.dia]||'')+(v.min?' · '+v.min+' min':'')+(v.rpe?' · RPE '+v.rpe:'')+(v.nota?' · '+v.nota:'')}))):h('p',{class:'note',text:'Todavía no hay preparaciones registradas.'})));
+  const c=atl().corr||{};
+  m.append(h('section',{class:'card'},h('h2',{text:'Tus correctivos'}),h('ul',{},FMSL.map(t=>h('li',{text:t.n+': paso '+nivCorr(t.id)+' de 4 ('+EX['f'+t.id+nivCorr(t.id)].n+')'+(c[t.id]?'':' · inicial')})))));
+  m.append(cardFms());
+}
+function selProg(){return h('div',{class:'freq',role:'group','aria-label':'Programa'},h('span',{class:'wholbl',text:'Programa'}),[['prep',PROGC.prep],['base',PROGC.base],['rend',PROGC.rend],['core',PROGC.core],['global',PROGC.global]].map(([p,l])=>h('button',{class:'opt','aria-pressed':prog()===p,onclick:async()=>{if(prog()===p)return;await saveAtleta(UI.atleta,{...atl(),programa:p,t:Date.now()});UI.orig={};render()}},l)))}
+function fmsContexto(){
+  if(!fmsAlguno())return 'FMS: no hecho todavía (opcional, por video desde la pestaña Tests).';
+  const F=FF(),L=['FMS'+(F.revisado?' (revisado por el kinesiólogo)':' (preliminar del Coach por video)')+': total '+(fmsTotal()??'incompleto')+'/21.'];
+  FMSL.forEach(t=>{const R=fmsRes(t.id);L.push('- '+t.n+': '+scoreTxt(R.score)+(t.lados.length>1?' (der. '+scoreTxt(R.L.d)+', izq. '+scoreTxt(R.L.i)+')':'')+(R.dolor?' · CON DOLOR':'')+' · correctivo en el paso '+nivCorr(t.id)+' de 4')});
+  return L.join('\n');
+}
+const RULES_PREP=`Eres el entrenador de la persona en Sakros Go Prep. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, kinesiólogo y osteópata, o la propia persona desde la vista de cliente.
+Sakros Go Prep: 10 minutos antes de cualquier entrenamiento (gimnasio, rutina propia o deporte), según la zona del día (piernas, tren superior, cuerpo completo, carrera o deporte): 3 min de rodillo de la zona, 2 correctivos y 3 min de activación con braceo y el patrón que se va a cargar. Nace de la experiencia del centro de entrenamiento de Sakros (2015–2020): con 10 minutos de preparación por zona, el FMS promedio pasó de 9 a 14 puntos en 6 meses. Es la experiencia del centro, no un estudio controlado: no prometas resultados ni prevención de lesiones.
+Correctivos: salen del FMS por video. Orden de prioridad: primero las pruebas con dolor (no se corrigen con ejercicio: derivar al kinesiólogo), después las asimetrías y los puntajes de 1, en el orden elevación de pierna extendida, movilidad de hombro, estabilidad en rotación, flexión de estabilidad de tronco, estocada en línea, paso de valla y sentadilla profunda. Cada correctivo tiene 4 pasos y avanza con técnica limpia en 2 sesiones seguidas. Con asimetría, se empieza por el lado débil y se hace una serie extra de ese lado.
+Sobre su rutina del gimnasio: puedes orientar en técnica, dosis y descanso, y recomendar el programa de entrenamiento de Sakros Go si no tiene una rutina bien dirigida.
+Seguridad: dolor que aumenta, dolor irradiado, hormigueo o pérdida de fuerza → parar y consultar con su kinesiólogo.
+Cómo responder: breve y concreto. No uses la herramienta de ajustes: en Prep los correctivos los define el FMS.`;
+
+const prog=()=>['core','global','base','prep'].includes(atl().programa)?atl().programa:'rend';
+const esPrep=()=>prog()==='prep';
 const esBase=()=>prog()==='base';
 const esCore=()=>prog()==='core';
 const esGlob=()=>prog()==='global';
 const alt=()=>prog()!=='rend';
-const progOf=id=>String(id).startsWith('k')?'core':String(id).startsWith('g')?'global':String(id).startsWith('x')?'base':'rend';
+const progOf=id=>String(id).startsWith('f')?'prep':String(id).startsWith('k')?'core':String(id).startsWith('g')?'global':String(id).startsWith('x')?'base':'rend';
 const srcDia=(d,s)=>alt()&&(d==='C'||d==='U')?(s%2?'A':'B'):d;
-function rows(d,s){if(!alt())return PLAN[d];const src=srcDia(d,s);return (esBase()?rowsBase(src):(esCore()?PLANC:PLANG)[src]).filter(it=>!it.w||(s>=it.w[0]&&s<=it.w[1]))}
+function rows(d,s){if(esPrep())return prepRows(d,s);if(!alt())return conCorr(PLAN[d],d,s);const src=srcDia(d,s);return conCorr((esBase()?rowsBase(src):(esCore()?PLANC:PLANG)[src]).filter(it=>!it.w||(s>=it.w[0]&&s<=it.w[1])),d,s)}
 function allRows(){const out=[],seen=new Set();const P0=esBase()?{A:rowsBase('A'),B:rowsBase('B')}:esCore()?PLANC:esGlob()?PLANG:PLAN;Object.keys(P0).forEach(d=>P0[d].forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);out.push([d,it])}}));return out}
-const faseTxt=s=>(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
-const sesKey=(s,d)=>(esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
+const faseTxt=s=>esPrep()?'Prep':(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
+const sesKey=(s,d)=>(esPrep()?'p':esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
 function coreT(){
   const T=S.tests||{},v=k=>{const x=parseFloat(String(T[k]??'').replace(',','.'));return isNaN(x)?null:x};
   let m=null;[0,4,8].forEach(mo=>{if(['flex','ext','lati','latd'].some(k=>v('k_'+k+'_'+mo)!=null))m=mo});
@@ -1199,7 +1539,7 @@ const TESTS=[
  ['posterior','Sentadilla posterior: 120 kg al máximo de reps','5'],['frontal','Sentadilla frontal: 90 kg al máximo de reps','5–6'],['muerto3','Peso muerto 3RM (kg)','~120']];
 
 /* ---------- Estado ---------- */
-const S={registro:{},sesiones:{},ajustes:{},chat:[],tests:{},salud:{}};
+const S={registro:{},sesiones:{},ajustes:{},chat:[],tests:{},salud:{},fms:{}};
 const UI={tab:'tests',sem:1,dia:'A',frames:{},atleta:'yo'};
 try{const u=JSON.parse(localStorage.getItem('exos8-ui')||'{}');if(u.sem)UI.sem=u.sem;if(u.dia)UI.dia=u.dia;if(u.atleta)UI.atleta=u.atleta}catch(e){}
 let ATL={},atlListo=false;
@@ -1242,7 +1582,7 @@ function tmin(it,s){
 const dur=(d,s)=>esCore()?DURC[srcDia(d,s)][s-1]:rows(d,s).reduce((q,it)=>q+tmin(it,s),0);
 const freq=()=>{const f=parseInt(atl().frecuencia,10);return f>=1&&f<=3?f:2};
 const DIAS=()=>({1:['U'],2:['A','B'],3:['A','B','C']})[freq()];
-const dayName=d=>d==='U'?'Sesión':'Día '+d;
+const dayName=d=>ZONA[d]?'Prep · '+ZONA[d]:d==='U'?'Sesión':'Día '+d;
 
 /* ---------- Utilidades ---------- */
 function h(t,a,...c){const e=document.createElement(t);for(const k in a||{}){const v=a[k];if(v==null||v===false)continue;if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else e.setAttribute(k,v===true&&!k.startsWith('aria-')?'':String(v))}for(const x of c.flat()){if(x==null||x===false)continue;e.append(x.nodeType?x:document.createTextNode(String(x)))}return e}
@@ -1267,7 +1607,7 @@ async function remove(col,id){
   try{await db.collection(P(col)).doc(id).delete()}catch(e){setSync('No se pudo borrar')}
 }
 let subs=[];
-function resetData(){Object.assign(S,{registro:{},sesiones:{},ajustes:{},chat:[],tests:{},salud:{}})}
+function resetData(){Object.assign(S,{registro:{},sesiones:{},ajustes:{},chat:[],tests:{},salud:{},fms:{}})}
 function subscribe(){
   subs.forEach(u=>{try{u()}catch(e){}});subs=[];resetData();
   const onErr=e=>setSync('Error de conexión: '+(e.code||''));
@@ -1277,6 +1617,7 @@ function subscribe(){
   });
   subs.push(db.collection(P('chat')).onSnapshot(snap=>{if(!ok())return;S.chat=snap.docs.map(d=>d.data()).sort((a,b)=>a.t-b.t);if(UI.tab==='coach')renderChatLog()},onErr));
   subs.push(db.collection(P('tests')).doc('datos').onSnapshot(d=>{if(!ok())return;S.tests=d.exists?d.data():{};refresh()},onErr));
+  subs.push(db.collection(P('tests')).doc('fms').onSnapshot(d=>{if(!ok())return;S.fms=d.exists?d.data():{};refresh()},onErr));
   subs.push(db.collection(P('perfil')).doc('salud').onSnapshot(d=>{if(!ok())return;S.salud=d.exists?d.data():{};refresh()},onErr));
 }
 function subAtletas(){
@@ -1302,7 +1643,7 @@ async function borrarAtleta(id){
     const tasks=[];
     ['registro','sesiones','ajustes'].forEach(col=>Object.keys(S[col]).forEach(k=>tasks.push(db.collection(P(col)).doc(k).delete())));
     S.chat.forEach(c=>tasks.push(db.collection(P('chat')).doc(String(c.t)+c.rol).delete()));
-    tasks.push(db.collection(P('tests')).doc('datos').delete(),db.collection(P('perfil')).doc('salud').delete(),db.collection('atletas').doc(id).delete());
+    tasks.push(db.collection(P('tests')).doc('datos').delete(),db.collection(P('tests')).doc('fms').delete(),db.collection(P('perfil')).doc('salud').delete(),db.collection('atletas').doc(id).delete());
     await Promise.allSettled(tasks);
   }else{try{localStorage.removeItem(localKey())}catch(e){}}
   const n={...ATL};delete n[id];ATL=n;if(!db){try{localStorage.setItem('exos8-atletas',JSON.stringify(ATL))}catch(e){}}
@@ -1325,7 +1666,7 @@ function render(){
   if(!cli&&['hoy','onb'].includes(UI.tab))UI.tab='tests';
   if(UI.tab==='play'&&!UI.play)UI.tab=cli?'hoy':'sesion';
   const vis=cli?['hoy','progreso','tests','coach']:['tests','progreso','sesion','salud','coach'];
-  document.querySelectorAll('.tab').forEach(b=>{b.hidden=!vis.includes(b.dataset.tab)||['onb','play','terminos'].includes(UI.tab);b.setAttribute('aria-selected',b.dataset.tab===UI.tab||(b.dataset.tab==='hoy'&&UI.tab==='sesion'&&cli))});
+  document.querySelectorAll('.tab').forEach(b=>{b.hidden=!vis.includes(b.dataset.tab)||['onb','play','terminos'].includes(UI.tab);b.setAttribute('aria-selected',b.dataset.tab===UI.tab||(b.dataset.tab==='tests'&&UI.tab==='fms')||(b.dataset.tab==='hoy'&&UI.tab==='sesion'&&cli))});
   const ml=$('#modo-link');if(ml){ml.hidden=MODO_FIJO;ml.textContent=cli?'Vista entrenador':'Vista cliente';ml.onclick=()=>setModo(cli?'coach':'cliente')}
   if(atlListo&&!DIAS().includes(UI.dia))UI.dia=DIAS()[0];
   renderWho();renderSelectors();
@@ -1334,15 +1675,16 @@ function render(){
   if(UI.tab==='terminos'){renderTerminos(m);return}
   if(UI.tab==='paywall'){renderPaywall(m);return}
   if(UI.tab==='play'){renderPlay(m);return}
+  if(UI.tab==='fms'){renderFms(m);return}
   if(mode==='local'){const nb=cli?(UI.tab==='hoy'?h('p',{class:'note',text:'Tus datos se guardan en este teléfono.'}):null):h('div',{class:'banner'},'Modo sin nube: lo que registres queda guardado en este navegador.');if(nb)m.append(nb)}
   const a=atl();
   if(UI.tab==='hoy'){renderHoy(m);return}
   if(!cli&&UI.tab!=='perfil'&&UI.tab!=='nuevo'&&(!a.sexo||(UI.atleta!=='yo'&&(!a.edad||!a.sesiones))))m.append(h('div',{class:'banner'},'Faltan datos del perfil de '+a.nombre+' (sexo'+(UI.atleta!=='yo'?', edad o sesiones por semana':'')+'). ',h('button',{class:'linkbtn',onclick:()=>{UI.tab='perfil';render()}},'Completar perfil')));
-  if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests')renderTests(m);else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
+  if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests'){m.append(cardFms());renderTests(m)}else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
 }
 function renderWho(){
   const box=$('#who');if(!box)return;
-  if(modoCli()){const a=atl();box.replaceChildren(...[h('span',{class:'hello',text:needsOnb()?'Bienvenido':'Hola, '+(a.nombre&&a.nombre!=='Mi perfil'?a.nombre:'')}),needsOnb()?null:h('span',{class:'whoinfo',text:PROGC[prog()]+' · '+freq()+(freq()===1?' día':' días')+' por semana'})].filter(Boolean));return}
+  if(modoCli()){const a=atl();box.replaceChildren(...[h('span',{class:'hello',text:needsOnb()?'Bienvenido':'Hola, '+(a.nombre&&a.nombre!=='Mi perfil'?a.nombre:'')}),needsOnb()?null:h('span',{class:'whoinfo',text:esPrep()?'Sakros Go Prep':PROGC[prog()]+' · '+freq()+(freq()===1?' día':' días')+' por semana'})].filter(Boolean));return}
   const ids=['yo',...Object.keys(ATL).filter(k=>k!=='yo').sort((a,b)=>String(ATL[a].nombre||ATL[a].email).localeCompare(String(ATL[b].nombre||ATL[b].email)))];
   const sel=h('select',{id:'atleta-sel','aria-label':'Atleta'},ids.map(id=>{const o=h('option',{value:id},id==='yo'?(ATL.yo&&ATL.yo.nombre)||'Mi perfil':(ATL[id].nombre||ATL[id].email||'Nuevo cliente'));if(id===UI.atleta)o.selected=true;return o}));
   sel.addEventListener('change',()=>switchAtleta(sel.value));
@@ -1407,7 +1749,8 @@ function renderPerfil(m,nuevo){
 }
 function renderSelectors(){
   const box=$('#selectors');box.replaceChildren();
-  if(['tests','progreso','salud','perfil','nuevo','hoy','play','onb','terminos','paywall'].includes(UI.tab))return;
+  if(['tests','progreso','salud','perfil','nuevo','hoy','play','onb','terminos','paywall','fms'].includes(UI.tab))return;
+  if(esPrep()){if(UI.tab==='sesion'&&!modoCli())box.append(selProg());return}
   const lanes=h('div',{class:'lanes',role:'group','aria-label':'Semana'});
   for(let s=1;s<=8;s++){
     const dd=DIAS().map(x=>done(s,x));const pct=Math.round(dd.reduce((q,x)=>q+x[0],0)/dd.reduce((q,x)=>q+x[1],0)*100);
@@ -1416,7 +1759,7 @@ function renderSelectors(){
   }
   box.append(lanes);
   if(UI.tab==='sesion'&&!modoCli()){
-    box.append(h('div',{class:'freq',role:'group','aria-label':'Programa'},h('span',{class:'wholbl',text:'Programa'}),[['base',PROGC.base],['rend',PROGC.rend],['core',PROGC.core],['global',PROGC.global]].map(([p,l])=>h('button',{class:'opt','aria-pressed':prog()===p,onclick:async()=>{if(prog()===p)return;await saveAtleta(UI.atleta,{...atl(),programa:p,t:Date.now()});UI.orig={};render()}},l))));
+    box.append(selProg());
     box.append(h('div',{class:'freq',role:'group','aria-label':'Sesiones por semana'},h('span',{class:'wholbl',text:'Plan'}),[1,2,3].map(n=>h('button',{class:'opt','aria-pressed':freq()===n,onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),frecuencia:n,t:Date.now()});if(!DIAS().includes(UI.dia))UI.dia=DIAS()[0];saveUI();render()}},n+'× semana'))));
     box.append(h('div',{class:'days'},DIAS().map(d=>{const [n,t]=done(UI.sem,d);
       return h('button',{class:'day','aria-pressed':UI.dia===d,onclick:()=>{UI.dia=d;saveUI();render()}},h('b',{text:dayName(d)+(n===t?'  ✓':'')}),h('span',{text:`${n}/${t} hechos · ~${dur(d,UI.sem)} min`}))})));
@@ -1428,6 +1771,7 @@ function field(lbl,id,val,on,opts={}){
   return h('label',{class:'f',for:id},lbl,inp);
 }
 function renderSesion(m){
+  if(esPrep())return renderSesionPrep(m);
   if(bloqueada(UI.sem)){renderPaywall(m);return}
   const s=UI.sem,d=UI.dia,core=esCore(),sk=sesKey(s,d),ses=S.sesiones[sk]||{};
   const upd=(k,v)=>{const cur={...(S.sesiones[sk]||{semana:s,dia:d}),[k]:v,t:Date.now()};S.sesiones[sk]=cur;debounce('s'+sk,()=>write('sesiones',sk,cur))};
@@ -1541,6 +1885,7 @@ function exCard(s,d,it){
       h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null)));
 }
 function renderTests(m){
+  if(esPrep())return;
   if(esCore())return renderTestsCore(m);
   if(esGlob())return renderTestsGlob(m);
   if(esBase())return renderTestsBase(m);
@@ -1696,6 +2041,7 @@ async function saveCfg(){
   try{await db.collection('config').doc('protocolo').set(CFG);return true}catch(e){return false}
 }
 function renderProgreso(m){
+  if(esPrep())return renderProgresoPrep(m);
   const g=h('div',{class:'grid8'},h('span'),[1,2,3,4,5,6,7,8].map(s=>h('span',{class:'note',text:'S'+s})));
   DIAS().forEach(d=>{g.append(h('strong',{text:dayName(d)}));for(let s=1;s<=8;s++){const [n,t]=done(s,d);
     g.append(h('button',{class:'cell'+(n===t?' full':n?' part':''),'aria-label':`Semana ${s} día ${d}: ${n} de ${t}`,onclick:()=>{UI.tab='sesion';UI.sem=s;UI.dia=d;saveUI();render();scrollTo(0,0)}},n===t?'✓':n?n+'/'+t:''))}});
@@ -2230,16 +2576,18 @@ function contexto(){
   const L=[`PROGRAMA: ${pg==='base'?PROG.base+' · módulos: '+modulos().map(k=>MOD[k]).join(' y ')+' · nivel general: '+(a.nivel||1)+(a.niveles?' · niveles por ejercicio: '+JSON.stringify(a.niveles):'')+' · después sigue con: '+(PROGC[a.siguiente]||'Empezar a entrenar'):pg==='core'?PROG.core+(a.condicion?' · condición: '+COND[a.condicion]:''):PROG[pg]}.`,`FRECUENCIA DEL PLAN: ${freq()} sesión(es) por semana (días ${DIAS().join(', ')}).`,`ATLETA: ${a.nombre}${a.sexo?', '+(a.sexo==='M'?'mujer':'hombre'):''}${a.edad?', '+a.edad+' años':''}${a.sesiones?', '+a.sesiones+' entrenamientos por semana':''}.${a.objetivo?' Objetivo: '+a.objetivo+'.':''}${a.notas?' Notas: '+a.notas+'.':''}`,
     core?'Programa '+PROGC[pg]+': sin cargas de referencia; la carga se ajusta a la RPE de la fase.':UI.atleta==='yo'?'Referencias de partida: sentadilla posterior 120 kg ×5 (1RM ≈135), frontal 90 kg ×5–6 (1RM ≈105), peso muerto 120 kg ×3–4 (1RM ≈130).':'Cargas de la semana 1: '+(Object.keys(c).length?CARGABLES.filter(k=>c[k]).map(k=>EX[k].n+' '+c[k]+' kg').join(', '):'sin definir (las sesiones dicen «carga según RPE»)')+'.',
     `Semana que tiene abierta: S${UI.sem}, día ${UI.dia}.`,'','PLAN ACTUAL (* = ajustado por ti con la herramienta; [auto] = adaptado automáticamente por diagnóstico):'];
-  if(core)DIAS().forEach(d=>{for(let s=1;s<=8;s++)L.push(`${dayName(d)} S${s} (${faseTxt(s)}): `+rows(d,s).map(it=>{const A=autoEj(s,d,it);return `${it.id} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))});
+  if(pg==='prep')Object.keys(ZONA).forEach(z=>L.push('Prep '+ZONA[z]+': '+prepRows(z,1).map(it=>it.id+' '+EX[it.id].n+' ('+pres(1,z,it)+')').join(' | ')));
+  else if(core)DIAS().forEach(d=>{for(let s=1;s<=8;s++)L.push(`${dayName(d)} S${s} (${faseTxt(s)}): `+rows(d,s).map(it=>{const A=autoEj(s,d,it);return `${it.id} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))});
   else DIAS().forEach(d=>PLAN[d].forEach(it=>{L.push(`${dayName(d)} ${d} · ${it.id} (${EX[it.id].n}): `+[1,2,3,4,5,6,7,8].map(s=>{const A=autoEj(s,d,it);return `S${s} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))}));
   L.push('','REGISTRO:');
   const regs=Object.values(S.registro).filter(r=>progOf(r.ej)===pg).filter(r=>r.hecho||r.kg||r.rpe||r.nota).sort((a,b)=>a.semana-b.semana||a.dia.localeCompare(b.dia));
   if(!regs.length)L.push('(sin registros todavía)');
   regs.forEach(r=>L.push(`S${r.semana}${r.dia} ${r.ej}: ${r.hecho?'hecho':'pendiente'}${r.kg?', '+r.kg+' kg':''}${r.rpe?', RPE '+r.rpe:''}${r.nota?', nota: '+r.nota:''}`));
-  const ses=Object.entries(S.sesiones).filter(([k])=>(k[0]==='c'?'core':k[0]==='g'?'global':k[0]==='x'?'base':'rend')===pg);
+  const ses=Object.entries(S.sesiones).filter(([k])=>(k[0]==='p'?'prep':k[0]==='c'?'core':k[0]==='g'?'global':k[0]==='x'?'base':'rend')===pg);
   if(ses.length){L.push('','SESIONES:');ses.sort().forEach(([k,v])=>L.push(`S${v.semana||k}${v.dia||''}: ${v.fecha||''} ${v.min?v.min+' min':''} ${v.rpe?'RPE sesión '+v.rpe:''}${pg==='core'?` dolor lumbar ${v.dolor||'-'}/10, escape ${v.escape||'-'}, peso perineal ${v.peso||'-'}, irradiado ${v.irradiado||'-'}`:''} ${v.nota?'· '+v.nota:''}`))}
   const T=S.tests||{};const tl=pg==='base'?testsBase().map(([id,l])=>[0,4,8].some(m=>T['x_'+id+'_'+m])?`${l}: S0 ${T['x_'+id+'_0']||'-'} / S4 ${T['x_'+id+'_4']||'-'} / S8 ${T['x_'+id+'_8']||'-'}`:null).filter(Boolean):pg==='global'?TESTSG.map(([id,l])=>[0,4,8].some(m=>T['g_'+id+'_'+m])?`${l}: S0 ${T['g_'+id+'_0']||'-'} / S4 ${T['g_'+id+'_4']||'-'} / S8 ${T['g_'+id+'_8']||'-'}`:null).filter(Boolean):core?TESTSC.map(([id,l])=>[0,4,8].some(m=>T['k_'+id+'_'+m])?`${l}: S0 ${T['k_'+id+'_0']||'-'} / S4 ${T['k_'+id+'_4']||'-'} / S8 ${T['k_'+id+'_8']||'-'}`:null).filter(Boolean):TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean);
   if(tl.length){L.push('','TESTS:',...tl)}
+  L.push('',fmsContexto());
   const dl=dxActivos();
   if(dl.length){L.push('','DIAGNÓSTICOS ACTIVOS: '+dl.join(' · '));
     const seen=new Set();allRows().forEach(([d,it])=>{const id=ALIAS[it.id]||it.id;if(seen.has(id))return;seen.add(id);reglasEj(it.id).forEach(r=>L.push(`${it.id} (${EX[it.id].n}): ${LVL[r.lvl]} [${r.dx}] ${r.txt}`))});}
@@ -2291,7 +2639,7 @@ function renderCoach(m){
   ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send.click()}});
   const q=t=>h('button',{class:'btn',onclick:()=>ask(t)},t);
   m.append(h('div',{class:'composer'},
-    h('div',{class:'quick'},...(esBase()?[q('Revisa mi última sesión'),q('¿Subo de nivel algún ejercicio?'),q('¿Paso a la siguiente fase?'),q('Me cuesta un ejercicio, ¿qué corrijo?')]:esGlob()?[q('Revisa mi última sesión'),q('¿Subo el peso la próxima semana?'),q('Hoy tengo solo 25 minutos'),q('Me duele una articulación, adapta la sesión')]:esCore()?[q('Revisa mi última sesión'),q('¿Paso a la siguiente fase?'),q('Tuve escape en la sesión, ¿qué ajusto?'),q('Hoy tengo solo 30 minutos')]:[q('Revisa mi última sesión'),q('¿Subo cargas la próxima semana?'),q('Hoy tengo solo 40 minutos'),q('Tengo una molestia, adapta la sesión')])),
+    h('div',{class:'quick'},...(esPrep()?[q('Explícame mi FMS'),q('¿Qué hago hoy en el gimnasio?'),q('¿Paso al siguiente correctivo?'),q('Tengo una molestia, ¿qué hago?')]:esBase()?[q('Revisa mi última sesión'),q('¿Subo de nivel algún ejercicio?'),q('¿Paso a la siguiente fase?'),q('Me cuesta un ejercicio, ¿qué corrijo?')]:esGlob()?[q('Revisa mi última sesión'),q('¿Subo el peso la próxima semana?'),q('Hoy tengo solo 25 minutos'),q('Me duele una articulación, adapta la sesión')]:esCore()?[q('Revisa mi última sesión'),q('¿Paso a la siguiente fase?'),q('Tuve escape en la sesión, ¿qué ajusto?'),q('Hoy tengo solo 30 minutos')]:[q('Revisa mi última sesión'),q('¿Subo cargas la próxima semana?'),q('Hoy tengo solo 40 minutos'),q('Tengo una molestia, adapta la sesión')])),
     h('div',{class:'send'},ta,send,stop)));
   renderChatLog();
 }
@@ -2313,7 +2661,7 @@ async function ask(text){
   if(busy)return;
   if(!sample){setSync('El chat no está disponible en esta vista');return}
   busy=true;await addMsg('u',text);
-  const turns=[{role:'user',content:(esBase()?RULES_BASE:esGlob()?RULES_GLOB:esCore()?RULES_CORE:RULES)+(modoCli()?'\n\nIMPORTANTE: ahora te escribe la propia persona desde su vista de cliente, no el entrenador. Háblale directo, con lenguaje simple y sin tecnicismos. Si pide un cambio grande o describe dolor, síntomas de alarma o algo clínico, sugiérele consultarlo con su entrenador antes de cambiar el plan.':'')+'\n\nDATOS DEL ATLETA:\n'+contexto()},...S.chat.slice(-20).map(c=>({role:c.rol==='u'?'user':'assistant',content:c.texto}))];
+  const turns=[{role:'user',content:(esPrep()?RULES_PREP:esBase()?RULES_BASE:esGlob()?RULES_GLOB:esCore()?RULES_CORE:RULES)+(modoCli()?'\n\nIMPORTANTE: ahora te escribe la propia persona desde su vista de cliente, no el entrenador. Háblale directo, con lenguaje simple y sin tecnicismos. Si pide un cambio grande o describe dolor, síntomas de alarma o algo clínico, sugiérele consultarlo con su entrenador antes de cambiar el plan.':'')+'\n\nDATOS DEL ATLETA:\n'+contexto()},...S.chat.slice(-20).map(c=>({role:c.rol==='u'?'user':'assistant',content:c.texto}))];
   liveBubble=h('div',{class:'msg a'},h('p',{class:'tool',text:'Pensando…'}));renderChatLog();liveBubble.scrollIntoView({block:'end'});
   ctl=new AbortController();const stop=$('#chat-stop');if(stop)stop.hidden=false;
   let finalText='';
@@ -2329,7 +2677,7 @@ async function ask(text){
 }
 
 /* ---------- Vista cliente: bienvenida, Hoy y modo sesión ---------- */
-const PDESC={base:'8 semanas para aprender a moverte bien antes de entrenar: postura, equilibrio y movimientos básicos.',rend:'8 semanas de potencia, velocidad y resistencia con el método EXOS.',core:'8 semanas para una espalda fuerte y un suelo pélvico que responde: fuerza real, sin miedo.',global:'8 semanas de cuerpo completo desde cero, con una progresión segura.'};
+const PDESC={prep:'10 minutos antes de entrenar, según lo que entrenes ese día: rodillo, 2 correctivos de tu FMS y activación. Sirve para tu gimnasio, tu rutina o tu deporte.',base:'8 semanas para aprender a moverte bien antes de entrenar: postura, equilibrio y movimientos básicos.',rend:'8 semanas de potencia, velocidad y resistencia con el método EXOS.',core:'8 semanas para una espalda fuerte y un suelo pélvico que responde: fuerza real, sin miedo.',global:'8 semanas de cuerpo completo desde cero, con una progresión segura.'};
 const KEYLIFT=new Set([...CARGABLES,'khipthrust','khipthrustp','krdl','kgoblet','kgobletp','ksentbarra','kmuertobarra','kremobarra','kremomanc','ktrapbar','kgranjero','kswing','kstepup','ksplit','klandmine','kjammer','gsilla','gbisagra','gpress','gremom','gstep','gcurl','gmartillo']);
 const esClave=id=>KEYLIFT.has(id);
 const needsOnb=()=>{const a=atl();return !a.onb&&!a.programa&&!a.sexo};
@@ -2360,7 +2708,8 @@ function renderOnb(m){
     card.append(h('p',{class:'brandline',text:'Bienvenido a Sakros Go. Con 3 respuestas armamos tu plan.'}),paso(1,'¿Qué quieres lograr?'),
       opt(O.obj==='global','Empezar a entrenar o mantenerme en forma','Desde cero, con todo el cuerpo y sin lesionarme.',()=>{O.obj='global';O.paso=2;render()}),
       opt(O.obj==='core','Fortalecer espalda, abdomen y suelo pélvico','Para dolor lumbar, hernia o escapes de orina al hacer esfuerzo.',()=>{O.obj='core';O.paso=2;render()}),
-      opt(O.obj==='rend','Rendir más en mi deporte','Saltar más, ser más rápido y aguantar más.',()=>{O.obj='rend';O.paso=2;render()}));
+      opt(O.obj==='rend','Rendir más en mi deporte','Saltar más, ser más rápido y aguantar más.',()=>{O.obj='rend';O.paso=2;render()}),
+      opt(O.obj==='prep','Ya entreno: quiero prepararme para no lesionarme','10 minutos antes de tu gimnasio o tu deporte, según tu evaluación de movimiento.',()=>{O.obj='prep';O.paso=2;render()}));
   }else if(O.paso===2){
     card.append(paso(2,'¿Cuántos días por semana puedes entrenar?'),
       ...[[1,'1 día','Mínimo para mantener. Sumarás caminatas por tu cuenta.'],[2,'2 días','Lo recomendado para empezar.'],[3,'3 días','Para avanzar más rápido.']].map(([n,t,s])=>opt(O.dias===n,t,s,()=>{O.dias=n;O.paso=3;render()})),
@@ -2373,14 +2722,15 @@ function renderOnb(m){
       h('div',{class:'row'},h('button',{class:'btn primary big',disabled:!O.les.length,onclick:()=>{O.paso=4;render()}},'Ver mi plan'),h('button',{class:'linkbtn',onclick:()=>{O.paso=2;render()}},'← Volver')));
   }else{
     let prog=O.obj;const les=O.les.filter(x=>x!=='ninguna');
-    const sugCore=prog!=='core'&&les.some(x=>x==='escapes'||x==='espalda');
+    const sugCore=prog!=='core'&&prog!=='prep'&&les.some(x=>x==='escapes'||x==='espalda');
     const durs={rend:'50–60',core:'45–55',global:'40–50',base:'30–35'};
     const adapt=les.map(k=>({espalda:'espalda',escapes:'suelo pélvico',rodilla:'rodilla',hombro:'hombro',tobillo:'tobillo',otra:'tu molestia (la revisa tu entrenador)'})[k]);
     const nom=h('input',{id:'onb-nom',placeholder:'Tu nombre'});nom.value=a.nombre&&a.nombre!=='Mi perfil'&&a.nombre!=='Atleta'?a.nombre:'';
     const sx=h('select',{id:'onb-sexo'},[['','Elegir…'],['M','Mujer'],['H','Hombre']].map(([v,l])=>{const o=h('option',{value:v},l);if((a.sexo||'')===v)o.selected=true;return o}));
     const ed=h('input',{id:'onb-edad',inputmode:'numeric',placeholder:'años'});ed.value=a.edad||'';
     const err=h('p',{class:'note err',role:'alert'});
-    const res=h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),
+    const res=prog==='prep'?h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),h('h2',{text:'Sakros Go Prep'}),h('p',{text:PDESC.prep}),h('p',{text:'Te recomendamos hacer tu FMS por video: así los correctivos son los que tú necesitas.'}),
+      h('p',{class:'note',text:(adapt.length?'Adaptado a: '+adapt.join(', '):'')})):h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),
       h('h2',{text:'1. Sakros Base · 8 semanas'}),h('p',{text:'Aprende a moverte bien: control de la postura, el equilibrio y los movimientos básicos, con un módulo según tu objetivo. Sesiones de 30–35 min.'}),
       h('h2',{text:'2. '+PROG[prog].split(' (')[0]}),h('p',{text:PDESC[prog]}),
       h('p',{class:'note',text:O.dias+(O.dias===1?' día':' días')+' por semana'+(adapt.length?' · adaptado a: '+adapt.join(', '):'')}));
@@ -2397,7 +2747,7 @@ function renderOnb(m){
         const edad=parseInt(ed.value,10);
         const cond=prog==='core'?(les.includes('espalda')&&les.includes('escapes')?'ambas':les.includes('escapes')?'iue':les.includes('espalda')?'hernia':'otra'):a.condicion;
         const mods=[];if(prog==='core'||les.includes('escapes')||les.includes('espalda'))mods.push('suelo');if(prog==='rend')mods.push('aterrizar');if(prog==='global'||edad>=60)mods.push('equilibrio');
-        const data={...a,nombre,sexo:sx.value,edad:edad>=5&&edad<=100?edad:(a.edad||''),programa:'base',siguiente:prog,modulos:mods.length?mods.slice(0,2):['equilibrio'],nivel:a.nivel||((prog==='global'||edad>=60)?1:2),frecuencia:O.dias,sesiones:a.sesiones||O.dias,condicion:cond||'',objetivo:a.objetivo||({rend:'Rendir más en mi deporte',core:'Fortalecer espalda, abdomen y suelo pélvico',global:'Empezar a entrenar o mantenerme'})[prog],
+        const data={...a,nombre,sexo:sx.value,edad:edad>=5&&edad<=100?edad:(a.edad||''),programa:prog==='prep'?'prep':'base',siguiente:prog==='prep'?(a.siguiente||''):prog,modulos:mods.length?mods.slice(0,2):['equilibrio'],nivel:a.nivel||((prog==='global'||edad>=60)?1:2),frecuencia:O.dias,sesiones:a.sesiones||O.dias,condicion:cond||'',objetivo:a.objetivo||({rend:'Rendir más en mi deporte',core:'Fortalecer espalda, abdomen y suelo pélvico',global:'Empezar a entrenar o mantenerme',prep:'Prepararme para entrenar sin lesionarme'})[prog],
           notas:[a.notas,les.includes('otra')?'Marcó otra molestia en la bienvenida: revisar.':''].filter(Boolean).join(' '),onb:Date.now(),terminos:terminosOk(),t:Date.now()};
         e.target.disabled=true;const ok=await saveAtleta(UI.atleta,data);e.target.disabled=false;
         if(!ok){err.textContent='No se pudo guardar. Revisa la conexión y vuelve a intentarlo.';return}
@@ -2412,6 +2762,7 @@ function renderOnb(m){
 
 /* Hoy */
 function renderHoy(m){
+  if(esPrep())return renderHoyPrep(m);
   const a=atl(),N=nextSes(),{s,d}=N,r=rows(d,s);
   const pt=progTotal();
   if(!N.fin&&bloqueada(s)){m.append(cardPaywall());return}
@@ -2430,6 +2781,7 @@ function renderHoy(m){
   const T=S.tests||{};
   if(!Object.keys(T).some(k=>k!=='t'&&T[k]))m.append(h('section',{class:'card'},h('h2',{text:'Antes de empezar: tus tests'}),
     h('p',{class:'note',text:'Mídete ahora para comparar en la semana 8. Así ves tu progreso con números.'}),h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='tests';render()}},'Hacer los tests'))));
+  if(!fmsAlguno())m.append(cardFms());
   m.append(h('section',{class:'card'},h('h2',{text:'Tu entrenador'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:prog(),dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mis respuestas'))));
 }
@@ -2458,7 +2810,7 @@ function renderPlay(m){
   if(P.i>=steps.length)return renderFin(m);
   const g=steps[P.i];
   m.append(h('div',{class:'playtop'},h('button',{class:'btn small',onclick:()=>{UI.tab=UI.prevTab&&UI.prevTab!=='play'?UI.prevTab:(modoCli()?'hoy':'sesion');saveUI();render()}},'Salir'),
-    h('span',{class:'note',text:dayName(d)+' · Semana '+s}),h('span',{id:'play-clock',class:'clock',text:'Tiempo '+fmtT((Date.now()-P.t0)/1000)})),
+    h('span',{class:'note',text:dayName(d)+(esPrep()?'':' · Semana '+s)}),h('span',{id:'play-clock',class:'clock',text:'Tiempo '+fmtT((Date.now()-P.t0)/1000)})),
     h('div',{class:'steps','aria-label':'Paso '+(P.i+1)+' de '+steps.length},steps.map((x,j)=>h('i',{class:j<P.i?'ok':j===P.i?'on':''}))),
     h('p',{class:'note',text:'Ejercicio '+(P.i+1)+' de '+steps.length+(g.length>1?' · Superserie: alterna una serie de cada uno':'')}));
   const inputs=[];
@@ -2481,7 +2833,7 @@ function renderPlay(m){
     m.append(card);
   });
   m.append(restBox());
-  const sig=async()=>{for(const [k,it,kg,rp] of inputs){const cur={...(S.registro[k]||{}),semana:s,dia:d,ej:it.id,hecho:true,t:Date.now()};if(kg&&kg.value.trim())cur.kg=kg.value.trim();if(rp&&rp.value.trim())cur.rpe=rp.value.trim();S.registro[k]=cur;write('registro',k,cur)}
+  const sig=async()=>{for(const [k,it,kg,rp] of inputs){const cur={...(S.registro[k]||{}),semana:semReg(s),dia:d,ej:it.id,hecho:true,t:Date.now()};if(kg&&kg.value.trim())cur.kg=kg.value.trim();if(rp&&rp.value.trim())cur.rpe=rp.value.trim();S.registro[k]=cur;write('registro',k,cur)}
     REST.end=0;P.i++;savePlay();render();scrollTo(0,0)};
   m.append(h('div',{class:'playnav'},
     h('button',{class:'btn',disabled:P.i===0,onclick:()=>{P.i--;savePlay();render();scrollTo(0,0)}},'← Anterior'),
@@ -2504,7 +2856,7 @@ function renderFin(m){
     esCore()?yn('escape','Escape de orina'):null,esCore()?yn('peso','Peso perineal'):null,esCore()?yn('irradiado','Dolor irradiado u hormigueo'):null,
     h('label',{class:'f',for:'fin-nota'},'Comentario para tu entrenador',nota),
     h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async()=>{
-      const cur={...ses,semana:s,dia:d,fecha:ses.fecha||new Date().toLocaleDateString('es',{day:'2-digit',month:'2-digit'}),min:String(min),rpe:rpe.value.trim(),nota:nota.value.trim(),t:Date.now()};
+      const cur={...ses,semana:semReg(s),dia:d,fecha:ses.fecha||new Date().toLocaleDateString('es',{day:'2-digit',month:'2-digit'}),min:String(min),rpe:rpe.value.trim(),nota:nota.value.trim(),t:Date.now()};
       if(esCore()){cur.dolor=dol.value.trim();Object.assign(cur,Object.fromEntries(Object.entries(extra).filter(([k,v])=>v)))}
       S.sesiones[sk]=cur;await write('sesiones',sk,cur);UI.play=null;savePlay();REST.end=0;UI.tab=modoCli()?'hoy':'sesion';saveUI();render();scrollTo(0,0)}},'Guardar y terminar'),
       h('button',{class:'btn',onclick:()=>{P.i=Math.max(0,pasosDe(s,d).length-1);savePlay();render()}},'← Volver'))));
@@ -2587,7 +2939,7 @@ const clp=n=>'$'+Math.round(n).toLocaleString('es-CL');
 const fechaCorta=iso=>{try{return new Date(iso).toLocaleDateString('es-CL',{day:'numeric',month:'long'})}catch(e){return iso}};
 async function authHeaders(){const{data:{session}}=await SB.auth.getSession();return{'Content-Type':'application/json',Authorization:'Bearer '+(session?session.access_token:'')}}
 async function cargarAcceso(){if(!SB)return;try{const r=await fetch('/api/go/acceso',{headers:await authHeaders()});if(r.ok)ACC=await r.json()}catch(e){}}
-const bloqueada=s=>ROL==='cliente'&&s>1&&!(ACC&&ACC.activo);
+const bloqueada=s=>ROL==='cliente'&&s>(esPrep()?3:1)&&!(ACC&&ACC.activo);
 const necesitaTerminos=()=>ROL==='cliente'&&!!ACC&&((atl().terminos||{}).v!==ACC.terminosV);
 const terminosOk=()=>({v:(ACC&&ACC.terminosV)||'2026-10',t:Date.now()});
 function puntosTerminos(){return h('ul',{class:'medir'},
@@ -2723,7 +3075,7 @@ async function salir(){try{await SB.auth.signOut()}catch(e){}try{localStorage.re
   const{data:me,error}=await SB.rpc('go_vincular');
   if(error||!me){pantallaLogin('No se pudo abrir tu cuenta. Vuelve a intentarlo.');return}
   ROL=me.rol;YO=me;
-  if(ROL==='cliente'){MODO='cliente';MODO_FIJO=true;UI.atleta=me.atleta;UI.tab=['hoy','progreso','tests','coach','sesion','play','onb'].includes(UI.tab)?UI.tab:'hoy'}
+  if(ROL==='cliente'){MODO='cliente';MODO_FIJO=true;UI.atleta=me.atleta;UI.tab=['hoy','progreso','tests','coach','sesion','play','onb','fms'].includes(UI.tab)?UI.tab:'hoy'}
   const cr=$('.credit');if(cr&&!$('#salir-link'))cr.append(' · ',h('button',{class:'linkbtn',id:'salir-link',onclick:salir},'Cerrar sesión ('+me.email+')'));
   await cargarAcceso();
   if(qs.get('sub')){history.replaceState(null,'',location.pathname);if(ROL==='cliente'){UI.tab='hoy';if(!(ACC&&ACC.activo)){setTimeout(async()=>{await cargarAcceso();render()},4000)}}}
