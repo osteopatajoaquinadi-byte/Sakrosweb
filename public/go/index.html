@@ -941,11 +941,14 @@ const MOD={aterrizar:'Aterrizar y frenar',suelo:'Suelo pélvico y espalda',equil
 const NIVEL=['','Nivel 1','Nivel 2','Nivel 3'];
 const CTRL='Control: si pierdes la posición, la serie termina ahí. Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control.';
 Object.assign(EX,{
- xprep:{n:'Respiración y activación',img:[['gato-0','Gato-camello'],['puente-1','Puente con braceo']],pasos:[
-  'Respiración 90/90: boca arriba con los pies en la pared, 5 respiraciones. Inhala expandiendo las costillas hacia los lados y exhala lento.',
-  'Braceo suave (30 %): tensa el abdomen en todo su contorno sin hundirlo y respira manteniéndolo, 3 veces de 10 s.',
-  'Gato-camello ×6 y puente de glúteo ×8 con braceo suave.'],
-  clave:'Es el momento de «encender» la postura y la respiración que vas a usar en toda la sesión.'},
+ xprep:{n:'Respiración y hollowing',img:[['gato-0','Gato-camello'],['puente-1','Puente de glúteo']],pasos:[
+  'Semanas 1–2 · respiración diafragmática: boca arriba con las rodillas dobladas, una mano en el pecho y otra en el abdomen. Inhala por la nariz llevando el aire al abdomen y a las costillas de los lados (la mano del pecho casi no se mueve) y exhala lento.',
+  'Hollowing: al exhalar, lleva el ombligo suave hacia adentro y arriba y cierra el piso pélvico, sin mover la pelvis. Aguanta 10 s respirando suave, sin retener el aire. Es una contracción baja (20–30 %): si se aprietan los glúteos o se hunde el pecho, es demasiado.',
+  'Semanas 3–4 · ejercicio de Lewit: boca arriba, exhala por la boca lento y hasta el final, como si apagaras una vela lejana. Sentirás que el abdomen profundo se cierra; la zona lumbar no se mueve. Después, hollowing en cuatro apoyos y sentado.',
+  'Semanas 5–6 · de hollowing a braceo: haz el hollowing y desde ahí tensa todo el contorno del abdomen (braceo), sin hundirlo ni inflarlo. Respira manteniéndolo: es la faja que usarás para moverte y cargar.',
+  'Semanas 7–8 · en tareas: mantén un braceo suave respirando de pie, caminando, al agacharte y al levantar una caja.',
+  'Termina con gato-camello ×6 y puente de glúteo ×8.'],
+  clave:'Primero aprendes a encender el abdomen profundo sin carga (hollowing) y después a convertirlo en una faja firme (braceo) para moverte y cargar. Nunca aguantes el aire.'},
  xbisagra:{n:'Bisagra de cadera con palo',niv:['palo, frente al espejo','palo, sin espejo','con kettlebell liviana'],img:[['sakbisagra-2','De pie, columna neutra'],['sakbisagra-3','Cadera atrás sin perder la neutra']],pasos:[
   'Palo apoyado en la espalda con 3 contactos: cabeza, espalda alta y sacro.',
   'Rodillas suaves. Lleva la cadera atrás como si cerraras una puerta con el glúteo, sin perder ningún contacto.',
@@ -998,12 +1001,12 @@ Object.assign(EX,{
   'Reacciona rápido: da el paso o el cambio de dirección y estabiliza 2 s en buena posición.',
   'Puntos de control: rodilla sobre el pie, cadera atrás, tronco quieto al frenar.'],clave:'La técnica tiene que aparecer sola, sin pensarla: esa es la meta del control motor.'},
  xdeadbug:{n:'Dead bug',niv:['solo piernas','completo','completo con banda'],img:[['deadbug-0','Brazos al techo, caderas y rodillas a 90°'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
-  'Boca arriba, brazos al techo y caderas y rodillas a 90°. Braceo suave.',
+  'Boca arriba, brazos al techo y caderas y rodillas a 90°. Semanas 1–4: hollowing suave (ombligo adentro y arriba, piso pélvico cerrado). Semanas 5–8: braceo suave.',
   'Exhala mientras extiendes brazo y pierna contrarios, despacio, y vuelve.',
   'Puntos de control: la zona lumbar no se despega, el abdomen no se abomba, respiras sin aguantar el aire.'],clave:CTRL},
  xbirddog:{n:'Bird dog',niv:['por partes (brazos, luego piernas)','completo','completo con banda'],img:[],pasos:[
-  'En cuatro apoyos, manos bajo los hombros y rodillas bajo las caderas.',
-  'Extiende brazo y pierna contrarios hasta la horizontal y aguanta 3 s.',
+  'En cuatro apoyos, manos bajo los hombros y rodillas bajo las caderas. Semanas 1–4: hollowing suave antes de moverte. Semanas 5–8: braceo suave.',
+  'Exhala y extiende brazo y pierna contrarios hasta la horizontal; aguanta 3 s respirando.',
   'Puntos de control: la pelvis no rota (prueba con un vaso de plástico en la zona lumbar).'],clave:CTRL},
  xplancha:{n:'Plancha (variante del día)',niv:['con rodillas apoyadas','completa','completa con desafío'],img:[['plancha-0','Rodillas apoyadas'],['plancha-1','Plancha completa'],['sidebridge-1','Plancha lateral']],pasos:[
   'Antebrazos bajo los hombros, cuerpo recto. Braceo y respira durante toda la serie.',
@@ -1029,7 +1032,7 @@ Object.assign(EX,{
   'Braceo y exhala fuerte al lanzar. Recibe amortiguando.',
   'Puntos de control: la fuerza sale de piernas y tronco firme; la zona lumbar no se arquea ni se tuerce.'],clave:CTRL},
  xcalma:{n:'Cierre y autoevaluación',img:[['flexor-0','Estiramiento del flexor de cadera']],pasos:[
-  'Respiración lenta: 4 s inhalar, 6 s exhalar, 5 veces.',
+  'Respiración de cocodrilo: boca abajo con la frente sobre las manos. Inhala por la nariz llevando el aire a la espalda baja y a los costados (sientes que la zona lumbar sube) y exhala lento y largo, 6–8 s. 5 respiraciones.',
   'Pregúntate: ¿qué ejercicio me costó controlar? Anótalo en «Cómo te sentiste»; es lo que tu entrenador y el Coach van a revisar.'],clave:'Aprender a darte cuenta de cómo te mueves es parte del entrenamiento.'},
  xmat:{n:'Módulo: aterrizar y frenar',img:[['salto-0','Snap-down: posición de aterrizaje'],['drop-1','Aterrizaje a dos pies'],['caida-1','Aterrizaje a una pierna']],pasos:[
   'Snap-down: de puntillas con los brazos arriba, baja de golpe a la posición de aterrizaje y congela 2 s.',
@@ -1048,10 +1051,11 @@ Object.assign(EX,{
   'Bajar al suelo y levantarse: usa los apoyos que necesites y en cada semana intenta usar uno menos.',
   'Puntos de control: movimientos lentos, sin impulso, respirando.'],clave:'Levantarse del suelo con soltura es uno de los mejores indicadores de autonomía.'}
 });
+const PREPX=['Diafragmática 2 min + hollowing boca arriba 6×10 s + gato-camello ×6 + puente ×8','Diafragmática 1 min + hollowing boca arriba 8×10 s + gato-camello ×6 + puente ×8','Lewit ×5 + hollowing en 4 apoyos 6×10 s + puente ×8','Lewit ×5 + hollowing sentado y en 4 apoyos 8×10 s + puente ×8','Hollowing → braceo boca arriba 5×10 s + braceo en 4 apoyos 3×20 s + puente ×8','Hollowing → braceo de pie 5×10 s + braceo caminando 1 min + puente ×8','Braceo respirando: de pie 30 s, caminando 1 min, al agacharte ×6 + puente ×8','Braceo respirando: caminando 1 min, al levantar una caja ×6 + puente ×8'];
 const x8=a=>a.length===8?a:a.concat(Array(8-a.length).fill(a[a.length-1]));
 const PLANX={
  A:[
-  {id:'xprep',b:'1',tm:5,p:fill('5 min')},
+  {id:'xprep',b:'1',tm:6,p:PREPX},
   {id:'xbisagra',b:'2A',tm:4,w:[1,2],p:x8(['3×8 · tempo 3-1-1','3×8 · tempo 3-1-1'])},
   {id:'xsent',b:'2B',tm:4,w:[1,4],p:x8(['3×8 · tempo 3-1-1','3×10 · tempo 3-1-1','3×8 · tempo 3-1-1 · +carga liviana','3×10 · tempo 3-1-1 · +carga liviana'])},
   {id:'xzanc',b:'3',tm:4,w:[1,2],p:x8(['2×6/lado','3×6/lado'])},
@@ -1066,7 +1070,7 @@ const PLANX={
   {id:'xequi',b:'4',tm:4,p:['3×20 s · pies juntos o semitándem','3×30 s','3×20 s · tándem o una pierna','3×20 s · ojos cerrados (si tu nivel lo permite)','3×20 s · con banda que tira hacia un lado','3×30 s · con banda','3×20 s · recibiendo una pelota','3×30 s · con pelota y contando hacia atrás']},
   {id:'xcalma',b:'6',tm:2,p:fill('2 min')}],
  B:[
-  {id:'xprep',b:'1',tm:5,p:fill('5 min')},
+  {id:'xprep',b:'1',tm:6,p:PREPX},
   {id:'xdeadbug',b:'2A',tm:4,p:['3×6/lado · lento','3×6/lado · lento','3×8/lado','3×8/lado · 3 s de pausa','3×8/lado','3×10/lado','3×8/lado · ritmo continuo','3×10/lado · ritmo continuo']},
   {id:'xbirddog',b:'2B',tm:4,p:['3×6/lado · 3 s','3×6/lado · 3 s','3×6/lado · con vaso','3×8/lado · con vaso','3×8/lado · 3 s','3×8/lado · 5 s','3×8/lado · lento continuo','3×10/lado · lento continuo']},
   {id:'xpallof',b:'3',tm:4,w:[1,2],p:x8(['3×8/lado · 2 s','3×10/lado · 2 s'])},
@@ -1089,7 +1093,7 @@ function rowsBase(src){const mods=modulos();const mk=mods.length>1?(src==='A'?mo
   const r=PLANX[src].slice();const i=r.findIndex(x=>x.id==='xcalma');r.splice(i,0,MODROW[mk]);return r}
 const nivelDe=id=>{const a=atl(),n=(a.niveles||{})[id]||a.nivel||1;return Math.min(3,Math.max(1,n))};
 const TESTSX=[['silla','Sentarse y pararse en 30 s (reps)',1],['equi','Equilibrio a una pierna, mejor lado (s, máx. 30)',1],['equid','Equilibrio a una pierna, peor lado (s, máx. 30)',1],
- ['sent1','Sentadilla a una pierna: calidad del peor lado (0–5)',1],['bisagra','Bisagra con palo: contactos que mantiene (0–3)',1],['birddog','Bird dog: segundos sin rotar la pelvis (0–10)',1]];
+ ['sent1','Sentadilla a una pierna: calidad del peor lado (0–5)',1],['bisagra','Bisagra con palo: contactos que mantiene (0–3)',1],['birddog','Bird dog: segundos sin rotar la pelvis (0–10)',1],['tra','Hollowing: grado 0–3 (0 = firme y respirando)',-1]];
 const TESTSXM={aterrizar:[['drop','Drop landing: calidad (0–5)',1],['hop','Hop and stick: calidad de la peor pierna (0–5)',1]],
  suelo:[['tos','Escape al toser de pie (0 = no, 1 = sí)',-1],['iciq','ICIQ-SF (0–21)',-1]],
  equilibrio:[['tug','Timed Up and Go (s)',-1],['suelo','Levantarse del suelo: apoyos que usa (0–5)',-1]]};
@@ -1101,7 +1105,7 @@ function nivelSugerido(T){
   return c.length?Math.min(...c):null;
 }
 function ctrlBox(s,d,it){
-  const id=it.id;if(!String(id).startsWith('x')||id==='xprep'||id==='xcalma')return null;
+  const id=it.id;if(!String(id).startsWith('x')||id==='xcalma')return null;
   const k=key(s,d,id),reg=S.registro[k]||{};
   const tog=h('button',{class:'opt','aria-pressed':!!reg.limpia,onclick:()=>{const cur={...(S.registro[k]||{semana:s,dia:d,ej:id}),limpia:!reg.limpia,t:Date.now()};S.registro[k]=cur;write('registro',k,cur);render()}},'✓ Técnica limpia');
   const box=h('div',{class:'freq',role:'group','aria-label':'Control motor'},tog);
@@ -1145,6 +1149,7 @@ function renderTestsBase(m){
     h('li',{},h('strong',{text:'Sentadilla a una pierna a cajón: '}),'5 repeticiones por lado. Un punto por cada uno: rodilla sobre el pie, pelvis nivelada, tronco quieto, llega al cajón y sube sin caerse. Anota el peor lado.'),
     h('li',{},h('strong',{text:'Bisagra con palo: '}),'8 repeticiones. Anota cuántos de los 3 contactos (cabeza, espalda alta y sacro) mantiene todo el tiempo.'),
     h('li',{},h('strong',{text:'Bird dog: '}),'cada lado, hasta 10 s. Anota los segundos sin que la pelvis rote (el peor lado).'),
+    h('li',{},h('strong',{text:'Hollowing (transverso): '}),'boca arriba, rodillas dobladas, dedos 2 cm por dentro de los huesos de la cadera. Haz el hollowing 10 s. Grado 0: firme bajo los dedos y respiras normal. 1: tarda 2–3 s en aparecer o aguantas el aire un momento. 2: no se siente, el abdomen se abomba o el tronco se dobla. 3: no te sale o se infla el pecho al intentarlo.'),
     h('li',{},h('strong',{text:'Módulo aterrizar: '}),'drop landing desde 30 cm y hop and stick, con video de frente. Un punto por: rodilla sobre el pie, caída silenciosa, cadera atrás, tronco quieto, aguanta 2 s.'),
     h('li',{},h('strong',{text:'Módulo suelo pélvico: '}),'tos fuerte de pie con la vejiga cómoda (escape sí o no) y cuestionario ICIQ-SF.'),
     h('li',{},h('strong',{text:'Módulo equilibrio: '}),'Timed Up and Go (pararse, caminar 3 m, volver y sentarse) y levantarse del suelo contando los apoyos que usa (manos, rodillas, silla).'))));
@@ -1440,7 +1445,7 @@ function renderSesion(m){
         sec.append(h('p',{class:'dxline'},h('strong',{text:'Nueva fase: '+faseTxt(s).split(' · ')[1]+'. '}),tt?('En las 2 semanas anteriores marcaste técnica limpia en '+n+' de '+tt+' ejercicios ('+pct+' %). '+(pct>=80?'Puedes avanzar.':'Te conviene repetir la fase anterior: vuelve a la semana '+(s-2)+'.')):'Avanza si la técnica salió limpia en la mayoría de los ejercicios de las 2 semanas anteriores; si no, repite la fase.'))}
       if(s===8)sec.append(h('p',{class:'dxline',text:'Última semana: al terminarla, repite los tests y pasa a tu programa de entrenamiento.'}));
       const bd=h('details',{},h('summary',{},'Cómo se trabaja el control motor'),h('ul',{class:'medir'},
-        ['Intensidad baja (RPE 4–6): es aprendizaje, no cansancio. Si la técnica se pierde, la serie termina.','Respeta el tempo: 3 s bajando, 1 s de pausa, 1 s subiendo.','Usa el espejo o grábate de perfil una serie por sesión.','Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control. Con técnica limpia 2 sesiones seguidas, sube ese ejercicio de nivel.','Para la sesión si aparece dolor que aumenta, mareo o dolor en el pecho.'].map(x=>h('li',{text:x}))));
+        ['Cada sesión empieza con respiración y hollowing: en las semanas 1–4 aprendes a encender el abdomen profundo y en las 5–8 lo conviertes en braceo para moverte y cargar.','Intensidad baja (RPE 4–6): es aprendizaje, no cansancio. Si la técnica se pierde, la serie termina.','Respeta el tempo: 3 s bajando, 1 s de pausa, 1 s subiendo.','Usa el espejo o grábate de perfil una serie por sesión.','Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control. Con técnica limpia 2 sesiones seguidas, sube ese ejercicio de nivel.','Para la sesión si aparece dolor que aumenta, mareo o dolor en el pecho.'].map(x=>h('li',{text:x}))));
       if(s===1&&!ses.fecha)bd.open=true;
       sec.append(bd);
     }
@@ -2200,6 +2205,7 @@ Balance de fuerza: si hay desbalances isométricos (H:Q, ADD:ABD o asimetrías),
 Diagnósticos: si el atleta tiene diagnósticos activos (te los paso con las adaptaciones de cada ejercicio), respétalos en cada consejo y en cada ajuste de carga, y no propongas nada que contradiga esas adaptaciones.`;
 const RULES_BASE=`Eres el entrenador de control motor de la persona, en Sakros Base. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varias personas (su propio perfil es «Mi perfil»), o la propia persona desde la vista de cliente.
 Programa: 8 semanas de control motor con las que empieza todo cliente antes de su entrenamiento. Cuatro fases de 2 semanas: aprender (apoyo estable, tempo 3-1-1, espejo), automatizar (menos ayudas, una pierna), desafiar (menos apoyo, ojos cerrados en equilibrio, perturbaciones, carga liviana) y transferir (más rápido, reactivo, doble tarea). Día A: tren inferior y equilibrio; día B: tronco, braceo y tren superior. Cada sesión suma un módulo de 5 minutos: aterrizar y frenar, suelo pélvico y espalda, o equilibrio y suelo. RPE 4–6.
+Respiración y hollowing (protocolo lumbar de Sakros, basado en Finta 2020), al inicio de cada sesión: S1–2 respiración diafragmática y hollowing boca arriba; S3–4 ejercicio de Lewit (espiración lenta y completa) y hollowing en 4 apoyos y sentado; S5–6 paso de hollowing a braceo, integrado en dead bug y bird dog; S7–8 braceo respirando en tareas (caminar, agacharse, levantar). Hollowing: activación local del transverso a baja intensidad (20–30 %), sin apnea ni movimiento pélvico. Braceo: faja de 360° para carga y perturbaciones. Si el test de hollowing es grado 2–3, dale más tiempo a la etapa boca arriba antes de avanzar y revisa que no aguante el aire.
 Cada ejercicio tiene 3 niveles y sube por separado con técnica limpia en 2 sesiones seguidas. Se pasa de fase con técnica limpia en al menos el 80 % de los ejercicios de las 2 semanas anteriores; si no, se repite la fase.
 Cómo corregir: ante una dificultad, primero la corrección de control (posición de referencia, tempo, feedback con espejo, video, palo o vaso, foco externo), después bajar el nivel, y solo al final cambiar el ejercicio. Una o dos claves por vez, en lenguaje simple.
 Seguridad: dolor que aumenta, mareo, dolor en el pecho, dolor irradiado o escape de orina persistente → parar y consultar.
