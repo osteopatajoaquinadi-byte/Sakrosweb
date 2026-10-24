@@ -5,9 +5,10 @@ import CalendarioEquipo from "./CalendarioEquipo";
 import PacientesTab from "./PacientesTab";
 import ExerciseBank from "./fichas/ExerciseBank";
 import ProtocolosTab from "./protocolos/ProtocolosTab";
+import CampanasTab from "./campanas/CampanasTab";
 import type { Permission, StaffUser } from "@/lib/equipo-auth";
 
-type Tab = "calendario" | "pacientes" | "ejercicios" | "protocolos";
+type Tab = "calendario" | "pacientes" | "ejercicios" | "protocolos" | "campanas";
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Administrador",
@@ -153,6 +154,7 @@ export default function PanelEquipo() {
       : []),
     ...(permissions.includes("clinico") ? [{ key: "ejercicios" as Tab, label: "Ejercicios" }] : []),
     ...(permissions.includes("clinico") ? [{ key: "protocolos" as Tab, label: "Protocolos" }] : []),
+    ...(user?.role === "admin" ? [{ key: "campanas" as Tab, label: "Campañas" }] : []),
   ];
 
   return (
@@ -232,6 +234,9 @@ export default function PanelEquipo() {
       )}
       {activeTab === "ejercicios" && permissions.includes("clinico") && (
         <ExerciseBank onBack={() => setActiveTab("pacientes")} />
+      )}
+      {activeTab === "campanas" && user?.role === "admin" && (
+        <CampanasTab nombreUsuario={user.display_name} />
       )}
       {activeTab === "protocolos" && permissions.includes("clinico") && (
         <ProtocolosTab nombreProfesional={user.display_name} />

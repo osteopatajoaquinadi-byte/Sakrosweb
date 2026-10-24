@@ -22,6 +22,8 @@ export type BrandedEmail = {
   badge?: { text: string; tone: Tone };
   title: string;
   greeting: string;
+  // Imagen opcional bajo el título (URL absoluta https)
+  image?: { src: string; alt: string };
   paragraphs: string[];
   details?: [string, string][];
   list?: { title: string; items: string[] };
@@ -87,6 +89,7 @@ export function renderBrandedEmail(e: BrandedEmail): { html: string; text: strin
 <tr><td style="padding:28px 28px 8px">
 ${badge ? `<div style="margin:0 0 14px">${badge}</div>` : ""}
 <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:${INK}">${esc(e.title)}</h1>
+${e.image ? `<img src="${esc(e.image.src)}" alt="${esc(e.image.alt)}" width="504" style="display:block;width:100%;max-width:504px;height:auto;border:0;border-radius:12px;margin:0 0 18px">` : ""}
 ${p(e.greeting)}
 ${e.paragraphs.map(p).join("")}
 ${details}${list}${e.boxFirst ? box + cta : cta + box}${tips}
