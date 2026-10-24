@@ -123,10 +123,13 @@ export type CertOptions = {
   // listan `cantidad` días hábiles seguidos desde la fecha de pago.
   sesiones?: { date: string; time?: string }[];
   cantidad?: number;
+  servicio?: "Kinesiología" | "Osteopatía";
+  // Imagen PNG (data URL) de la firma del profesional; incluye nombre y RUT.
+  firmaImg?: string | null;
 };
 
-export function certificadoFilename(name: string) {
-  return `Certificado_Kine_${name.replace(/\s+/g, "_")}.pdf`;
+export function certificadoFilename(name: string, servicio: CertOptions["servicio"] = "Kinesiología") {
+  return `Certificado_${servicio === "Osteopatía" ? "Osteopatia" : "Kine"}_${name.replace(/\s+/g, "_")}.pdf`;
 }
 
 export function informeFilename(name: string) {
@@ -149,7 +152,8 @@ export async function generateCertificado(
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(26, 74, 107); // #1A4A6B
-  doc.text("CERTIFICADO DE ATENCIONES KINESICAS", pageW / 2, y + 4, { align: "center" });
+  const osteo = opts.servicio === "Osteopatía";
+  doc.text(osteo ? "CERTIFICADO DE ATENCIONES DE OSTEOPATIA" : "CERTIFICADO DE ATENCIONES KINESICAS", pageW / 2, y + 4, { align: "center" });
   y += 14;
 
   // Date of issue
@@ -200,7 +204,7 @@ export async function generateCertificado(
   const bodyText =
     `Por medio del presente certificado, se deja constancia que el/la paciente ` +
     `${patient.name}, RUT ${patient.rut || "no registrado"}, ha realizado un plan de ` +
-    `tratamiento kinesico de ${total} ${total === 1 ? "sesion" : "sesiones"} en Clinica Sakros, desde el ${firstDate} ` +
+    `tratamiento ${osteo ? "de osteopatia" : "kinesico"} de ${total} ${total === 1 ? "sesion" : "sesiones"} en Clinica Sakros, desde el ${firstDate} ` +
     `hasta el ${lastDate}.`;
 
   const lines = doc.splitTextToSize(bodyText, 170);
@@ -216,7 +220,7 @@ export async function generateCertificado(
   const tableData = atenciones.map((a, i) => [
     String(i + 1),
     a.time ? `${fmtDateLong(a.date)} - ${a.time} hrs` : fmtDateLong(a.date),
-    "Kinesioterapia",
+    osteo ? "Osteopatia" : "Kinesioterapia",
     "Realizada",
   ]);
 
@@ -243,6 +247,12 @@ export async function generateCertificado(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   y = (doc as any).lastAutoTable.finalY + 10;
 
+  // Si no cabe el cierre con la firma, pasa a una nueva página
+  if (y > 190) {
+    doc.addPage();
+    y = 30;
+  }
+
   // Payment note
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
@@ -256,19 +266,24 @@ export async function generateCertificado(
   doc.setFontSize(10);
   doc.setTextColor(40, 40, 40);
   doc.text("Se extiende el presente certificado a solicitud del interesado/a.", 14, y);
-  y += 20;
 
-  // Signature line
-  doc.setDrawColor(40, 40, 40);
-  doc.line(14, y, 90, y);
-  y += 5;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-  doc.text(professional, 14, y);
-  y += 4.5;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.text("Kinesiologo/a - Clinica Sakros", 14, y);
+  if (opts.firmaImg) {
+    // Firma digital (ya trae nombre, RUT y profesión)
+    y += 4;
+    doc.addImage(opts.firmaImg, "PNG", 14, y, 62, 47);
+  } else {
+    y += 20;
+    doc.setDrawColor(40, 40, 40);
+    doc.line(14, y, 90, y);
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text(professional, 14, y);
+    y += 4.5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(osteo ? "Osteopata - Clinica Sakros" : "Kinesiologo/a - Clinica Sakros", 14, y);
+  }
 
   return doc;
 }

@@ -15,6 +15,7 @@ import {
 
 type Cita = { date: string; time: string };
 type Modo = "reales" | "seguidas";
+type Servicio = "Kinesiología" | "Osteopatía";
 
 const inputCls =
   "w-full rounded-lg border border-[#CEC8BE] bg-white px-3 py-2 text-sm text-[#0B3D2E] focus:border-[#C8943A] focus:outline-none focus:ring-1 focus:ring-[#C8943A]/40";
@@ -39,13 +40,19 @@ export default function DocumentosKine({
   plan,
   sessions,
   professional,
+  servicioInicial = "Kinesiología",
+  conInforme = true,
 }: {
   patient: PatientInfo;
   patientId?: string;
-  plan: KinePlan;
-  sessions: SessionInfo[];
+  plan?: KinePlan;
+  sessions?: SessionInfo[];
   professional: string;
+  servicioInicial?: Servicio;
+  // false: solo el certificado (pestaña Documentos de la ficha)
+  conInforme?: boolean;
 }) {
+  const [servicio, setServicio] = useState<Servicio>(servicioInicial);
   const [certDate, setCertDate] = useState("");
   const [modo, setModo] = useState<Modo>("reales");
   const [cantidad, setCantidad] = useState("10");
@@ -53,10 +60,18 @@ export default function DocumentosKine({
   const [informeWarnings, setInformeWarnings] = useState<string[]>([]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [firma, setFirma] = useState(professional);
+  // Firma digital (imagen) del profesional con la sesión abierta, si tiene
+  const [firmaDigital, setFirmaDigital] = useState<{ nombre: string; img: string } | null>(null);
 
   // La firma parte con el profesional que tiene la sesión abierta.
   useEffect(() => {
     let vigente = true;
+    fetch("/api/equipo/firma")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (vigente && d?.firma && d?.nombre) setFirmaDigital({ nombre: d.nombre, img: d.firma });
+      })
+      .catch(() => {});
     fetch("/api/equipo/me")
       .then((r) => r.json())
       .then((d) => {
@@ -72,11 +87,11 @@ export default function DocumentosKine({
 
   // Sesiones de Kinesiología realizadas en el calendario desde la fecha de pago
   const [citas, setCitas] = useState<{ key: string; lista: Cita[] | null; error: string } | null>(null);
-  const citasKey = `${patientId}|${certDate}`;
+  const citasKey = `${patientId}|${certDate}|${servicio}`;
   useEffect(() => {
     if (!patientId || !certDate || modo !== "reales") return;
     let vigente = true;
-    const q = new URLSearchParams({ patient_id: patientId, from: certDate, service: "Kinesiología" });
+    const q = new URLSearchParams({ patient_id: patientId, from: certDate, service: servicio });
     fetch(`/api/fichas/payments/calendario?${q}`)
       .then((r) => r.json())
       .then((d) => {
@@ -88,7 +103,7 @@ export default function DocumentosKine({
     return () => {
       vigente = false;
     };
-  }, [patientId, certDate, modo, citasKey]);
+  }, [patientId, certDate, modo, citasKey, servicio]);
 
   const citasActuales = citas?.key === citasKey ? citas : null;
   const nSeguidas = Math.max(1, Math.min(60, parseInt(cantidad) || 10));
@@ -101,11 +116,18 @@ export default function DocumentosKine({
       patient,
       certDate,
       firma,
-      modo === "reales" ? { sesiones: citasActuales?.lista ?? [] } : { cantidad: nSeguidas },
+      {
+        ...(modo === "reales" ? { sesiones: citasActuales?.lista ?? [] } : { cantidad: nSeguidas }),
+        servicio,
+        firmaImg: usaFirmaDigital ? firmaDigital!.img : null,
+      },
     );
   }
 
+  const usaFirmaDigital = !!firmaDigital && firmaDigital.nombre === firma;
+
   function sesionesInforme() {
+    if (!plan || !sessions) return false;
     const missing = checkInformeMissing(patient, plan, sessions);
     setInformeWarnings(missing);
     return missing.length === 0;
@@ -132,16 +154,16 @@ export default function DocumentosKine({
     if (destino === "correo" && !confirm(`¿Enviar el ${tipo === "cert" ? "certificado" : "informe"} a ${correo}?`)) return;
     setCargando(`${tipo}-${destino}`);
     try {
-      const doc = tipo === "cert" ? await crearCertificado() : await generateInforme(patient, plan, sessions, firma);
-      const filename = tipo === "cert" ? certificadoFilename(patient.name) : informeFilename(patient.name);
+      const doc = tipo === "cert" ? await crearCertificado() : await generateInforme(patient, plan!, sessions!, firma);
+      const filename = tipo === "cert" ? certificadoFilename(patient.name, servicio) : informeFilename(patient.name);
       if (destino === "descargar") {
         doc.save(filename);
       } else if (tipo === "cert") {
         await enviarPorCorreo(
           doc,
           filename,
-          "Certificado de atenciones kinésicas",
-          "Te enviamos adjunto tu certificado de atenciones kinésicas en Clínica Sakros.\n\nSi necesitas algún dato adicional, responde este correo.",
+          servicio === "Osteopatía" ? "Certificado de atenciones de osteopatía" : "Certificado de atenciones kinésicas",
+          `Te enviamos adjunto tu certificado de atenciones ${servicio === "Osteopatía" ? "de osteopatía" : "kinésicas"} en Clínica Sakros.\n\nSi necesitas algún dato adicional, responde este correo.`,
         );
       } else {
         await enviarPorCorreo(
@@ -178,7 +200,17 @@ export default function DocumentosKine({
 
       {/* Certificado */}
       <div className="rounded-lg border border-[#CEC8BE] bg-[#FAFAF8] p-3 mb-3">
-        <p className="text-xs font-bold text-[#0B3D2E] mb-2">Certificado de Atenciones Kinésicas</p>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-bold text-[#0B3D2E]">
+            Certificado de Atenciones {servicio === "Osteopatía" ? "de Osteopatía" : "Kinésicas"}
+          </p>
+          <select value={servicio} onChange={(e) => setServicio(e.target.value as Servicio)}
+            className="rounded-lg border border-[#CEC8BE] bg-white px-2 py-1 text-xs text-[#0B3D2E]">
+            <option value="Osteopatía">Osteopatía</option>
+            <option value="Kinesiología">Kinesiología</option>
+          </select>
+        </div>
+        {usaFirmaDigital && <p className="mb-2 text-[11px] font-semibold text-emerald-700">✓ Lleva tu firma digital</p>}
 
         <div className="mb-2 flex flex-col gap-1.5 text-xs text-[#0B3D2E]">
           <label className="flex items-center gap-2">
@@ -213,7 +245,7 @@ export default function DocumentosKine({
                 : citasActuales.error
                   ? citasActuales.error
                   : citasActuales.lista!.length === 0
-                    ? "No hay sesiones de Kinesiología realizadas desde esa fecha. Usa la opción de sesiones seguidas."
+                    ? `No hay sesiones de ${servicio} realizadas desde esa fecha. Usa la opción de sesiones seguidas.`
                     : `${citasActuales.lista!.length} ${citasActuales.lista!.length === 1 ? "sesión realizada" : "sesiones realizadas"}: ${citasActuales.lista!.map((c) => fecha(c.date)).join(", ")}`}
           </p>
         )}
@@ -229,6 +261,7 @@ export default function DocumentosKine({
       </div>
 
       {/* Informe */}
+      {conInforme && plan && sessions && (
       <div className="rounded-lg border border-[#CEC8BE] bg-[#FAFAF8] p-3">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs font-bold text-[#0B3D2E]">Informe de Atención Kinésica</span>
@@ -255,6 +288,8 @@ export default function DocumentosKine({
           </button>
         </div>
       </div>
+
+      )}
 
       {msg && <p className={`mt-3 text-xs font-semibold ${msg.ok ? "text-emerald-700" : "text-red-600"}`}>{msg.ok ? "✓ " : ""}{msg.text}</p>}
     </div>

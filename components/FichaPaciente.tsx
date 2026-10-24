@@ -6,6 +6,7 @@ import KinesiologyTab from "./fichas/KinesiologyTab";
 import SesionesDesdePago from "./fichas/SesionesDesdePago";
 import CorreoPaciente from "./fichas/CorreoPaciente";
 import CuestionariosPaciente from "./cuestionarios/CuestionariosPaciente";
+import DocumentosKine from "./fichas/DocumentosKine";
 import { blankKine, type KinePlan } from "./fichas/constants";
 import type { Permission } from "@/lib/equipo-auth";
 
@@ -156,7 +157,7 @@ export default function FichaPaciente({
   const [loading, setLoading] = useState(true);
 
   // Subvistas
-  const [activeSection, setActiveSection] = useState<"sesiones" | "kine" | "cuestionarios" | "pagos">(clinico ? "sesiones" : "pagos");
+  const [activeSection, setActiveSection] = useState<"sesiones" | "kine" | "cuestionarios" | "documentos" | "pagos">(clinico ? "sesiones" : "pagos");
   const [showNewSession, setShowNewSession] = useState(false);
   const [showNewPayment, setShowNewPayment] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -634,6 +635,18 @@ export default function FichaPaciente({
           Cuestionarios
         </button>
         )}
+        {clinico && (
+        <button
+          onClick={() => setActiveSection("documentos")}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+            activeSection === "documentos"
+              ? "bg-teal-700 text-white"
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+          }`}
+        >
+          Documentos
+        </button>
+        )}
         {puedePagos && (
         <button
           onClick={() => setActiveSection("pagos")}
@@ -784,6 +797,28 @@ export default function FichaPaciente({
             </div>
           )}
         </div>
+      )}
+
+      {/* === DOCUMENTOS (certificado de atenciones) === */}
+      {clinico && activeSection === "documentos" && patient && (
+        <DocumentosKine
+          patientId={patientId}
+          servicioInicial="Osteopatía"
+          conInforme={false}
+          professional="Joaquín Adi A."
+          patient={{
+            name: patient.name,
+            rut: patient.rut,
+            date_of_birth: patient.date_of_birth,
+            sex: patient.sex ?? null,
+            address: patient.address ?? null,
+            occupation: patient.occupation,
+            sport: patient.sport,
+            reason: patient.reason,
+            email: patient.email,
+            phone: patient.phone,
+          }}
+        />
       )}
 
       {/* === CUESTIONARIOS === */}
