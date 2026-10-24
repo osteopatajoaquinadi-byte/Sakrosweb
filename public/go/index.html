@@ -474,8 +474,8 @@ EX.zona2={n:'Aeróbico continuo en zona 2',img:[['cinta-1','Cinta inclinada a ri
 const BASE1={};['A','B'].forEach(d=>PLAN[d].forEach(it=>{const m=String(it.p[0]).match(/(\d+(?:,\d+)?) kg/);if(m)BASE1[it.id]=parseFloat(m[1].replace(',','.'))}));
 PLAN.B=PLAN.B.filter(x=>x.id!=='hipthrust');
 /* ---------- Programa Core ---------- */
-const PROG={rend:'Salta más y aguanta más (rendimiento: potencia, salto y cardio)',core:'Espalda y suelo pélvico fuertes (core: abdomen, glúteo y espalda)'};
-const PROGC={rend:'Rendir más',core:'Espalda y suelo pélvico'};
+const PROG={rend:'Entrenamiento Rendimiento: salta más y aguanta más (potencia, salto y cardio)',core:'Entrenamiento Core: espalda y suelo pélvico fuertes (abdomen, glúteo y espalda)'};
+const PROGC={rend:'Rendimiento',core:'Core'};
 const COND={hernia:'Hernia lumbar',iue:'Incontinencia de esfuerzo',ambas:'Hernia lumbar e incontinencia',otra:'Otra / prevención'};
 const BR='Braceo: inhala, piso pélvico (Knack), braceo al % marcado y exhala en el esfuerzo. Nunca en apnea.';
 const EXC={
@@ -808,7 +808,7 @@ const DIAC={A:'Antiextensión, bisagra y empuje',B:'Antirrotación, core lateral
 const TESTSC=[['flex','Flexores de tronco, McGill (s)'],['ext','Extensores, Biering-Sørensen (s)'],['lati','Plancha lateral izquierda (s)'],['latd','Plancha lateral derecha (s)'],
  ['iciq','ICIQ-SF (0–21)'],['odi','Oswestry (%)'],['eva','Dolor lumbar EVA (0–10)'],['tos','Escape al toser o saltar (sí/no)']];
 /* ---------- Programa Global ---------- */
-PROG.global='Empieza a entrenar sin lesionarte (global: cuerpo completo y mantención)';PROGC.global='Empezar a entrenar';
+PROG.global='Entrenamiento Activo: empieza a entrenar sin lesionarte (cuerpo completo y mantención)';PROGC.global='Activo';
 Object.assign(EX,{
  gcalor:{n:'Calentamiento',img:[['cinta-0','Caminata o bici suave'],['gato-0','Gato-camello'],['goblet-1','Sentadilla corta sin peso']],pasos:[
   '3 min de caminata rápida, bici o marcha en el lugar, subiendo de a poco el ritmo.',
@@ -943,7 +943,7 @@ function tminG(it,s){
   return (/A$/.test(it.b)?2:0)+(n===2?3:4);
 }
 /* ---------- Programa Sakros Base (control motor) ---------- */
-PROG.base='Sakros Base: aprende a moverte bien (control motor, 8 semanas)';PROGC.base='Base';
+PROG.base='Entrenamiento Base: aprende a moverte bien (control motor, 8 semanas)';PROGC.base='Base';
 const MOD={aterrizar:'Aterrizar y frenar',suelo:'Suelo pélvico y espalda',equilibrio:'Equilibrio y suelo'};
 const NIVEL=['','Nivel 1','Nivel 2','Nivel 3'];
 const CTRL='Control: si pierdes la posición, la serie termina ahí. Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control.';
@@ -1130,7 +1130,7 @@ function limpiaFase(s){// técnica limpia en las 2 semanas anteriores
 function renderTestsBase(m){
   const T=S.tests||{};
   const upd=(f,v)=>{const cur={...(S.tests||{}),[f]:v,t:Date.now()};S.tests=cur;debounce('tests',()=>write('tests','datos',cur))};
-  m.append(h('section',{class:'card'},h('h2',{text:'Tests Sakros Base · '+atl().nombre}),
+  m.append(h('section',{class:'card'},h('h2',{text:'Tests Entrenamiento Base · '+atl().nombre}),
     h('p',{class:'note',text:'Semana 0 antes de empezar, retest en las semanas 4 y 8. Grábate de frente y de perfil: es tu mejor comparación.'})));
   const inp=k=>{const e=h('input',{id:'xt-'+k,'aria-label':k,inputmode:'decimal'});e.value=T[k]??'';e.addEventListener('input',()=>upd(k,e.value));return e};
   const L=testsBase();
@@ -1707,13 +1707,13 @@ function renderPerfil(m,nuevo){
       f.mods={};const mb=h('div',{class:'opts'},Object.entries(MOD).map(([k,l])=>{const c=h('input',{type:'checkbox',id:'pf-mod-'+k});c.checked=(a.modulos||[]).includes(k);f.mods[k]=c;return h('label',{class:'tcrow',for:'pf-mod-'+k},c,h('span',{text:l}))}));
       const nvs=h('select',{id:'pf-nivel'},[1,2,3].map(n=>{const o=h('option',{value:n},NIVEL[n]);if((a.nivel||1)===n)o.selected=true;return o}));f.nivel=nvs;
       const sig=h('select',{id:'pf-sig'},[['rend',PROGC.rend],['core',PROGC.core],['global',PROGC.global]].map(([v,l])=>{const o=h('option',{value:v},l);if((a.siguiente||'global')===v)o.selected=true;return o}));f.sig=sig;
-      const bl=h('div',{style:'display:grid;gap:10px'},h('span',{class:'wholbl',text:'Módulos de Sakros Base (máximo 2)'}),mb,h('label',{class:'f',for:'pf-nivel'},'Nivel de partida',nvs),h('label',{class:'f',for:'pf-sig'},'Programa al terminar la Base',sig));
+      const bl=h('div',{style:'display:grid;gap:10px'},h('span',{class:'wholbl',text:'Módulos del Entrenamiento Base (máximo 2)'}),mb,h('label',{class:'f',for:'pf-nivel'},'Nivel de partida',nvs),h('label',{class:'f',for:'pf-sig'},'Programa al terminar la Base',sig));
       const cs=h('select',{id:'pf-cond'},[['','Elegir…'],...Object.entries(COND)].map(([v,l])=>{const o=h('option',{value:v},l);if((a.condicion||'')===v)o.selected=true;return o}));f.cond=cs;
       const cl=h('label',{class:'f',for:'pf-cond'},'Condición (espalda y suelo pélvico)',cs);
       const sync=()=>{cl.hidden=sel.value!=='core';bl.hidden=sel.value!=='base';if(f.cgCard)f.cgCard.hidden=sel.value!=='rend'};
       sel.addEventListener('change',sync);f.syncProg=sync;
       return h('div',{style:'display:grid;gap:10px'},h('label',{class:'f',for:'pf-prog'},'Programa de entrenamiento',sel),cl,bl,
-        h('p',{class:'note',text:'Base: 8 semanas de control motor con las que empieza todo cliente nuevo. Espalda y suelo pélvico: core con énfasis en el braceo, para hernia lumbar o incontinencia de esfuerzo. Empezar a entrenar: cuerpo completo para personas sedentarias. Rendir más: potencia, salto y cardio (método EXOS).'}))})(),
+        h('p',{class:'note',text:'Sakros Go Entrenamiento. Base: 8 semanas de control motor con las que empieza todo cliente nuevo. Core: espalda y suelo pélvico, con énfasis en el braceo, para hernia lumbar o incontinencia de esfuerzo. Activo: cuerpo completo para personas sedentarias o mantención. Rendimiento: potencia, salto y cardio (método EXOS). Aparte, Sakros Go Prep: 10 minutos de preparación según el FMS, para quien ya entrena.'}))})(),
     (()=>{const sel=h('select',{id:'pf-freq'},[['','Elegir…'],['1','1 vez por semana'],['2','2 veces por semana'],['3','3 veces por semana']].map(([v,l])=>{const o=h('option',{value:v},l);if(String(a.frecuencia||(nuevo?'':'2'))===v)o.selected=true;return o}));f.freq=sel;return h('label',{class:'f',for:'pf-freq'},'Sesiones de este plan por semana *',sel)})(),
     (()=>{const sel=h('select',{id:'pf-sexo'},[['','Elegir…'],['M','Mujer'],['H','Hombre']].map(([v,l])=>{const o=h('option',{value:v},l);if((a.sexo||'')===v)o.selected=true;return o}));f.sexo=sel;return h('label',{class:'f',for:'pf-sexo'},'Sexo *',sel)})(),
     h('p',{class:'note',text:'En mujeres el plan suma más activación de zona media y de aterrizajes y frenadas (prevención de LCA).'}),
@@ -2049,19 +2049,19 @@ function renderProgreso(m){
   const aj=Object.entries(S.ajustes).filter(([k,a])=>progOf(a.ej)===prog());
   m.append(h('section',{class:'card'},h('h2',{text:'Ajustes al plan'}),
     aj.length?h('ul',{},aj.sort().map(([k,a])=>h('li',{},`S${a.semana} día ${a.dia} · ${EX[a.ej]?.n||a.ej}: ${a.pres}`,a.motivo?` (${a.motivo})`:''))):h('p',{class:'note',text:'Todavía no hay cambios. Pídelos en la pestaña Coach.'})));
-  if(esBase()){m.append(h('section',{class:'card'},h('h2',{text:'Reglas de Sakros Base'}),h('ul',{},
+  if(esBase()){m.append(h('section',{class:'card'},h('h2',{text:'Reglas del Entrenamiento Base'}),h('ul',{},
     h('li',{text:'Cuatro fases de 2 semanas: aprender, automatizar, desafiar y transferir.'}),
     h('li',{text:'Pasa de fase si marcaste técnica limpia en al menos el 80 % de los ejercicios de las 2 semanas anteriores. Si no, repite la fase.'}),
     h('li',{text:'Cada ejercicio sube de nivel por separado, con técnica limpia en 2 sesiones seguidas.'}),
     h('li',{text:'RPE 4–6: es aprendizaje, no cansancio.'}),
     h('li',{text:'Al terminar la semana 8, repite los tests y pasa a tu programa de entrenamiento.'}))));return}
-  if(esGlob()){m.append(h('section',{class:'card'},h('h2',{text:'Reglas del programa Global'}),h('ul',{},
+  if(esGlob()){m.append(h('section',{class:'card'},h('h2',{text:'Reglas del Entrenamiento Activo'}),h('ul',{},
     h('li',{text:'Fases: adaptación (S1–2) con 2 series, base (S3–4) con 3 series y progreso (S5–8) con más peso o un ejercicio más difícil.'}),
     h('li',{text:'Sube el peso o la dificultad solo cuando completes todas las repeticiones con buena técnica y te sobren 3 o más.'}),
     h('li',{text:'Las letras A y B del mismo número son superserie: alterna una serie de cada uno, pausa 60–90 s.'}),
     h('li',{text:'Separa los días al menos 48 h y suma caminatas de 20–30 min los días que no entrenas.'}),
     h('li',{text:'Para la sesión con dolor en el pecho, mareo, falta de aire desproporcionada o dolor articular que aumenta.'}))));return}
-  if(esCore()){m.append(h('section',{class:'card'},h('h2',{text:'Reglas del programa Core'}),h('ul',{},
+  if(esCore()){m.append(h('section',{class:'card'},h('h2',{text:'Reglas del Entrenamiento Core'}),h('ul',{},
     h('li',{text:'Fases: control (S1), carga (S2–4), fuerza con barra (S5–6) y potencia con lanzamientos (S7–8). Dentro de cada fase: primero +1 serie o +2 repeticiones, después +carga (2–5 %).'}),
     h('li',{text:'Lanzamientos y swing: máxima intención, exhalación fuerte y braceo. Si la velocidad baja, termina la serie.'}),
     h('li',{text:'Si pierdes el braceo o el piso pélvico en las últimas repeticiones, quédate en el paso anterior.'}),
@@ -2397,7 +2397,7 @@ function renderSalud(m){
     h('p',{class:'note',text:'Activa lo que aplique y elige la fase. Cada ejercicio del plan mostrará si se mantiene, se adapta o se sustituye, y el Coach lo tendrá en cuenta. Es orientativo: ajústalo con tu valoración clínica.'}),
     h('div',{class:'dxhead'},h('div',{},h('strong',{text:'Modo automático'}),h('p',{class:'note',text:sal.auto===false?'Desactivado: el plan no cambia, solo ves las indicaciones.':'Activado: el plan cambia solo. Sustituye ejercicios y baja cargas según cada diagnóstico; si hay varios, aplica el más restrictivo.'})),
       h('button',{class:'check','aria-pressed':sal.auto!==false,onclick:()=>saveSalud({auto:sal.auto===false})},h('span',{class:'box',text:'✓'}),sal.auto===false?'Activar':'Activo'))));
-  if(esGlob()||esBase())m.append(h('section',{class:'card'},h('h2',{text:esBase()?'Sakros Base':'Programa Global'}),h('p',{class:'note',text:'Si activas diagnósticos, cada ejercicio muestra sus indicaciones y el Coach las tiene en cuenta. En Global no cambian el ejercicio automáticamente: adapta el rango o la carga según la indicación.'})));
+  if(esGlob()||esBase())m.append(h('section',{class:'card'},h('h2',{text:esBase()?'Entrenamiento Base':'Entrenamiento Activo'}),h('p',{class:'note',text:'Si activas diagnósticos, cada ejercicio muestra sus indicaciones y el Coach las tiene en cuenta. En Global no cambian el ejercicio automáticamente: adapta el rango o la carga según la indicación.'})));
   if(esCore())m.append(h('section',{class:'card'},h('h2',{text:'Programa Core'}),h('p',{class:'note',text:'Este programa ya está diseñado para hernia lumbar e incontinencia de esfuerzo (elige la condición en el perfil). Si activas otros diagnósticos, cada ejercicio muestra sus indicaciones y el Coach las tiene en cuenta; en Core no cambian el ejercicio automáticamente, para no romper la progresión del braceo.'})));
   for(const [k,dx] of Object.entries(DX)){
     const st=sal[k]||{},on=!!st.on,fase=st.fase||dx.fases[0][0];
@@ -2549,7 +2549,7 @@ Cambios al plan: para cambiar lo que aparece en una sesión usa la herramienta a
 Los ajustes que haces con la herramienta tienen prioridad sobre la adaptación automática; úsalos solo si el atleta quiere algo distinto a lo que ya muestra el plan.
 Balance de fuerza: si hay desbalances isométricos (H:Q, ADD:ABD o asimetrías), el plan ya suma trabajo correctivo de forma automática; respétalo y comenta el retest de la semana 4.
 Diagnósticos: si el atleta tiene diagnósticos activos (te los paso con las adaptaciones de cada ejercicio), respétalos en cada consejo y en cada ajuste de carga, y no propongas nada que contradiga esas adaptaciones.`;
-const RULES_BASE=`Eres el entrenador de control motor de la persona, en Sakros Base. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varias personas (su propio perfil es «Mi perfil»), o la propia persona desde la vista de cliente.
+const RULES_BASE=`Eres el entrenador de control motor de la persona, en el Entrenamiento Base de Sakros Go. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varias personas (su propio perfil es «Mi perfil»), o la propia persona desde la vista de cliente.
 Programa: 8 semanas de control motor con las que empieza todo cliente antes de su entrenamiento. Cuatro fases de 2 semanas: aprender (apoyo estable, tempo 3-1-1, espejo), automatizar (menos ayudas, una pierna), desafiar (menos apoyo, ojos cerrados en equilibrio, perturbaciones, carga liviana) y transferir (más rápido, reactivo, doble tarea). Día A: tren inferior y equilibrio; día B: tronco, braceo y tren superior. Cada sesión suma un módulo de 5 minutos: aterrizar y frenar, suelo pélvico y espalda, o equilibrio y suelo. RPE 4–6.
 Respiración y hollowing (protocolo lumbar de Sakros, basado en Finta 2020), al inicio de cada sesión: S1–2 respiración diafragmática y hollowing boca arriba; S3–4 ejercicio de Lewit (espiración lenta y completa) y hollowing en 4 apoyos y sentado; S5–6 paso de hollowing a braceo, integrado en dead bug y bird dog; S7–8 braceo respirando en tareas (caminar, agacharse, levantar). Hollowing: activación local del transverso a baja intensidad (20–30 %), sin apnea ni movimiento pélvico. Braceo: faja de 360° para carga y perturbaciones. Si el test de hollowing es grado 2–3, dale más tiempo a la etapa boca arriba antes de avanzar y revisa que no aguante el aire.
 Cada ejercicio tiene 3 niveles y sube por separado con técnica limpia en 2 sesiones seguidas. Se pasa de fase con técnica limpia en al menos el 80 % de los ejercicios de las 2 semanas anteriores; si no, se repite la fase.
@@ -2557,13 +2557,13 @@ Cómo corregir: ante una dificultad, primero la corrección de control (posició
 Seguridad: dolor que aumenta, mareo, dolor en el pecho, dolor irradiado o escape de orina persistente → parar y consultar.
 Cómo responder: breve y concreto. Basa tus consejos en el registro (técnica limpia, niveles, notas).
 Cambios al plan: usa la herramienta ajustar_prescripcion, una vez por semana y ejercicio, cuando la persona lo pida o acepte tu propuesta. Después de ajustar, di en una línea qué cambiaste.`;
-const RULES_GLOB=`Eres el entrenador personal de la persona, en el programa Sakros Global. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varias personas (su propio perfil es «Mi perfil»). Habla de la persona seleccionada; con ella, lenguaje simple.
+const RULES_GLOB=`Eres el entrenador personal de la persona, en el Entrenamiento Activo de Sakros Go (antes llamado Global). Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varias personas (su propio perfil es «Mi perfil»). Habla de la persona seleccionada; con ella, lenguaje simple.
 Programa: 8 semanas de cuerpo completo para población sedentaria que empieza a entrenar o quiere mantenerse: piernas, empuje, tirón, brazos, abdomen y cardio suave. Material: mancuernas livianas, bandas, silla y escalón. Sesiones de 40–50 min. Fase 1 (S1–2) adaptación con 2 series y RPE 5; fase 2 (S3–4) base con 3 series y RPE 5–6; fase 3 (S5–8) progreso con más peso o variantes más difíciles y RPE 6–7. Día A: sentadilla a silla → goblet, flexiones progresivas, remo con banda, puente, curl + tríceps, dead bug + plancha, caminata. Día B: step-up, press de hombros sentado, remo con mancuerna, bisagra → peso muerto rumano, curl martillo + patada de tríceps, bird dog + plancha lateral, intervalos suaves. Con 3 sesiones el día C repite A en semanas impares y B en pares; con 1, se alternan.
 Prioridades: adherencia, técnica y progresión gradual. Nunca al fallo. Subir peso solo cuando sobran 3 o más repeticiones. Respirar siempre (exhalar en el esfuerzo). Animar a caminar 20–30 min los días sin entrenamiento.
 Seguridad: con dolor en el pecho, mareo, falta de aire desproporcionada o dolor articular que aumenta, parar y derivar. Si la persona tiene hipertensión, diabetes, enfermedad cardíaca u otra condición, adaptar y recomendar control médico.
 Cómo responder: breve, concreto y motivador, en frases cortas. Basa tus consejos en el registro; si falta un dato, pregúntalo.
 Cambios al plan: usa la herramienta ajustar_prescripcion, una vez por semana y ejercicio, cuando la persona lo pida o acepte tu propuesta. Escribe la prescripción con el formato del plan (por ejemplo «3×10 · en mesa»). Después de ajustar, di en una línea qué cambiaste.`;
-const RULES_CORE=`Eres el entrenador y fisioterapeuta del paciente en el programa Sakros Core. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios pacientes (su propio perfil es «Mi perfil»). Habla del paciente seleccionado y usa términos técnicos.
+const RULES_CORE=`Eres el entrenador y fisioterapeuta del paciente en el Entrenamiento Core de Sakros Go. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios pacientes (su propio perfil es «Mi perfil»). Habla del paciente seleccionado y usa términos técnicos.
 Programa: 8 semanas de entrenamiento de abdomen, glúteo y espalda para pacientes con hernia lumbar o incontinencia urinaria de esfuerzo, ya educados en hollowing y bracing. Es entrenamiento, no solo rehabilitación: fase 1 (S1) control, RPE 5–6; fase 2 (S2–4) carga con barra, mancuernas y lanzamientos introductorios con balón medicinal, RPE 6–7; fase 3 (S5–6) fuerza con barra (sentadilla frontal, peso muerto, hip thrust, remo), RPE 7–8; fase 4 (S7–8) potencia (lanzamientos, swing, puente explosivo, jammer) manteniendo fuerza. Día A antiextensión, bisagra y empuje; día B antirrotación, core lateral y tirón. Con 3 sesiones, el día C repite A en semanas impares y B en pares; con 1, se alternan A y B. Sesiones de 45–55 min.
 Patrón de braceo en cada esfuerzo: inhalar expandiendo costillas, Knack (piso pélvico) antes del esfuerzo, braceo graduado (25–30 % control, 50 % fuerza moderada, 70 % cargas altas, lanzamientos y potencia desde la semana 5) y exhalar en el esfuerzo. Nunca Valsalva.
 Progresión dentro de la fase: +1 serie o +2 repeticiones, después +carga (2–5 %). En potencia, cortar la serie si baja la velocidad. Pasar de fase solo sin escape, sin dolor mayor de 3/10 y con braceo estable.
@@ -2573,7 +2573,7 @@ Cambios al plan: usa la herramienta ajustar_prescripcion, una vez por semana y e
 function contexto(){
   const a=atl(),c=a.cargas||{};
   const core=alt(),pg=prog();
-  const L=[`PROGRAMA: ${pg==='base'?PROG.base+' · módulos: '+modulos().map(k=>MOD[k]).join(' y ')+' · nivel general: '+(a.nivel||1)+(a.niveles?' · niveles por ejercicio: '+JSON.stringify(a.niveles):'')+' · después sigue con: '+(PROGC[a.siguiente]||'Empezar a entrenar'):pg==='core'?PROG.core+(a.condicion?' · condición: '+COND[a.condicion]:''):PROG[pg]}.`,`FRECUENCIA DEL PLAN: ${freq()} sesión(es) por semana (días ${DIAS().join(', ')}).`,`ATLETA: ${a.nombre}${a.sexo?', '+(a.sexo==='M'?'mujer':'hombre'):''}${a.edad?', '+a.edad+' años':''}${a.sesiones?', '+a.sesiones+' entrenamientos por semana':''}.${a.objetivo?' Objetivo: '+a.objetivo+'.':''}${a.notas?' Notas: '+a.notas+'.':''}`,
+  const L=[`PROGRAMA: ${pg==='base'?PROG.base+' · módulos: '+modulos().map(k=>MOD[k]).join(' y ')+' · nivel general: '+(a.nivel||1)+(a.niveles?' · niveles por ejercicio: '+JSON.stringify(a.niveles):'')+' · después sigue con: '+(PROGC[a.siguiente]||PROGC.global):pg==='core'?PROG.core+(a.condicion?' · condición: '+COND[a.condicion]:''):PROG[pg]}.`,`FRECUENCIA DEL PLAN: ${freq()} sesión(es) por semana (días ${DIAS().join(', ')}).`,`ATLETA: ${a.nombre}${a.sexo?', '+(a.sexo==='M'?'mujer':'hombre'):''}${a.edad?', '+a.edad+' años':''}${a.sesiones?', '+a.sesiones+' entrenamientos por semana':''}.${a.objetivo?' Objetivo: '+a.objetivo+'.':''}${a.notas?' Notas: '+a.notas+'.':''}`,
     core?'Programa '+PROGC[pg]+': sin cargas de referencia; la carga se ajusta a la RPE de la fase.':UI.atleta==='yo'?'Referencias de partida: sentadilla posterior 120 kg ×5 (1RM ≈135), frontal 90 kg ×5–6 (1RM ≈105), peso muerto 120 kg ×3–4 (1RM ≈130).':'Cargas de la semana 1: '+(Object.keys(c).length?CARGABLES.filter(k=>c[k]).map(k=>EX[k].n+' '+c[k]+' kg').join(', '):'sin definir (las sesiones dicen «carga según RPE»)')+'.',
     `Semana que tiene abierta: S${UI.sem}, día ${UI.dia}.`,'','PLAN ACTUAL (* = ajustado por ti con la herramienta; [auto] = adaptado automáticamente por diagnóstico):'];
   if(pg==='prep')Object.keys(ZONA).forEach(z=>L.push('Prep '+ZONA[z]+': '+prepRows(z,1).map(it=>it.id+' '+EX[it.id].n+' ('+pres(1,z,it)+')').join(' | ')));
@@ -2731,7 +2731,7 @@ function renderOnb(m){
     const err=h('p',{class:'note err',role:'alert'});
     const res=prog==='prep'?h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),h('h2',{text:'Sakros Go Prep'}),h('p',{text:PDESC.prep}),h('p',{text:'Te recomendamos hacer tu FMS por video: así los correctivos son los que tú necesitas.'}),
       h('p',{class:'note',text:(adapt.length?'Adaptado a: '+adapt.join(', '):'')})):h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),
-      h('h2',{text:'1. Sakros Base · 8 semanas'}),h('p',{text:'Aprende a moverte bien: control de la postura, el equilibrio y los movimientos básicos, con un módulo según tu objetivo. Sesiones de 30–35 min.'}),
+      h('h2',{text:'1. Entrenamiento Base · 8 semanas'}),h('p',{text:'Aprende a moverte bien: control de la postura, el equilibrio y los movimientos básicos, con un módulo según tu objetivo. Sesiones de 30–35 min.'}),
       h('h2',{text:'2. '+PROG[prog].split(' (')[0]}),h('p',{text:PDESC[prog]}),
       h('p',{class:'note',text:O.dias+(O.dias===1?' día':' días')+' por semana'+(adapt.length?' · adaptado a: '+adapt.join(', '):'')}));
     card.append(h('div',{class:'onbhead'},h('span',{class:'chip ok',text:'Listo'}),h('h2',{text:'Este es tu plan'})),res);
@@ -2770,10 +2770,10 @@ function renderHoy(m){
     h('span',{class:'wholbl',text:PROG[prog()].split(' (')[0]}),
     h('div',{class:'bar','aria-label':'Avance del programa: '+pt+' %'},h('i',{style:'width:'+pt+'%'})),
     h('p',{class:'note',text:'Semana '+s+' de 8 · '+faseTxt(s)+' · '+pt+' % del programa'}),
-    h('h2',{text:N.fin?(esBase()?'¡Terminaste Sakros Base!':'¡Terminaste las 8 semanas!'):'Hoy toca: '+dayName(d)}),
+    h('h2',{text:N.fin?(esBase()?'¡Terminaste el Entrenamiento Base!':'¡Terminaste las 8 semanas!'):'Hoy toca: '+dayName(d)}),
     N.fin?h('p',{text:esBase()?'Haz tus tests de salida para ver cuánto mejoraste y empieza tu programa de entrenamiento.':'Repite los tests para ver cuánto mejoraste y habla con tu entrenador sobre el siguiente bloque.'}):h('p',{class:'hoytit',text:((esBase()?DIAX:esGlob()?DIAG:esCore()?DIAC:DIA)[srcDia(d,s)]||'')+(esBase()?' · módulo '+MOD[(modulos().length>1&&srcDia(d,s)==='B')?modulos()[1]:modulos()[0]].toLowerCase():'')}),
     N.fin?null:h('p',{class:'meta',text:'≈ '+dur(d,s)+' min · '+r.length+' ejercicios'+(N.n?' · '+N.n+' hechos':'')}),
-    N.fin&&esBase()?h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),programa:atl().siguiente||'global',t:Date.now()});UI.sem=1;UI.dia=DIAS()[0];saveUI();render();scrollTo(0,0)}},'Empezar '+(PROGC[atl().siguiente]||PROGC.global)),h('button',{class:'linkbtn',onclick:()=>{UI.tab='tests';render()}},'Antes, mis tests de salida')):N.fin?h('button',{class:'btn primary big',onclick:()=>{UI.tab='tests';render()}},'Ir a los tests'):h('button',{class:'btn primary big',onclick:()=>iniciarSesion(s,d)},N.n?'Continuar sesión':'Empezar'),
+    N.fin&&esBase()?h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),programa:atl().siguiente||'global',t:Date.now()});UI.sem=1;UI.dia=DIAS()[0];saveUI();render();scrollTo(0,0)}},'Empezar Entrenamiento '+(PROGC[atl().siguiente]||PROGC.global)),h('button',{class:'linkbtn',onclick:()=>{UI.tab='tests';render()}},'Antes, mis tests de salida')):N.fin?h('button',{class:'btn primary big',onclick:()=>{UI.tab='tests';render()}},'Ir a los tests'):h('button',{class:'btn primary big',onclick:()=>iniciarSesion(s,d)},N.n?'Continuar sesión':'Empezar'),
     N.fin?null:h('details',{},h('summary',{},'Qué vas a hacer hoy'),h('ol',{},r.map(it=>{const A=autoEj(s,d,it);return h('li',{},A.n+' · ',h('span',{class:'note',text:A.pres}))}))),
     N.fin?null:h('div',{class:'row'},h('button',{class:'linkbtn',onclick:()=>{UI.sem=s;UI.dia=d;UI.tab='sesion';saveUI();render()}},'Ver la sesión completa'),
       DIAS().length>1?h('span',{class:'note'},'Otro día: ',...DIAS().filter(x=>x!==d).map(x=>h('button',{class:'linkbtn',style:'margin-left:8px',onclick:()=>iniciarSesion(s,x)},dayName(x)))):null)));
