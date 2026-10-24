@@ -37,27 +37,46 @@ export type Preapproval = {
   summarized?: { last_charged_date?: string | null; charged_quantity?: number | null } | null;
 };
 
-export type Venta = { precio: number; activo: boolean };
+// Dos planes: Prep (10 min de preparación) y Entrenamiento (programas
+// completos; incluye Prep).
+export type Plan = "prep" | "entrenamiento";
+export const esPlan = (v: unknown): v is Plan => v === "prep" || v === "entrenamiento";
+export type Venta = { precio: number; precioPrep: number; activo: boolean };
 
-// Precio y estado de la venta: los define el coach en la app (config/venta).
+// Precios y estado de la venta: los define el coach en la app (config/venta).
+// precio = Entrenamiento; precioPrep = Prep.
 export async function leerVenta(db: Db): Promise<Venta> {
   const { data } = await db.from("go_docs").select("data").eq("path", "config").eq("id", "venta").maybeSingle();
-  const v = (data?.data ?? {}) as { precio?: unknown; activo?: unknown };
+  const v = (data?.data ?? {}) as { precio?: unknown; precioPrep?: unknown; activo?: unknown };
   const precio = Math.round(Number(v.precio) || 0);
-  return { precio, activo: v.activo === true && precio >= 1000 };
+  const precioPrep = Math.round(Number(v.precioPrep) || 0);
+  return { precio, precioPrep, activo: v.activo === true && precio >= 1000 };
+}
+
+export function precioDe(venta: Venta, plan: Plan): number {
+  return plan === "prep" ? venta.precioPrep : venta.precio;
+}
+
+// external_reference: "go:{atleta}" (Entrenamiento, también las antiguas) o "go:{atleta}|prep".
+function leerReferencia(ref: string): { atleta: string; plan: Plan } | null {
+  if (!ref.startsWith("go:")) return null;
+  const [atleta, plan] = ref.slice(3).split("|");
+  if (!atleta) return null;
+  return { atleta, plan: plan === "prep" ? "prep" : "entrenamiento" };
 }
 
 export function crearSuscripcion(p: {
   atleta: string;
   email: string;
+  plan: Plan;
   precio: number;
   backUrl: string;
 }): Promise<Preapproval> {
   return mp<Preapproval>("/preapproval", {
     method: "POST",
     body: JSON.stringify({
-      reason: "Sakros Go · suscripción mensual",
-      external_reference: `go:${p.atleta}`,
+      reason: p.plan === "prep" ? "Sakros Go Prep · suscripción mensual" : "Sakros Go Entrenamiento · suscripción mensual",
+      external_reference: p.plan === "prep" ? `go:${p.atleta}|prep` : `go:${p.atleta}`,
       payer_email: p.email,
       back_url: p.backUrl,
       status: "pending",
@@ -97,9 +116,9 @@ function sumarMes(fecha: Date): Date {
 // idempotente: el acceso dura hasta un mes después del último cobro.
 export async function sincronizarSuscripcion(db: Db, preapprovalId: string) {
   const pre = await leerSuscripcion(preapprovalId);
-  const ref = pre.external_reference ?? "";
-  if (!ref.startsWith("go:")) return null;
-  const atleta = ref.slice(3);
+  const r = leerReferencia(pre.external_reference ?? "");
+  if (!r) return null;
+  const { atleta, plan } = r;
 
   const { data: actual } = await db.from("go_accesos").select("hasta, origen").eq("atleta", atleta).maybeSingle();
   let hasta = actual?.hasta ? new Date(actual.hasta) : null;
@@ -121,10 +140,11 @@ export async function sincronizarSuscripcion(db: Db, preapprovalId: string) {
     origen: ultimo || !actual?.origen ? "mercadopago" : actual.origen,
     mp_preapproval_id: pre.id,
     mp_estado: pre.status,
+    plan,
     precio: pre.auto_recurring?.transaction_amount ? Math.round(pre.auto_recurring.transaction_amount) : null,
     updated_at: new Date().toISOString(),
   });
-  return { atleta, hasta, estado: pre.status };
+  return { atleta, hasta, estado: pre.status, plan };
 }
 
 export async function accesoActivo(db: Db, atleta: string | null): Promise<boolean> {

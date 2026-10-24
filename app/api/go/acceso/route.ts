@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
     activo,
     hasta: a?.hasta ?? null,
     origen: a?.origen ?? null,
+    plan: a?.plan ?? "entrenamiento",
     estado: a?.mp_estado ?? null,
     venta,
     terminosV: TERMINOS_V,

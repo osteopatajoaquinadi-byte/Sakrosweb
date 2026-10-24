@@ -6,7 +6,9 @@ import {
   TERMINOS_V,
   cancelarSuscripcion,
   crearSuscripcion,
+  esPlan,
   leerVenta,
+  precioDe,
   sincronizarSuscripcion,
 } from "@/lib/go-suscripcion";
 
@@ -19,9 +21,12 @@ export async function POST(request: NextRequest) {
   if (!mercadoPagoEnabled()) {
     return NextResponse.json({ error: "Los pagos no están disponibles." }, { status: 503 });
   }
+  const body = (await request.json().catch(() => ({}))) as { plan?: unknown };
+  const plan = esPlan(body.plan) ? body.plan : "entrenamiento";
   const db = getServiceClient();
   const venta = await leerVenta(db);
-  if (!venta.activo) {
+  const precio = precioDe(venta, plan);
+  if (!venta.activo || precio < 1000) {
     return NextResponse.json({ error: "La suscripción todavía no está disponible." }, { status: 409 });
   }
   const { data: doc } = await db.from("go_docs").select("data").eq("path", "atletas").eq("id", m.atleta).maybeSingle();
@@ -29,16 +34,25 @@ export async function POST(request: NextRequest) {
   if (terminos?.v !== TERMINOS_V) {
     return NextResponse.json({ error: "Acepta los términos y el descargo de salud para continuar." }, { status: 409 });
   }
-  const { data: a } = await db.from("go_accesos").select("hasta, mp_estado").eq("atleta", m.atleta).maybeSingle();
+  const { data: a } = await db.from("go_accesos").select("hasta, mp_estado, plan").eq("atleta", m.atleta).maybeSingle();
   if (a?.mp_estado === "authorized" && a.hasta && new Date(a.hasta) > new Date()) {
-    return NextResponse.json({ error: "Ya tienes una suscripción activa." }, { status: 409 });
+    return NextResponse.json(
+      {
+        error:
+          a.plan === plan
+            ? "Ya tienes una suscripción activa."
+            : "Para cambiar de plan, primero cancela la renovación del actual (tu acceso sigue hasta el fin del mes pagado) y después suscríbete al nuevo.",
+      },
+      { status: 409 },
+    );
   }
 
   try {
     const pre = await crearSuscripcion({
       atleta: m.atleta,
       email: m.email,
-      precio: venta.precio,
+      plan,
+      precio,
       backUrl: `${request.nextUrl.origin}/go?sub=ok`,
     });
     await db.from("go_accesos").upsert({
@@ -46,7 +60,7 @@ export async function POST(request: NextRequest) {
       hasta: a?.hasta ?? null,
       mp_preapproval_id: pre.id,
       mp_estado: pre.status,
-      precio: venta.precio,
+      precio,
       updated_at: new Date().toISOString(),
     });
     if (!pre.init_point) throw new Error("Mercado Pago no devolvió el enlace de pago.");
