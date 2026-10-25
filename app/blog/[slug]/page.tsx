@@ -80,10 +80,59 @@ export default async function BlogPostPage({
       </p>
       <h1 className="text-3xl font-bold text-slate-900 mb-8">{post.title}</h1>
       <div className="space-y-4 text-slate-700">
-        {post.body.map((paragraph, i) => (
-          <p key={i}>{paragraph}</p>
-        ))}
+        {post.body.map((paragraph, i) => {
+          if (paragraph.startsWith("## ")) {
+            return (
+              <h2 key={i} className="text-xl font-semibold text-slate-900 pt-6">
+                {paragraph.slice(3)}
+              </h2>
+            );
+          }
+          if (paragraph === "[[video]]") {
+            if (!post.video) return null;
+            return (
+              <figure key={i} className="my-8 max-w-[300px]">
+                <video
+                  src={post.video.src}
+                  poster={post.video.poster}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="rounded-2xl w-full"
+                >
+                  Testimonio de {post.video.nombre}
+                </video>
+                <figcaption className="mt-3">
+                  <span className="block font-semibold text-slate-900">{post.video.nombre}</span>
+                  <span className="text-sm text-slate-500">{post.video.detalle}</span>
+                </figcaption>
+              </figure>
+            );
+          }
+          return <p key={i}>{paragraph}</p>;
+        })}
       </div>
+
+      {post.referencias && post.referencias.length > 0 && (
+        <section className="mt-12">
+          <h2 className="text-lg font-semibold text-slate-900 mb-3">Referencias</h2>
+          <ol className="list-decimal pl-5 space-y-2 text-sm text-slate-600">
+            {post.referencias.map((r) => (
+              <li key={r.doi}>
+                {r.texto}{" "}
+                <a
+                  href={`https://doi.org/${r.doi}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-teal-700 hover:underline break-all"
+                >
+                  doi:{r.doi}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
       <div className="mt-12 pt-8 border-t border-slate-200">
         <a
