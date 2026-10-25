@@ -1266,6 +1266,33 @@ function fmsTotal(){let s=0;for(const t of FMSL){const r=fmsRes(t.id);if(r.score
 const fmsListo=()=>fmsTotal()!=null;
 const fmsAlguno=()=>FMSL.some(t=>fmsRes(t.id).score!=null);
 const fmsDolor=()=>FMSL.filter(t=>fmsRes(t.id).dolor).map(t=>t.n);
+// Saltarse el Entrenamiento Base: solo con el FMS completo, 14 o más de 21 y ninguna prueba con dolor.
+const FMS_SALTO=14;
+const puedeSaltarBase=()=>{const t=fmsTotal();return t!=null&&t>=FMS_SALTO&&!fmsDolor().length};
+function cardSaltoBase(){
+  const a=atl(),sig=a.siguiente||'global',nom='Entrenamiento '+(PROGC[sig]||PROGC.global),tot=fmsTotal(),dol=fmsDolor();
+  if(!esBase()||a.saltoBase==='no')return null;
+  const patch=async d=>{await saveAtleta(UI.atleta,{...atl(),...d,t:Date.now()});render()};
+  const regla='Si sacas '+FMS_SALTO+' o más de 21 y ninguna prueba con dolor, empiezas directo en '+nom+'.';
+  if(tot==null){
+    if(!a.saltarBase)return null;
+    return h('section',{class:'card'},h('span',{class:'wholbl',text:'Ya tengo buen control motor'}),h('h2',{text:'Haz tu FMS por video'}),
+      h('p',{text:regla+' Si no, te recomendamos partir con el Entrenamiento Base para integrar el control motor y no lesionarte al ejecutar los entrenamientos.'}),
+      h('p',{class:'note',text:'Mientras tanto, puedes partir con el Entrenamiento Base.'}),
+      h('div',{class:'row'},h('button',{class:'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},fmsAlguno()?'Seguir mi FMS':'Hacer mi FMS')));
+  }
+  if(puedeSaltarBase())return h('section',{class:'card hero'},h('span',{class:'chip ok',text:'FMS '+tot+' de 21 · sin dolor'}),
+    h('h2',{text:'Puedes empezar directo en '+nom}),
+    h('p',{text:'Tu control motor ya está integrado: no necesitas el Entrenamiento Base.'}),
+    h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),programa:sig,saltoBase:'hecho',saltarBase:false,t:Date.now()});UI.tab='hoy';UI.sem=1;UI.dia=DIAS()[0];saveUI();render();scrollTo(0,0)}},'Empezar '+nom),
+      h('button',{class:'linkbtn',onclick:()=>patch({saltoBase:'no',saltarBase:false})},'Prefiero hacer el Base igual')));
+  if(!a.saltarBase)return null;
+  return h('section',{class:'card'},h('span',{class:'chip',text:'FMS '+tot+' de 21'+(dol.length?' · con dolor':'')}),
+    h('h2',{text:'Te recomendamos empezar con el Entrenamiento Base'}),
+    h('p',{text:'Para saltarte el Base necesitas '+FMS_SALTO+' o más de 21 y ninguna prueba con dolor. En 8 semanas integras el control motor y evitas lesionarte al ejecutar los entrenamientos. Después sigues con '+nom+'.'}),
+    dol.length?h('p',{class:'dxline',text:'Con dolor en: '+dol.join(', ')+'. El dolor no se corrige con ejercicio: coméntalo con tu kinesiólogo.'}):null,
+    h('div',{class:'row'},h('button',{class:'btn primary',onclick:()=>patch({saltarBase:false})},'Entendido, empiezo con el Base')));
+}
 function fmsPrioridad(zona){return FMSH.filter(id=>ZTEST[zona].includes(id)).map(id=>({id,...fmsRes(id)})).filter(r=>r.score!=null&&r.score>0&&(r.score<3||r.asym))}
 function nivCorr(id){const v=(atl().corr||{})[id];if(v>=1&&v<=4)return v;const r=fmsRes(id);if(r.score===3&&!r.asym)return 4;return r.score===1?1:2}
 function corrDe(zona,n){
@@ -1412,6 +1439,7 @@ function renderFms(m){
     if(asy.length)res.append(h('p',{text:'Diferencia entre lados en: '+asy.join(', ')+'. Se trabaja primero el lado más débil.'}));
     res.append(h('p',{text:pr.length?'Tu preparación se enfoca en: '+pr.join(', ')+'.':'Sin puntos débiles: tu preparación es de mantención.'}));
   }
+  if(esBase()&&!coach&&tot!=null){const sb=cardSaltoBase();if(sb)res.append(sb)}
   if(coach&&tot!=null)res.append(h('div',{class:'row'},h('button',{class:'btn primary',onclick:()=>saveFms({...FF(),revisado:{t:Date.now()}})},F.revisado?'Revisado ✓':'Marcar como revisado')));
   m.append(res);
 }
@@ -2655,7 +2683,7 @@ Cambios al plan: para cambiar lo que aparece en una sesión usa la herramienta a
 Los ajustes que haces con la herramienta tienen prioridad sobre la adaptación automática; úsalos solo si el atleta quiere algo distinto a lo que ya muestra el plan.
 Balance de fuerza: si hay desbalances isométricos (H:Q, ADD:ABD o asimetrías), el plan ya suma trabajo correctivo de forma automática; respétalo y comenta el retest de la semana 4.
 Diagnósticos: si el atleta tiene diagnósticos activos (te los paso con las adaptaciones de cada ejercicio), respétalos en cada consejo y en cada ajuste de carga, y no propongas nada que contradiga esas adaptaciones.`;
-const RULES_BASE=`Eres el entrenador de control motor de la persona, en el Entrenamiento Base de Sakros Go. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varias personas (su propio perfil es «Mi perfil»), o la propia persona desde la vista de cliente.
+const RULES_BASE=`Eres el entrenador de control motor de la persona, en el Entrenamiento Base de Sakros Go. Quien ya tiene buen control motor puede saltarse el Base solo si su FMS completo da 14 o más de 21 y ninguna prueba con dolor; si no, recomiéndale hacer el Base para integrar el control motor y no lesionarse al ejecutar los entrenamientos. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varias personas (su propio perfil es «Mi perfil»), o la propia persona desde la vista de cliente.
 Programa: 8 semanas de control motor con las que empieza todo cliente antes de su entrenamiento. Cuatro fases de 2 semanas: aprender (apoyo estable, tempo 3-1-1, espejo), automatizar (menos ayudas, una pierna), desafiar (menos apoyo, ojos cerrados en equilibrio, perturbaciones, carga liviana) y transferir (más rápido, reactivo, doble tarea). Día A: tren inferior y equilibrio; día B: tronco, braceo y tren superior. Cada sesión suma un módulo de 5 minutos: aterrizar y frenar, suelo pélvico y espalda, o equilibrio y suelo. RPE 4–6.
 Respiración y hollowing (protocolo lumbar de Sakros, basado en Finta 2020), al inicio de cada sesión: S1–2 respiración diafragmática y hollowing boca arriba; S3–4 ejercicio de Lewit (espiración lenta y completa) y hollowing en 4 apoyos y sentado; S5–6 paso de hollowing a braceo, integrado en dead bug y bird dog; S7–8 braceo respirando en tareas (caminar, agacharse, levantar). Hollowing: activación local del transverso a baja intensidad (20–30 %), sin apnea ni movimiento pélvico. Braceo: faja de 360° para carga y perturbaciones. Si el test de hollowing es grado 2–3, dale más tiempo a la etapa boca arriba antes de avanzar y revisa que no aguante el aire.
 Cada ejercicio tiene 3 niveles y sube por separado con técnica limpia en 2 sesiones seguidas. Se pasa de fase con técnica limpia en al menos el 80 % de los ejercicios de las 2 semanas anteriores; si no, se repite la fase.
@@ -2831,17 +2859,20 @@ function renderOnb(m){
     const sugCore=prog!=='core'&&prog!=='prep'&&les.some(x=>x==='escapes'||x==='espalda');
     const durs={rend:'50–60',core:'45–55',global:'40–50',base:'30–35'};
     const adapt=les.map(k=>({espalda:'espalda',escapes:'suelo pélvico',rodilla:'rodilla',hombro:'hombro',tobillo:'tobillo',otra:'tu molestia (la revisa tu entrenador)'})[k]);
-    const nom=h('input',{id:'onb-nom',placeholder:'Tu nombre'});nom.value=a.nombre&&a.nombre!=='Mi perfil'&&a.nombre!=='Atleta'?a.nombre:'';
-    const sx=h('select',{id:'onb-sexo'},[['','Elegir…'],['M','Mujer'],['H','Hombre']].map(([v,l])=>{const o=h('option',{value:v},l);if((a.sexo||'')===v)o.selected=true;return o}));
-    const ed=h('input',{id:'onb-edad',inputmode:'numeric',placeholder:'años'});ed.value=a.edad||'';
+    const nom=h('input',{id:'onb-nom',placeholder:'Tu nombre'});nom.value=O.nom!=null?O.nom:a.nombre&&a.nombre!=='Mi perfil'&&a.nombre!=='Atleta'?a.nombre:'';
+    const sx=h('select',{id:'onb-sexo'},[['','Elegir…'],['M','Mujer'],['H','Hombre']].map(([v,l])=>{const o=h('option',{value:v},l);if((O.sx!=null?O.sx:(a.sexo||''))===v)o.selected=true;return o}));
+    const ed=h('input',{id:'onb-edad',inputmode:'numeric',placeholder:'años'});ed.value=O.ed!=null?O.ed:(a.edad||'');
+    const guardar=()=>{O.nom=nom.value;O.sx=sx.value;O.ed=ed.value};
     const err=h('p',{class:'note err',role:'alert'});
     const res=prog==='prep'?h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),h('h2',{text:'Sakros Go Prep'}),h('p',{text:PDESC.prep}),h('p',{text:'Te recomendamos hacer tu FMS por video: así los correctivos son los que tú necesitas.'}),
       h('p',{class:'note',text:(adapt.length?'Adaptado a: '+adapt.join(', '):'')})):h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),
-      h('h2',{text:'1. Entrenamiento Base · 8 semanas'}),h('p',{text:'Aprende a moverte bien: control de la postura, el equilibrio y los movimientos básicos, con un módulo según tu objetivo. Sesiones de 30–35 min.'}),
+      ...(O.ctrl?[h('h2',{text:'1. Tu FMS por video'}),h('p',{text:'7 pruebas de movimiento grabadas con tu teléfono. Si sacas '+FMS_SALTO+' o más de 21 y ninguna prueba con dolor, empiezas directo en Entrenamiento '+(PROGC[prog]||'')+'. Si no, te recomendamos partir con el Entrenamiento Base (8 semanas) para integrar el control motor y no lesionarte al ejecutar los entrenamientos.'})]
+        :[h('h2',{text:'1. Entrenamiento Base · 8 semanas'}),h('p',{text:'Aprende a moverte bien: control de la postura, el equilibrio y los movimientos básicos, con un módulo según tu objetivo. Sesiones de 30–35 min.'})]),
       h('h2',{text:'2. '+PROG[prog].split(' (')[0]}),h('p',{text:PDESC[prog]}),
       h('p',{class:'note',text:O.dias+(O.dias===1?' día':' días')+' por semana'+(adapt.length?' · adaptado a: '+adapt.join(', '):'')}));
     card.append(h('div',{class:'onbhead'},h('span',{class:'chip ok',text:'Listo'}),h('h2',{text:'Este es tu plan'})),res);
-    if(sugCore)card.append(h('p',{class:'dxline'},'Por lo que marcaste, te conviene empezar por ',h('strong',{text:PROG.core.split(' (')[0]}),'. ',h('button',{class:'linkbtn',onclick:()=>{O.obj='core';render()}},'Cambiar a ese plan')));
+    if(prog!=='prep')card.append(h('button',{class:'bigopt','aria-pressed':!!O.ctrl,onclick:()=>{guardar();O.ctrl=!O.ctrl;render()}},h('b',{text:'Ya tengo buen control motor'}),h('span',{text:'Entreno hace tiempo y me muevo bien: quiero saltarme el Entrenamiento Base con mi FMS.'})));
+    if(sugCore)card.append(h('p',{class:'dxline'},'Por lo que marcaste, te conviene empezar por ',h('strong',{text:PROG.core.split(' (')[0]}),'. ',h('button',{class:'linkbtn',onclick:()=>{guardar();O.obj='core';render()}},'Cambiar a ese plan')));
     const tc=h('input',{type:'checkbox',id:'onb-tc'});
     card.append(h('div',{class:'row'},h('label',{class:'f',for:'onb-nom'},'Nombre',nom),h('label',{class:'f',for:'onb-edad'},'Edad',ed)),h('label',{class:'f',for:'onb-sexo'},'Sexo',sx),
       h('details',{},h('summary',{},'Términos y descargo de salud'),puntosTerminos(),h('p',{},h('a',{href:'/go/terminos.html',target:'_blank',rel:'noopener'},'Leer los términos completos'))),
@@ -2854,12 +2885,13 @@ function renderOnb(m){
         const cond=prog==='core'?(les.includes('espalda')&&les.includes('escapes')?'ambas':les.includes('escapes')?'iue':les.includes('espalda')?'hernia':'otra'):a.condicion;
         const mods=[];if(prog==='core'||les.includes('escapes')||les.includes('espalda'))mods.push('suelo');if(prog==='rend')mods.push('aterrizar');if(prog==='global'||edad>=60)mods.push('equilibrio');
         const data={...a,nombre,sexo:sx.value,edad:edad>=5&&edad<=100?edad:(a.edad||''),programa:prog==='prep'?'prep':'base',siguiente:prog==='prep'?(a.siguiente||''):prog,modulos:mods.length?mods.slice(0,2):['equilibrio'],nivel:a.nivel||((prog==='global'||edad>=60)?1:2),frecuencia:O.dias,sesiones:a.sesiones||O.dias,condicion:cond||'',objetivo:a.objetivo||({rend:'Rendir más en mi deporte',core:'Fortalecer espalda, abdomen y suelo pélvico',global:'Empezar a entrenar o mantenerme',prep:'Prepararme para entrenar sin lesionarme'})[prog],
-          notas:[a.notas,les.includes('otra')?'Marcó otra molestia en la bienvenida: revisar.':''].filter(Boolean).join(' '),onb:Date.now(),terminos:terminosOk(),t:Date.now()};
+          saltarBase:prog!=='prep'&&!!O.ctrl,saltoBase:prog!=='prep'&&O.ctrl?null:(a.saltoBase||null),notas:[a.notas,les.includes('otra')?'Marcó otra molestia en la bienvenida: revisar.':''].filter(Boolean).join(' '),onb:Date.now(),terminos:terminosOk(),t:Date.now()};
         e.target.disabled=true;const ok=await saveAtleta(UI.atleta,data);e.target.disabled=false;
         if(!ok){err.textContent='No se pudo guardar. Revisa la conexión y vuelve a intentarlo.';return}
         const dxm={rodilla:'rodilla',hombro:'hombro',tobillo:'tobillo'};if(prog!=='core')dxm.espalda='lumbar';
         const patch={};les.forEach(k=>{const id=dxm[k];if(id&&DX[id]&&!(S.salud||{})[id]?.on)patch[id]={on:true,fase:DX[id].fases[0][0]}});
-        UI.onb=null;UI.tab='hoy';UI.sem=1;UI.dia=DIAS()[0];saveUI();
+        const irFms=prog!=='prep'&&O.ctrl&&!fmsListo();
+        UI.onb=null;UI.tab=irFms?'fms':'hoy';UI.sem=1;UI.dia=DIAS()[0];saveUI();
         if(Object.keys(patch).length)saveSalud(patch);else render();scrollTo(0,0);
       }},'Crear mi plan'),h('button',{class:'linkbtn',onclick:()=>{O.paso=3;render()}},'← Volver')));
   }
@@ -2873,6 +2905,7 @@ function renderHoy(m){
   if(N.fin&&!esBase()){m.append(cardFinBloque());const cf=cardMiSuscripcion();if(cf)m.append(cf);return}
   const pt=progTotal();
   if(!N.fin&&bloqueada(s)){m.append(cardPaywall());return}
+  if(esBase()&&!N.fin){const sb=cardSaltoBase();if(sb)m.append(sb)}
   m.append(h('section',{class:'card hero'},
     h('span',{class:'wholbl',text:PROG[prog()].split(' (')[0]+(bk()>1?' · bloque '+bk():'')}),
     h('div',{class:'bar','aria-label':'Avance del programa: '+pt+' %'},h('i',{style:'width:'+pt+'%'})),
