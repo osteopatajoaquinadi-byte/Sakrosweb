@@ -365,8 +365,8 @@ export default function HomePage() {
             },
             {
               src: "/images/testimonio-rodilla.mp4",
-              nombre: "Paciente de Sakros",
-              dg: "Rehabilitación de rodilla",
+              nombre: "Cristian",
+              dg: "Artrosis de rodilla + condromalacia grado 4",
             },
           ].map((t) => (
             <div key={t.src} className="sm:max-w-[260px]">
