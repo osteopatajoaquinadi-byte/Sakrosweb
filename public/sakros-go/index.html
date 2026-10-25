@@ -173,6 +173,22 @@ blockquote footer{color:var(--muted);font-size:.85rem;margin-top:10px}
 .garantia svg{flex:0 0 22px;color:var(--accent)}
 .garantia b{color:var(--ink)}
 
+/* Cómo funciona compacto */
+section.cf{padding-block:56px}
+.cf .head{margin-bottom:22px}
+.cf h2{font-size:clamp(1.9rem,4.4vw,2.8rem)}
+.pasos{list-style:none;margin:0;padding:0;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.pasos li{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.pasos b{font:700 2rem/1 var(--display);color:var(--accent);min-width:22px}
+.pasos h3{font-size:1.2rem}.pasos p{margin:2px 0 0;color:var(--soft);font-size:.92rem;line-height:1.45}
+.sublbl{margin:22px 0 10px;text-align:center;color:var(--muted);font-weight:700;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
+.progs{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+@media (max-width:520px){.progs{grid-template-columns:1fr 1fr}}
+.progs .prog{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.progs .chip{font-size:.62rem;padding:3px 8px;margin-bottom:6px}
+.progs h3{font-size:1.25rem}.progs p{margin:2px 0 0;color:var(--soft);font-size:.86rem;line-height:1.4}
+.cf .closing{margin-top:18px;font-size:.98rem}
+@media (max-width:520px){section.cf{padding-block:40px}.cf .head{margin-bottom:16px}.pasos li{padding:12px 14px}.sublbl{margin:16px 0 8px}.cf .closing{margin-top:14px;font-size:.92rem}}
 /* Pie */
 footer.site{border-top:1px solid var(--line);padding-block:44px calc(44px + env(safe-area-inset-bottom,0px));text-align:center}
 footer.site .brand{justify-content:center}
@@ -279,28 +295,26 @@ footer.site p{color:var(--muted);font-size:.82rem;max-width:62ch;margin:6px auto
   </section>
 
   <!-- Cómo funciona -->
-  <section id="como-funciona">
+  <section id="como-funciona" class="cf">
     <div class="wrap">
       <div class="head center rv">
         <span class="eyebrow">Cómo funciona</span>
         <h2>Así es <span class="hl">Sakros Go</span></h2>
-        <p class="lead">Ese mismo método, ahora en tu teléfono. Sirve para tu gimnasio, tu rutina o tu deporte.</p>
+        <p class="lead">El método del centro, ahora en tu teléfono.</p>
       </div>
-      <div class="grid g3">
-        <div class="card rv"><div class="num">1</div><h3>Evalúa cómo te mueves</h3><p>Grabas las 7 pruebas del FMS con tu teléfono. El Coach revisa los videos, te da tu puntaje y detecta qué necesitas trabajar primero. Tu kinesiólogo puede revisarlo.</p></div>
-        <div class="card rv"><div class="num">2</div><h3>Prepárate 10 minutos</h3><p>Antes de entrenar eliges qué vas a trabajar: piernas, tren superior, cuerpo completo o deporte. La app arma tu preparación: rodillo, 2 correctivos según tu FMS y activación.</p></div>
-        <div class="card rv"><div class="num">3</div><h3>Entrena con un plan</h3><p>Si quieres un programa completo, empiezas por 8 semanas de control motor y sigues con el programa de tu objetivo. Cada sesión te guía paso a paso, con fotos, tiempos y registro.</p></div>
+      <ol class="pasos">
+        <li class="rv"><b>1</b><div><h3>Evalúa cómo te mueves</h3><p>Grabas las 7 pruebas del FMS y el Coach te da tu puntaje.</p></div></li>
+        <li class="rv"><b>2</b><div><h3>Prepárate 10 minutos</h3><p>Rodillo, 2 correctivos según tu FMS y activación, para lo que entrenes hoy.</p></div></li>
+        <li class="rv"><b>3</b><div><h3>Entrena con un plan</h3><p>Sesiones guiadas paso a paso, con fotos, tiempos y registro.</p></div></li>
+      </ol>
+      <p class="sublbl rv">Programas de Entrenamiento</p>
+      <div class="progs">
+        <div class="prog rv"><span class="chip">Primero</span><h3>Base</h3><p>8 semanas para aprender a moverte bien.</p></div>
+        <div class="prog rv"><span class="chip">Espalda y pelvis</span><h3>Core</h3><p>Hernia lumbar o escapes de orina.</p></div>
+        <div class="prog rv"><span class="chip">Desde cero</span><h3>Activo</h3><p>Cuerpo completo y mantención.</p></div>
+        <div class="prog rv"><span class="chip">Deportistas</span><h3>Rendimiento</h3><p>Potencia, salto y resistencia.</p></div>
       </div>
-      <div class="head center rv" style="margin:56px 0 24px">
-        <h2 style="font-size:clamp(1.8rem,4vw,2.4rem)">Los programas de Entrenamiento</h2>
-      </div>
-      <div class="grid g4">
-        <div class="card prog rv"><span class="chip">Primero para todos</span><h3>Entrenamiento Base</h3><p>8 semanas para aprender a moverte bien: postura, equilibrio, respiración y los movimientos básicos.</p></div>
-        <div class="card prog rv"><span class="chip">Espalda y suelo pélvico</span><h3>Entrenamiento Core</h3><p>Fuerza real para la espalda, el abdomen y el suelo pélvico. Para hernia lumbar o escapes de orina al hacer esfuerzo.</p></div>
-        <div class="card prog rv"><span class="chip">Desde cero</span><h3>Entrenamiento Activo</h3><p>Cuerpo completo para empezar a entrenar o mantenerte en forma, con una progresión segura.</p></div>
-        <div class="card prog rv"><span class="chip">Deportistas</span><h3>Entrenamiento Rendimiento</h3><p>Potencia, salto, velocidad y resistencia para rendir más en tu deporte.</p></div>
-      </div>
-      <p class="closing rv">Y un <b>Coach con inteligencia artificial</b> que conoce tu plan y tus registros: te responde dudas, adapta la sesión si tienes poco tiempo o una molestia, y te avisa cuándo consultar.</p>
+      <p class="closing rv">Además, un <b>Coach con inteligencia artificial</b> que conoce tu plan, adapta la sesión y te avisa cuándo consultar.</p>
     </div>
   </section>
 
