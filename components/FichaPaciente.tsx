@@ -7,6 +7,7 @@ import SesionesDesdePago from "./fichas/SesionesDesdePago";
 import CorreoPaciente from "./fichas/CorreoPaciente";
 import CuestionariosPaciente from "./cuestionarios/CuestionariosPaciente";
 import DocumentosKine from "./fichas/DocumentosKine";
+import AdjuntosPaciente from "./fichas/AdjuntosPaciente";
 import { blankKine, type KinePlan } from "./fichas/constants";
 import type { Permission } from "@/lib/equipo-auth";
 
@@ -800,6 +801,9 @@ export default function FichaPaciente({
       )}
 
       {/* === DOCUMENTOS (certificado de atenciones) === */}
+      {clinico && activeSection === "documentos" && patient && (
+        <AdjuntosPaciente patientId={patientId} />
+      )}
       {clinico && activeSection === "documentos" && patient && (
         <DocumentosKine
           patientId={patientId}
