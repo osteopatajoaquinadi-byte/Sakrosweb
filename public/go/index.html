@@ -1285,7 +1285,7 @@ function conCorr(r,d,s){// Entrenamiento: un correctivo del FMS después de la p
   let i=-1;r.forEach((it,j)=>{if(String(it.b).startsWith('1'))i=j});
   const out=r.slice();out.splice(i+1,0,{id:c[0],b:'1z',tm:3,p:prepFill(s,corrPres(c[0]))});return out;
 }
-const semReg=s=>esPrep()?Math.ceil(s/3):s;
+const semReg=s=>esPrep()?Math.ceil(s/3):bk()>1?(bk()-1)*8+s:s;
 function prepN(){let n=0;Object.keys(S.sesiones).forEach(k=>{const m=/^p(\d+)/.exec(k);if(m)n=Math.max(n,+m[1])});return n+1}
 function ctrlCorr(s,d,it){
   const id=it.id,t=corrTest(id),k=key(s,d,id),reg=S.registro[k]||{};
@@ -1493,6 +1493,111 @@ Sobre su rutina del gimnasio: puedes orientar en técnica, dosis y descanso, y r
 Seguridad: dolor que aumenta, dolor irradiado, hormigueo o pérdida de fuerza → parar y consultar con su kinesiólogo.
 Cómo responder: breve y concreto. No uses la herramienta de ajustes: en Prep los correctivos los define el FMS.`;
 
+/* ---------- Bloques de continuidad (año 1 y siguientes) ----------
+   El bloque 1 es el programa original de 8 semanas. Desde el bloque 2 la sesión
+   se arma con plantillas por día: cada casilla tiene un tipo (principal,
+   accesorio, potencia, core, carga, cardio, preparación) y un banco de
+   ejercicios. Los accesorios rotan cada bloque y los principales cada 2 bloques.
+   El énfasis cambia cada bloque y vuelve a empezar después del bloque 6. */
+const ENF=[
+ {k:'fuerza',n:'Fuerza',d:'Más carga y menos repeticiones. RPE 7–8.'},
+ {k:'volumen',n:'Volumen',d:'Más repeticiones y series para ganar músculo y resistencia. RPE 7–8.'},
+ {k:'potencia',n:'Potencia',d:'Movimientos rápidos y saltos o lanzamientos con máxima intención; menos carga.'},
+ {k:'fuerzamax',n:'Fuerza máxima',d:'Lo más pesado del año, con técnica impecable. RPE 8–9.'},
+ {k:'mantencion',n:'Mantención y tests',d:'Bajar un poco la carga, consolidar y medir cuánto mejoraste.'}];
+const enfDe=n=>ENF[(Math.max(2,n)-2)%ENF.length];
+const bk=()=>(esBase()||esPrep())?1:Math.max(1,parseInt((atl().bloques||{})[prog()],10)||1);
+const DESC4='descarga';
+// Prescripciones por énfasis y tipo, semana 1 a 8 (S4 y S8 más livianas).
+const SCH={
+ fuerza:{pri:['3×6 · RPE 7','4×6 · RPE 7','4×5 · RPE 8','2×5 · RPE 6 · '+DESC4,'4×5 · RPE 8','4×4 · RPE 8','5×3 · RPE 8','3×3 · RPE 7 · técnica'],
+  acc:['3×8','3×8','3×10','2×8 · '+DESC4,'3×8 · +carga','4×8','4×6 · +carga','2×8'],
+  pot:['3×4','3×4','4×4','2×4 · '+DESC4,'4×3','4×4','5×3','3×3'],
+  carry:['3×20 m','3×30 m','4×30 m','2×20 m · '+DESC4,'3×30 m · +carga','4×30 m','4×30 m · +carga','2×30 m']},
+ volumen:{pri:['3×10 · RPE 7','3×10 · RPE 7','4×10 · RPE 7','2×10 · RPE 6 · '+DESC4,'4×8 · RPE 8','4×10 · RPE 8','4×12 · RPE 8','2×10 · RPE 6'],
+  acc:['3×12','3×12','3×15','2×12 · '+DESC4,'4×12','4×12','4×15','2×12'],
+  pot:['3×5','3×5','3×6','2×5 · '+DESC4,'3×6','4×5','4×6','2×5'],
+  carry:['3×30 m','3×40 m','4×40 m','2×30 m · '+DESC4,'4×40 m','4×40 m · +carga','5×40 m','2×30 m']},
+ potencia:{pri:['4×3 · RPE 6 · subida explosiva','4×3 · RPE 6 · subida explosiva','5×3 · RPE 7 · subida explosiva','3×3 · RPE 5 · '+DESC4,'5×2 · RPE 7 · subida explosiva','5×3 · RPE 7 · subida explosiva','6×2 · RPE 7 · subida explosiva','3×2 · RPE 6'],
+  acc:['3×6','3×6','3×8','2×6 · '+DESC4,'3×6 · +carga','3×6 · +carga','3×6','2×6'],
+  pot:['4×5','4×5','5×5','3×4 · '+DESC4,'5×4','5×5','6×3','3×3 · test'],
+  carry:['3×20 m · rápido','3×20 m · rápido','4×20 m · rápido','2×20 m · '+DESC4,'4×20 m · rápido','4×30 m · rápido','5×20 m · rápido','2×20 m']},
+ fuerzamax:{pri:['4×5 · RPE 7','4×4 · RPE 8','5×3 · RPE 8','3×3 · RPE 6 · '+DESC4,'5×3 · RPE 8','4×2 · RPE 8–9','5×2 · RPE 8–9','Test: máximo con 3 repeticiones limpias'],
+  acc:['3×8','3×6','3×6 · +carga','2×6 · '+DESC4,'4×6 · +carga','4×5 · +carga','4×5 · +carga','2×6'],
+  pot:['3×3','3×3','4×3','2×3 · '+DESC4,'4×3','4×3','4×2','2×3'],
+  carry:['3×30 m · pesado','3×30 m · pesado','4×30 m · pesado','2×20 m · '+DESC4,'4×30 m · +carga','4×30 m · +carga','5×30 m · +carga','2×30 m']},
+ mantencion:{pri:['3×6 · RPE 7','3×6 · RPE 7','3×6 · RPE 7','2×6 · RPE 6 · '+DESC4,'3×5 · RPE 7','3×5 · RPE 7','3×5 · RPE 7','Tests'],
+  acc:['3×10','3×10','3×10','2×10 · '+DESC4,'3×10','3×10','3×10','2×10'],
+  pot:['3×4','3×4','3×4','2×4 · '+DESC4,'3×4','3×4','3×4','Tests'],
+  carry:['3×30 m','3×30 m','3×30 m','2×30 m · '+DESC4,'3×30 m','3×30 m','3×30 m','2×30 m']}};
+// En Activo (población sedentaria) las cargas son más suaves.
+const SCHG={fuerza:['3×8','3×8','3×10','2×8 · '+DESC4,'3×8 · +peso','3×10 · +peso','4×8 · +peso','2×8'],
+ volumen:['3×12','3×12','3×15','2×12 · '+DESC4,'3×12 · +peso','3×15','4×12','2×12'],
+ potencia:['3×10 · subida rápida, bajada lenta','3×10 · subida rápida','3×12 · subida rápida','2×10 · '+DESC4,'3×10 · +peso, subida rápida','4×10 · subida rápida','4×10 · +peso, subida rápida','2×10'],
+ fuerzamax:['3×8 · RPE 7','3×6 · RPE 8','4×6 · RPE 8','2×8 · '+DESC4,'4×6 · +peso','4×6 · +peso','4×5 · +peso','Tests'],
+ mantencion:['3×10','3×10','3×10','2×10 · '+DESC4,'3×10','3×10','3×10','Tests']};
+const VARTXT={fuerza:' · pausa 1 s abajo',volumen:' · tempo 3-0-1',potencia:'',fuerzamax:'',mantencion:''};
+const BRACEO={fuerza:' · braceo 70 %',volumen:' · braceo 50 %',potencia:' · braceo 50–70 %, exhala fuerte',fuerzamax:' · braceo 70 %',mantencion:' · braceo 50 %'};
+// Plantillas: [b, tipo, banco de ejercicios]
+const BLK={
+ rend:{
+  A:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['cajon','skater']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['pallof']],['5','cardio',['intervalos','t3030']],['6','prep',['regen']]],
+  B:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarB']],['1d','prep',['actB']],['2','pot',['salidas','sprint']],['3A','pri',['pushpress']],['3B','acc',['dominadas']],['4','pri',['muerto','hipthrust']],['5','cardio',['t3030','zona2']],['6','prep',['regen']]],
+  C:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarA']],['1d','prep',['actB']],['2','pot',['skater','cajon']],['3A','pri',['hipthrust','muerto']],['3B','acc',['dominadas']],['4A','pri',['frontal','sentadilla']],['4B','core',['pallof']],['5','cardio',['zona2','intervalos']],['6','prep',['regen']]],
+  U:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['salidas','cajon']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['pallof']],['5A','pri',['muerto','hipthrust']],['5B','acc',['dominadas']],['6','cardio',['intervalos','zona2']],['7','prep',['regen']]]},
+ core:{
+  A:[['1','prep',['kprep']],['2A','core',['kdeadbugc','krollout']],['2B','pot',['klanzpecho','klanzover','klanzatras']],['3A','pri',['ksentbarra','kgoblet']],['3B','pri',['kmuertobarra','krdl']],['3C','acc',['khipthrust','khipthrustp','kpuentex']],['4','acc',['kremobarra','kremomanc']],['5','carry',['kgranjero','kmaleta']],['6','prep',['kcalma']]],
+  B:[['1','prep',['kprep']],['2A','core',['klateral','klateralabd']],['2B','pot',['klanzrot','klanzrotp']],['2C','core',['kbirddogc','kpallofsr']],['3A','pri',['ksplit','kstepup']],['3B','acc',['klandmine']],['3C','pot',['kswing','kjammer','kpuentex']],['4','acc',['kjalon','kremoband']],['5','carry',['kcarrera','kmaleta']],['6','prep',['kcalma']]]},
+ global:{
+  A:[['1','prep',['gcalor']],['2','pri',['gsilla','gstep']],['3','acc',['gflex','gpress']],['4','acc',['gremob','gremom']],['5','acc',['gpuente','gbisagra']],['6A','acc',['gcurl','gmartillo']],['6B','acc',['gtricep','gpatada']],['7','core',['gcorea','gcoreb']],['8','cardio',['gcaminata','ginterv']],['9','prep',['gestira']]],
+  B:[['1','prep',['gcalor']],['2','pri',['gstep','gsilla']],['3','acc',['gpress','gflex']],['4','acc',['gremom','gremob']],['5','pri',['gbisagra','gpuente']],['6A','acc',['gmartillo','gcurl']],['6B','acc',['gpatada','gtricep']],['7','core',['gcoreb','gcorea']],['8','cardio',['ginterv','gcaminata']],['9','prep',['gestira']]]}};
+const TMB={pri:8,acc:5,pot:4,core:4,carry:4};
+let _baseP=null;// prescripción original de cada ejercicio (bloque 1)
+function baseP(id){
+  if(!_baseP){_baseP={};[PLAN,PLANC,PLANG].forEach(P=>Object.values(P).forEach(rs=>rs.forEach(it=>{const p=it.p||[];const cur=_baseP[it.id]||Array(8).fill('');p.forEach((v,i)=>{if(v&&!cur[i])cur[i]=v});_baseP[it.id]=cur})))}
+  const p=_baseP[id]||[];const ok=p.filter(Boolean);return ok.length?p.map((v,i)=>v||ok[Math.min(ok.length-1,Math.max(0,i-(8-ok.length)))]):Array(8).fill('');
+}
+function rowsBloque(src,n){
+  const pg=prog(),T=(BLK[pg]||{})[src];if(!T)return [];
+  const e=enfDe(n).k,k=n-2;
+  return T.map(([b,cat,pool])=>{
+    const id=pool[(cat==='pri'?Math.floor(k/2):k)%pool.length];
+    const bp=baseP(id);let p;
+    if(cat==='prep'||cat==='core'||cat==='cardio')p=cat==='prep'?bp:bp.map((v,i)=>bp[Math.min(7,4+(i%4))]||v);
+    else if(pg==='global')p=SCHG[e].map(x=>x+(cat==='pri'||cat==='acc'?VARTXT[e]&&!/descarga|Tests/.test(x)?VARTXT[e]:'':''));
+    else p=SCH[e][cat].map(x=>x+(pg==='core'&&!/Test/.test(x)?BRACEO[e]:''));
+    const r={id,b,p};if(pg!=='global'&&TMB[cat])r.tm=TMB[cat];if(pg==='core'&&cat==='prep')r.tm=id==='kprep'?8:3;
+    return r;
+  });
+}
+function faseBloque(s){const n=bk(),e=enfDe(n);return 'Bloque '+n+' · '+e.n+(s===4?' · descarga':s===8?' · tests y descarga':'')}
+function laneBloque(s){return s===4?'Descarga':s===8?'Tests':enfDe(bk()).n.split(' ')[0]}
+async function empezarBloque(){
+  const pg=prog(),n=bk();
+  // Guarda los tests del bloque y usa el cierre como nueva línea base.
+  const T=S.tests||{},vals=Object.fromEntries(Object.entries(T).filter(([k])=>k!=='t'&&k!=='hist'&&T[k]!==''&&T[k]!=null));
+  if(Object.keys(vals).length){
+    const nuevo={hist:{...(T.hist||{}),[pg+'-'+n]:{...vals,fecha:new Date().toISOString().slice(0,10)}},t:Date.now()};
+    Object.entries(vals).forEach(([k,v])=>{const m=k.match(/^(.*)_(\d)$/);if(m&&m[2]==='8')nuevo[m[1]+'_0']=v;else if(m&&m[2]==='0'&&!vals[m[1]+'_8'])nuevo[k]=v});
+    await write('tests','datos',nuevo);
+  }
+  await saveAtleta(UI.atleta,{...atl(),bloques:{...(atl().bloques||{}),[pg]:n+1},t:Date.now()});
+  UI.sem=1;UI.dia=DIAS()[0];saveUI();render();scrollTo(0,0);
+}
+function cardFinBloque(){
+  const n=bk(),e=enfDe(n+1);
+  return h('section',{class:'card hero'},h('span',{class:'chip ok',text:'Bloque '+n+' terminado'}),
+    h('h2',{text:'¡Terminaste el bloque '+n+'!'}),
+    h('p',{text:'Haz tus tests para ver cuánto mejoraste y sigue con el bloque '+(n+1)+': '+e.n.toLowerCase()+'. '+e.d}),
+    h('div',{class:'row'},h('button',{class:'btn primary big',onclick:empezarBloque},'Empezar bloque '+(n+1)+' · '+e.n),
+      h('button',{class:'linkbtn',onclick:()=>{UI.tab='tests';render()}},'Antes, mis tests')));
+}
+function selBloque(){
+  const n=bk(),set=async v=>{await saveAtleta(UI.atleta,{...atl(),bloques:{...(atl().bloques||{}),[prog()]:v},t:Date.now()});UI.sem=1;saveUI();render()};
+  return h('div',{class:'freq',role:'group','aria-label':'Bloque'},h('span',{class:'wholbl',text:'Bloque'}),
+    n>1?h('button',{class:'opt',onclick:()=>set(n-1)},'−'):null,h('span',{class:'note',text:n===1?'1 · programa inicial':n+' · '+enfDe(n).n}),h('button',{class:'opt',onclick:()=>set(n+1)},'+'));
+}
+
 const prog=()=>['core','global','base','prep'].includes(atl().programa)?atl().programa:'rend';
 const esPrep=()=>prog()==='prep';
 const esBase=()=>prog()==='base';
@@ -1501,10 +1606,10 @@ const esGlob=()=>prog()==='global';
 const alt=()=>prog()!=='rend';
 const progOf=id=>String(id).startsWith('f')?'prep':String(id).startsWith('k')?'core':String(id).startsWith('g')?'global':String(id).startsWith('x')?'base':'rend';
 const srcDia=(d,s)=>alt()&&(d==='C'||d==='U')?(s%2?'A':'B'):d;
-function rows(d,s){if(esPrep())return prepRows(d,s);if(!alt())return conCorr(PLAN[d],d,s);const src=srcDia(d,s);return conCorr((esBase()?rowsBase(src):(esCore()?PLANC:PLANG)[src]).filter(it=>!it.w||(s>=it.w[0]&&s<=it.w[1])),d,s)}
+function rows(d,s){if(esPrep())return prepRows(d,s);if(bk()>1)return conCorr(rowsBloque(alt()?srcDia(d,s):d,bk()),d,s);if(!alt())return conCorr(PLAN[d],d,s);const src=srcDia(d,s);return conCorr((esBase()?rowsBase(src):(esCore()?PLANC:PLANG)[src]).filter(it=>!it.w||(s>=it.w[0]&&s<=it.w[1])),d,s)}
 function allRows(){const out=[],seen=new Set();const P0=esBase()?{A:rowsBase('A'),B:rowsBase('B')}:esCore()?PLANC:esGlob()?PLANG:PLAN;Object.keys(P0).forEach(d=>P0[d].forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);out.push([d,it])}}));return out}
-const faseTxt=s=>esPrep()?'Prep':(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
-const sesKey=(s,d)=>(esPrep()?'p':esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
+const faseTxt=s=>esPrep()?'Prep':bk()>1?faseBloque(s):(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
+const sesKey=(s,d)=>(bk()>1?'b'+bk()+'.':'')+(esPrep()?'p':esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
 function coreT(){
   const T=S.tests||{},v=k=>{const x=parseFloat(String(T[k]??'').replace(',','.'));return isNaN(x)?null:x};
   let m=null;[0,4,8].forEach(mo=>{if(['flex','ext','lati','latd'].some(k=>v('k_'+k+'_'+mo)!=null))m=mo});
@@ -1560,7 +1665,7 @@ UI.tab=modoCli()?'hoy':'tests';
 UI.orig={};UI.frames=UI.frames||{};
 const saveUI=()=>{try{localStorage.setItem('exos8-ui',JSON.stringify({tab:UI.tab,sem:UI.sem,dia:UI.dia,atleta:UI.atleta}))}catch(e){}};
 let db=null, mode='cargando', dirty=false;
-const key=(s,d,id)=>`${s}${d}-${id}`;
+const key=(s,d,id)=>(bk()>1?'b'+bk()+'.':'')+`${s}${d}-${id}`;
 const PP=it=>(atl().sexo==='M'&&it.pM)?it.pM:it.p;
 const pres=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const p=escalar(PP(it)[s-1],it.id);const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
 
@@ -1579,7 +1684,7 @@ function tmin(it,s){
   if(/Test|máximo de reps/.test(p))m+=2;
   return m;
 }
-const dur=(d,s)=>esCore()?DURC[srcDia(d,s)][s-1]:rows(d,s).reduce((q,it)=>q+tmin(it,s),0);
+const dur=(d,s)=>esCore()&&bk()===1?DURC[srcDia(d,s)][s-1]:rows(d,s).reduce((q,it)=>q+tmin(it,s),0);
 const freq=()=>{const f=parseInt(atl().frecuencia,10);return f>=1&&f<=3?f:2};
 const DIAS=()=>({1:['U'],2:['A','B'],3:['A','B','C']})[freq()];
 const dayName=d=>ZONA[d]?'Prep · '+ZONA[d]:d==='U'?'Sesión':'Día '+d;
@@ -1755,11 +1860,12 @@ function renderSelectors(){
   for(let s=1;s<=8;s++){
     const dd=DIAS().map(x=>done(s,x));const pct=Math.round(dd.reduce((q,x)=>q+x[0],0)/dd.reduce((q,x)=>q+x[1],0)*100);
     lanes.append(h('button',{class:'lane'+(esBase()?(s<=2?' descarga':''):esGlob()?(s<=2?' descarga':''):esCore()?(s===1?' descarga':''):(s===4||s===8?' descarga':'')),'aria-pressed':UI.sem===s,onclick:()=>{UI.sem=s;saveUI();render()}},
-      h('b',{text:'S'+s}),h('small',{text:esBase()?(s<=2?'Aprender':s<=4?'Automat.':s<=6?'Desafiar':s===8?'Retest':'Transferir'):esGlob()?(s<=2?'Adapt.':s<=4?'Base':s===8?'Retest':'Progreso'):esCore()?(s===1?'Control':s<=4?'Carga':s<=6?'Fuerza':s===8?'Retest':'Potencia'):s===4?'Descarga':s===8?'Test':s>4?'Intensa':'Carga'}),pct?h('span',{class:'pct',text:pct+'%'}):null));
+      h('b',{text:'S'+s}),h('small',{text:bk()>1?laneBloque(s):esBase()?(s<=2?'Aprender':s<=4?'Automat.':s<=6?'Desafiar':s===8?'Retest':'Transferir'):esGlob()?(s<=2?'Adapt.':s<=4?'Base':s===8?'Retest':'Progreso'):esCore()?(s===1?'Control':s<=4?'Carga':s<=6?'Fuerza':s===8?'Retest':'Potencia'):s===4?'Descarga':s===8?'Test':s>4?'Intensa':'Carga'}),pct?h('span',{class:'pct',text:pct+'%'}):null));
   }
   box.append(lanes);
   if(UI.tab==='sesion'&&!modoCli()){
     box.append(selProg());
+    if(!esBase())box.append(selBloque());
     box.append(h('div',{class:'freq',role:'group','aria-label':'Sesiones por semana'},h('span',{class:'wholbl',text:'Plan'}),[1,2,3].map(n=>h('button',{class:'opt','aria-pressed':freq()===n,onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),frecuencia:n,t:Date.now()});if(!DIAS().includes(UI.dia))UI.dia=DIAS()[0];saveUI();render()}},n+'× semana'))));
     box.append(h('div',{class:'days'},DIAS().map(d=>{const [n,t]=done(UI.sem,d);
       return h('button',{class:'day','aria-pressed':UI.dia===d,onclick:()=>{UI.dia=d;saveUI();render()}},h('b',{text:dayName(d)+(n===t?'  ✓':'')}),h('span',{text:`${n}/${t} hechos · ~${dur(d,UI.sem)} min`}))})));
@@ -2573,11 +2679,11 @@ Cambios al plan: usa la herramienta ajustar_prescripcion, una vez por semana y e
 function contexto(){
   const a=atl(),c=a.cargas||{};
   const core=alt(),pg=prog();
-  const L=[`PROGRAMA: ${pg==='base'?PROG.base+' · módulos: '+modulos().map(k=>MOD[k]).join(' y ')+' · nivel general: '+(a.nivel||1)+(a.niveles?' · niveles por ejercicio: '+JSON.stringify(a.niveles):'')+' · después sigue con: '+(PROGC[a.siguiente]||PROGC.global):pg==='core'?PROG.core+(a.condicion?' · condición: '+COND[a.condicion]:''):PROG[pg]}.`,`FRECUENCIA DEL PLAN: ${freq()} sesión(es) por semana (días ${DIAS().join(', ')}).`,`ATLETA: ${a.nombre}${a.sexo?', '+(a.sexo==='M'?'mujer':'hombre'):''}${a.edad?', '+a.edad+' años':''}${a.sesiones?', '+a.sesiones+' entrenamientos por semana':''}.${a.objetivo?' Objetivo: '+a.objetivo+'.':''}${a.notas?' Notas: '+a.notas+'.':''}`,
+  const L=[`PROGRAMA: ${pg==='base'?PROG.base+' · módulos: '+modulos().map(k=>MOD[k]).join(' y ')+' · nivel general: '+(a.nivel||1)+(a.niveles?' · niveles por ejercicio: '+JSON.stringify(a.niveles):'')+' · después sigue con: '+(PROGC[a.siguiente]||PROGC.global):pg==='core'?PROG.core+(a.condicion?' · condición: '+COND[a.condicion]:''):PROG[pg]}.`,`FRECUENCIA DEL PLAN: ${freq()} sesión(es) por semana (días ${DIAS().join(', ')}).`,bk()>1?`BLOQUE ACTUAL: ${bk()} · énfasis ${enfDe(bk()).n} (${enfDe(bk()).d}) Desde el bloque 2 la carga se elige por RPE: si sobran 3 repeticiones o más, sube; si la RPE pasa la indicada, repite o baja. Los ejercicios rotan cada bloque (los principales cada 2) y el énfasis cambia cada 8 semanas: fuerza, volumen, potencia, fuerza máxima y mantención.`:'BLOQUE ACTUAL: 1 (programa inicial de 8 semanas). Al terminarlo siguen bloques de 8 semanas con otro énfasis.',`ATLETA: ${a.nombre}${a.sexo?', '+(a.sexo==='M'?'mujer':'hombre'):''}${a.edad?', '+a.edad+' años':''}${a.sesiones?', '+a.sesiones+' entrenamientos por semana':''}.${a.objetivo?' Objetivo: '+a.objetivo+'.':''}${a.notas?' Notas: '+a.notas+'.':''}`,
     core?'Programa '+PROGC[pg]+': sin cargas de referencia; la carga se ajusta a la RPE de la fase.':UI.atleta==='yo'?'Referencias de partida: sentadilla posterior 120 kg ×5 (1RM ≈135), frontal 90 kg ×5–6 (1RM ≈105), peso muerto 120 kg ×3–4 (1RM ≈130).':'Cargas de la semana 1: '+(Object.keys(c).length?CARGABLES.filter(k=>c[k]).map(k=>EX[k].n+' '+c[k]+' kg').join(', '):'sin definir (las sesiones dicen «carga según RPE»)')+'.',
     `Semana que tiene abierta: S${UI.sem}, día ${UI.dia}.`,'','PLAN ACTUAL (* = ajustado por ti con la herramienta; [auto] = adaptado automáticamente por diagnóstico):'];
   if(pg==='prep')Object.keys(ZONA).forEach(z=>L.push('Prep '+ZONA[z]+': '+prepRows(z,1).map(it=>it.id+' '+EX[it.id].n+' ('+pres(1,z,it)+')').join(' | ')));
-  else if(core)DIAS().forEach(d=>{for(let s=1;s<=8;s++)L.push(`${dayName(d)} S${s} (${faseTxt(s)}): `+rows(d,s).map(it=>{const A=autoEj(s,d,it);return `${it.id} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))});
+  else if(core||bk()>1)DIAS().forEach(d=>{for(let s=1;s<=8;s++)L.push(`${dayName(d)} S${s} (${faseTxt(s)}): `+rows(d,s).map(it=>{const A=autoEj(s,d,it);return `${it.id} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))});
   else DIAS().forEach(d=>PLAN[d].forEach(it=>{L.push(`${dayName(d)} ${d} · ${it.id} (${EX[it.id].n}): `+[1,2,3,4,5,6,7,8].map(s=>{const A=autoEj(s,d,it);return `S${s} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))}));
   L.push('','REGISTRO:');
   const regs=Object.values(S.registro).filter(r=>progOf(r.ej)===pg).filter(r=>r.hecho||r.kg||r.rpe||r.nota).sort((a,b)=>a.semana-b.semana||a.dia.localeCompare(b.dia));
@@ -2764,10 +2870,11 @@ function renderOnb(m){
 function renderHoy(m){
   if(esPrep())return renderHoyPrep(m);
   const a=atl(),N=nextSes(),{s,d}=N,r=rows(d,s);
+  if(N.fin&&!esBase()){m.append(cardFinBloque());const cf=cardMiSuscripcion();if(cf)m.append(cf);return}
   const pt=progTotal();
   if(!N.fin&&bloqueada(s)){m.append(cardPaywall());return}
   m.append(h('section',{class:'card hero'},
-    h('span',{class:'wholbl',text:PROG[prog()].split(' (')[0]}),
+    h('span',{class:'wholbl',text:PROG[prog()].split(' (')[0]+(bk()>1?' · bloque '+bk():'')}),
     h('div',{class:'bar','aria-label':'Avance del programa: '+pt+' %'},h('i',{style:'width:'+pt+'%'})),
     h('p',{class:'note',text:'Semana '+s+' de 8 · '+faseTxt(s)+' · '+pt+' % del programa'}),
     h('h2',{text:N.fin?(esBase()?'¡Terminaste el Entrenamiento Base!':'¡Terminaste las 8 semanas!'):'Hoy toca: '+dayName(d)}),
@@ -2942,7 +3049,7 @@ async function cargarAcceso(){if(!SB)return;try{const r=await fetch('/api/go/acc
 const planAcc=()=>(ACC&&ACC.plan)||'entrenamiento';
 const PLANES={prep:{n:'Sakros Go Prep',d:'10 minutos de preparación antes de tu entrenamiento, según tu FMS.',k:'precioPrep'},entrenamiento:{n:'Sakros Go Entrenamiento',d:'Tu programa completo (Base, Core, Activo o Rendimiento), el Coach y también Prep.',k:'precio'}};
 // Prep: 3 sesiones de prueba y sirve cualquier plan. Entrenamiento: semana 1 de prueba y necesita el plan Entrenamiento.
-const bloqueada=s=>ROL==='cliente'&&s>(esPrep()?3:1)&&!(ACC&&ACC.activo&&(esPrep()||planAcc()==='entrenamiento'));
+const bloqueada=s=>ROL==='cliente'&&(esPrep()?s>3:(s>1||bk()>1))&&!(ACC&&ACC.activo&&(esPrep()||planAcc()==='entrenamiento'));
 const necesitaTerminos=()=>ROL==='cliente'&&!!ACC&&((atl().terminos||{}).v!==ACC.terminosV);
 const terminosOk=()=>({v:(ACC&&ACC.terminosV)||'2026-10',t:Date.now()});
 function puntosTerminos(){return h('ul',{class:'medir'},
