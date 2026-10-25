@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import FichaPaciente from "./FichaPaciente";
+import FichasDrive from "./fichas/FichasDrive";
 import type { Permission } from "@/lib/equipo-auth";
 
 type Patient = {
@@ -217,6 +218,10 @@ export default function PacientesTab({ permissions }: { permissions: Permission[
             </tbody>
           </table>
         </div>
+      )}
+
+      {clinico && (
+        <FichasDrive search={search} pacientes={patients} onAbrirPaciente={setSelectedId} />
       )}
     </div>
   );
