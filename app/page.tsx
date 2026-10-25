@@ -364,9 +364,9 @@ export default function HomePage() {
               dg: "Dolor persistente + tendinopatías",
             },
             {
-              src: "/images/testimonio-maria-paz-tadres.mp4",
-              nombre: "María Paz Tadres",
-              dg: "Pinzamiento de cadera + dolor persistente",
+              src: "/images/testimonio-rodilla.mp4",
+              nombre: "Cristian",
+              dg: "Artrosis de rodilla + condromalacia grado 4",
             },
           ].map((t) => (
             <div key={t.src} className="sm:max-w-[260px]">

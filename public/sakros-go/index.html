@@ -117,6 +117,7 @@ nav.top .wrap{height:60px;display:flex;align-items:center;justify-content:space-
 
 /* FMS gratis */
 .test{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid rgba(238,100,70,.3);border-radius:26px;padding:clamp(26px,5vw,48px)}
+.demo{margin:24px auto 0;max-width:300px}.demo video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:18px;background:var(--bg);box-shadow:0 20px 50px rgba(0,0,0,.45)}.demo figcaption{color:var(--muted);font-size:.88rem;margin-top:10px}
 .pruebas{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:22px 0 28px;padding:0;list-style:none}
 .pruebas li{border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.92rem;color:var(--soft)}
 
@@ -233,8 +234,8 @@ footer.site p{color:var(--muted);font-size:.82rem;max-width:62ch;margin:6px auto
           <h3>Te dieron de alta y quedaste solo</h3><p>La kinesiología terminó, pero nadie te dijo cómo seguir. Vuelves al gimnasio con miedo de que la lesión se repita.</p></div>
         <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></div>
           <h3>La rutina es la misma para todos</h3><p>La del gimnasio o la de internet no mira cómo te mueves tú. Si tu cadera o tu hombro no tienen la movilidad, la carga se va a otra parte.</p></div>
-        <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9a2.5 2.5 0 0 0-2.5-1.5c-1.4 0-2.5.9-2.5 2s1.1 1.6 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2A2.5 2.5 0 0 1 9.5 15M12 6v1.5m0 9V18"/></svg></div>
-          <h3>Un entrenador personal no te alcanza</h3><p>Un entrenamiento bien dirigido es caro y difícil de sostener mes a mes. Terminas entrenando por tu cuenta, sin guía.</p></div>
+        <div class="card rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></div>
+          <h3>Entrenas con un profesional y aun así te duele</h3><p>Los entrenadores de los gimnasios suelen armar rutinas muy parecidas y poco variadas. Eres constante, pero la molestia vuelve a aparecer.</p></div>
       </div>
       <p class="closing rv">Si te reconociste en al menos una, no es mala suerte. <b>Es un patrón que se puede corregir.</b></p>
     </div>
@@ -310,6 +311,10 @@ footer.site p{color:var(--muted);font-size:.82rem;max-width:62ch;margin:6px auto
         <span class="eyebrow">Empieza gratis</span>
         <h2>Primero, descubre cómo te mueves</h2>
         <p class="lead">Haz tu evaluación FMS por video desde tu casa. Necesitas un palo de escoba, un elástico y 20 minutos.</p>
+        <figure class="demo">
+          <video src="/sakros-go/fms-estocada.mp4" poster="/sakros-go/fms-estocada.jpg" autoplay muted loop playsinline controls preload="metadata" aria-label="Ejemplo de la prueba de estocada en línea del FMS"></video>
+          <figcaption>Así se ve una de las pruebas: la estocada en línea. Cuando ya estás sin dolor, toca evaluar cómo funciona tu cuerpo, no solo la zona lesionada.</figcaption>
+        </figure>
         <ul class="pruebas">
           <li>Sentadilla profunda</li><li>Paso de valla</li><li>Estocada en línea</li><li>Movilidad de hombro</li><li>Elevación de pierna extendida</li><li>Flexión de estabilidad de tronco</li><li>Estabilidad en rotación</li>
         </ul>
@@ -348,7 +353,7 @@ footer.site p{color:var(--muted);font-size:.82rem;max-width:62ch;margin:6px auto
       <div class="vids">
         <div class="rv"><video src="/images/testimonio-paciente.mp4" poster="/sakros-go/testimonio-paciente.jpg" controls playsinline preload="metadata">Testimonio de Sebastián Delgadillo</video><p>Sebastián Delgadillo</p><small>Condromalacia grado 4</small></div>
         <div class="rv"><video src="/images/testimonio-constanza-castro.mp4" poster="/sakros-go/testimonio-constanza-castro.jpg" controls playsinline preload="metadata">Testimonio de Constanza Castro</video><p>Constanza Castro</p><small>Dolor persistente y tendinopatías</small></div>
-        <div class="rv"><video src="/images/testimonio-maria-paz-tadres.mp4" poster="/sakros-go/testimonio-maria-paz-tadres.jpg" controls playsinline preload="metadata">Testimonio de María Paz Tadres</video><p>María Paz Tadres</p><small>Pinzamiento de cadera y dolor persistente</small></div>
+        <div class="rv"><video src="/images/testimonio-rodilla.mp4" poster="/sakros-go/testimonio-rodilla.jpg" controls playsinline preload="metadata">Testimonio de Cristian</video><p>Cristian</p><small>Artrosis de rodilla con condromalacia grado 4</small></div>
       </div>
     </div>
   </section>
