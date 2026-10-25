@@ -117,7 +117,16 @@ nav.top .wrap{height:60px;display:flex;align-items:center;justify-content:space-
 
 /* FMS gratis */
 .test{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid rgba(238,100,70,.3);border-radius:26px;padding:clamp(26px,5vw,48px)}
-.demo{margin:24px auto 0;max-width:300px}.demo video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:18px;background:var(--bg);box-shadow:0 20px 50px rgba(0,0,0,.45)}.demo figcaption{color:var(--muted);font-size:.88rem;margin-top:10px}
+.fmsbox{--vh:min(32svh,280px);display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"head head" "vid list" "cap cap" "body body";gap:14px 16px;text-align:center}
+.fmsbox .fhead{grid-area:head}.fmsbox .lead{margin-inline:auto}.fmsbox .ctas{justify-content:center}.fmsbox .fbody{grid-area:body}
+.demo{display:contents}.demo video{grid-area:vid;height:var(--vh);width:calc(var(--vh)*9/16);object-fit:cover;border-radius:16px;background:var(--bg);box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.demo figcaption{grid-area:cap;color:var(--muted);font-size:.82rem;line-height:1.4}
+.fmsbox .flist{grid-area:list;flex-direction:column;flex-wrap:nowrap;justify-content:center;align-items:stretch;gap:6px;margin:0;text-align:left}
+.fmsbox .flist{gap:2px}.fmsbox .flist li{border:0;border-left:2px solid var(--accent,#ee6446);border-radius:0;padding:4px 0 4px 10px;font-size:.86rem;line-height:1.25}
+@media(min-width:820px){.fmsbox{--vh:min(62svh,520px);grid-template-areas:"vid head" "vid list" "vid body";grid-template-rows:auto auto 1fr;column-gap:clamp(28px,4vw,56px);row-gap:0;align-content:center;text-align:left}
+ .demo{display:block;grid-area:vid;align-self:center;width:calc(var(--vh)*9/16)}.demo video{width:100%}.demo figcaption{margin-top:8px}
+ .fmsbox .lead{margin-inline:0}.fmsbox .ctas{justify-content:flex-start}
+ .fmsbox .flist{flex-direction:row;flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:8px;margin:20px 0 24px}.fmsbox .flist li{border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.92rem}}
 .pruebas{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:22px 0 28px;padding:0;list-style:none}
 .pruebas li{border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.92rem;color:var(--soft)}
 
@@ -320,20 +329,24 @@ footer.site p{color:var(--muted);font-size:.82rem;max-width:62ch;margin:6px auto
 
   <!-- FMS gratis -->
   <section class="alt" id="fms">
-    <div class="wrap narrow">
-      <div class="test center rv">
-        <span class="eyebrow">Empieza gratis</span>
-        <h2>Primero, descubre cómo te mueves</h2>
-        <p class="lead">Haz tu evaluación FMS por video desde tu casa. Necesitas un palo de escoba, un elástico y 20 minutos.</p>
+    <div class="wrap">
+      <div class="test fmsbox rv">
+        <div class="fhead">
+          <span class="eyebrow">Empieza gratis</span>
+          <h2>Primero, descubre cómo te mueves</h2>
+          <p class="lead">Haz tu evaluación FMS por video desde tu casa. Necesitas un palo de escoba, un elástico y 20 minutos.</p>
+        </div>
         <figure class="demo">
           <video src="/sakros-go/fms-estocada.mp4" poster="/sakros-go/fms-estocada.jpg" autoplay muted loop playsinline controls preload="metadata" aria-label="Ejemplo de la prueba de estocada en línea del FMS"></video>
           <figcaption>Así se ve una de las pruebas: la estocada en línea. Cuando ya estás sin dolor, toca evaluar cómo funciona tu cuerpo, no solo la zona lesionada.</figcaption>
         </figure>
-        <ul class="pruebas">
+        <ul class="pruebas flist">
           <li>Sentadilla profunda</li><li>Paso de valla</li><li>Estocada en línea</li><li>Movilidad de hombro</li><li>Elevación de pierna extendida</li><li>Flexión de estabilidad de tronco</li><li>Estabilidad en rotación</li>
         </ul>
-        <div class="ctas"><a class="btn pri" href="/go">Hacer mi FMS gratis</a></div>
-        <p class="fine" style="margin-top:16px">¿Prefieres que te evalúe un kinesiólogo? <a href="/reserva">Agenda tu evaluación presencial en Sakros</a>.</p>
+        <div class="fbody">
+          <div class="ctas"><a class="btn pri" href="/go">Hacer mi FMS gratis</a></div>
+          <p class="fine" style="margin-top:16px">¿Prefieres que te evalúe un kinesiólogo? <a href="/reserva">Agenda tu evaluación presencial en Sakros</a>.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -347,7 +360,7 @@ footer.site p{color:var(--muted);font-size:.82rem;max-width:62ch;margin:6px auto
         <h2>Joaquín Adi A.</h2>
         <div class="creds"><span>Kinesiólogo</span><span>Osteópata</span><span>Magíster en Terapia Manual</span><span>Máster en Psiconeuroinmunología Clínica</span></div>
         <p>Durante años vi a pacientes terminar su tratamiento, volver al gimnasio y regresar a la consulta con el mismo dolor. No les faltaban ganas: les faltaba un entrenamiento dirigido que pudieran pagar.</p>
-        <p>En nuestro centro de entrenamiento aprendimos que 10 minutos de preparación bien dirigida cambian cómo entrena una persona. Sakros Go lleva ese método a tu teléfono, al precio de una mensualidad de gimnasio.</p>
+        <p>En nuestro centro de entrenamiento aprendimos que 10 minutos de preparación bien dirigida cambian cómo entrena una persona. Sakros Go lleva ese método a tu teléfono, para que puedas incluirlo en tu casa o gimnasio.</p>
         <blockquote>
           <p>«No se trata de entrenar menos. <span class="hl">Se trata de preparar mejor lo que vas a entrenar.</span>»</p>
           <footer>— Joaquín Adi</footer>
