@@ -1486,7 +1486,7 @@ function renderHoyPrep(m){
   if(bloqueada(n)){m.append(cardPaywall());return}
   const enCurso=UI.play&&UI.play.atleta===UI.atleta&&ZONA[UI.play.d];
   m.append(h('section',{class:'card hero'},h('span',{class:'wholbl',text:'Sakros Go Prep'}),
-    h('h2',{text:'¿Qué vas a entrenar hoy?'}),h('p',{class:'note',text:'10 minutos antes de entrenar: rodillo, 2 correctivos de tu FMS y activación.'}),
+    h('h2',{text:'¿Qué vas a entrenar hoy?'}),h('p',{class:'note',text:'10 minutos antes de entrenar: rodillo, 2 correctivos según tus resultados de movilidad y control, y activación.'}),
     enCurso?h('div',{class:'row'},h('button',{class:'btn primary big',onclick:()=>{UI.prevTab='hoy';UI.tab='play';saveUI();render();scrollTo(0,0)}},'Continuar: '+ZONA[UI.play.d])):null,
     ...Object.keys(ZONA).map(z=>h('button',{class:'bigopt',onclick:()=>iniciarSesion(n,z)},h('b',{text:ZONA[z]}),h('span',{text:ZDESC[z]+' Hoy: '+corrDe(z,2).map(id=>EX[id].n.toLowerCase()).join(' y ')+'.'})))));
   m.append(cardFms());
@@ -2811,7 +2811,7 @@ async function ask(text){
 }
 
 /* ---------- Vista cliente: bienvenida, Hoy y modo sesión ---------- */
-const PDESC={prep:'10 minutos antes de entrenar, según lo que entrenes ese día: rodillo, 2 correctivos de tu FMS y activación. Sirve para tu gimnasio, tu rutina o tu deporte.',base:'8 semanas para aprender a moverte bien antes de entrenar: postura, equilibrio y movimientos básicos.',rend:'8 semanas de potencia, velocidad y resistencia con el método EXOS.',core:'8 semanas para una espalda fuerte y un suelo pélvico que responde: fuerza real, sin miedo.',global:'8 semanas de cuerpo completo desde cero, con una progresión segura.'};
+const PDESC={prep:'10 minutos antes de entrenar, según lo que entrenes ese día: rodillo, 2 correctivos según tus resultados de movilidad y control, y activación. Sirve para tu gimnasio, tu rutina o tu deporte.',base:'8 semanas para aprender a moverte bien antes de entrenar: postura, equilibrio y movimientos básicos.',rend:'8 semanas de potencia, velocidad y resistencia con el método EXOS.',core:'8 semanas para una espalda fuerte y un suelo pélvico que responde: fuerza real, sin miedo.',global:'8 semanas de cuerpo completo desde cero, con una progresión segura.'};
 const KEYLIFT=new Set([...CARGABLES,'khipthrust','khipthrustp','krdl','kgoblet','kgobletp','ksentbarra','kmuertobarra','kremobarra','kremomanc','ktrapbar','kgranjero','kswing','kstepup','ksplit','klandmine','kjammer','gsilla','gbisagra','gpress','gremom','gstep','gcurl','gmartillo']);
 const esClave=id=>KEYLIFT.has(id);
 const needsOnb=()=>{const a=atl();return !a.onb&&!a.programa&&!a.sexo};
