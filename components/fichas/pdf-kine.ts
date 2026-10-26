@@ -28,7 +28,7 @@ export interface SessionInfo {
 }
 
 /* ── Helpers ── */
-const DAY_NAMES = ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"];
+const DAY_NAMES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 function fmtDate(iso: string): string {
   const [y, m, d] = iso.split("-");
@@ -56,7 +56,7 @@ function calcAge(dob: string | null): string {
   let age = now.getFullYear() - birth.getFullYear();
   const m = now.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
-  return `${age} anos`;
+  return `${age} años`;
 }
 
 /** Calculate 10 business days (Mon-Fri) starting from startDate */
@@ -97,9 +97,9 @@ function drawHeader(doc: jsPDF, logoData: string, y: number): number {
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100, 100, 100);
   const info = [
-    "Clinica Sakros",
+    "Clínica Sakros",
     "Adi y Arentsen Limitada",
-    "Vina del Mar, Chile",
+    "Viña del Mar, Chile",
     "+56 9 4539 9692",
     "sakrosvina@gmail.com",
   ];
@@ -128,6 +128,7 @@ export type CertOptions = {
   // `firmaCargo` indica la profesión y se escribe el nombre debajo.
   firmaImg?: string | null;
   firmaCargo?: string | null;
+  firmaRut?: string | null;
 };
 
 export function certificadoFilename(name: string, servicio: CertOptions["servicio"] = "Kinesiología") {
@@ -155,7 +156,7 @@ export async function generateCertificado(
   doc.setFont("helvetica", "bold");
   doc.setTextColor(26, 74, 107); // #1A4A6B
   const osteo = opts.servicio === "Osteopatía";
-  doc.text(osteo ? "CERTIFICADO DE ATENCIONES DE OSTEOPATIA" : "CERTIFICADO DE ATENCIONES KINESICAS", pageW / 2, y + 4, { align: "center" });
+  doc.text(osteo ? "CERTIFICADO DE ATENCIONES DE OSTEOPATÍA" : "CERTIFICADO DE ATENCIONES KINÉSICAS", pageW / 2, y + 4, { align: "center" });
   y += 14;
 
   // Date of issue
@@ -164,7 +165,7 @@ export async function generateCertificado(
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
-  doc.text(`Fecha de emision: ${todayStr}`, 196, y, { align: "right" });
+  doc.text(`Fecha de emisión: ${todayStr}`, 196, y, { align: "right" });
   y += 8;
 
   // Patient info
@@ -180,7 +181,7 @@ export async function generateCertificado(
     ["Nombre", patient.name],
     ["RUT", patient.rut || "No registrado"],
     ["Fecha de nacimiento", patient.date_of_birth ? `${fmtDate(patient.date_of_birth)} (${calcAge(patient.date_of_birth)})` : "No registrada"],
-    ["Direccion", patient.address || "No registrada"],
+    ["Dirección", patient.address || "No registrada"],
   ];
   patientLines.forEach(([label, val]) => {
     doc.setFont("helvetica", "bold");
@@ -206,7 +207,7 @@ export async function generateCertificado(
   const bodyText =
     `Por medio del presente certificado, se deja constancia que el/la paciente ` +
     `${patient.name}, RUT ${patient.rut || "no registrado"}, ha realizado un plan de ` +
-    `tratamiento ${osteo ? "de osteopatia" : "kinesico"} de ${total} ${total === 1 ? "sesion" : "sesiones"} en Clinica Sakros, desde el ${firstDate} ` +
+    `tratamiento ${osteo ? "de osteopatía" : "kinésico"} de ${total} ${total === 1 ? "sesión" : "sesiones"} en Clínica Sakros, desde el ${firstDate} ` +
     `hasta el ${lastDate}.`;
 
   const lines = doc.splitTextToSize(bodyText, 170);
@@ -222,13 +223,13 @@ export async function generateCertificado(
   const tableData = atenciones.map((a, i) => [
     String(i + 1),
     a.time ? `${fmtDateLong(a.date)} - ${a.time} hrs` : fmtDateLong(a.date),
-    osteo ? "Osteopatia" : "Kinesioterapia",
+    osteo ? "Osteopatía" : "Kinesioterapia",
     "Realizada",
   ]);
 
   autoTable(doc, {
     startY: y,
-    head: [["N", "Fecha", "Prestacion", "Estado"]],
+    head: [["N", "Fecha", "Prestación", "Estado"]],
     body: tableData,
     styles: { fontSize: 9, cellPadding: 2 },
     headStyles: {
@@ -261,7 +262,7 @@ export async function generateCertificado(
   doc.setTextColor(80, 80, 80);
   doc.text(`Fecha de pago: ${fmtDate(startDate)}`, 14, y);
   y += 5;
-  doc.text("Valor total: Segun convenio y/o plan de tratamiento acordado.", 14, y);
+  doc.text("Valor total: Según convenio y/o plan de tratamiento acordado.", 14, y);
   y += 12;
 
   // Closing
@@ -286,9 +287,13 @@ export async function generateCertificado(
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text(professional, 14, y);
-    y += 4.5;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
+    if (opts.firmaRut) {
+      y += 4.5;
+      doc.text(`RUT ${opts.firmaRut}`, 14, y);
+    }
+    y += 4.5;
     doc.text(opts.firmaCargo!, 14, y);
   } else {
     y += 20;
@@ -301,7 +306,7 @@ export async function generateCertificado(
     y += 4.5;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.text(osteo ? "Osteopata - Clinica Sakros" : "Kinesiologo/a - Clinica Sakros", 14, y);
+    doc.text(osteo ? "Osteópata - Clínica Sakros" : "Kinesiólogo/a - Clínica Sakros", 14, y);
   }
 
   return doc;
@@ -319,8 +324,8 @@ export function checkInformeMissing(
 ): string[] {
   const missing: string[] = [];
   if (!patient.rut) missing.push("RUT del paciente");
-  if (!plan.motivo) missing.push("Diagnostico / Motivo de consulta");
-  if (sessions.length === 0) missing.push("Al menos 1 sesion registrada");
+  if (!plan.motivo) missing.push("Diagnóstico / Motivo de consulta");
+  if (sessions.length === 0) missing.push("Al menos 1 sesión registrada");
   // Check if there's any evaluation data
   const hasEval =
     plan.evalMusculo ||
@@ -328,7 +333,7 @@ export function checkInformeMissing(
     plan.tipoDolor.length > 0 ||
     Object.values(plan.fms).some((t) => t.score !== null) ||
     Object.values(plan.sfma).some((p) => p.cls !== null);
-  if (!hasEval) missing.push("Datos de evaluacion (FMS, SFMA o evaluacion muscular)");
+  if (!hasEval) missing.push("Datos de evaluación (FMS, SFMA o evaluación muscular)");
   return missing;
 }
 
@@ -356,7 +361,7 @@ export async function generateInforme(
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(26, 74, 107);
-  doc.text("INFORME DE ATENCION KINESICA", pageW / 2, y + 4, { align: "center" });
+  doc.text("INFORME DE ATENCIÓN KINÉSICA", pageW / 2, y + 4, { align: "center" });
   y += 14;
 
   // Date
@@ -365,7 +370,7 @@ export async function generateInforme(
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(80, 80, 80);
-  doc.text(`Fecha de emision: ${todayStr}`, 196, y, { align: "right" });
+  doc.text(`Fecha de emisión: ${todayStr}`, 196, y, { align: "right" });
   y += 8;
 
   /* ── Section helper ── */
@@ -411,13 +416,13 @@ export async function generateInforme(
   if (patient.date_of_birth)
     fieldLine("Fecha de nacimiento", `${fmtDate(patient.date_of_birth)} (${calcAge(patient.date_of_birth)})`);
   if (patient.sex) fieldLine("Sexo", sexLabel(patient.sex));
-  if (patient.address) fieldLine("Direccion", patient.address);
-  if (plan.ocupacion) fieldLine("Ocupacion", plan.ocupacion);
-  if (plan.actividadFisica) fieldLine("Actividad fisica", plan.actividadFisica);
+  if (patient.address) fieldLine("Dirección", patient.address);
+  if (plan.ocupacion) fieldLine("Ocupación", plan.ocupacion);
+  if (plan.actividadFisica) fieldLine("Actividad física", plan.actividadFisica);
   y += 3;
 
   /* ── 2. Diagnosis ── */
-  sectionTitle("2. DIAGNOSTICO KINESICO");
+  sectionTitle("2. DIAGNÓSTICO KINÉSICO");
   fieldLine("Motivo de consulta", plan.motivo);
   if (plan.anamnesis) {
     fieldLine("Anamnesis", plan.anamnesis);
@@ -429,12 +434,12 @@ export async function generateInforme(
     fieldLine("Tipo de dolor", plan.tipoDolor.join(", "));
   }
   if (plan.caracteristicasDolor) {
-    fieldLine("Caracteristicas del dolor", plan.caracteristicasDolor);
+    fieldLine("Características del dolor", plan.caracteristicasDolor);
   }
   y += 3;
 
   /* ── 3. Evaluation ── */
-  sectionTitle("3. EVALUACION KINESICA");
+  sectionTitle("3. EVALUACIÓN KINÉSICA");
 
   // FMS
   const fmsScored = FMS_TESTS.filter((t) => plan.fms[t]?.score !== null);
@@ -453,7 +458,7 @@ export async function generateInforme(
 
     autoTable(doc, {
       startY: y,
-      head: [["Test", "Puntaje", "Observacion"]],
+      head: [["Test", "Puntaje", "Observación"]],
       body: fmsData,
       styles: { fontSize: 8, cellPadding: 1.5 },
       headStyles: { fillColor: [26, 74, 107], textColor: [255, 255, 255], fontStyle: "bold" },
@@ -485,7 +490,7 @@ export async function generateInforme(
     });
     autoTable(doc, {
       startY: y,
-      head: [["Patron", "Clasificacion", "Tipo", "Obs."]],
+      head: [["Patrón", "Clasificación", "Tipo", "Obs."]],
       body: sfmaData,
       styles: { fontSize: 8, cellPadding: 1.5 },
       headStyles: { fillColor: [26, 74, 107], textColor: [255, 255, 255], fontStyle: "bold" },
@@ -498,13 +503,13 @@ export async function generateInforme(
   // Other eval notes
   if (plan.evalMusculo) {
     checkPage(10);
-    fieldLine("Evaluacion muscular", plan.evalMusculo);
+    fieldLine("Evaluación muscular", plan.evalMusculo);
   }
   if (plan.evalNotes) {
-    fieldLine("Observaciones de evaluacion", plan.evalNotes);
+    fieldLine("Observaciones de evaluación", plan.evalNotes);
   }
-  if (plan.metabolico) fieldLine("Evaluacion metabolica", plan.metabolico);
-  if (plan.craneal) fieldLine("Evaluacion craneal", plan.craneal);
+  if (plan.metabolico) fieldLine("Evaluación metabólica", plan.metabolico);
+  if (plan.craneal) fieldLine("Evaluación craneal", plan.craneal);
   if (plan.calidadSueno) fieldLine("Calidad de sueno", plan.calidadSueno);
   y += 3;
 
@@ -514,7 +519,7 @@ export async function generateInforme(
   const activeObjectives = OBJECTIVES.filter((o) => plan.checkedObjectives[o.id]);
   if (activeObjectives.length > 0) {
     doc.setFont("helvetica", "bold");
-    doc.text("Objetivos terapeuticos:", 14, y);
+    doc.text("Objetivos terapéuticos:", 14, y);
     y += 5;
     doc.setFont("helvetica", "normal");
     activeObjectives.forEach((o) => {
@@ -526,7 +531,7 @@ export async function generateInforme(
   }
 
   const blockLabels: Record<string, string> = {
-    mobilization: "Movilizacion",
+    mobilization: "Movilización",
     motorControl: "Control Motor",
     load: "Carga",
   };
@@ -587,7 +592,7 @@ export async function generateInforme(
       const last = evaScores[evaScores.length - 1];
       const diff = first - last;
       paragraph(
-        `Evolucion del dolor (EVA): Inicio ${first}/10, final ${last}/10. ` +
+        `Evolución del dolor (EVA): Inicio ${first}/10, final ${last}/10. ` +
         (diff > 0 ? `Reduccion de ${diff} puntos.` : diff === 0 ? "Sin cambios." : `Aumento de ${Math.abs(diff)} puntos.`),
       );
     }
@@ -600,9 +605,9 @@ export async function generateInforme(
   checkPage(30);
   sectionTitle("6. ESTADO ACTUAL DEL PACIENTE");
   paragraph(
-    "Al momento de la reevaluacion, el/la paciente presenta la evolucion clinica " +
+    "Al momento de la reevaluación, el/la paciente presenta la evolución clínica " +
     "detallada en las sesiones anteriores. Se sugiere continuar con el plan de " +
-    "tratamiento segun indicacion del profesional tratante.",
+    "tratamiento según indicación del profesional tratante.",
   );
   y += 3;
 
@@ -625,7 +630,7 @@ export async function generateInforme(
   y += 4.5;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.text("Kinesiologo/a - Clinica Sakros", 14, y);
+  doc.text("Kinesiólogo/a - Clínica Sakros", 14, y);
 
   return doc;
 }

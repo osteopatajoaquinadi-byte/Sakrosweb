@@ -61,7 +61,7 @@ export default function DocumentosKine({
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [firma, setFirma] = useState(professional);
   // Firma digital (imagen) del profesional con la sesión abierta, si tiene
-  const [firmaDigital, setFirmaDigital] = useState<{ nombre: string; img: string; cargo: string | null } | null>(null);
+  const [firmaDigital, setFirmaDigital] = useState<{ nombre: string; img: string; cargo: string | null; rut: string | null } | null>(null);
 
   // La firma parte con el profesional que tiene la sesión abierta.
   useEffect(() => {
@@ -69,7 +69,7 @@ export default function DocumentosKine({
     fetch("/api/equipo/firma")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
-        if (vigente && d?.firma && d?.nombre) setFirmaDigital({ nombre: d.nombre, img: d.firma, cargo: d.cargo ?? null });
+        if (vigente && d?.firma && d?.nombre) setFirmaDigital({ nombre: d.nombre, img: d.firma, cargo: d.cargo ?? null, rut: d.rut ?? null });
       })
       .catch(() => {});
     fetch("/api/equipo/me")
@@ -121,6 +121,7 @@ export default function DocumentosKine({
         servicio,
         firmaImg: usaFirmaDigital ? firmaDigital!.img : null,
         firmaCargo: usaFirmaDigital ? firmaDigital!.cargo : null,
+        firmaRut: usaFirmaDigital ? firmaDigital!.rut : null,
       },
     );
   }
