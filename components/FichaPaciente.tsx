@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import ClinicalEvalForm, { ClinicalDataDisplay } from "./ClinicalEvalForm";
 import KinesiologyTab from "./fichas/KinesiologyTab";
+import ReservasPaciente from "./fichas/ReservasPaciente";
 import SesionesDesdePago from "./fichas/SesionesDesdePago";
 import CorreoPaciente from "./fichas/CorreoPaciente";
 import CuestionariosPaciente from "./cuestionarios/CuestionariosPaciente";
@@ -597,6 +598,8 @@ export default function FichaPaciente({
           </button>
         </form>
       )}
+
+      <ReservasPaciente patientId={patientId} />
 
       {/* Tabs sesiones / pagos */}
       <div className="flex flex-wrap gap-1 mb-4">
