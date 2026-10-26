@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Sakros Go">
 <link rel="icon" href="/favicon.ico">
+<link rel="manifest" href="/go/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/go/apple-touch-icon.png">
 <title>Sakros Go</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -1482,6 +1484,7 @@ function cardPrueba(t,coach){
 
 /* Sakros Go Prep: Hoy, sesión (entrenador) y progreso */
 function renderHoyPrep(m){
+  {const ci=cardInstalar();if(ci)m.append(ci)}
   const n=prepN(),hist=Object.entries(S.sesiones).filter(([k])=>/^p\d/.test(k)).sort((a,b)=>(b[1].t||0)-(a[1].t||0));
   if(bloqueada(n)){m.append(cardPaywall());return}
   const enCurso=UI.play&&UI.play.atleta===UI.atleta&&ZONA[UI.play.d];
@@ -2898,9 +2901,30 @@ function renderOnb(m){
   m.append(card);
 }
 
+/* Instalar en la pantalla de inicio: así la persona encuentra la app sin volver al correo. */
+let instEvt=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;if(UI.tab==='hoy')render()});
+addEventListener('appinstalled',()=>{try{localStorage.setItem('go-instalada','1')}catch(e){}instEvt=null;render()});
+function cardInstalar(){
+  const inst=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  let listo=false;try{listo=localStorage.getItem('go-instalada')==='1'}catch(e){}
+  if(inst||listo||!SB)return null;
+  const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const ok=()=>{try{localStorage.setItem('go-instalada','1')}catch(e){}render()};
+  const pasos=ios?'En Safari, toca el botón Compartir (el cuadrado con una flecha hacia arriba) y luego «Agregar a pantalla de inicio». Si estás dentro de la app de correo, primero abre sakros.cl/go en Safari y entra desde ahí.'
+    :instEvt?'Toca «Instalar» y te queda el ícono de Sakros Go en tu teléfono.'
+    :'Abre el menú del navegador (los tres puntos) y toca «Agregar a la pantalla principal» o «Instalar app».';
+  return h('section',{class:'card'},h('h2',{text:'Agrega Sakros Go a tu pantalla de inicio'}),
+    h('p',{text:'Así entras con un toque, sin buscar el correo. Tu sesión queda abierta en este teléfono.'}),
+    h('p',{class:'note',text:pasos}),
+    h('div',{class:'row'},instEvt?h('button',{class:'btn primary',onclick:async()=>{try{instEvt.prompt();const r=await instEvt.userChoice;if(r&&r.outcome==='accepted')ok()}catch(e){}}},'Instalar'):null,
+      h('button',{class:instEvt?'linkbtn':'btn',onclick:ok},instEvt?'Ahora no':'Listo, ya la agregué')));
+}
+
 /* Hoy */
 function renderHoy(m){
   if(esPrep())return renderHoyPrep(m);
+  {const ci=cardInstalar();if(ci)m.append(ci)}
   const a=atl(),N=nextSes(),{s,d}=N,r=rows(d,s);
   if(N.fin&&!esBase()){m.append(cardFinBloque());const cf=cardMiSuscripcion();if(cf)m.append(cf);return}
   const pt=progTotal();
@@ -3215,7 +3239,8 @@ async function salir(){try{await SB.auth.signOut()}catch(e){}try{localStorage.re
   if(th){
     const{error}=await SB.auth.verifyOtp({token_hash:th,type:'magiclink'});
     history.replaceState(null,'',location.pathname);
-    if(error){pantallaLogin('El enlace venció o ya se usó. Pide uno nuevo.');return}
+    // Si el enlace ya se usó pero este teléfono tiene la sesión abierta, entra igual.
+    if(error){const{data:{session:ya}}=await SB.auth.getSession();if(!ya){pantallaLogin('Este enlace sirve una sola vez y ya se usó o venció. Escribe tu correo y te mandamos uno nuevo.');return}}
   }
   const{data:{session}}=await SB.auth.getSession();
   if(!session){pantallaLogin();return}
