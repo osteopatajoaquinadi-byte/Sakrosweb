@@ -124,8 +124,10 @@ export type CertOptions = {
   sesiones?: { date: string; time?: string }[];
   cantidad?: number;
   servicio?: "Kinesiología" | "Osteopatía";
-  // Imagen PNG (data URL) de la firma del profesional; incluye nombre y RUT.
+  // Imagen PNG (data URL) de la firma del profesional. Si trae solo el trazo,
+  // `firmaCargo` indica la profesión y se escribe el nombre debajo.
   firmaImg?: string | null;
+  firmaCargo?: string | null;
 };
 
 export function certificadoFilename(name: string, servicio: CertOptions["servicio"] = "Kinesiología") {
@@ -267,10 +269,27 @@ export async function generateCertificado(
   doc.setTextColor(40, 40, 40);
   doc.text("Se extiende el presente certificado a solicitud del interesado/a.", 14, y);
 
-  if (opts.firmaImg) {
+  if (opts.firmaImg && !opts.firmaCargo) {
     // Firma digital (ya trae nombre, RUT y profesión)
     y += 4;
     doc.addImage(opts.firmaImg, "PNG", 14, y, 62, 47);
+  } else if (opts.firmaImg) {
+    // Firma digital con solo el trazo: va sobre la línea, con nombre y cargo
+    const { width, height } = doc.getImageProperties(opts.firmaImg);
+    const alto = 28;
+    y += 4;
+    doc.addImage(opts.firmaImg, "PNG", 22, y, (alto * width) / height, alto);
+    y += alto + 1;
+    doc.setDrawColor(40, 40, 40);
+    doc.line(14, y, 90, y);
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text(professional, 14, y);
+    y += 4.5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(opts.firmaCargo!, 14, y);
   } else {
     y += 20;
     doc.setDrawColor(40, 40, 40);
