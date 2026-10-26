@@ -68,6 +68,28 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       { source: "/category/:path*", destination: "/servicios", permanent: true },
+      // 404 en Search Console (18 oct): rehabilitación de piso pélvico es kinesiología.
+      {
+        source: "/service-page/rehab-piso-pelvico",
+        destination: "/servicios/kinesiologia",
+        permanent: true,
+      },
+      // Otras páginas antiguas de Wix vistas en Search Console (25 oct).
+      { source: "/paywall", destination: "/", permanent: true },
+      { source: "/members", destination: "/", permanent: true },
+      { source: "/testimonios", destination: "/", permanent: true },
+      { source: "/giftcards", destination: "/packs-tratamiento", permanent: true },
+      { source: "/pricing-plans/:path*", destination: "/packs-tratamiento", permanent: true },
+      { source: "/payment-request-page", destination: "/reserva", permanent: true },
+      { source: "/educaci%C3%B3n", destination: "/evidencia-metodologia", permanent: true },
+      {
+        source: "/copia-de-formaci%C3%B3nes-sakros",
+        destination: "/evidencia-metodologia",
+        permanent: true,
+      },
+      // Cualquier otra página de servicio o reserva antigua de Wix.
+      { source: "/service-page/:path*", destination: "/servicios", permanent: true },
+      { source: "/booking-calendar/:path*", destination: "/reserva", permanent: true },
     ];
   },
 };
