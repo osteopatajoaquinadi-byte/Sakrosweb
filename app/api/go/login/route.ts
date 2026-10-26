@@ -34,6 +34,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // En construcción: solo reciben enlace los correos que autoriza el coach.
+  const { data: autorizado, error: errAut } = await db.rpc("go_email_autorizado", { p_email: email });
+  if (errAut) {
+    console.error("Sakros Go login (autorizado):", errAut.message);
+    return NextResponse.json({ error: "No se pudo revisar tu correo. Inténtalo de nuevo." }, { status: 500 });
+  }
+  if (autorizado !== true) {
+    return NextResponse.json(
+      { error: "Sakros Go está en construcción. Por ahora solo pueden entrar las personas invitadas por Sakros." },
+      { status: 403 },
+    );
+  }
+
   // Crea la cuenta si no existe (el error de "ya existe" se ignora).
   await db.auth.admin.createUser({ email, email_confirm: true }).catch(() => null);
   const { data, error } = await db.auth.admin.generateLink({ type: "magiclink", email });

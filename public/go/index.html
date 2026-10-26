@@ -3222,7 +3222,7 @@ function pantallaLogin(msg){
   em.addEventListener('keydown',e=>{if(e.key==='Enter')btn.click()});
   const card=h('section',{class:'card onb'},h('h2',{text:'Entra a Sakros Go'}),
     h('p',{class:'note',text:'Tu plan de entrenamiento, tu registro y tu Coach. Escribe tu correo y te enviamos un enlace para entrar, sin contraseña.'}),
-    h('label',{class:'f',for:'login-email'},'Correo',em),st,h('div',{class:'row'},btn),h('p',{class:'note'},'¿Primera vez? ',h('a',{href:'/sakros-go'},'Conoce Sakros Go y sus planes')));
+    h('label',{class:'f',for:'login-email'},'Correo',em),st,h('div',{class:'row'},btn),h('p',{class:'note',text:'Sakros Go está en construcción: por ahora es solo para personas invitadas por Sakros.'}));
   m.append(card);
 }
 async function salir(){try{await SB.auth.signOut()}catch(e){}try{localStorage.removeItem('exos8-play')}catch(e){}location.href='/go'}
@@ -3245,6 +3245,7 @@ async function salir(){try{await SB.auth.signOut()}catch(e){}try{localStorage.re
   const{data:{session}}=await SB.auth.getSession();
   if(!session){pantallaLogin();return}
   const{data:me,error}=await SB.rpc('go_vincular');
+  if(error&&/no_autorizado/.test(error.message||'')){await SB.auth.signOut().catch(()=>{});pantallaLogin('Sakros Go está en construcción. Por ahora solo pueden entrar las personas invitadas por Sakros.');return}
   if(error||!me){pantallaLogin('No se pudo abrir tu cuenta. Vuelve a intentarlo.');return}
   ROL=me.rol;YO=me;
   if(ROL==='cliente'){MODO='cliente';MODO_FIJO=true;UI.atleta=me.atleta;UI.tab=['hoy','progreso','tests','coach','sesion','play','onb','fms'].includes(UI.tab)?UI.tab:'hoy'}
