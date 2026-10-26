@@ -60,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     legalName: siteConfig.legalName,
     description: siteConfig.description,
     url: siteConfig.url,
-    logo: `${siteConfig.url}/images/logo-sakros.png`,
+    logo: `${siteConfig.url}/images/logo-sakros-cuadrado.png`,
     image: `${siteConfig.url}/og-image.jpg`,
     telephone: siteConfig.phone,
     email: siteConfig.email,
