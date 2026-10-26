@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   }
   if (norm(user.display_name).startsWith("anikken")) {
     return NextResponse.json(
-      { nombre: "Anikken Arentsen", firma: FIRMA_ANIKKEN_PNG, cargo: "Posturologa - Clinica Sakros" },
+      { nombre: "Anikken Arentsen", firma: FIRMA_ANIKKEN_PNG, cargo: "Kinesióloga - Posturóloga", rut: "17.751.987-1" },
       { headers: { "Cache-Control": "private, no-store" } }
     );
   }
