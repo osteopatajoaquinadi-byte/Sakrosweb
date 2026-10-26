@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     greeting: "Hola:",
     paragraphs: [
       "Toca el botón para entrar a tu plan de entrenamiento. El enlace sirve una sola vez y vence en una hora.",
+      "Después, entra directo en sakros.cl/go desde el mismo teléfono: tu sesión queda abierta y no necesitas este correo otra vez. Si alguna vez te pide entrar de nuevo, escribe tu correo ahí y te mandamos otro enlace.",
       "Si no pediste este correo, puedes ignorarlo.",
     ],
     cta: { label: "Entrar a Sakros Go", href: link },
