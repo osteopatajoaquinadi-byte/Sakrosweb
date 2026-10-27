@@ -237,7 +237,7 @@ h2.sec{margin:18px 4px 8px;font-size:1.1rem}p.big{font-family:var(--display);fon
 <script src="/go/supabase.js"></script>
 <script>
 const VIDEOS_B64={};
-const VIDEOS={puente:'x','zancada-rodilla':'x','bajada-escalon':'x'};const _vurl={};
+const VIDEOS={'bajada-escalon':'x','deadbug':'x','deadbug-disco':'x','equilibrio-rodilla':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','sent-frontal':'x','snap-down':'x','swing':'x','zancada-rodilla':'x'};const _vurl={};
 function videoURL(k){return '/go/media/'+k+'.mp4'}
 // Video del ejercicio en lugar de las fotos: se reproduce en silencio y en bucle solo mientras se ve.
 let _vobs=null;
@@ -297,14 +297,14 @@ const EX={
   'Vueltas: hombres 1, mujeres 2 (en las semanas de descarga, 1).',
   'Pared: inclínate unos 45° con las manos en la pared. Marching 2×5 por pierna (2 s arriba) y switches 3×3 explosivos.'],
   clave:'La pared enseña la inclinación de las salidas: cadera adelantada, sin quebrarse.'},
- actA:{n:'Activación: aterrizajes y frenadas',img:[['sakcajon-1','Snap-down, inicio: de puntillas y brazos arriba (triple extensión)'],['sakcajon-2','Snap-down: baja de golpe a la posición de aterrizaje y congela 2 s'],['drop-1','Aterrizaje a dos pies: rodillas sobre los pies'],['caida-1','Aterrizaje a una pierna: frena 2 s']],pasos:[
+ actA:{n:'Activación: aterrizajes y frenadas',video:'snap-down',img:[['sakcajon-1','Snap-down, inicio: de puntillas y brazos arriba (triple extensión)'],['sakcajon-2','Snap-down: baja de golpe a la posición de aterrizaje y congela 2 s'],['drop-1','Aterrizaje a dos pies: rodillas sobre los pies'],['caida-1','Aterrizaje a una pierna: frena 2 s']],pasos:[
   'Mini band lateral ×10 pasos por lado y skips A 2×15 m.',
   'Snap-down: de puntillas con los brazos arriba, baja de golpe a la posición de aterrizaje (cadera atrás, rodillas sobre los pies, brazos atrás) y congela 2 s. ×5.',
   'Aterrizaje a dos pies: pequeño salto vertical y caída silenciosa, aguantando 2 s. ×3.',
   'Aterrizaje a una pierna: salto corto hacia delante y caída a una pierna, aguanta 2 s sin que la rodilla se vaya hacia dentro. ×3 por lado.',
   'Series: hombres 1 de cada ejercicio, mujeres 2, con foco extra en la rodilla alineada con el pie. Tiempo: 2 min por serie.'],
   clave:'Es preparación, no fatiga: cada caída limpia, silenciosa y con la rodilla sobre el pie. Así llegas listo a la pliometría.'},
- actB:{n:'Activación: frenadas y aterrizajes',img:[['sakcajon-1','Snap-down, inicio: de puntillas y brazos arriba (triple extensión)'],['sakcajon-2','Snap-down: baja de golpe a la posición de aterrizaje y congela 2 s'],['salida-1','Aceleración corta antes de frenar'],['caida-1','Aterrizaje lateral a una pierna']],pasos:[
+ actB:{n:'Activación: frenadas y aterrizajes',video:'snap-down',img:[['sakcajon-1','Snap-down, inicio: de puntillas y brazos arriba (triple extensión)'],['sakcajon-2','Snap-down: baja de golpe a la posición de aterrizaje y congela 2 s'],['salida-1','Aceleración corta antes de frenar'],['caida-1','Aterrizaje lateral a una pierna']],pasos:[
   'Snap-down ×5: de puntillas con los brazos arriba, baja de golpe a la posición de aterrizaje y congela 2 s.',
   'Frenada en 3 pasos: acelera 10 m y frena en 3 pasos cortos, bajando la cadera, con el tronco adelante y las rodillas sobre los pies. ×3.',
   'Frenada y cambio: acelera 5 m, frena en 3 pasos y sal hacia el lado contrario. ×2 por lado.',
@@ -405,7 +405,7 @@ const EX={
   'Frena en 2 s con la cadera atrás, la rodilla alineada con el pie y el tronco quieto. 4 por lado.',
   'Hazlo en las pausas del push press.'],
   clave:'Si la rodilla se va hacia dentro al caer, acorta la distancia.'},
- frontal:{n:'Sentadilla frontal',img:[['sakfrontal-3','Barra apoyada en los hombros, brazos al frente'],['sakfrontal-1','Inicio (perfil): codos altos'],['sakfrontal-2','Abajo (perfil): tronco vertical'],['sakfrontal-4','Abajo, de cerca: codos altos y barra pegada al cuello']],pasos:[
+ frontal:{n:'Sentadilla frontal',video:'sent-frontal',img:[['sakfrontal-3','Barra apoyada en los hombros, brazos al frente'],['sakfrontal-1','Inicio (perfil): codos altos'],['sakfrontal-2','Abajo (perfil): tronco vertical'],['sakfrontal-4','Abajo, de cerca: codos altos y barra pegada al cuello']],pasos:[
   'Barra sobre los deltoides anteriores, pegada al cuello: agarre de cargada o brazos cruzados.',
   'Codos altos y tronco lo más vertical posible durante todo el recorrido.',
   'Baja profundo con las rodillas hacia delante y sube empujando los codos hacia arriba. Pausa de 2 min.'],
@@ -504,7 +504,7 @@ const EXC={
   'La zona lumbar no se aplana contra las manos y el mentón no se pega al pecho.',
   'Baja y cambia la pierna flexionada a mitad de las series.'],
   clave:'No es un abdominal clásico: no hay flexión de la columna lumbar.'},
- kdeadbug:{n:'Dead bug',img:[['deadbug-0','Brazos al techo, caderas y rodillas a 90°'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
+ kdeadbug:{n:'Dead bug',video:'deadbug',img:[['deadbug-0','Brazos al techo, caderas y rodillas a 90°'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
   'Boca arriba, brazos al techo y caderas y rodillas a 90°.',
   'Inhala, Knack y braceo al 30 %. Al exhalar, extiende un brazo atrás y la pierna contraria al frente, sin tocar el suelo.',
   'La zona lumbar no se despega del suelo y el abdomen no se abomba. Vuelve y cambia de lado.'],
@@ -514,7 +514,7 @@ const EXC={
   'Knack y braceo al 50 %. Mantén la posición respirando durante toda la plancha.',
   'Sin hundir la zona lumbar ni subir la cadera.'],
   clave:'Respira corto y suave: la plancha no se aguanta en apnea.'},
- kpuente:{n:'Puente glúteo bilateral',img:[['puente-0','Abajo: pies a la anchura de la cadera'],['puente-1','Arriba: rodilla, cadera y hombro alineados']],pasos:[
+ kpuente:{n:'Puente glúteo bilateral',video:'puente-bilateral',img:[['puente-0','Abajo: pies a la anchura de la cadera'],['puente-1','Arriba: rodilla, cadera y hombro alineados']],pasos:[
   'Boca arriba con rodillas flexionadas y pies a la anchura de la cadera.',
   'Inhala abajo. Al subir, Knack, exhala y empuja con los talones hasta alinear rodilla, cadera y hombro.',
   'Aguanta arriba el tiempo marcado apretando los glúteos. Las costillas no se abren y la zona lumbar no se arquea.'],
@@ -540,12 +540,12 @@ const EXC={
   'La pelvis no rota: puedes apoyar un vaso de plástico en la zona lumbar como control.',
   'Vuelve barriendo el suelo con la mano y la rodilla y cambia de lado.'],
   clave:'Es uno de los tres grandes de McGill: control antes que rango.'},
- kpallofsr:{n:'Pallof press en semirrodillas',img:[['pallof-0','Manos en el esternón'],['pallof-1','Brazos extendidos, el tronco no gira']],pasos:[
+ kpallofsr:{n:'Pallof press en semirrodillas',video:'pallof-semirrodillas',img:[['pallof-0','Manos en el esternón'],['pallof-1','Brazos extendidos, el tronco no gira']],pasos:[
   'De lado al anclaje (polea o banda), con la rodilla de dentro en el suelo y la de fuera adelante.',
   'Braceo al 30–50 %. Exhala mientras extiendes los brazos al frente y aguanta 3 s sin que el tronco gire.',
   'Vuelve las manos al esternón. Haz todas las repeticiones y cambia de lado.'],
   clave:'La carga es suficiente cuando cuesta mantener el tronco quieto.'},
- kpuente1:{n:'Puente a una pierna (apoyo amplio)',img:[['puentepierna-0','Abajo: un pie apoyado'],['puentepierna-1','Arriba: la pelvis no cae']],pasos:[
+ kpuente1:{n:'Puente a una pierna (apoyo amplio)',video:'puente-una-pierna',img:[['puentepierna-0','Abajo: un pie apoyado'],['puentepierna-1','Arriba: la pelvis no cae']],pasos:[
   'Boca arriba, un pie apoyado y la otra pierna con la rodilla flexionada en el aire.',
   'Knack y exhala al subir la cadera empujando con el talón.',
   'La pelvis queda horizontal, sin caer hacia el lado de la pierna libre.'],
@@ -560,7 +560,7 @@ const EXC={
   'Tira hacia la cara separando las manos y termina con los pulgares hacia atrás (rotación externa).',
   'Exhala al tirar. Escápulas atrás y abajo.'],
   clave:'Sin arquear la zona lumbar.'},
- kdeadbugc:{n:'Dead bug con banda o disco',img:[['deadbug-0','Disco o banda en las manos'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
+ kdeadbugc:{n:'Dead bug con banda o disco',video:'deadbug-disco',img:[['deadbug-0','Disco o banda en las manos'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
   'Igual que el dead bug, sosteniendo un disco de 2–5 kg o una banda anclada detrás de la cabeza.',
   'Braceo al 50 %. Exhala en la extensión de brazo y pierna.',
   'La zona lumbar sigue pegada al suelo.'],
@@ -620,7 +620,7 @@ const EXC={
   'Braceo al 30–50 %. Tira llevando los codos hacia abajo y atrás, hasta el pecho. Exhala al tirar.',
   'Sin arquear la zona lumbar.'],
   clave:'Las costillas no se abren.'},
- kmaleta:{n:'Paseo de maleta',img:[['granjero-1','Paseo con carga (en la maleta, una sola mano)']],pasos:[
+ kmaleta:{n:'Paseo de maleta',video:'paseo-maleta',img:[['granjero-1','Paseo con carga (en la maleta, una sola mano)']],pasos:[
   'Una mancuerna o kettlebell en una sola mano.',
   'Braceo al 50 %. Camina erguido con pasos cortos, sin inclinarte hacia ningún lado.',
   'Cambia de mano en cada vuelta.'],
@@ -692,17 +692,17 @@ const EXC={
 };
 Object.assign(EX,EXC);
 Object.assign(EX,{
- klanzsup:{n:'Lanzamiento de pecho boca arriba',img:[['lanzsup-0','Balón en el pecho, rodillas flexionadas'],['lanzsup-1','Lanza vertical y recibe con brazos largos']],pasos:[
+ klanzsup:{n:'Lanzamiento de pecho boca arriba',video:'lanz-supino',img:[['lanzsup-0','Balón en el pecho, rodillas flexionadas'],['lanzsup-1','Lanza vertical y recibe con brazos largos']],pasos:[
   'Boca arriba con rodillas flexionadas y un balón medicinal de 2–3 kg en el pecho.',
   'Inhala, Knack y braceo al 30 %. Lanza el balón hacia arriba exhalando fuerte, sin despegar la zona lumbar ni las costillas.',
   'Recíbelo con los brazos largos y vuelve a llevarlo al pecho controlado.'],
   clave:'Primer contacto con la velocidad: el abdomen no se abomba al lanzar.'},
- klanzpecho:{n:'Pase de pecho con balón medicinal',img:[['lanzpecho-0','Balón en el pecho'],['lanzpecho-1','Empuje explosivo, brazos extendidos']],pasos:[
+ klanzpecho:{n:'Pase de pecho con balón medicinal',video:'pase-pecho',img:[['lanzpecho-0','Balón en el pecho'],['lanzpecho-1','Empuje explosivo, brazos extendidos']],pasos:[
   'De pie frente a una pared (a 2–3 m) o a un compañero, con un balón de 3–4 kg en el pecho.',
   'Inhala, Knack y braceo al 50 %. Empuja el balón explosivo exhalando fuerte («tss»), con el tronco firme.',
   'Recíbelo amortiguando con los brazos y reajusta antes del siguiente.'],
   clave:'La fuerza sale de piernas y tronco firme, sin arquear la zona lumbar.'},
- klanzrot:{n:'Lanzamiento rotacional en semirrodillas',img:[],pasos:[
+ klanzrot:{n:'Lanzamiento rotacional en semirrodillas',video:'lanz-rotacional',img:[],pasos:[
   'En semirrodillas, de lado a una pared (a 1–2 m), con un balón de 2–4 kg a la altura de la cadera de atrás.',
   'Braceo al 50 % y Knack. Gira desde la cadera y el tórax y lanza el balón contra la pared exhalando fuerte.',
   'La zona lumbar no rota: el giro sale de la cadera y la columna torácica. Haz todas las repeticiones y cambia de lado.'],
@@ -717,7 +717,7 @@ Object.assign(EX,{
   'Lleva el balón por encima de la cabeza con las costillas abajo y braceo al 50–70 % (sin arquear la zona lumbar).',
   'Lanza hacia el frente exhalando fuerte, con un paso si hace falta. Recoge y repite.'],
   clave:'El arco atrás es corto: la potencia viene de piernas y tronco firme, no de hiperextender la columna.'},
- klanzatras:{n:'Lanzamiento hacia atrás por encima de la cabeza',img:[['lanzatras-0','Bisagra con el balón entre las piernas'],['lanzatras-1','Extensión de cadera explosiva, lanza atrás']],pasos:[
+ klanzatras:{n:'Lanzamiento hacia atrás por encima de la cabeza',video:'lanz-atras',img:[['lanzatras-0','Bisagra con el balón entre las piernas'],['lanzatras-1','Extensión de cadera explosiva, lanza atrás']],pasos:[
   'De pie con un balón de 3–6 kg. Bisagra de cadera con la columna neutra y el balón entre las rodillas.',
   'Inhala, Knack y braceo al 70 %. Extiende la cadera de forma explosiva y lanza el balón hacia atrás por encima de la cabeza, exhalando fuerte.',
   'Al terminar, el cuerpo queda alineado: la extensión es de cadera, no de la zona lumbar.'],
@@ -727,7 +727,7 @@ Object.assign(EX,{
   'Braceo al 70 % y Knack. Extiende piernas y cadera de forma explosiva y lanza el balón hacia arriba, exhalando fuerte.',
   'Déjalo caer delante y repite. Sin salto si todavía hay escape: solo extensión hasta la punta de los pies.'],
   clave:'Triple extensión con el tronco firme.'},
- ksentbarra:{n:'Sentadilla frontal con barra',img:[['sakfrontal-3','Barra apoyada en los hombros'],['sakfrontal-2','Abajo: tronco vertical'],['sakfrontal-4','Codos altos y barra pegada al cuello']],pasos:[
+ ksentbarra:{n:'Sentadilla frontal con barra',video:'sent-frontal',img:[['sakfrontal-3','Barra apoyada en los hombros'],['sakfrontal-2','Abajo: tronco vertical'],['sakfrontal-4','Codos altos y barra pegada al cuello']],pasos:[
   'Barra sobre los deltoides anteriores, codos altos y pies a la anchura de los hombros.',
   'Inhala y bracea al 70 % antes de bajar. Baja con el tronco vertical hasta donde mantienes la columna neutra.',
   'Knack y exhala al subir, sin soltar el braceo. Nunca en apnea.'],
@@ -752,7 +752,7 @@ Object.assign(EX,{
   'Braceo al 70 % y Knack. Extiende piernas y cadera de forma explosiva y empuja la barra hasta extender el brazo, exhalando fuerte.',
   'Recibe la barra de vuelta al hombro amortiguando con las piernas. Cambia de lado.'],
   clave:'La potencia viaja de los pies a la mano con el tronco firme.'},
- kswing:{n:'Kettlebell swing',img:[['swing-0','Arriba: cadera extendida'],['swing-1','Bisagra: kettlebell entre las piernas']],pasos:[
+ kswing:{n:'Kettlebell swing',video:'swing',img:[['swing-0','Arriba: cadera extendida'],['swing-1','Bisagra: kettlebell entre las piernas']],pasos:[
   'Kettlebell delante, pies algo más anchos que la cadera. Bisagra y lleva la kettlebell entre las piernas.',
   'Extiende la cadera de forma explosiva: la kettlebell sube por inercia hasta la altura del pecho. Exhala fuerte («tss») arriba con braceo al 50–70 % y Knack.',
   'Arriba, cuerpo alineado: sin echarte atrás. Deja caer la kettlebell y vuelve a la bisagra.'],
@@ -844,7 +844,7 @@ Object.assign(EX,{
   'Tira llevando los codos atrás, cerca del cuerpo, y junta las escápulas. Exhala al tirar.',
   'Vuelve despacio, sin dejar que la banda te arrastre.'],
   clave:'Hombros lejos de las orejas.'},
- gpuente:{n:'Puente de glúteo',img:[['puente-0','Abajo: rodillas flexionadas'],['puente-1','Arriba: rodilla, cadera y hombro alineados'],['puentepierna-1','A una pierna (semanas 7–8)']],pasos:[
+ gpuente:{n:'Puente de glúteo',video:'puente-bilateral',img:[['puente-0','Abajo: rodillas flexionadas'],['puente-1','Arriba: rodilla, cadera y hombro alineados'],['puentepierna-1','A una pierna (semanas 7–8)']],pasos:[
   'Boca arriba, rodillas flexionadas y pies apoyados a la anchura de la cadera.',
   'Exhala y sube la cadera empujando con los talones hasta alinear rodilla, cadera y hombro. Aprieta los glúteos arriba.',
   'Baja despacio. En las semanas 7–8, hazlo a una pierna.'],
@@ -981,7 +981,7 @@ Object.assign(EX,{
   'Un pie adelante y otro atrás, separados como para un paso largo.',
   'Baja en vertical en 3 s hasta que la rodilla de atrás casi toque el suelo y sube.',
   'Puntos de control: rodilla delantera sobre el pie, pelvis nivelada, tronco erguido.'],clave:CTRL},
- xequi:{n:'Equilibrio (desafío del día)',niv:['pies juntos o semitándem, cerca de la pared','tándem o una pierna','una pierna con el desafío del día'],img:[],pasos:[
+ xequi:{n:'Equilibrio (desafío del día)',video:'equilibrio-rodilla',niv:['pies juntos o semitándem, cerca de la pared','tándem o una pierna','una pierna con el desafío del día'],img:[],pasos:[
   'Cerca de una pared o una silla. Mira un punto fijo al frente.',
   'Mantén la posición del día respirando normal: el pie «agarra» el suelo sin encoger los dedos.',
   'Puntos de control: pelvis nivelada, rodilla suave, tronco quieto. Si tocas el apoyo, vuelve a empezar el tiempo.'],clave:'Progresión: pies juntos → semitándem → tándem → una pierna → ojos cerrados → con perturbación → con doble tarea.'},
@@ -1020,7 +1020,7 @@ Object.assign(EX,{
   'Un compañero (o una app de señales) indica una dirección.',
   'Reacciona rápido: da el paso o el cambio de dirección y estabiliza 2 s en buena posición.',
   'Puntos de control: rodilla sobre el pie, cadera atrás, tronco quieto al frenar.'],clave:'La técnica tiene que aparecer sola, sin pensarla: esa es la meta del control motor.'},
- xdeadbug:{n:'Dead bug',niv:['solo piernas','completo','completo con banda'],img:[['deadbug-0','Brazos al techo, caderas y rodillas a 90°'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
+ xdeadbug:{n:'Dead bug',video:'deadbug',niv:['solo piernas','completo','completo con banda'],img:[['deadbug-0','Brazos al techo, caderas y rodillas a 90°'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
   'Boca arriba, brazos al techo y caderas y rodillas a 90°. Semanas 1–4: hollowing suave (ombligo adentro y arriba, piso pélvico cerrado). Semanas 5–8: braceo suave.',
   'Exhala mientras extiendes brazo y pierna contrarios, despacio, y vuelve.',
   'Puntos de control: la zona lumbar no se despega, el abdomen no se abomba, respiras sin aguantar el aire.'],clave:CTRL},
@@ -1032,7 +1032,7 @@ Object.assign(EX,{
   'Antebrazos bajo los hombros, cuerpo recto. Braceo y respira durante toda la serie.',
   'Variante del día: frontal, lateral o con toque de hombro según la semana.',
   'Puntos de control: sin hundir la zona lumbar, cadera quieta, respiración continua.'],clave:CTRL},
- xpallof:{n:'Pallof press',niv:['de pie, banda suave','semirrodillas','de pie, banda dura'],img:[['pallof-0','Manos en el esternón'],['pallof-1','Brazos extendidos']],pasos:[
+ xpallof:{n:'Pallof press',video:'pallof-pie',niv:['de pie, banda suave','semirrodillas','de pie, banda dura'],img:[['pallof-0','Manos en el esternón'],['pallof-1','Brazos extendidos']],pasos:[
   'De lado al anclaje de la banda. Exhala mientras extiendes los brazos al frente y aguanta 2 s.',
   'Puntos de control: el tronco no gira, la pelvis no se mueve.'],clave:CTRL},
  xempuje:{n:'Flexión de brazos',niv:['en la pared','en mesa o banco','de rodillas o en el suelo'],img:[['flexinc-0','Manos en un apoyo alto'],['flexinc-1','Cuerpo recto']],pasos:[
