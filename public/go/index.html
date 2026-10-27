@@ -188,6 +188,7 @@ details.card>summary{font-weight:700}
 .playcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:grid}
 .media.play{aspect-ratio:4/3}
 .media.play.tall{aspect-ratio:4/5}
+.media.vidm{cursor:pointer}.media video{width:100%;height:100%;object-fit:contain;display:block;background:#0d1217}
 .playname{font-family:var(--display);font-size:1.6rem;margin:0;line-height:1.1}
 .pres.big{font-size:2rem}
 .rest{display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
@@ -236,8 +237,17 @@ h2.sec{margin:18px 4px 8px;font-size:1.1rem}p.big{font-family:var(--display);fon
 <script src="/go/supabase.js"></script>
 <script>
 const VIDEOS_B64={};
-const VIDEOS={puente:'x'};const _vurl={};
+const VIDEOS={puente:'x','zancada-rodilla':'x','bajada-escalon':'x'};const _vurl={};
 function videoURL(k){return '/go/media/'+k+'.mp4'}
+// Video del ejercicio en lugar de las fotos: se reproduce en silencio y en bucle solo mientras se ve.
+let _vobs=null;
+function vidObs(){if(!_vobs&&'IntersectionObserver' in window)_vobs=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target;if(e.isIntersecting){v.play().catch(()=>{})}else v.pause()}),{threshold:.4});return _vobs}
+function mediaVideo(k,alt,cls){
+  const v=h('video',{src:videoURL(k),poster:'/go/media/'+k+'.jpg',muted:true,loop:true,playsinline:true,'webkit-playsinline':true,preload:'none','aria-label':'Video: '+alt});
+  v.muted=true;const o=vidObs();if(o)o.observe(v);else v.autoplay=true;
+  return h('div',{class:'media tall vidm'+(cls?' '+cls:''),onclick:()=>{v.paused?v.play().catch(()=>{}):v.pause()}},v,h('span',{class:'tag',text:'Video · toca para pausar'}));
+}
+const vidDe=(id,V)=>{const k=EX[id]&&EX[id].video;return k&&VIDEOS[k]&&V.n===EX[id].n?k:null};
 const IMGS={"boxsquat-0":"/go/img/boxsquat-0.jpg","boxsquat-1":"/go/img/boxsquat-1.jpg","bulgara-0":"/go/img/bulgara-0.jpg","bulgara-1":"/go/img/bulgara-1.jpg","caida-0":"/go/img/caida-0.jpg","caida-1":"/go/img/caida-1.jpg","chop-0":"/go/img/chop-0.jpg","chop-1":"/go/img/chop-1.jpg","cinta-0":"/go/img/cinta-0.jpg","cinta-1":"/go/img/cinta-1.jpg","curl-0":"/go/img/curl-0.jpg","curl-1":"/go/img/curl-1.jpg","deadbug-0":"/go/img/deadbug-0.jpg","deadbug-1":"/go/img/deadbug-1.jpg","dominadas-0":"/go/img/dominadas-0.jpg","dominadas-1":"/go/img/dominadas-1.jpg","drop-0":"/go/img/drop-0.jpg","drop-1":"/go/img/drop-1.jpg","extension-0":"/go/img/extension-0.jpg","facepull-0":"/go/img/facepull-0.jpg","facepull-1":"/go/img/facepull-1.jpg","flexinc-0":"/go/img/flexinc-0.jpg","flexinc-1":"/go/img/flexinc-1.jpg","flexor-0":"/go/img/flexor-0.jpg","flexor-1":"/go/img/flexor-1.jpg","flexsuelo-0":"/go/img/flexsuelo-0.jpg","flexsuelo-1":"/go/img/flexsuelo-1.jpg","gato-0":"/go/img/gato-0.jpg","gato-1":"/go/img/gato-1.jpg","goblet-0":"/go/img/goblet-0.jpg","goblet-1":"/go/img/goblet-1.jpg","granjero-1":"/go/img/granjero-1.jpg","hipthrust-0":"/go/img/hipthrust-0.jpg","hipthrust-1":"/go/img/hipthrust-1.jpg","jalon-0":"/go/img/jalon-0.jpg","jalon-1":"/go/img/jalon-1.jpg","jammer-0":"/go/img/jammer-0.jpg","jammer-1":"/go/img/jammer-1.jpg","landmine-0":"/go/img/landmine-0.jpg","landmine-1":"/go/img/landmine-1.jpg","lanzatras-0":"/go/img/lanzatras-0.jpg","lanzatras-1":"/go/img/lanzatras-1.jpg","lanzover-0":"/go/img/lanzover-0.jpg","lanzover-1":"/go/img/lanzover-1.jpg","lanzpecho-0":"/go/img/lanzpecho-0.jpg","lanzpecho-1":"/go/img/lanzpecho-1.jpg","lanzscoop-0":"/go/img/lanzscoop-0.jpg","lanzscoop-1":"/go/img/lanzscoop-1.jpg","lanzsup-0":"/go/img/lanzsup-0.jpg","lanzsup-1":"/go/img/lanzsup-1.jpg","martillo-0":"/go/img/martillo-0.jpg","martillo-1":"/go/img/martillo-1.jpg","monster-0":"/go/img/monster-0.jpg","monster-1":"/go/img/monster-1.jpg","muerto-1":"/go/img/muerto-1.jpg","nordic-0":"/go/img/nordic-0.jpg","nordic-1":"/go/img/nordic-1.jpg","pallof-0":"/go/img/pallof-0.jpg","pallof-1":"/go/img/pallof-1.jpg","pared-0":"/go/img/pared-0.jpg","pared-1":"/go/img/pared-1.jpg","patada-0":"/go/img/patada-0.jpg","patada-1":"/go/img/patada-1.jpg","plancha-0":"/go/img/plancha-0.jpg","plancha-1":"/go/img/plancha-1.jpg","pressh-0":"/go/img/pressh-0.jpg","pressh-1":"/go/img/pressh-1.jpg","puente-0":"/go/img/puente-0.jpg","puente-1":"/go/img/puente-1.jpg","puentepierna-0":"/go/img/puentepierna-0.jpg","puentepierna-1":"/go/img/puentepierna-1.jpg","pushpress-0":"/go/img/pushpress-0.jpg","pushpress-1":"/go/img/pushpress-1.jpg","rdl-0":"/go/img/rdl-0.jpg","remo-0":"/go/img/remo-0.jpg","remo-1":"/go/img/remo-1.jpg","remobarra-0":"/go/img/remobarra-0.jpg","remobarra-1":"/go/img/remobarra-1.jpg","remobis-1":"/go/img/remobis-1.jpg","remoinv-0":"/go/img/remoinv-0.jpg","remoinv-1":"/go/img/remoinv-1.jpg","remomanc-0":"/go/img/remomanc-0.jpg","remomanc-1":"/go/img/remomanc-1.jpg","rollout-0":"/go/img/rollout-0.jpg","rollout-1":"/go/img/rollout-1.jpg","sakbisagra-1":"/go/img/sakbisagra-1.jpg","sakbisagra-2":"/go/img/sakbisagra-2.jpg","sakbisagra-3":"/go/img/sakbisagra-3.jpg","sakcajon-1":"/go/img/sakcajon-1.jpg","sakcajon-2":"/go/img/sakcajon-2.jpg","sakcajon-3":"/go/img/sakcajon-3.jpg","sakcolgado-1":"/go/img/sakcolgado-1.jpg","sakcolgado-2":"/go/img/sakcolgado-2.jpg","sakfrontal-1":"/go/img/sakfrontal-1.jpg","sakfrontal-2":"/go/img/sakfrontal-2.jpg","sakfrontal-3":"/go/img/sakfrontal-3.jpg","sakfrontal-4":"/go/img/sakfrontal-4.jpg","sakmuerto-1":"/go/img/sakmuerto-1.jpg","sakmuerto-2":"/go/img/sakmuerto-2.jpg","sakplancha-1":"/go/img/sakplancha-1.jpg","sakplancha-2":"/go/img/sakplancha-2.jpg","sakpuentex-1":"/go/img/sakpuentex-1.jpg","sakpuentex-2":"/go/img/sakpuentex-2.jpg","sakrodillo-1":"/go/img/sakrodillo-1.jpg","sakrodillo-2":"/go/img/sakrodillo-2.jpg","sakrodillo-3":"/go/img/sakrodillo-3.jpg","saksentadilla-1":"/go/img/saksentadilla-1.jpg","saksentadilla-2":"/go/img/saksentadilla-2.jpg","saktiron-1":"/go/img/saktiron-1.jpg","salida-0":"/go/img/salida-0.jpg","salida-1":"/go/img/salida-1.jpg","salto-0":"/go/img/salto-0.jpg","salto-1":"/go/img/salto-1.jpg","shrug-0":"/go/img/shrug-0.jpg","shrug-1":"/go/img/shrug-1.jpg","sidebridge-0":"/go/img/sidebridge-0.jpg","sidebridge-1":"/go/img/sidebridge-1.jpg","skater-0":"/go/img/skater-0.jpg","skater-1":"/go/img/skater-1.jpg","skip-0":"/go/img/skip-0.jpg","skip-1":"/go/img/skip-1.jpg","sledpush-0":"/go/img/sledpush-0.jpg","sledpush-1":"/go/img/sledpush-1.jpg","split-0":"/go/img/split-0.jpg","split-1":"/go/img/split-1.jpg","stepup-0":"/go/img/stepup-0.jpg","stepup-1":"/go/img/stepup-1.jpg","swing-0":"/go/img/swing-0.jpg","swing-1":"/go/img/swing-1.jpg","talones-0":"/go/img/talones-0.jpg","talones-1":"/go/img/talones-1.jpg","tobillo-0":"/go/img/tobillo-0.jpg","trapbar-0":"/go/img/trapbar-0.jpg","trapbar-1":"/go/img/trapbar-1.jpg","tricep-0":"/go/img/tricep-0.jpg","tricep-1":"/go/img/tricep-1.jpg","trineo-0":"/go/img/trineo-0.jpg","trineo-1":"/go/img/trineo-1.jpg","trote-0":"/go/img/trote-0.jpg","wgs-0":"/go/img/wgs-0.jpg","wgs-1":"/go/img/wgs-1.jpg"};
 /* ---------- Plan ---------- */
 const FASE=['Carga','Carga','Carga','Descarga','Carga intensa','Carga intensa','Carga intensa','Descarga y test'];
@@ -980,7 +990,7 @@ Object.assign(EX,{
   'Lleva el tronco adelante y la otra pierna atrás como un sube y baja, con la pelvis paralela al suelo.',
   'Vuelve apretando el glúteo de la pierna de apoyo.',
   'Puntos de control: pelvis sin girar, espalda neutra, rodilla de apoyo sobre el pie.'],clave:CTRL},
- xstepdown:{n:'Bajada controlada de escalón',niv:['escalón de 10 cm','escalón de 15 cm','escalón de 20–25 cm'],img:[['stepup-0','Un pie en el escalón']],pasos:[
+ xstepdown:{n:'Bajada controlada de escalón',video:'bajada-escalon',niv:['escalón de 10 cm','escalón de 15 cm','escalón de 20–25 cm'],img:[['stepup-0','Un pie en el escalón']],pasos:[
   'De pie sobre un escalón, con la otra pierna en el aire.',
   'Baja el talón libre hacia el suelo en 3 s, tócalo apenas y vuelve a subir.',
   'Hazlo hacia delante y hacia el lado.',
@@ -997,8 +1007,9 @@ Object.assign(EX,{
   'Pie completo en el escalón. Sube empujando con esa pierna, sin impulsarte con la de abajo.',
   'Arriba, aguanta 1 s sobre una pierna. Baja en 3 s.',
   'Puntos de control: rodilla sobre el pie, pelvis nivelada.'],clave:CTRL},
- xzancdin:{n:'Zancada dinámica',niv:['hacia atrás, con apoyo','atrás y adelante, sin apoyo','caminando, con mancuernas livianas'],img:[['split-1','Abajo, tronco erguido']],pasos:[
+ xzancdin:{n:'Zancada dinámica',video:'zancada-rodilla',niv:['hacia atrás, con apoyo','atrás y adelante, sin apoyo','caminando, con mancuernas livianas'],img:[['split-1','Abajo, tronco erguido']],pasos:[
   'Da un paso, baja controlado y vuelve con un impulso firme.',
+  'Al volver, quédate en una pierna con la rodilla de la otra arriba 1 s, sin tambalearte.',
   'Más rápido que en las fases anteriores, pero con la misma alineación.',
   'Puntos de control: rodilla sobre el pie, tronco erguido, frenar sin tambalearte.'],clave:CTRL},
  xlevantar:{n:'Levantar del suelo y dejar en una mesa',niv:['caja liviana desde una silla','caja liviana desde el suelo','caja mediana desde el suelo'],img:[['sakbisagra-3','Bisagra con la espalda neutra']],pasos:[
@@ -1120,7 +1131,7 @@ function ctrlBox(s,d,it){
   const box=h('div',{class:'freq',role:'group','aria-label':'Control motor'},tog);
   if(EX[id].niv){
     const n=nivelDe(id),set=async v=>{await saveAtleta(UI.atleta,{...atl(),niveles:{...(atl().niveles||{}),[id]:v},t:Date.now()});render()};
-    box.append(h('span',{class:'wholbl',text:NIVEL[n]}),n>1?h('button',{class:'opt',onclick:()=>set(n-1)},'− Bajar'):null,n<3?h('button',{class:'opt',onclick:()=>set(n+1)},'+ Subir'):null);
+    box.append(...[h('span',{class:'wholbl',text:NIVEL[n]}),n>1?h('button',{class:'opt',onclick:()=>set(n-1)},'− Bajar'):null,n<3?h('button',{class:'opt',onclick:()=>set(n+1)},'+ Subir'):null].filter(Boolean));
     const ult=Object.values(S.registro).filter(r=>r.ej===id&&r.hecho&&!(Number(r.semana)===s&&r.dia===d)).sort((a,b)=>(b.t||0)-(a.t||0)).slice(0,2);
     if(n<3&&ult.length===2&&ult.every(r=>r.limpia))box.append(h('span',{class:'note',text:'Técnica limpia 2 veces seguidas: ya puedes subir de nivel.'}));
   }
@@ -1989,7 +2000,9 @@ function exCard(s,d,it){
   let fi=UI.frames[fk]||0;if(fi>=frames.length)fi=0;
   let media=null;
   const tall=frames.some(f=>f[0].startsWith('sak'));
-  if(frames.length){
+  const vk=vidDe(it.id,V);
+  if(vk)media=mediaVideo(vk,V.n);
+  else if(frames.length){
     const lbl=i=>(frames.length>1?(i+1)+'/'+frames.length+' · ':'')+frames[i][1];
     const img=h('img',{src:IMGS[frames[fi][0]],alt:frames[fi][1],loading:'lazy'});
     const tag=h('span',{class:'tag',text:lbl(fi)});
@@ -2018,8 +2031,7 @@ function exCard(s,d,it){
         field('Kg reales','kg-'+k,reg.kg,v=>{const c=upd('kg',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:kgPh}),
         field('RPE','rpe-'+k,reg.rpe,v=>{const c=upd('rpe',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:'1–10'}),
         field('Nota','nota-'+k,reg.nota,v=>{const c=upd('nota',v);debounce(k,()=>write('registro',k,c))},{ph:'Reps, sensaciones…'})),
-      (EX[it.id].video&&VIDEOS[EX[it.id].video]&&V.n===EX[it.id].n)?(()=>{const dv=h('details',{class:'vid'},h('summary',{},'Ver video'));dv.addEventListener('toggle',()=>{if(dv.open&&!dv.querySelector('video'))dv.append(h('video',{src:videoURL(EX[it.id].video),controls:true,playsinline:true,'webkit-playsinline':true,muted:true,loop:true,autoplay:true,preload:'auto'}))});return dv})():null,
-      h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null)));
+            h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null)));
 }
 function renderTests(m){
   if(esPrep())return;
@@ -2981,14 +2993,14 @@ function renderPlay(m){
   g.forEach(it=>{
     const k=key(s,d,it.id),reg=S.registro[k]||{},A=autoEj(s,d,it),V=A.changed?A:{n:EX[it.id].n,img:EX[it.id].img,pasos:EX[it.id].pasos,clave:EX[it.id].clave,pres:pres(s,d,it)};
     const fr=V.img||[];let fi=0;const tall=fr.some(f=>f[0].startsWith('sak'));
-    let media=null;
-    if(fr.length){const img=h('img',{src:IMGS[fr[0][0]],alt:fr[0][1]});const tag=h('span',{class:'tag',text:(fr.length>1?'1/'+fr.length+' · ':'')+fr[0][1]});
+    let media=null;const vk=vidDe(it.id,V);
+    if(vk)media=mediaVideo(vk,V.n,'play');
+    else if(fr.length){const img=h('img',{src:IMGS[fr[0][0]],alt:fr[0][1]});const tag=h('span',{class:'tag',text:(fr.length>1?'1/'+fr.length+' · ':'')+fr[0][1]});
       media=h('button',{class:'media play'+(tall?' tall':''),'aria-label':'Siguiente foto',onclick:()=>{if(fr.length<2)return;fi=(fi+1)%fr.length;img.src=IMGS[fr[fi][0]];img.alt=fr[fi][1];tag.textContent=(fi+1)+'/'+fr.length+' · '+fr[fi][1]}},img,tag)}
     const card=h('article',{class:'playcard'},media,h('div',{class:'body'},
       h('h2',{class:'playname',text:V.n}),h('div',{class:'pres big',text:V.pres}),
       A.changed?h('p',{class:'auto'},A.motivo):null,dxBox(it.id),
-      (EX[it.id].video&&VIDEOS[EX[it.id].video]&&V.n===EX[it.id].n)?(()=>{const dv=h('details',{class:'vid'},h('summary',{},'Ver video'));dv.addEventListener('toggle',()=>{if(dv.open&&!dv.querySelector('video'))dv.append(h('video',{src:videoURL(EX[it.id].video),controls:true,playsinline:true,'webkit-playsinline':true,muted:true,loop:true,autoplay:true,preload:'auto'}))});return dv})():null,
-      h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null)));
+            h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null)));
     if(esClave(it.id)){const kg=h('input',{id:'pk-'+it.id,inputmode:'decimal',placeholder:(V.pres.match(/(\d+(?:,\d+)?) kg/)||[])[1]||'kg'});kg.value=reg.kg||'';
       const rp=h('input',{id:'pr-'+it.id,inputmode:'decimal',placeholder:'1–10'});rp.value=reg.rpe||'';inputs.push([k,it,kg,rp]);
       card.querySelector('.body').append(h('div',{class:'row'},h('label',{class:'f',for:'pk-'+it.id},'Kg que usaste',kg),h('label',{class:'f',for:'pr-'+it.id},'Esfuerzo (RPE)',rp)));}
