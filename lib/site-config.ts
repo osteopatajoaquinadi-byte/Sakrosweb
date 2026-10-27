@@ -22,6 +22,9 @@ export const siteConfig = {
   instagram: "https://www.instagram.com/sakros_salud",
   // Botón "Escríbenos por WhatsApp" de Contacto. La reserva va a /reserva.
   bookingUrl: "https://wa.me/56945399692",
+  // Enlace "Pedir reseñas" del Perfil de Empresa en Google. Mientras esté
+  // vacío no se envían los correos que piden reseña.
+  googleReviewUrl: "",
 };
 
 // Datos para pagar por transferencia (pantalla de reserva y correos).
