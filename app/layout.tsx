@@ -5,6 +5,7 @@ import "./globals.css";
 import { siteConfig, services } from "@/lib/site-config";
 import MobileNav from "@/components/MobileNav";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import WhatsAppFlotante from "@/components/WhatsAppFlotante";
 import { businessId } from "@/lib/seo";
 
 /** El sitio es solo claro: así Safari/Chrome no aplican su tema oscuro. */
@@ -206,6 +207,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </div>
           </div>
         </footer>
+        <WhatsAppFlotante />
         <GoogleAnalytics />
       </body>
     </html>
