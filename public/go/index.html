@@ -188,7 +188,10 @@ details.card>summary{font-weight:700}
 .playcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:grid}
 .media.play{aspect-ratio:4/3}
 .media.play.tall{aspect-ratio:4/5}
-.media.vidm{cursor:pointer}.media video{width:100%;height:100%;object-fit:contain;display:block;background:#0d1217}
+.media.vidm{cursor:pointer}
+.blqh{display:flex;align-items:center;gap:8px;margin:18px 0 6px;font-family:var(--display);font-size:1.25rem;text-transform:uppercase;letter-spacing:.02em}
+.blqh .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:1rem}
+.blqh .note{font-family:var(--body);text-transform:none;font-size:.85rem;letter-spacing:0}.media video{width:100%;height:100%;object-fit:contain;display:block;background:#0d1217}
 .playname{font-family:var(--display);font-size:1.6rem;margin:0;line-height:1.1}
 .pres.big{font-size:2rem}
 .rest{display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
@@ -949,10 +952,10 @@ function tminG(it,s){
   if(id==='gcalor')return 6;if(id==='gestira')return 3;
   if(id==='gcaminata'){const x=p.match(/(\d+) min/);return x?+x[1]:12}
   if(id==='ginterv'){const x=p.match(/(\d+)×\((\d+) min[^+]*\+ (\d+) min/);if(x)return (+x[1])*((+x[2])+(+x[3]));const y=p.match(/(\d+) min/);return y?+y[1]:12}
-  if(/B$/.test(it.b))return 0;
+  if(it.seg)return 0;
   const v=p.match(/^(\d) vueltas/);if(v)return +v[1]===2?4:5;
   const sr=p.match(/^(\d)×/);const n=sr?+sr[1]:3;
-  return (/A$/.test(it.b)?2:0)+(n===2?3:4);
+  return (it.sup?2:0)+(n===2?3:4);
 }
 /* ---------- Programa Sakros Base (control motor) ---------- */
 PROG.base='Entrenamiento Base: aprende a moverte bien (control motor, 8 semanas)';PROGC.base='Base';
@@ -1648,7 +1651,44 @@ const esGlob=()=>prog()==='global';
 const alt=()=>prog()!=='rend';
 const progOf=id=>String(id).startsWith('f')?'prep':String(id).startsWith('k')?'core':String(id).startsWith('g')?'global':String(id).startsWith('x')?'base':'rend';
 const srcDia=(d,s)=>alt()&&(d==='C'||d==='U')?(s%2?'A':'B'):d;
-function rows(d,s){if(esPrep())return prepRows(d,s);if(bk()>1)return conCorr(rowsBloque(alt()?srcDia(d,s):d,bk()),d,s);if(!alt())return conCorr(PLAN[d],d,s);const src=srcDia(d,s);return conCorr((esBase()?rowsBase(src):(esCore()?PLANC:PLANG)[src]).filter(it=>!it.w||(s>=it.w[0]&&s<=it.w[1])),d,s)}
+function rows0(d,s){if(bk()>1)return conCorr(rowsBloque(alt()?srcDia(d,s):d,bk()),d,s);if(!alt())return conCorr(PLAN[d],d,s);const src=srcDia(d,s);return conCorr((esBase()?rowsBase(src):(esCore()?PLANC:PLANG)[src]).filter(it=>!it.w||(s>=it.w[0]&&s<=it.w[1])),d,s)}
+/* Cuatro bloques por sesión (estilo EXOS, compacto): 1 Preparación · 2 Potencia · 3 Fuerza · 4 Energía y cierre.
+   Agrupa las filas del plan sin cambiar ejercicios. Las superseries quedan como pares en mayúscula (A/B, C/D);
+   los ejercicios sueltos van en minúscula (a, b, c). */
+const BLQN={rend:['','Preparación','Potencia','Fuerza','Energía y cierre'],core:['','Preparación','Core y potencia','Fuerza','Carga y cierre'],
+  global:['','Calentamiento','Piernas','Tren superior','Core, cardio y cierre'],base:['','Preparación','Control motor','Fuerza y patrones','Módulo y cierre']};
+const blqNom=n=>(BLQN[prog()]||BLQN.rend)[n]||'';
+const B_POT=new Set(['cajon','salidas','sprint','cargada','puenteexp','skater']);
+const B_ENE=new Set(['intervalos','t3030','zona2','regen','trote']);
+function blq4(r){
+  const pg=prog(),L='abcdefghij',U='ABCDEFGHIJ';
+  const num=it=>parseInt(String(it.b),10)||1;
+  const nb=it=>{const n=num(it);if(n===1)return 1;
+    if(pg==='rend')return B_ENE.has(it.id)?4:B_POT.has(it.id)?2:3;
+    if(pg==='global')return ({2:2,5:2,3:3,4:3,6:3})[n]||4;
+    return ({2:2,3:3,4:3})[n]||4};
+  // Unidades: pares originales nA+nB (superserie) o filas sueltas.
+  const units=[];
+  r.forEach(it=>{const o=String(it.b),last=units[units.length-1];
+    if(pg!=='core'&&/^\d[B]$/.test(o)&&last&&last.length===1&&String(last[0].b)===o[0]+'A')last.push(it);else units.push([it])});
+  units.forEach(u=>{u.blk=u.some(it=>nb(it)===3)?3:nb(u[0])});
+  // Activo y Base: dos ejercicios sueltos seguidos en Potencia o Fuerza se hacen en superserie.
+  const out=[];
+  [1,2,3,4].forEach(n=>{
+    let us=units.filter(u=>u.blk===n);
+    if((pg==='global'||pg==='base')&&(n===2||n===3)){const m=[];us.forEach(u=>{const l=m[m.length-1];if(u.length===1&&l&&l.length===1){m[m.length-1]=[l[0],u[0]]}else m.push(u)});us=m}
+    const total=us.reduce((q,u)=>q+u.length,0);let i=0,k=0;
+    us.forEach(u=>{
+      if(total===1){out.push({...u[0],b:String(n),blq:n});return}
+      const par=n>1&&pg!=='core'&&u.length===2;
+      u.forEach((it,j)=>{out.push({...it,b:n+((n===1||(!par&&pg!=='core'))?L[i]:U[i]),blq:n,sup:par?n+':'+k:null,seg:par&&j===1});i++});
+      if(par)k++;
+    });
+  });
+  return out;
+}
+const supKey=it=>it&&it.sup||null;
+function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(rows0(d,s))}
 function allRows(){const out=[],seen=new Set();const P0=esBase()?{A:rowsBase('A'),B:rowsBase('B')}:esCore()?PLANC:esGlob()?PLANG:PLAN;Object.keys(P0).forEach(d=>P0[d].forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);out.push([d,it])}}));return out}
 const faseTxt=s=>esPrep()?'Prep':bk()>1?faseBloque(s):(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
 const sesKey=(s,d)=>(bk()>1?'b'+bk()+'.':'')+(esPrep()?'p':esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
@@ -1990,7 +2030,10 @@ function renderSesion(m){
   }
   sec.insertBefore(h('div',{class:'row'},h('button',{class:'btn primary big',onclick:()=>iniciarSesion(s,d)},'Empezar en modo sesión'),h('span',{class:'note',text:'Un ejercicio por pantalla, con temporizador.'})),sec.children[2]||null);
   m.append(sec);
-  rows(d,s).forEach(it=>m.append(exCard(s,d,it)));
+  rows(d,s).forEach((it,i,a)=>{
+    if(it.blq&&(!i||a[i-1].blq!==it.blq)){const bm=esCore()?0:a.filter(x=>x.blq===it.blq).reduce((q,x)=>q+tmin(x,s),0);
+      m.append(h('h3',{class:'blqh'},h('span',{class:'n',text:String(it.blq)}),blqNom(it.blq),bm?h('span',{class:'note',text:' · ≈ '+bm+' min'}):null))}
+    m.append(exCard(s,d,it))});
 }
 function exCard(s,d,it){
   const k=key(s,d,it.id),reg=S.registro[k]||{},aj=S.ajustes[k];
@@ -2019,8 +2062,8 @@ function exCard(s,d,it){
   return h('article',{class:'ex'+(reg.hecho?' done':'')+(media?'':' nomedia')},media,
     h('div',{class:'body'},
       h('div',{class:'head'},h('span',{class:'blk',text:it.b}),h('h3',{text:V.n})),
-      (()=>{if(esCore())return null;const mm=tmin(it,s),ss=/^\d[AB]$/.test(it.b)&&rows(d,s).some(x=>x!==it&&x.b[0]===it.b[0]&&/[AB]$/.test(x.b));const par=ss?rows(d,s).find(x=>x!==it&&x.b[0]===it.b[0]):null;
-        return (mm||ss)?h('p',{class:'note'},mm&&!(ss&&it.b.endsWith('B'))?'≈ '+mm+' min':'',ss?(mm&&it.b.endsWith('A')?' · ':'')+'Superserie con '+par.b+' ('+EX[par.id].n+'): alterna una serie de cada uno, pausa 90 s.':''):null})(),
+      (()=>{if(esCore())return null;const mm=tmin(it,s),sk=supKey(it),par=sk?rows(d,s).find(x=>x!==it&&supKey(x)===sk):null,ss=!!par,seg=!!it.seg;
+        return (mm||ss)?h('p',{class:'note'},mm&&!seg?'≈ '+mm+' min':'',ss?(mm&&!seg?' · ':'')+'Superserie con '+par.b+' ('+EX[par.id].n+'): alterna una serie de cada uno, pausa 90 s.':''):null})(),
       h('div',{class:'pres'},V.pres,rpe?h('span',{class:'rpe',text:'RPE máx. '+rpe}):null),
       autoBox,
       aj?h('div',{class:'adj'},h('span',{},h('strong',{text:'Ajustado por el Coach. '}),aj.motivo||'',' Plan original: '+escalar(it.p[s-1],it.id)+'.'),h('button',{class:'btn',onclick:()=>remove('ajustes',k).then(render)},'Volver al plan')):null,
@@ -2841,7 +2884,7 @@ function savePlay(){try{if(UI.play)localStorage.setItem('exos8-play',JSON.string
 try{const p=JSON.parse(localStorage.getItem('exos8-play')||'null');if(p&&p.atleta===UI.atleta)UI.play=p}catch(e){}
 function pasosDe(s,d){
   const r=rows(d,s),out=[];
-  r.forEach(it=>{const g=!esCore()&&/^\d[AB]$/.test(it.b)?it.b[0]:null;const last=out[out.length-1];
+  r.forEach(it=>{const g=!esCore()?supKey(it):null;const last=out[out.length-1];
     if(g&&last&&last.g===g)last.push(it);else{const a=[it];a.g=g;out.push(a)}});
   return out;
 }
