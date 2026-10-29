@@ -1550,6 +1550,7 @@ function renderHoyPrep(m){
   m.append(cardFms());
   const cs=cardMiSuscripcion();if(cs)m.append(cs);
   if(hist.length)m.append(h('section',{class:'card'},h('h2',{text:'Tus preparaciones'}),h('ul',{},hist.slice(0,6).map(([k,v])=>h('li',{text:(v.fecha||'')+' · '+(ZONA[v.dia]||'')+(v.min?' · '+v.min+' min':'')+(v.nota?' · '+v.nota:'')})))));
+  {const cr=cardRecordatorios();if(cr)m.append(cr)}
   m.append(h('section',{class:'card'},h('h2',{text:'Tu entrenador'}),h('p',{class:'note',text:'¿Dudas sobre tu FMS, una molestia o tu rutina del gimnasio? Escríbele al Coach.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:'prep',dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mi plan'))));
 }
@@ -2971,6 +2972,18 @@ function fmt(text){
   });
   return out;
 }
+/* Recordatorios por correo: días de entrenamiento y aviso si pasan 5 días sin entrenar. */
+function cardRecordatorios(){
+  if(!SB)return null;
+  const a=atl(),dias=a.diasSemana||[],on=a.recordatorios!==false;
+  const save=async patch=>{await saveAtleta(UI.atleta,{...atl(),...patch,t:Date.now()});render()};
+  const N=['L','M','X','J','V','S','D'],NL=['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
+  return h('section',{class:'card'},h('h2',{text:'Tus días y recordatorios'}),
+    h('p',{class:'note',text:'Elige los días en que entrenas. Esos días te llega un correo a las 10:00 con tu sesión, y si pasan 5 días sin entrenar te escribimos para retomar.'}),
+    h('div',{class:'freq',role:'group','aria-label':'Días de entrenamiento'},N.map((l,i)=>h('button',{class:'opt','aria-pressed':dias.includes(i+1),'aria-label':NL[i],onclick:()=>save({diasSemana:dias.includes(i+1)?dias.filter(x=>x!==i+1):[...dias,i+1].sort()})},l))),
+    h('label',{class:'tcrow'},(()=>{const c=h('input',{type:'checkbox'});c.checked=on;c.addEventListener('change',()=>save({recordatorios:c.checked}));return c})(),h('span',{text:'Recordarme por correo'})),
+    dias.length&&dias.length!==freq()&&!esPrep()?h('p',{class:'note',text:'Tu plan es de '+freq()+(freq()===1?' día':' días')+' por semana y elegiste '+dias.length+'.'}):null);
+}
 function renderCoach(m){
   m.append(h('section',{class:'card'},h('h2',{text:'Tu entrenador'}),
     h('p',{class:'note',text:'Cuéntale cómo fue la sesión o pídele cambios. Ve tu plan, tus registros y tus tests, y puede ajustar las cargas directamente. El chat queda guardado.'})));
@@ -3152,6 +3165,7 @@ function renderHoy(m){
     h('p',{class:'note',text:'Mídete ahora para comparar en la semana 8. Así ves tu progreso con números.'}),h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='tests';render()}},'Hacer los tests'))));
   if(!fmsAlguno())m.append(cardFms());
   {const cv=cardComplVoley();if(cv)m.append(cv)}
+  {const cr=cardRecordatorios();if(cr)m.append(cr)}
   m.append(h('section',{class:'card'},h('h2',{text:'Tu entrenador'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:prog(),dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mis respuestas'))));
 }

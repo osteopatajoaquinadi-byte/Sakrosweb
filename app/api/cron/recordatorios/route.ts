@@ -6,6 +6,7 @@ import { firstNameOf } from "@/lib/booking-emails";
 import { reminderEmail } from "@/lib/patient-emails";
 import { siteConfig } from "@/lib/site-config";
 import { normalizeChileanPhone, sendWhatsappTemplate, whatsappEnabled } from "@/lib/whatsapp";
+import { goRecordatorios } from "@/lib/go-recordatorios";
 
 // Recordatorio del día anterior. Vercel Cron llama esta ruta una vez al día
 // (ver vercel.json) con el header Authorization: Bearer CRON_SECRET.
@@ -28,10 +29,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
+  // Sakros Go: recordatorios de entrenamiento (independientes de los avisos del calendario).
+  const go = await goRecordatorios({ origin: siteConfig.url }).catch((e: unknown) => ({ error: String(e) }));
+
   // Mientras sakros.cl siga en Wix no se envía nada (ni correo ni WhatsApp)
   // y las reservas no se marcan, para que reciban su recordatorio después.
   if (!calendarNotificationsEnabled()) {
-    return NextResponse.json({ skipped: "EMAILS_ENABLED no está activo" });
+    return NextResponse.json({ skipped: "EMAILS_ENABLED no está activo", go });
   }
 
   const date = tomorrowInChile();
@@ -99,5 +103,5 @@ export async function GET(request: NextRequest) {
     results.push({ id: b.id, channels, errors });
   }
 
-  return NextResponse.json({ date, total: results.length, results });
+  return NextResponse.json({ date, total: results.length, results, go });
 }
