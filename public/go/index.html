@@ -189,6 +189,7 @@ details.card>summary{font-weight:700}
 .media.play{aspect-ratio:4/3}
 .media.play.tall{aspect-ratio:4/5}
 .media.vidm{cursor:pointer}
+.resum{margin:6px 0 2px;font-size:.92rem;line-height:1.4;color:var(--ink)}.resum strong{color:var(--accent)}
 .blqh{display:flex;align-items:center;gap:8px;margin:18px 0 6px;font-family:var(--display);font-size:1.25rem;text-transform:uppercase;letter-spacing:.02em}
 .blqh .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:1rem}
 .blqh .note{font-family:var(--body);text-transform:none;font-size:.85rem;letter-spacing:0}.media video{width:100%;height:100%;object-fit:contain;display:block;background:#0d1217}
@@ -242,6 +243,41 @@ h2.sec{margin:18px 4px 8px;font-size:1.1rem}p.big{font-family:var(--display);fon
 const VIDEOS_B64={};
 const VIDEOS={'bajada-escalon':'x','deadbug':'x','deadbug-disco':'x','equilibrio-rodilla':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','respiracion-diafragmatica':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-silla':'x','snap-down':'x','swing':'x','zancada-estatica':'x','zancada-rodilla':'x'};const _vurl={};
 function videoURL(k){return '/go/media/'+k+'.mp4'}
+/* Resumen visible del ejercicio (sin abrir «Cómo se hace»): en los ejercicios compuestos, la lista de lo que
+   se hace; en los simples, la clave de ejecución. */
+const RES={
+  tejidoA:['Rodillo en gemelos','isquiotibiales','cuádriceps','pelotita en glúteo','kettlebell en psoas · elige 3, 30 s por lado'],
+  tejidoB:['Rack en trapecio','dorsal ancho','rotadores del hombro','pelotita en gemelos y glúteo','kettlebell en psoas · elige 3, 30 s por lado'],
+  movA:['Aductores en cuatro apoyos','psoas en caballero','rotación','extensión de piernas','rotación de tronco en caballero · 3 por lado'],
+  pilarA:['Plancha frontal 30 s','plancha lateral 20 s/lado','puente glúteo ×10','Pallof ×8/lado · sin pausa'],
+  pilarB:['Plancha frontal 30 s','plancha lateral 20 s/lado','puente glúteo ×10','Pallof ×8/lado','pared: marching y switches'],
+  actA:['Mini band lateral y skips A','snap-down ×5','aterrizaje a dos pies ×3','aterrizaje a una pierna ×3/lado'],
+  actB:['Snap-down ×5','frenada en 3 pasos ×3','frenada y cambio ×2/lado','aterrizaje lateral a una pierna ×3/lado'],
+  xmsuelo:['Knack antes de cada esfuerzo','exhala al empujar','progresa de acostado a de pie'],
+  vhombro:['Rotación externa con banda ×10/lado','Y-T-W ×6 cada letra','flexión de escápula ×10']};
+RES.movB=RES.movA;
+const RESC={pallof:'cadera arriba (plancha lateral) o zona lumbar pegada al suelo (bicho muerto): el tronco no se mueve.',
+  puenteexp:'extensión de cadera explosiva y bajada controlada.',kpuentex:'extensión de cadera explosiva y bajada controlada.',
+  cajon:'brazos atrás, salto y caída silenciosa con las rodillas sobre los pies.',
+  gsilla:'cadera atrás, rodillas sobre los pies y sube sin impulso.',gbisagra:'cadera atrás con la espalda neutra; sube apretando el glúteo.',
+  gflex:'cuerpo recto de la cabeza a los talones; baja el pecho entre las manos.',
+  vsalto:'3 pasos, el penúltimo largo; despegue a dos pies y caída silenciosa.',vbloqueo:'paso lateral, salto vertical con las manos adelante y caída estable.'};
+const RES_NO=/^(Tiempo|Vueltas|Series|Circuito|Puntos de control|Test|Semanas|Desde la semana|Intensidad|Si tienes|Variante|Ritmo|Pregúntate|Progresión|Orden|Trabajo|Cada repetición|Mantén|Reacciona|Lanzado|Con trineo|Extiende|Arriba|Palo apoyado|Maleta|Knack|La misma vuelta)/i;
+function resumenEj(id,V){
+  const pasos=V.pasos||[];
+  if(RES[id]&&V.n===EX[id].n)return {lista:RES[id]};
+  if(RESC[id]&&V.n===EX[id].n)return {clave:RESC[id]};
+  const nm=pasos.map(x=>(/^([^:]{3,60}):\s/.exec(x)||[])[1]).filter(x=>x&&!RES_NO.test(x)&&!/\(semanas?/i.test(x));
+  if(nm.length>=2)return {lista:nm};
+  const pc=pasos.find(x=>/^Puntos de control:/i.test(x));
+  if(pc)return {clave:pc.replace(/^Puntos de control:\s*/i,'')};
+  return pasos[0]?{inicio:pasos[0]}:null;
+}
+function resumenBox(id,V){
+  const r=resumenEj(id,V);if(!r)return null;
+  if(r.lista)return h('p',{class:'resum'},h('strong',{text:'Qué haces: '}),r.lista.join(' → '));
+  return h('p',{class:'resum'},h('strong',{text:r.clave?'Clave: ':'Inicio: '}),r.clave||r.inicio);
+}
 // Video del ejercicio en lugar de las fotos: se reproduce en silencio y en bucle solo mientras se ve.
 let _vobs=null;
 function vidObs(){if(!_vobs&&'IntersectionObserver' in window)_vobs=new IntersectionObserver(es=>es.forEach(e=>{const v=e.target;if(e.isIntersecting){v.play().catch(()=>{})}else v.pause()}),{threshold:.4});return _vobs}
@@ -2120,6 +2156,7 @@ function exCard(s,d,it){
       (()=>{if(esCore())return null;const mm=tmin(it,s),sk=supKey(it),par=sk?rows(d,s).find(x=>x!==it&&supKey(x)===sk):null,ss=!!par,seg=!!it.seg;
         return (mm||ss)?h('p',{class:'note'},mm&&!seg?'≈ '+mm+' min':'',ss?(mm&&!seg?' · ':'')+'Superserie con '+par.b+' ('+EX[par.id].n+'): alterna una serie de cada uno, pausa 90 s.':''):null})(),
       h('div',{class:'pres'},V.pres,rpe?h('span',{class:'rpe',text:'RPE máx. '+rpe}):null),
+      resumenBox(it.id,V),
       autoBox,
       aj?h('div',{class:'adj'},h('span',{},h('strong',{text:'Ajustado por el Coach. '}),aj.motivo||'',' Plan original: '+escalar(it.p[s-1],it.id)+'.'),h('button',{class:'btn',onclick:()=>remove('ajustes',k).then(render)},'Volver al plan')):null,
       dxBox(it.id),
@@ -3099,7 +3136,7 @@ function renderPlay(m){
     else if(fr.length){const img=h('img',{src:IMGS[fr[0][0]],alt:fr[0][1]});const tag=h('span',{class:'tag',text:(fr.length>1?'1/'+fr.length+' · ':'')+fr[0][1]});
       media=h('button',{class:'media play'+(tall?' tall':''),'aria-label':'Siguiente foto',onclick:()=>{if(fr.length<2)return;fi=(fi+1)%fr.length;img.src=IMGS[fr[fi][0]];img.alt=fr[fi][1];tag.textContent=(fi+1)+'/'+fr.length+' · '+fr[fi][1]}},img,tag)}
     const card=h('article',{class:'playcard'},media,h('div',{class:'body'},
-      h('h2',{class:'playname',text:V.n}),h('div',{class:'pres big',text:V.pres}),
+      h('h2',{class:'playname',text:V.n}),h('div',{class:'pres big',text:V.pres}),resumenBox(it.id,V),
       A.changed?h('p',{class:'auto'},A.motivo):null,dxBox(it.id),
             h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null)));
     if(esClave(it.id)){const kg=h('input',{id:'pk-'+it.id,inputmode:'decimal',placeholder:(V.pres.match(/(\d+(?:,\d+)?) kg/)||[])[1]||'kg'});kg.value=reg.kg||'';
