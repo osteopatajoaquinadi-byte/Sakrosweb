@@ -111,7 +111,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 alt="Sakros"
                 width={120}
                 height={40}
-                className="h-8 w-auto"
+                className="h-11 md:h-8 w-auto"
                 priority
               />
             </Link>

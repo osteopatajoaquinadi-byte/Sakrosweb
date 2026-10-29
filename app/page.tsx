@@ -45,21 +45,21 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <section className="mx-auto max-w-6xl px-4 pt-16 pb-20 md:pt-24 md:pb-28">
-        <div className="grid gap-10 md:grid-cols-2 items-center">
+      <section className="mx-auto max-w-6xl px-4 pt-6 pb-12 md:pt-24 md:pb-28">
+        <div className="grid gap-6 md:gap-10 md:grid-cols-2 items-center">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-teal-700 mb-4">
+            <p className="text-xs md:text-sm font-semibold uppercase tracking-wide text-teal-700 mb-2 md:mb-4">
               Osteopatía · Kinesiología · Posturología en Viña del Mar
             </p>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6">
+            <h1 className="text-[1.6rem] leading-tight md:text-5xl md:leading-none font-bold tracking-tight text-slate-900 mb-4 md:mb-6">
               Vuelve a moverte y a entrenar con seguridad. No se trata de no volver a sentir nada, sino de que el dolor no vuelva a decidir por ti.
             </h1>
-            <p className="text-lg text-slate-600 mb-4">
+            <p className="text-base md:text-lg text-slate-600 mb-3 md:mb-4">
               Ayudamos a deportistas, exdeportistas, y a todos quienes quieran
               recuperar la confianza en su cuerpo, superar lesiones viejas y
               volver a su deporte sin que las horas de oficina les pasen factura.
             </p>
-            <p className="text-sm text-slate-500 mb-8">
+            <p className="text-xs md:text-sm text-slate-500 mb-6 md:mb-8">
               {siteConfig.address.street} · {siteConfig.address.city},{" "}
               {siteConfig.address.region}
             </p>
@@ -78,15 +78,19 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-          <div>
+          {/* En el celular el video va primero, para que se reconozca Sakros. */}
+          <div className="order-first md:order-none">
             <video
-              src="/images/sakros-hero.mp4"
+              poster="/images/sakros-hero-portada.jpg"
               autoPlay
               loop
               muted
               playsInline
-              className="rounded-2xl w-full max-h-[420px] object-contain"
+              className="rounded-2xl w-full max-h-[300px] md:max-h-[420px] object-contain"
             >
+              {/* Versión liviana (8 MB) para celular; la original en pantallas grandes. */}
+              <source src="/images/sakros-hero-movil.mp4" type="video/mp4" media="(max-width: 767px)" />
+              <source src="/images/sakros-hero.mp4" type="video/mp4" />
               Video de presentación de Sakros
             </video>
           </div>
