@@ -194,6 +194,7 @@ details.card>summary{font-weight:700}
 .cargab .cb{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
 .cargab .cb i{display:block;width:70%;background:var(--accent);border-radius:4px 4px 0 0}.cargab .cb.desc i{background:var(--deload)}
 .cargab .v{font-size:.7rem;color:var(--muted)}.cargab .pct{font-size:.72rem;font-weight:700}
+.tec{margin-top:6px}.tec summary{cursor:pointer;color:var(--accent);font-weight:600}.tec p{margin:6px 0;font-size:.92rem}
 .resum{margin:6px 0 2px;font-size:.92rem;line-height:1.4;color:var(--ink)}.resum strong{color:var(--accent)}
 .blqh{display:flex;align-items:center;gap:8px;margin:18px 0 6px;font-family:var(--display);font-size:1.25rem;text-transform:uppercase;letter-spacing:.02em}
 .blqh .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:1rem}
@@ -1432,6 +1433,48 @@ async function subirVideo(id,l,file){
     UI.fmsErr={...(UI.fmsErr||{}),[k]:msg};render();
   }
 }
+/* Video de técnica: la persona graba una serie de cualquier ejercicio; el Coach la revisa y el entrenador comenta. */
+const TECBUSY={},TECERR={};
+async function subirTec(s,d,it,V,file){
+  const k=key(s,d,it.id);TECBUSY[k]='Sacando los cuadros del video…';TECERR[k]=null;render();
+  try{
+    const blobs=await framesDe(file,10,640);const cuadros=await Promise.all(blobs.map(b64De));
+    let paths=[];
+    if(SB){TECBUSY[k]='Subiendo…';render();const base=UI.atleta+'/tec/'+it.id+'-'+Date.now();
+      for(let i=0;i<blobs.length;i++){const p=base+'-'+i+'.jpg';const{error}=await SB.storage.from('go-fms').upload(p,blobs[i],{contentType:'image/jpeg',upsert:true});if(error)throw new Error('subida');paths.push(p)}}
+    if(!SB)throw {msg:'La revisión necesita conexión con Sakros.'};
+    TECBUSY[k]='El Coach está revisando tu técnica…';render();
+    const res=await fetch('/api/go/tecnica',{method:'POST',headers:await authHeaders(),body:JSON.stringify({nombre:V.n,pres:V.pres,pasos:V.pasos||[],clave:V.clave||'',cuadros,sexo:atl().sexo||''})});
+    const j=await res.json().catch(()=>({}));if(!res.ok)throw {msg:j.error||'No se pudo analizar el video.'};
+    const cur={...(S.registro[k]||{semana:semReg(s),dia:d,ej:it.id}),tec:{frames:paths,ia:j,t:Date.now()},t:Date.now()};
+    S.registro[k]=cur;await write('registro',k,cur);delete TECBUSY[k];render();
+  }catch(e){delete TECBUSY[k];TECERR[k]=e.msg||(e.message==='largo'?'El video dura más de 90 s: graba solo una serie.':e.message==='subida'?'No se pudo subir. Revisa la conexión.':'No se pudo leer el video. Grábalo de nuevo con la cámara del teléfono.');render()}
+}
+function tecBox(s,d,it,V){
+  if(!EX[it.id]||esPrep())return null;
+  const k=key(s,d,it.id),reg=S.registro[k]||{},t=reg.tec,ia=t&&t.ia,coach=!modoCli();
+  const inp=h('input',{type:'file',accept:'video/*',hidden:true});inp.addEventListener('change',()=>{const f=inp.files&&inp.files[0];if(f)subirTec(s,d,it,V,f)});
+  const kids=[];
+  if(TECBUSY[k])kids.push(h('p',{class:'note',text:TECBUSY[k]}));
+  if(TECERR[k])kids.push(h('p',{class:'dxline',text:TECERR[k]}));
+  if(ia){
+    if(ia.regrabar)kids.push(h('p',{class:'dxline',text:'Para revisarlo mejor: '+ia.regrabar}));
+    if((ia.bien||[]).length)kids.push(h('p',{},h('strong',{text:'Bien: '}),ia.bien.join(' · ')));
+    if((ia.corregir||[]).length)kids.push(h('p',{},h('strong',{text:'Corrige: '}),ia.corregir.join(' · ')));
+    if(ia.clave)kids.push(h('p',{},h('strong',{text:'Para la próxima serie: '}),ia.clave));
+    if(ia.seguridad)kids.push(h('p',{class:'dxline',text:ia.seguridad}));
+    kids.push(h('p',{class:'note',text:'Revisión del Coach (IA) · confianza '+(ia.confianza||'baja')+'. Tu entrenador puede comentarla.'}));
+  }
+  if(coach&&t){const ta=h('textarea',{rows:2,placeholder:'Comentario para el atleta…'});ta.value=t.coment||'';
+    ta.addEventListener('change',async()=>{const cur={...S.registro[k],tec:{...t,coment:ta.value.trim(),ct:Date.now()},t:Date.now()};S.registro[k]=cur;await write('registro',k,cur)});
+    kids.push(h('label',{class:'f'},'Tu comentario',ta))}
+  else if(t&&t.coment)kids.push(h('p',{class:'dxline'},h('strong',{text:'Tu entrenador: '}),t.coment));
+  if(!TECBUSY[k])kids.push(h('div',{class:'row'},h('button',{class:'btn',onclick:()=>inp.click()},t?'Grabar otro video':'Subir un video de una serie'),inp));
+  const det=h('details',{class:'tec'},h('summary',{},'Revisar mi técnica'+(ia?' · revisado':'')+(t&&t.coment?' · con comentario':'')),
+    h('p',{class:'note',text:'Graba una serie de lado o de frente, con el cuerpo completo en el cuadro (máx. 90 s). El video no se guarda: solo algunos cuadros.'}),...kids);
+  if(ia||TECBUSY[k]||TECERR[k])det.open=true;
+  return det;
+}
 async function cuadrosB64(id,l){
   const k=id+'-'+l;if(FMSMEM[k])return FMSMEM[k];
   const paths=(((FF().r||{})[id]||{}).frames||{})[l]||[];if(!paths.length||!SB)return [];
@@ -2189,10 +2232,11 @@ function exCard(s,d,it){
   return h('article',{class:'ex'+(reg.hecho?' done':'')+(media?'':' nomedia')},media,
     h('div',{class:'body'},
       h('div',{class:'head'},h('span',{class:'blk',text:it.b}),h('h3',{text:V.n})),
-      (()=>{if(esCore())return null;const mm=tmin(it,s),sk=supKey(it),par=sk?rows(d,s).find(x=>x!==it&&supKey(x)===sk):null,ss=!!par,seg=!!it.seg;
+      (()=>{if(esCore())return null;const mm=tmin(it,s),sk=supKey(it),par=sk?rows(d,s).find(x=>x.id!==it.id&&supKey(x)===sk):null,ss=!!par,seg=!!it.seg;
         return (mm||ss)?h('p',{class:'note'},mm&&!seg?'≈ '+mm+' min':'',ss?(mm&&!seg?' · ':'')+'Superserie con '+par.b+' ('+EX[par.id].n+'): alterna una serie de cada uno, pausa 90 s.':''):null})(),
       h('div',{class:'pres'},V.pres,rpe?h('span',{class:'rpe',text:'RPE máx. '+rpe}):null),
       resumenBox(it.id,V),
+      tecBox(s,d,it,V),
       autoBox,
       aj?h('div',{class:'adj'},h('span',{},h('strong',{text:'Ajustado por el Coach. '}),aj.motivo||'',' Plan original: '+escalar(it.p[s-1],it.id)+'.'),h('button',{class:'btn',onclick:()=>remove('ajustes',k).then(render)},'Volver al plan')):null,
       dxBox(it.id),
@@ -2923,9 +2967,9 @@ function contexto(){
   else if(core||bk()>1||esVoley())DIAS().forEach(d=>{for(let s=1;s<=8;s++)L.push(`${dayName(d)} S${s} (${faseTxt(s)}): `+rows(d,s).map(it=>{const A=autoEj(s,d,it);return `${it.id} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))});
   else DIAS().forEach(d=>PLAN[d].forEach(it=>{L.push(`${dayName(d)} ${d} · ${it.id} (${EX[it.id].n}): `+[1,2,3,4,5,6,7,8].map(s=>{const A=autoEj(s,d,it);return `S${s} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))}));
   L.push('','REGISTRO:');
-  const regs=Object.values(S.registro).filter(r=>progOf(r.ej)===pg).filter(r=>r.hecho||r.kg||r.rpe||r.nota).sort((a,b)=>a.semana-b.semana||a.dia.localeCompare(b.dia));
+  const regs=Object.values(S.registro).filter(r=>progOf(r.ej)===pg).filter(r=>r.hecho||r.kg||r.rpe||r.nota||r.tec).sort((a,b)=>a.semana-b.semana||a.dia.localeCompare(b.dia));
   if(!regs.length)L.push('(sin registros todavía)');
-  regs.forEach(r=>L.push(`S${r.semana}${r.dia} ${r.ej}: ${r.hecho?'hecho':'pendiente'}${r.kg?', '+r.kg+' kg':''}${r.rpe?', RPE '+r.rpe:''}${r.nota?', nota: '+r.nota:''}`));
+  regs.forEach(r=>L.push(`S${r.semana}${r.dia} ${r.ej}: ${r.hecho?'hecho':'pendiente'}${r.kg?', '+r.kg+' kg':''}${r.rpe?', RPE '+r.rpe:''}${r.nota?', nota: '+r.nota:''}${r.tec&&r.tec.ia?', video de técnica: corregir '+((r.tec.ia.corregir||[]).join('; ')||'nada')+(r.tec.coment?' · comentario del entrenador: '+r.tec.coment:''):''}`));
   const ses=Object.entries(S.sesiones).filter(([k])=>(k[0]==='p'?'prep':k[0]==='c'?'core':k[0]==='g'?'global':k[0]==='x'?'base':'rend')===pg);
   if(ses.length){L.push('','SESIONES:');ses.sort().forEach(([k,v])=>L.push(`S${v.semana||k}${v.dia||''}: ${v.fecha||''} ${v.chk?'[chequeo '+v.chk.score+'/5'+(v.chk.ajuste==='suave'?', suave':'')+(v.chk.dolor>=4?', DOLOR '+v.chk.dolor+'/5':'')+'] ':''}${v.min?v.min+' min':''} ${v.rpe?'RPE sesión '+v.rpe:''}${pg==='core'?` dolor lumbar ${v.dolor||'-'}/10, escape ${v.escape||'-'}, peso perineal ${v.peso||'-'}, irradiado ${v.irradiado||'-'}`:''} ${v.nota?'· '+v.nota:''}`))}
   const T=S.tests||{};const tl=pg==='base'?testsBase().map(([id,l])=>[0,4,8].some(m=>T['x_'+id+'_'+m])?`${l}: S0 ${T['x_'+id+'_0']||'-'} / S4 ${T['x_'+id+'_4']||'-'} / S8 ${T['x_'+id+'_8']||'-'}`:null).filter(Boolean):pg==='global'?TESTSG.map(([id,l])=>[0,4,8].some(m=>T['g_'+id+'_'+m])?`${l}: S0 ${T['g_'+id+'_0']||'-'} / S4 ${T['g_'+id+'_4']||'-'} / S8 ${T['g_'+id+'_8']||'-'}`:null).filter(Boolean):core?TESTSC.map(([id,l])=>[0,4,8].some(m=>T['k_'+id+'_'+m])?`${l}: S0 ${T['k_'+id+'_0']||'-'} / S4 ${T['k_'+id+'_4']||'-'} / S8 ${T['k_'+id+'_8']||'-'}`:null).filter(Boolean):TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean);
