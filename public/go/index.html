@@ -189,6 +189,11 @@ details.card>summary{font-weight:700}
 .media.play{aspect-ratio:4/3}
 .media.play.tall{aspect-ratio:4/5}
 .media.vidm{cursor:pointer}
+.chkq{flex-wrap:wrap}.chkq .note,.chkq .wholbl{flex-basis:100%}
+.cargab{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;align-items:end;height:150px;margin:8px 0}
+.cargab .cb{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
+.cargab .cb i{display:block;width:70%;background:var(--accent);border-radius:4px 4px 0 0}.cargab .cb.desc i{background:var(--deload)}
+.cargab .v{font-size:.7rem;color:var(--muted)}.cargab .pct{font-size:.72rem;font-weight:700}
 .resum{margin:6px 0 2px;font-size:.92rem;line-height:1.4;color:var(--ink)}.resum strong{color:var(--accent)}
 .blqh{display:flex;align-items:center;gap:8px;margin:18px 0 6px;font-family:var(--display);font-size:1.25rem;text-transform:uppercase;letter-spacing:.02em}
 .blqh .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:1rem}
@@ -1837,7 +1842,36 @@ const saveUI=()=>{try{localStorage.setItem('exos8-ui',JSON.stringify({tab:UI.tab
 let db=null, mode='cargando', dirty=false;
 const key=(s,d,id)=>(bk()>1?'b'+bk()+'.':'')+`${s}${d}-${id}`;
 const PP=it=>(atl().sexo==='M'&&it.pM)?it.pM:it.p;
-const pres=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const p=escalar(PP(it)[s-1],it.id);const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
+const pres0=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const p=escalar(PP(it)[s-1],it.id);const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
+/* Chequeo antes de entrenar: si salió bajo, la sesión de hoy va suave (una serie menos en cada ejercicio). */
+const chkDe=(s,d)=>{try{return ((S.sesiones||{})[sesKey(s,d)]||{}).chk||null}catch(e){return null}};
+const suave=(s,d)=>{const c=chkDe(s,d);return !!(c&&c.ajuste==='suave'&&!c.normal)};
+function suavizar(p){const m=/^(\d+)×/.exec(p);if(!m||+m[1]<2)return p;return (+m[1]-1)+p.slice(m[1].length)+' · suave'}
+const pres=(s,d,it)=>{const p=pres0(s,d,it);return !esPrep()&&suave(s,d)&&!S.ajustes[key(s,d,it.id)]?suavizar(p):p};
+const CHKQ=[['sueno','¿Cómo dormiste anoche?','Muy mal','Muy bien',false],['energia','¿Cuánta energía tienes?','Nada','Mucha',false],
+  ['agujetas','¿Cuánto cansancio o dolor muscular tienes?','Nada','Mucho',true],['estres','¿Cuánto estrés tienes hoy?','Nada','Mucho',true],
+  ['dolor','¿Tienes dolor o molestia en alguna zona?','Nada','Mucho',true]];
+function chkEval(v){const vals=CHKQ.map(([k,,,,inv])=>inv?6-v[k]:v[k]);const score=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length*10)/10;
+  const ajuste=(v.dolor>=4||score<=2.6)?'suave':'normal';return {score,ajuste}}
+function cardChk(s,d,onDone){
+  const v={};const card=h('section',{class:'card hero'},h('span',{class:'wholbl',text:'Antes de empezar · 10 segundos'}),h('h2',{text:'¿Cómo llegas hoy?'}));
+  const go=h('button',{class:'btn primary big',disabled:true,onclick:async()=>{
+    const r=chkEval(v);const sk=sesKey(s,d);const cur={...(S.sesiones[sk]||{semana:semReg(s),dia:d}),chk:{...v,...r,t:Date.now()},t:Date.now()};
+    S.sesiones[sk]=cur;await write('sesiones',sk,cur);onDone()}},'Listo');
+  CHKQ.forEach(([k,q,lo,hi])=>{const box=h('div',{class:'freq chkq',role:'group','aria-label':q},h('span',{class:'wholbl',text:q}));
+    [1,2,3,4,5].forEach(n=>box.append(h('button',{class:'opt','data-n':n,'aria-pressed':'false','aria-label':n+(n===1?' ('+lo+')':n===5?' ('+hi+')':''),onclick:()=>{v[k]=n;[...box.querySelectorAll('.opt')].forEach(b=>b.setAttribute('aria-pressed',+b.dataset.n===n));go.disabled=CHKQ.some(([x])=>!v[x])}},String(n))));
+    box.append(h('span',{class:'note',text:'1 = '+lo.toLowerCase()+' · 5 = '+hi.toLowerCase()}));card.append(box)});
+  card.append(h('div',{class:'row'},go,h('button',{class:'linkbtn',onclick:()=>onDone(true)},'Saltar')));
+  return card;
+}
+function chkAviso(s,d){
+  const c=chkDe(s,d);if(!c)return null;
+  if(c.ajuste!=='suave')return h('p',{class:'dxline'},h('strong',{text:'Chequeo de hoy: '}),'bien ('+c.score+' de 5). Sesión normal.');
+  const msg=c.normal?'Elegiste hacerla normal. Escucha a tu cuerpo y baja si algo molesta.':'Hoy va suave: una serie menos en cada ejercicio. Mantén la técnica y no busques récords.';
+  return h('p',{class:'dxline'},h('strong',{text:'Chequeo de hoy: '+c.score+' de 5'+(c.dolor>=4?' · con dolor':'')+'. '}),msg,
+    c.dolor>=4?' Si el dolor sigue, coméntalo con tu entrenador.':'',' ',
+    h('button',{class:'linkbtn',onclick:async()=>{const sk=sesKey(s,d);const cur={...S.sesiones[sk],chk:{...c,normal:!c.normal},t:Date.now()};S.sesiones[sk]=cur;await write('sesiones',sk,cur);render()}},c.normal?'Volver a suave':'Hacerla normal'));
+}
 
 const TM={tejido:3,mov:4,pilar:3,act:2,cajon:5,puenteexp:3,cargada:7,sentadilla:10,pallof:2,regen:2,salidas:4,sprint:3,pushpress:6,skater:2,frontal:8,dominadas:2,muerto:8,hipthrust:3,zona2:0,intervalos:0,t3030:0};
 function tmin(it,s){
@@ -2120,6 +2154,7 @@ function renderSesion(m){
   }
   sec.insertBefore(h('div',{class:'row'},h('button',{class:'btn primary big',onclick:()=>iniciarSesion(s,d)},'Empezar en modo sesión'),h('span',{class:'note',text:'Un ejercicio por pantalla, con temporizador.'})),sec.children[2]||null);
   m.append(sec);
+  {const ca=chkAviso(s,d);if(ca)m.append(ca)}
   rows(d,s).forEach((it,i,a)=>{
     if(it.blq&&(!i||a[i-1].blq!==it.blq)){const bm=esCore()?0:a.filter(x=>x.blq===it.blq).reduce((q,x)=>q+tmin(x,s),0);
       m.append(h('h3',{class:'blqh'},h('span',{class:'n',text:String(it.blq)}),blqNom(it.blq),bm?h('span',{class:'note',text:' · ≈ '+bm+' min'}):null))}
@@ -2324,12 +2359,33 @@ async function saveCfg(){
   if(!db){try{localStorage.setItem('exos8-config',JSON.stringify(CFG))}catch(e){}return true}
   try{await db.collection('config').doc('protocolo').set(CFG);return true}catch(e){return false}
 }
+/* Carga semanal (minutos × RPE de la sesión) y cumplimiento del plan, semanas 1–8 del bloque actual. */
+function cardCarga(){
+  const W=[1,2,3,4,5,6,7,8].map(s=>{let carga=0,hechos=0,total=0,chk=[];DIAS().forEach(d=>{const v=S.sesiones[sesKey(s,d)]||{};const mn=parseFloat(v.min),r=parseFloat(String(v.rpe||'').replace(',','.'));if(mn>0&&r>0)carga+=mn*r;if(v.chk)chk.push(v.chk.score);const [n,t]=done(s,d);hechos+=n;total+=t});return {s,carga:Math.round(carga),pct:total?Math.round(hechos/total*100):0,chk:chk.length?Math.round(chk.reduce((a,b)=>a+b,0)/chk.length*10)/10:null}});
+  if(!W.some(w=>w.carga||w.pct))return null;
+  const mx=Math.max(...W.map(w=>w.carga),1);
+  const bars=h('div',{class:'cargab'},W.map(w=>h('div',{class:'cb'+(w.s===4||w.s===8?' desc':'')},h('span',{class:'v',text:w.carga?String(w.carga):''}),h('i',{style:'height:'+Math.max(2,Math.round(w.carga/mx*100))+'%'}),h('span',{class:'note',text:'S'+w.s}),h('span',{class:'pct',text:w.pct+'%'}))));
+  const act=W.filter(w=>w.carga),ult=act[act.length-1],prev=act[act.length-2];
+  let nota='La carga es minutos × RPE de cada sesión. Anota el RPE al terminar para verla.';
+  if(ult&&prev){const r=ult.carga/prev.carga;nota=r>1.5?'Ojo: esta semana subiste más de 50 % la carga respecto a la anterior. Prioriza dormir bien y no sumes extra.':r<0.6&&!(ult.s===4||ult.s===8)?'Esta semana la carga bajó bastante. Si no fue una semana de descarga, revisa qué pasó.':'Carga estable respecto a la semana anterior.'}
+  return h('section',{class:'card'},h('h2',{text:'Carga y cumplimiento'}),bars,
+    h('p',{class:'note',text:'Barra: carga de la semana. Abajo: % de ejercicios hechos del plan. Semanas 4 y 8: descarga.'}),
+    h('p',{class:'dxline',text:nota}),
+    W.some(w=>w.chk)?h('p',{class:'note',text:'Chequeo promedio: '+W.filter(w=>w.chk).map(w=>'S'+w.s+' '+w.chk).join(' · ')}):null);
+}
+function cardMarcas(){
+  const best={};Object.values(S.registro).filter(r=>r&&r.ej&&progOf(r.ej)===prog()).forEach(r=>{const kg=parseFloat(String(r.kg||'').replace(',','.'));if(!(kg>0))return;const b=best[r.ej];if(!b||kg>b.kg)best[r.ej]={kg,semana:r.semana}});
+  const L=Object.entries(best).filter(([id])=>EX[id]).sort((a,b)=>b[1].kg-a[1].kg);
+  if(!L.length)return null;
+  return h('section',{class:'card'},h('h2',{text:'Tus marcas'}),h('ul',{class:'medir'},L.map(([id,b])=>h('li',{},h('strong',{text:EX[id].n+': '}),b.kg+' kg',h('span',{class:'note',text:' · semana '+b.semana})))));
+}
 function renderProgreso(m){
   if(esPrep())return renderProgresoPrep(m);
   const g=h('div',{class:'grid8'},h('span'),[1,2,3,4,5,6,7,8].map(s=>h('span',{class:'note',text:'S'+s})));
   DIAS().forEach(d=>{g.append(h('strong',{text:dayName(d)}));for(let s=1;s<=8;s++){const [n,t]=done(s,d);
     g.append(h('button',{class:'cell'+(n===t?' full':n?' part':''),'aria-label':`Semana ${s} día ${d}: ${n} de ${t}`,onclick:()=>{UI.tab='sesion';UI.sem=s;UI.dia=d;saveUI();render();scrollTo(0,0)}},n===t?'✓':n?n+'/'+t:''))}});
   m.append(h('section',{class:'card'},h('h2',{text:'Sesiones'}),h('p',{class:'note',text:'Toca una casilla para abrir esa sesión.'}),h('div',{style:'overflow-x:auto'},g)));
+  {const cc=cardCarga();if(cc)m.append(cc);const cm=cardMarcas();if(cm)m.append(cm)}
   const aj=Object.entries(S.ajustes).filter(([k,a])=>progOf(a.ej)===prog());
   m.append(h('section',{class:'card'},h('h2',{text:'Ajustes al plan'}),
     aj.length?h('ul',{},aj.sort().map(([k,a])=>h('li',{},`S${a.semana} día ${a.dia} · ${EX[a.ej]?.n||a.ej}: ${a.pres}`,a.motivo?` (${a.motivo})`:''))):h('p',{class:'note',text:'Todavía no hay cambios. Pídelos en la pestaña Coach.'})));
@@ -2870,7 +2926,7 @@ function contexto(){
   if(!regs.length)L.push('(sin registros todavía)');
   regs.forEach(r=>L.push(`S${r.semana}${r.dia} ${r.ej}: ${r.hecho?'hecho':'pendiente'}${r.kg?', '+r.kg+' kg':''}${r.rpe?', RPE '+r.rpe:''}${r.nota?', nota: '+r.nota:''}`));
   const ses=Object.entries(S.sesiones).filter(([k])=>(k[0]==='p'?'prep':k[0]==='c'?'core':k[0]==='g'?'global':k[0]==='x'?'base':'rend')===pg);
-  if(ses.length){L.push('','SESIONES:');ses.sort().forEach(([k,v])=>L.push(`S${v.semana||k}${v.dia||''}: ${v.fecha||''} ${v.min?v.min+' min':''} ${v.rpe?'RPE sesión '+v.rpe:''}${pg==='core'?` dolor lumbar ${v.dolor||'-'}/10, escape ${v.escape||'-'}, peso perineal ${v.peso||'-'}, irradiado ${v.irradiado||'-'}`:''} ${v.nota?'· '+v.nota:''}`))}
+  if(ses.length){L.push('','SESIONES:');ses.sort().forEach(([k,v])=>L.push(`S${v.semana||k}${v.dia||''}: ${v.fecha||''} ${v.chk?'[chequeo '+v.chk.score+'/5'+(v.chk.ajuste==='suave'?', suave':'')+(v.chk.dolor>=4?', DOLOR '+v.chk.dolor+'/5':'')+'] ':''}${v.min?v.min+' min':''} ${v.rpe?'RPE sesión '+v.rpe:''}${pg==='core'?` dolor lumbar ${v.dolor||'-'}/10, escape ${v.escape||'-'}, peso perineal ${v.peso||'-'}, irradiado ${v.irradiado||'-'}`:''} ${v.nota?'· '+v.nota:''}`))}
   const T=S.tests||{};const tl=pg==='base'?testsBase().map(([id,l])=>[0,4,8].some(m=>T['x_'+id+'_'+m])?`${l}: S0 ${T['x_'+id+'_0']||'-'} / S4 ${T['x_'+id+'_4']||'-'} / S8 ${T['x_'+id+'_8']||'-'}`:null).filter(Boolean):pg==='global'?TESTSG.map(([id,l])=>[0,4,8].some(m=>T['g_'+id+'_'+m])?`${l}: S0 ${T['g_'+id+'_0']||'-'} / S4 ${T['g_'+id+'_4']||'-'} / S8 ${T['g_'+id+'_8']||'-'}`:null).filter(Boolean):core?TESTSC.map(([id,l])=>[0,4,8].some(m=>T['k_'+id+'_'+m])?`${l}: S0 ${T['k_'+id+'_0']||'-'} / S4 ${T['k_'+id+'_4']||'-'} / S8 ${T['k_'+id+'_8']||'-'}`:null).filter(Boolean):TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean);
   if(tl.length){L.push('','TESTS:',...tl)}
   L.push('',fmsContexto());
@@ -3122,6 +3178,8 @@ function renderPlay(m){
   const P=UI.play;if(!P||P.atleta!==UI.atleta){UI.play=null;savePlay();UI.tab=modoCli()?'hoy':'sesion';return render()}
   const {s,d}=P,steps=pasosDe(s,d);
   if(P.i>=steps.length)return renderFin(m);
+  if(!esPrep()&&P.i===0&&!P.chkOk&&!chkDe(s,d)){m.append(cardChk(s,d,()=>{P.chkOk=true;savePlay();render();scrollTo(0,0)}));return}
+  if(P.i===0){const ca=chkAviso(s,d);if(ca)m.append(ca)}
   const g=steps[P.i];
   m.append(h('div',{class:'playtop'},h('button',{class:'btn small',onclick:()=>{UI.tab=UI.prevTab&&UI.prevTab!=='play'?UI.prevTab:(modoCli()?'hoy':'sesion');saveUI();render()}},'Salir'),
     h('span',{class:'note',text:dayName(d)+(esPrep()?'':' · Semana '+s)}),h('span',{id:'play-clock',class:'clock',text:'Tiempo '+fmtT((Date.now()-P.t0)/1000)})),
