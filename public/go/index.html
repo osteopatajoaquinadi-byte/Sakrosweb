@@ -240,7 +240,7 @@ h2.sec{margin:18px 4px 8px;font-size:1.1rem}p.big{font-family:var(--display);fon
 <script src="/go/supabase.js"></script>
 <script>
 const VIDEOS_B64={};
-const VIDEOS={'bajada-escalon':'x','deadbug':'x','deadbug-disco':'x','equilibrio-rodilla':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','sent-frontal':'x','snap-down':'x','swing':'x','zancada-rodilla':'x'};const _vurl={};
+const VIDEOS={'bajada-escalon':'x','deadbug':'x','deadbug-disco':'x','equilibrio-rodilla':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','respiracion-diafragmatica':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-silla':'x','snap-down':'x','swing':'x','zancada-estatica':'x','zancada-rodilla':'x'};const _vurl={};
 function videoURL(k){return '/go/media/'+k+'.mp4'}
 // Video del ejercicio en lugar de las fotos: se reproduce en silencio y en bucle solo mientras se ve.
 let _vobs=null;
@@ -276,7 +276,7 @@ const EX={
   'Pelotita en glúteo: 30–45 s por lado.',
   'Kettlebell invertida en psoas: 60 s por lado, igual que en el día A.'],
   clave:'Presión tolerable (hasta 6/10), sin dolor punzante. En el psoas, retira la kettlebell si notas el pulso aórtico o un dolor que se irradia.'},
- movA:{n:'Movilidad: cadera y tronco',img:[['flexor-0','Caballero: glúteo activo, rodilla hacia delante'],['wgs-0','Estocada desde cuatro apoyos'],['wgs-1','Manos abajo, una por dentro de la pierna: rotación']],pasos:[
+ movA:{n:'Movilidad: cadera y tronco',video:'movilidad-cadera',img:[['flexor-0','Caballero: glúteo activo, rodilla hacia delante'],['wgs-0','Estocada desde cuatro apoyos'],['wgs-1','Manos abajo, una por dentro de la pierna: rotación']],pasos:[
   'Tiempo máximo: 4 min, sin pausas. En la sesión haz 3 repeticiones de cada paso por lado (aductores ×6). Las variantes van en lugar de un ejercicio, no además.',
   'Aductores en cuatro apoyos: una pierna estirada hacia el lado. Lleva la cadera hacia atrás (bisagra) con el abdomen contenido, la columna lo más neutra posible y empujando el suelo con los brazos estirados. 8 repeticiones por lado.',
   'Psoas en caballero: desde cuatro apoyos, lleva una pierna adelante hasta quedar con una rodilla en el suelo. Contrae el glúteo y el piso pélvico, sube las manos y lleva la rodilla de adelante hacia delante mientras el glúteo siga activo. 5 repeticiones de 3 s.',
@@ -688,7 +688,7 @@ const EXC={
   'Braceo al 70 %. Erguido, sin inclinarte.',
   'Respira durante todo el recorrido.'],
   clave:'Si aparece escape o peso perineal, baja la carga.'},
- kcalma:{n:'Vuelta a la calma',img:[['flexor-0','Estiramiento del flexor de cadera'],['flexor-1','Glúteo de atrás apretado']],pasos:[
+ kcalma:{n:'Vuelta a la calma',video:'respiracion-diafragmatica',img:[['flexor-0','Estiramiento del flexor de cadera'],['flexor-1','Glúteo de atrás apretado']],pasos:[
   'Respiración diafragmática: 1 min boca arriba. Inhala por la nariz 4 s y exhala por la boca 6–8 s, soltando el piso pélvico al inhalar.',
   'Estiramiento del flexor de cadera: 30 s por lado en caballero, apretando el glúteo de la pierna de atrás.'],
   clave:'Relajar el piso pélvico es tan importante como activarlo.'}
@@ -832,7 +832,7 @@ Object.assign(EX,{
   'Sentadilla corta sin peso ×8, con los brazos al frente.',
   'Rotaciones de tronco de pie ×8 por lado y elevación de rodillas ×10 por pierna.'],
   clave:'Es para entrar en calor, no para cansarte: al terminar, la respiración está algo más rápida, pero puedes hablar.'},
- gsilla:{n:'Sentadilla a silla → sentadilla goblet',img:[['goblet-0','Goblet: peso al pecho'],['goblet-1','Abajo: tronco erguido, rodillas hacia los pies']],pasos:[
+ gsilla:{n:'Sentadilla a silla → sentadilla goblet',video:'sentadilla-silla',img:[['goblet-0','Goblet: peso al pecho'],['goblet-1','Abajo: tronco erguido, rodillas hacia los pies']],pasos:[
   'Semanas 1–4: de pie delante de una silla, pies a la anchura de la cadera. Lleva la cadera atrás y baja hasta rozar la silla, sin dejarte caer. Sube empujando el suelo con todo el pie.',
   'Semanas 5–8: sentadilla goblet, con una mancuerna o kettlebell liviana pegada al pecho. Baja tan profundo como puedas con la espalda recta.',
   'Exhala al subir. Las rodillas siguen la dirección de los pies.'],
@@ -963,7 +963,7 @@ const MOD={aterrizar:'Aterrizar y frenar',suelo:'Suelo pélvico y espalda',equil
 const NIVEL=['','Nivel 1','Nivel 2','Nivel 3'];
 const CTRL='Control: si pierdes la posición, la serie termina ahí. Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control.';
 Object.assign(EX,{
- xprep:{n:'Respiración y hollowing',img:[['gato-0','Gato-camello'],['puente-1','Puente de glúteo']],pasos:[
+ xprep:{n:'Respiración y hollowing',video:'respiracion-diafragmatica',img:[['gato-0','Gato-camello'],['puente-1','Puente de glúteo']],pasos:[
   'Semanas 1–2 · respiración diafragmática: boca arriba con las rodillas dobladas, una mano en el pecho y otra en el abdomen. Inhala por la nariz llevando el aire al abdomen y a las costillas de los lados (la mano del pecho casi no se mueve) y exhala lento.',
   'Hollowing: al exhalar, lleva el ombligo suave hacia adentro y arriba y cierra el piso pélvico, sin mover la pelvis. Aguanta 10 s respirando suave, sin retener el aire. Es una contracción baja (20–30 %): si se aprietan los glúteos o se hunde el pecho, es demasiado.',
   'Semanas 3–4 · ejercicio de Lewit: boca arriba, exhala por la boca lento y hasta el final, como si apagaras una vela lejana. Sentirás que el abdomen profundo se cierra; la zona lumbar no se mueve. Después, hollowing en cuatro apoyos y sentado.',
@@ -976,11 +976,11 @@ Object.assign(EX,{
   'Rodillas suaves. Lleva la cadera atrás como si cerraras una puerta con el glúteo, sin perder ningún contacto.',
   'Baja hasta sentir el estiramiento atrás del muslo y vuelve apretando el glúteo.',
   'Puntos de control: los 3 contactos, rodillas quietas, peso en el medio del pie.'],clave:CTRL},
- xsent:{n:'Sentadilla con tempo',niv:['silla alta, con manos','cajón, sin manos','goblet liviana, cajón bajo'],img:[['goblet-0','Tronco erguido'],['goblet-1','Abajo: rodillas hacia los pies']],pasos:[
+ xsent:{n:'Sentadilla con tempo',video:'sentadilla-cajon',niv:['silla alta, con manos','cajón, sin manos','goblet liviana, cajón bajo'],img:[['goblet-0','Tronco erguido'],['goblet-1','Abajo: rodillas hacia los pies']],pasos:[
   'Pies a la anchura de los hombros, apoyo en trípode: talón, base del dedo gordo y del meñique.',
   'Baja en 3 s llevando la cadera atrás y abajo, pausa de 1 s al tocar el asiento sin relajarte, y sube en 1 s.',
   'Puntos de control: rodilla sobre el 2.º–3.º dedo, pie sin colapsar hacia dentro, costillas sobre la pelvis.'],clave:CTRL},
- xzanc:{n:'Zancada estática',niv:['con apoyo en la pared','sin apoyo','con mancuernas livianas'],img:[['split-0','Arriba: pies separados'],['split-1','Abajo: rodilla trasera cerca del suelo']],pasos:[
+ xzanc:{n:'Zancada estática',video:'zancada-estatica',niv:['con apoyo en la pared','sin apoyo','con mancuernas livianas'],img:[['split-0','Arriba: pies separados'],['split-1','Abajo: rodilla trasera cerca del suelo']],pasos:[
   'Un pie adelante y otro atrás, separados como para un paso largo.',
   'Baja en vertical en 3 s hasta que la rodilla de atrás casi toque el suelo y sube.',
   'Puntos de control: rodilla delantera sobre el pie, pelvis nivelada, tronco erguido.'],clave:CTRL},
@@ -2655,7 +2655,7 @@ const ALT={
   'Baja con la cadera atrás, pecho arriba y espalda neutra. Los brazos quedan a los lados.',
   'Tensa, empuja el suelo y ponte de pie bloqueando cadera y rodillas a la vez.',
   'Baja controlado. La carga queda alineada con el cuerpo y reduce el esfuerzo lumbar.']},
- boxsquat:{n:'Sentadilla a cajón alto',img:[['boxsquat-0','Inicio: barra en los trapecios'],['boxsquat-1','Abajo: siéntate en el cajón sin relajarte']],pasos:[
+ boxsquat:{n:'Sentadilla a cajón alto',video:'sentadilla-cajon',img:[['boxsquat-0','Inicio: barra en los trapecios'],['boxsquat-1','Abajo: siéntate en el cajón sin relajarte']],pasos:[
   'Pon un cajón detrás de ti a una altura en la que la rodilla quede a 70–90° al sentarte.',
   'Baja con la cadera atrás hasta tocar el cajón. Apoya sin relajarte ni rebotar.',
   'Sube empujando el suelo con el tronco firme. Mismo bracing que en la sentadilla normal.']},
