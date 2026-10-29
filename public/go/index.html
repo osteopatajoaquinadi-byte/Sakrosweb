@@ -1948,11 +1948,24 @@ function setSync(t){$('#sync').textContent=t}
 const localKey=()=>UI.atleta==='yo'?'exos8-datos':'exos8-datos-'+UI.atleta;
 function localSave(){try{localStorage.setItem(localKey(),JSON.stringify(S))}catch(e){}}
 function localLoad(){try{Object.assign(S,JSON.parse(localStorage.getItem(localKey())||'{}'))}catch(e){}}
+/* Sin conexión: lo que no se pudo guardar queda en una cola local y se envía al volver la conexión. */
+const OUTBOX_K='go-outbox';
+function outbox(){try{return JSON.parse(localStorage.getItem(OUTBOX_K)||'[]')}catch(e){return []}}
+function encolar(path,id,data){const q=outbox().filter(x=>!(x.path===path&&x.id===id));q.push({path,id,data});try{localStorage.setItem(OUTBOX_K,JSON.stringify(q))}catch(e){}setSync('Sin conexión: '+q.length+' cambio'+(q.length>1?'s':'')+' por enviar')}
+async function vaciarOutbox(){
+  if(!db||mode!=='nube')return;const q=outbox();if(!q.length)return;const rest=[];
+  for(const x of q){try{await db.collection(x.path).doc(x.id).set(x.data)}catch(e){rest.push(x)}}
+  try{localStorage.setItem(OUTBOX_K,JSON.stringify(rest))}catch(e){}
+  setSync(rest.length?'Sin conexión: '+rest.length+' por enviar':'Sincronizado');
+}
+addEventListener('online',()=>{if(mode==='offline')location.reload();else vaciarOutbox()});
 async function write(col,id,data){
   if(col==='tests')S.tests=data;else if(col==='perfil')S.salud=data;else if(col==='chat'){}else S[col][id]=data;
   if(!db){localSave();return}
-  try{await db.collection(P(col)).doc(id).set(data);setSync('Guardado')}
-  catch(e){setSync('No se pudo guardar: '+(e.code||'error'))}
+  const path=P(col);
+  if(mode==='offline'||!navigator.onLine){encolar(path,id,data);guardarCache();return}
+  try{await db.collection(path).doc(id).set(data);setSync('Guardado')}
+  catch(e){encolar(path,id,data)}
 }
 async function remove(col,id){
   delete S[col][id];
@@ -1988,7 +2001,8 @@ function switchAtleta(id){
 async function saveAtleta(id,data){
   ATL={...ATL,[id]:data};
   if(!db){try{localStorage.setItem('exos8-atletas',JSON.stringify(ATL))}catch(e){}return true}
-  try{await db.collection('atletas').doc(id).set(data);setSync('Guardado');return true}catch(e){setSync('No se pudo guardar el perfil');return false}
+  if(mode==='offline'||!navigator.onLine){encolar('atletas',id,data);guardarCache();return true}
+  try{await db.collection('atletas').doc(id).set(data);setSync('Guardado');return true}catch(e){encolar('atletas',id,data);return true}
 }
 async function borrarAtleta(id){
   if(id==='yo')return;
@@ -2002,7 +2016,19 @@ async function borrarAtleta(id){
   const n={...ATL};delete n[id];ATL=n;if(!db){try{localStorage.setItem('exos8-atletas',JSON.stringify(ATL))}catch(e){}}
   switchAtleta('yo');
 }
+/* Copia local de los datos para abrir la app sin conexión. */
+const CACHE_K='go-cache';let _cacheT=null;
+function guardarCache(){if(mode!=='nube'&&mode!=='offline')return;clearTimeout(_cacheT);_cacheT=setTimeout(()=>{try{localStorage.setItem(CACHE_K,JSON.stringify({v:1,t:Date.now(),YO,ROL,ACC,CFG,ATL,atleta:UI.atleta,S:{registro:S.registro,sesiones:S.sesiones,ajustes:S.ajustes,chat:S.chat,tests:S.tests,salud:S.salud,fms:S.fms}}))}catch(e){}},1500)}
+function cacheLocal(){try{const c=JSON.parse(localStorage.getItem(CACHE_K)||'null');return c&&c.v===1&&c.YO?c:null}catch(e){return null}}
+function abrirSinConexion(c){
+  mode='offline';YO=c.YO;ROL=c.ROL;ACC=c.ACC;CFG=c.CFG||{};ATL=c.ATL||{};atlListo=true;UI.atleta=c.atleta||UI.atleta;
+  Object.assign(S,c.S||{});
+  if(ROL==='cliente'){MODO='cliente';MODO_FIJO=true;UI.atleta=YO.atleta;if(!['hoy','progreso','tests','coach','sesion','play','onb'].includes(UI.tab))UI.tab='hoy'}
+  db={collection:path=>({doc:id=>({set:async data=>encolar(path,id,data),delete:async()=>{},onSnapshot:()=>()=>{}}),onSnapshot:()=>()=>{}})};
+  const q=outbox().length;setSync('Sin conexión'+(q?': '+q+' cambio'+(q>1?'s':'')+' por enviar':' · se sincroniza al volver'));render();
+}
 function refresh(){
+  guardarCache();
   const a=document.activeElement;
   if(a&&$('#main').contains(a)&&/INPUT|TEXTAREA/.test(a.tagName)){dirty=true;return}
   render();
@@ -3491,12 +3517,13 @@ function pantallaLogin(msg){
     h('label',{class:'f',for:'login-email'},'Correo',em),st,h('div',{class:'row'},btn),h('p',{class:'note',text:'Sakros Go está en construcción: por ahora es solo para personas invitadas por Sakros.'}));
   m.append(card);
 }
-async function salir(){try{await SB.auth.signOut()}catch(e){}try{localStorage.removeItem('exos8-play')}catch(e){}location.href='/go'}
+async function salir(){try{localStorage.removeItem(CACHE_K);localStorage.removeItem(OUTBOX_K)}catch(e){}try{await SB.auth.signOut()}catch(e){}try{localStorage.removeItem('exos8-play')}catch(e){}location.href='/go'}
 
 (async()=>{
   $('#main').replaceChildren(h('p',{class:'note',text:'Cargando…'}));
   let cfg=null;
   try{cfg=await fetch('/api/go/config').then(r=>r.ok?r.json():null)}catch(e){}
+  if((!cfg||!window.supabase)&&cacheLocal()){abrirSinConexion(cacheLocal());return}
   if(!cfg||!window.supabase){
     mode='local';setSync('Guardado local');try{ATL=JSON.parse(localStorage.getItem('exos8-atletas')||'{}')}catch(e){}atlListo=true;try{CFG=JSON.parse(localStorage.getItem('exos8-config')||'{}')}catch(e){}if(UI.atleta!=='yo'&&!ATL[UI.atleta])UI.atleta='yo';localLoad();render();return;
   }
@@ -3512,6 +3539,7 @@ async function salir(){try{await SB.auth.signOut()}catch(e){}try{localStorage.re
   if(!session){pantallaLogin();return}
   const{data:me,error}=await SB.rpc('go_vincular');
   if(error&&/no_autorizado/.test(error.message||'')){await SB.auth.signOut().catch(()=>{});pantallaLogin('Sakros Go está en construcción. Por ahora solo pueden entrar las personas invitadas por Sakros.');return}
+  if((error||!me)&&cacheLocal()&&(!navigator.onLine||/fetch|network/i.test(String(error&&error.message)))){abrirSinConexion(cacheLocal());return}
   if(error||!me){pantallaLogin('No se pudo abrir tu cuenta. Vuelve a intentarlo.');return}
   ROL=me.rol;YO=me;
   if(ROL==='cliente'){MODO='cliente';MODO_FIJO=true;UI.atleta=me.atleta;UI.tab=['hoy','progreso','tests','coach','sesion','play','onb','fms'].includes(UI.tab)?UI.tab:'hoy'}
@@ -3519,9 +3547,10 @@ async function salir(){try{await SB.auth.signOut()}catch(e){}try{localStorage.re
   await cargarAcceso();
   if(qs.get('sub')){history.replaceState(null,'',location.pathname);if(ROL==='cliente'){UI.tab='hoy';if(!(ACC&&ACC.activo)){setTimeout(async()=>{await cargarAcceso();render()},4000)}}}
   db=makeDb(SB);sample=goSample;mode='nube';setSync('Sincronizado');
-  subAtletas();subscribe();render();
+  subAtletas();subscribe();render();vaciarOutbox();
   SB.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT')location.href='/go'});
 })();
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('/go-sw.js').catch(()=>{});
 </script>
 </body>
 </html>
