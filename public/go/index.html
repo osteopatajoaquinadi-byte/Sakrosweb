@@ -1655,11 +1655,63 @@ function rows0(d,s){if(bk()>1)return conCorr(rowsBloque(alt()?srcDia(d,s):d,bk()
 /* Cuatro bloques por sesión (estilo EXOS, compacto): 1 Preparación · 2 Potencia · 3 Fuerza · 4 Energía y cierre.
    Agrupa las filas del plan sin cambiar ejercicios. Las superseries quedan como pares en mayúscula (A/B, C/D);
    los ejercicios sueltos van en minúscula (a, b, c). */
+/* ---------- Vóley playa (Rendimiento con deporte = vóley) ----------
+   Sin trineo ni salidas de sprint dentro de la sesión: se cambian por saltos de ataque y bloqueo,
+   intervalos tipo rally y prevención de hombro. Las salidas y el arrastre quedan como complementario en la arena. */
+const esVoley=()=>prog()==='rend'&&atl().deporte==='voley';
+Object.assign(EX,{
+ vhombro:{n:'Hombro de atacante: manguito y escápula',img:[],pasos:[
+  'Rotación externa con banda a 90° (codo a la altura del hombro): 10 por lado, bajada lenta en 3 s.',
+  'Y-T-W en bisagra de cadera: 6 de cada letra, pulgares hacia arriba y escápulas atrás y abajo.',
+  'Flexión de escápula (push-up plus) en plancha alta: 10, empujando el suelo al final.',
+  'Puntos de control: el cuello relajado y el movimiento sale de la escápula, no de la zona lumbar.'],
+  clave:'El hombro del atacante recibe cientos de remates por semana: este bloque prepara el manguito rotador y la escápula para frenar el brazo.'},
+ vsalto:{n:'Salto de ataque (aproximación de 3 pasos)',img:[],pasos:[
+  'Aproximación de 3 pasos (diestro: izquierda-derecha-izquierda). El penúltimo paso es largo y rápido, con los brazos atrás.',
+  'Junta los pies, baja la cadera y lanza los brazos arriba para despegar a dos pies con todo.',
+  'Arriba, brazo de ataque atrás y codo alto, como si fueras a rematar.',
+  'Cae con los dos pies a la vez, rodillas sobre los pies y en silencio. Camina de vuelta y descansa 30–40 s.',
+  'En arena o en piso firme. Cada salto al 100 %: si la altura baja, termina la serie.'],
+  clave:'Es el salto que más se repite en el partido: aproximación, carga y caída controlada en cada repetición.'},
+ vbloqueo:{n:'Salto de bloqueo con desplazamiento',img:[],pasos:[
+  'De frente a la red imaginaria, manos a la altura de los hombros.',
+  'Desplázate 1–2 pasos laterales (o paso cruzado) y salta a dos pies con las manos arriba y hacia adelante, como si invadieras la red.',
+  'Cae en el mismo lugar, estable 1 s, y vuelve al centro.',
+  'Puntos de control: no te vas hacia adelante al caer y las rodillas no se van hacia adentro.'],
+  clave:'Bloqueo: desplazarse rápido, subir vertical y caer estable para seguir jugando.'},
+ vrally:{n:'Intervalos tipo rally',img:[],pasos:[
+  'Cada repetición imita un punto: 8 s de trabajo y 20 s de pausa caminando.',
+  'Trabajo: desplazamiento defensivo lateral, caída al suelo y recuperación rápida, y un salto de ataque o de bloqueo al final.',
+  'En arena si estás en la playa; si no, en piso con colchoneta.',
+  'Todas las repeticiones al máximo de intensidad, con técnica limpia. Pausa de 2 min entre series.'],
+  clave:'El vóley playa es intermitente: puntos cortos y explosivos con pausas breves. Este bloque entrena justo eso.'}
+});
+const VOLEY_SUST={salidas:'vsalto',sprint:'vbloqueo',t3030:'vrally'};
+const VOLEY_P={vsalto:['3×4','3×4','4×4','2×3 · descarga','4×3','4×4','5×3','Test: alcance en salto de ataque'],
+  vbloqueo:['3×3/lado','3×3/lado','3×4/lado','2×3/lado · descarga','4×3/lado','4×3/lado','4×4/lado','2×3/lado'],
+  vrally:['2×6','2×6','2×8','1×6 · descarga','3×6','3×8','3×8','Test: 10 rallies'],vhombro:Array(8).fill('1 vuelta')};
+const VOLEY_TM={vsalto:6,vbloqueo:6,vrally:12,vhombro:3};
+function voley(r){
+  if(!esVoley())return r;
+  const out=r.map(it=>{const id=VOLEY_SUST[it.id];if(!id)return it;return {...it,id,p:bk()>1&&id!=='vrally'?it.p:VOLEY_P[id],tm:VOLEY_TM[id]}});
+  let i=-1;out.forEach((it,j)=>{if(String(it.b).startsWith('1'))i=j});
+  out.splice(i+1,0,{id:'vhombro',b:'1h',p:VOLEY_P.vhombro,tm:VOLEY_TM.vhombro});
+  return out;
+}
+function cardComplVoley(){
+  if(!esVoley())return null;
+  const L=[['Salidas en arena desde posición de recepción','6×6–10 m, pausa completa'],['Sprints cortos en arena','4×15 m'],
+    ['Arrastre de trineo o de compañero con banda (si tienes)','4×15 m'],['Desplazamientos defensivos: shuffle, caída y recuperación','4×20 s, pausa 40 s'],
+    ['Saltos de ataque en arena','3×5']];
+  return h('section',{class:'card'},h('h2',{text:'Complementario en la playa'}),
+    h('p',{class:'note',text:'Fuera de la sesión del día: 1 o 2 veces por semana, en la arena y en un día distinto al entrenamiento de fuerza, o al final de la práctica de vóley. Si no tienes espacio, sáltalo: la sesión ya trae saltos y rallies.'}),
+    h('ul',{class:'medir'},L.map(([n,p])=>h('li',{},h('strong',{text:n+': '}),p))));
+}
 const BLQN={rend:['','Preparación','Potencia','Fuerza','Energía y cierre'],core:['','Preparación','Core y potencia','Fuerza','Carga y cierre'],
   global:['','Calentamiento','Piernas','Tren superior','Core, cardio y cierre'],base:['','Preparación','Control motor','Fuerza y patrones','Módulo y cierre']};
 const blqNom=n=>(BLQN[prog()]||BLQN.rend)[n]||'';
-const B_POT=new Set(['cajon','salidas','sprint','cargada','puenteexp','skater']);
-const B_ENE=new Set(['intervalos','t3030','zona2','regen','trote']);
+const B_POT=new Set(['cajon','salidas','sprint','cargada','puenteexp','skater','vsalto','vbloqueo']);
+const B_ENE=new Set(['intervalos','t3030','zona2','regen','trote','vrally']);
 function blq4(r){
   const pg=prog(),L='abcdefghij',U='ABCDEFGHIJ';
   const num=it=>parseInt(String(it.b),10)||1;
@@ -1688,7 +1740,7 @@ function blq4(r){
   return out;
 }
 const supKey=it=>it&&it.sup||null;
-function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(rows0(d,s))}
+function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(voley(rows0(d,s)))}
 function allRows(){const out=[],seen=new Set();const P0=esBase()?{A:rowsBase('A'),B:rowsBase('B')}:esCore()?PLANC:esGlob()?PLANG:PLAN;Object.keys(P0).forEach(d=>P0[d].forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);out.push([d,it])}}));return out}
 const faseTxt=s=>esPrep()?'Prep':bk()>1?faseBloque(s):(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
 const sesKey=(s,d)=>(bk()>1?'b'+bk()+'.':'')+(esPrep()?'p':esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
@@ -1897,9 +1949,11 @@ function renderPerfil(m,nuevo){
       const bl=h('div',{style:'display:grid;gap:10px'},h('span',{class:'wholbl',text:'Módulos del Entrenamiento Base (máximo 2)'}),mb,h('label',{class:'f',for:'pf-nivel'},'Nivel de partida',nvs),h('label',{class:'f',for:'pf-sig'},'Programa al terminar la Base',sig));
       const cs=h('select',{id:'pf-cond'},[['','Elegir…'],...Object.entries(COND)].map(([v,l])=>{const o=h('option',{value:v},l);if((a.condicion||'')===v)o.selected=true;return o}));f.cond=cs;
       const cl=h('label',{class:'f',for:'pf-cond'},'Condición (espalda y suelo pélvico)',cs);
-      const sync=()=>{cl.hidden=sel.value!=='core';bl.hidden=sel.value!=='base';if(f.cgCard)f.cgCard.hidden=sel.value!=='rend'};
+      const dp=h('select',{id:'pf-dep'},[['','Sin deporte específico'],['voley','Vóley playa']].map(([v,l])=>{const o=h('option',{value:v},l);if((a.deporte||'')===v)o.selected=true;return o}));f.dep=dp;
+      const dl=h('label',{class:'f',for:'pf-dep'},'Deporte (Rendimiento)',dp,h('span',{class:'note',text:'Vóley playa: sin trineo ni salidas de sprint en la sesión (quedan como complementario en la arena), con saltos de ataque y bloqueo, rallies y prevención de hombro.'}));
+      const sync=()=>{cl.hidden=sel.value!=='core';bl.hidden=sel.value!=='base';dl.hidden=sel.value!=='rend';if(f.cgCard)f.cgCard.hidden=sel.value!=='rend'};
       sel.addEventListener('change',sync);f.syncProg=sync;
-      return h('div',{style:'display:grid;gap:10px'},h('label',{class:'f',for:'pf-prog'},'Programa de entrenamiento',sel),cl,bl,
+      return h('div',{style:'display:grid;gap:10px'},h('label',{class:'f',for:'pf-prog'},'Programa de entrenamiento',sel),cl,dl,bl,
         h('p',{class:'note',text:'Sakros Go Entrenamiento. Base: 8 semanas de control motor con las que empieza todo cliente nuevo. Core: espalda y suelo pélvico, con énfasis en el braceo, para hernia lumbar o incontinencia de esfuerzo. Activo: cuerpo completo para personas sedentarias o mantención. Rendimiento: potencia, salto y cardio (método EXOS). Aparte, Sakros Go Prep: 10 minutos de preparación según el FMS, para quien ya entrena.'}))})(),
     (()=>{const sel=h('select',{id:'pf-freq'},[['','Elegir…'],['1','1 vez por semana'],['2','2 veces por semana'],['3','3 veces por semana']].map(([v,l])=>{const o=h('option',{value:v},l);if(String(a.frecuencia||(nuevo?'':'2'))===v)o.selected=true;return o}));f.freq=sel;return h('label',{class:'f',for:'pf-freq'},'Sesiones de este plan por semana *',sel)})(),
     (()=>{const sel=h('select',{id:'pf-sexo'},[['','Elegir…'],['M','Mujer'],['H','Hombre']].map(([v,l])=>{const o=h('option',{value:v},l);if((a.sexo||'')===v)o.selected=true;return o}));f.sexo=sel;return h('label',{class:'f',for:'pf-sexo'},'Sexo *',sel)})(),
@@ -1921,7 +1975,7 @@ function renderPerfil(m,nuevo){
     if(!f.freq.value){err.textContent='Elige cuántas sesiones de este plan hará por semana (1 a 3).';return}
     const cargas={};CARGABLES.forEach(id=>{const v=f['c-'+id].value.trim();if(v)cargas[id]=v.replace('.',',')});
     const id=nuevo?'a'+Date.now().toString(36):UI.atleta;
-    const data={...(nuevo?{}:a),nombre,edad:ne,sesiones:ns,sexo:f.sexo.value,frecuencia:parseInt(f.freq.value,10),programa:f.prog.value,condicion:f.cond.value,modulos:Object.keys(MOD).filter(k=>f.mods[k].checked).slice(0,2),nivel:parseInt(f.nivel.value,10)||1,siguiente:f.sig.value,email:f.email.value.trim().toLowerCase(),objetivo:f.objetivo.value.trim(),notas:f.notas.value.trim(),cargas,t:Date.now()};
+    const data={...(nuevo?{}:a),nombre,edad:ne,sesiones:ns,sexo:f.sexo.value,frecuencia:parseInt(f.freq.value,10),programa:f.prog.value,condicion:f.cond.value,deporte:f.dep.value,modulos:Object.keys(MOD).filter(k=>f.mods[k].checked).slice(0,2),nivel:parseInt(f.nivel.value,10)||1,siguiente:f.sig.value,email:f.email.value.trim().toLowerCase(),objetivo:f.objetivo.value.trim(),notas:f.notas.value.trim(),cargas,t:Date.now()};
     save.disabled=true;const ok=await saveAtleta(id,data);save.disabled=false;
     if(!ok){err.textContent='No se pudo guardar. Revisa la conexión y vuelve a intentarlo.';return}
     if(nuevo)switchAtleta(id);else{UI.tab='tests';render()}
@@ -2034,6 +2088,7 @@ function renderSesion(m){
     if(it.blq&&(!i||a[i-1].blq!==it.blq)){const bm=esCore()?0:a.filter(x=>x.blq===it.blq).reduce((q,x)=>q+tmin(x,s),0);
       m.append(h('h3',{class:'blqh'},h('span',{class:'n',text:String(it.blq)}),blqNom(it.blq),bm?h('span',{class:'note',text:' · ≈ '+bm+' min'}):null))}
     m.append(exCard(s,d,it))});
+  {const cv=cardComplVoley();if(cv)m.append(cv)}
 }
 function exCard(s,d,it){
   const k=key(s,d,it.id),reg=S.registro[k]||{},aj=S.ajustes[k];
@@ -2732,7 +2787,7 @@ function autoEj(s,d,it){
 
 /* ---------- Coach ---------- */
 let sample=null, ctl=null, busy=false;
-const RULES=`Eres el entrenador personal del atleta, con el método EXOS. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios atletas (su propio perfil es «Mi perfil»). Habla del atleta seleccionado y usa términos técnicos.
+const RULES=`Eres el entrenador personal del atleta, con el método EXOS. Si sus datos dicen DEPORTE: vóley playa, adapta todo a su deporte (saltos de ataque y bloqueo, desplazamientos en arena, hombro del atacante): no pongas trineo ni salidas de sprint dentro de la sesión; esos trabajos van como complementario en la playa, fuera de la rutina del día. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios atletas (su propio perfil es «Mi perfil»). Habla del atleta seleccionado y usa términos técnicos.
 Objetivo del bloque: potencia, aceleración, salto y, sobre todo, resistencia cardiovascular. 8 semanas, con 1, 2 o 3 sesiones por semana según el atleta (sesión única U; días A y B; o A, B y C), sesiones de 50–60 min como máximo (calentamiento de 12 min, 15 en mujeres; superseries con 90 s de pausa). El calentamiento completo (tejido blando, movilidad, pilar y activación) no se recorta para ahorrar tiempo. Semana 4: descarga. Semana 8: descarga y test.
 Adapta tus consejos al sexo, la edad, el nivel y las sesiones por semana del atleta. En mujeres el plan ya suma más pilar y más activación de aterrizajes y frenadas; mantenlo.
 Reglas de ajuste: si la RPE pasa de la marcada, repetir peso; si sobran 2 o más repeticiones, subir 2,5 kg (1 kg o 0,5 kg si la carga es menor de 20 kg). Nunca al fallo. Si falta tiempo, se quitan accesorios, nunca el cardio. Hip thrust: carga orientativa, ajustar a RPE 7–8.
@@ -2769,7 +2824,9 @@ function contexto(){
     core?'Programa '+PROGC[pg]+': sin cargas de referencia; la carga se ajusta a la RPE de la fase.':UI.atleta==='yo'?'Referencias de partida: sentadilla posterior 120 kg ×5 (1RM ≈135), frontal 90 kg ×5–6 (1RM ≈105), peso muerto 120 kg ×3–4 (1RM ≈130).':'Cargas de la semana 1: '+(Object.keys(c).length?CARGABLES.filter(k=>c[k]).map(k=>EX[k].n+' '+c[k]+' kg').join(', '):'sin definir (las sesiones dicen «carga según RPE»)')+'.',
     `Semana que tiene abierta: S${UI.sem}, día ${UI.dia}.`,'','PLAN ACTUAL (* = ajustado por ti con la herramienta; [auto] = adaptado automáticamente por diagnóstico):'];
   if(pg==='prep')Object.keys(ZONA).forEach(z=>L.push('Prep '+ZONA[z]+': '+prepRows(z,1).map(it=>it.id+' '+EX[it.id].n+' ('+pres(1,z,it)+')').join(' | ')));
-  else if(core||bk()>1)DIAS().forEach(d=>{for(let s=1;s<=8;s++)L.push(`${dayName(d)} S${s} (${faseTxt(s)}): `+rows(d,s).map(it=>{const A=autoEj(s,d,it);return `${it.id} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))});
+  if(esVoley())L.push('DEPORTE: vóley playa. En la sesión no hay trineo ni salidas de sprint (se cambiaron por salto de ataque, salto de bloqueo, intervalos tipo rally y hombro de atacante). Salidas en arena, sprints cortos, arrastre y desplazamientos defensivos van como complementario en la playa, fuera de la sesión.');
+  if(pg==='prep'){}
+  else if(core||bk()>1||esVoley())DIAS().forEach(d=>{for(let s=1;s<=8;s++)L.push(`${dayName(d)} S${s} (${faseTxt(s)}): `+rows(d,s).map(it=>{const A=autoEj(s,d,it);return `${it.id} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))});
   else DIAS().forEach(d=>PLAN[d].forEach(it=>{L.push(`${dayName(d)} ${d} · ${it.id} (${EX[it.id].n}): `+[1,2,3,4,5,6,7,8].map(s=>{const A=autoEj(s,d,it);return `S${s} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))}));
   L.push('','REGISTRO:');
   const regs=Object.values(S.registro).filter(r=>progOf(r.ej)===pg).filter(r=>r.hecho||r.kg||r.rpe||r.nota).sort((a,b)=>a.semana-b.semana||a.dia.localeCompare(b.dia));
@@ -3001,6 +3058,7 @@ function renderHoy(m){
   if(!Object.keys(T).some(k=>k!=='t'&&T[k]))m.append(h('section',{class:'card'},h('h2',{text:'Antes de empezar: tus tests'}),
     h('p',{class:'note',text:'Mídete ahora para comparar en la semana 8. Así ves tu progreso con números.'}),h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='tests';render()}},'Hacer los tests'))));
   if(!fmsAlguno())m.append(cardFms());
+  {const cv=cardComplVoley();if(cv)m.append(cv)}
   m.append(h('section',{class:'card'},h('h2',{text:'Tu entrenador'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:prog(),dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mis respuestas'))));
 }
