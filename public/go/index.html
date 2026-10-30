@@ -429,7 +429,7 @@ const EX={
   'El primer minuto de cada bloque sirve para subir la FC. El resto, en la zona objetivo.',
   'Ritmo duro pero sostenible: no puedes hablar.',
   'Pausa de 2 min activa, al 60–70 % de la FC máx.',
-  'Test (semana 8): Yo-Yo IR1 o 2,4 km a máxima intensidad.'],
+  'Test (semana 8): 2,4 km en pista (6 vueltas a una pista de 400 m) lo más rápido posible.'],
   clave:'Sin FC máx conocida: usa 208 − 0,7 × edad, o la más alta del test de 2,4 km.'},
  regen:{n:'Regeneración',img:[['flexor-0','Flexor de cadera: rodilla en el suelo']],pasos:[
   'Respiración 90/90: 1 min boca arriba con los pies en la pared y cadera y rodillas a 90°. Inhala 4 s por la nariz y exhala 6–8 s.',
@@ -441,10 +441,10 @@ const EX={
   'Primeros pasos cortos y potentes, brazos fuertes desde el hombro. Endereza poco a poco.',
   'Camina de vuelta y descansa al menos 60 s. Cada salida al 100 %.'],
   clave:'Test (semana 8): 2 intentos de 10 m.'},
- sprint:{n:'Sprint lanzado o con trineo',img:[['trineo-0','Trineo con arnés: cuerpo inclinado'],['trineo-1','Zancada potente, brazos activos']],pasos:[
+ sprint:{n:'Sprint lanzado',img:[['salida-1','Aceleración: empuje y braceo'],['pared-1','Postura de aceleración']],pasos:[
   'Lanzado: acelera progresivamente 15–20 m y corre el tramo marcado a máxima velocidad.',
   'Postura alta, el pie cae bajo la cadera, brazos activos.',
-  'Con trineo: arnés en la cintura o el pecho y carga que no te frene más de un 10 % (10–20 % de tu peso). Mantén el cuerpo inclinado como en la aceleración.',
+  'Variante: en una cuesta suave (3–5 %) para acelerar contra resistencia, con el cuerpo inclinado como en la salida.',
   'Recupera 90 s entre repeticiones.'],
   clave:'Test (semana 8): 2 intentos de 20 m.'},
  pushpress:{n:'Push press',img:[['pushpress-1','Impulso: flexión corta de rodillas'],['pushpress-0','Empuje hasta bloquear arriba']],pasos:[
@@ -1820,7 +1820,7 @@ function cardComplVoley(s){
   if(!esVoley())return null;
   const w=Math.min(8,Math.max(1,s||UI.sem||1)),sh=SHUF[w-1];
   const L=[[sh[0]+' (semana '+w+')',sh[1]],['Sprints cortos en arena','4×15 m'],
-    ['Arrastre de trineo o de compañero con banda (si tienes)','4×15 m'],['Saltos de ataque en arena','3×5']];
+    ['Saltos de ataque en arena','3×5']];
   return h('section',{class:'card'},h('h2',{text:'Complementario en la playa'}),
     h('p',{class:'note',text:'Fuera de la sesión del día: 1 o 2 veces por semana, en la arena y en un día distinto al entrenamiento de fuerza, o al final de la práctica de vóley. Si no tienes espacio, sáltalo: la sesión ya trae saltos y rallies.'}),
     h('ul',{class:'medir'},L.map(([n,p])=>h('li',{},h('strong',{text:n+': '}),p))));
@@ -1892,7 +1892,7 @@ function senalPrevia(s,d){
 
 const TESTS=[
  ['cmj','Salto vertical CMJ (cm)'],['horizontal','Salto horizontal (cm)'],['s10','Sprint 10 m (s)'],['s20','Sprint 20 m (s)'],
- ['resistencia','Yo-Yo IR1 o 2,4 km'],['fcrec','FC de recuperación a 1 min'],
+ ['resistencia','Test de 2,4 km (min:s)'],['fcrec','FC de recuperación a 1 min'],
  ['posterior','Sentadilla posterior 5RM (kg)','kg'],['frontal','Sentadilla frontal 5RM (kg)','kg'],['muerto3','Peso muerto 5RM (kg)','kg']];
 
 /* ---------- Estado ---------- */
@@ -2402,7 +2402,7 @@ function renderTestsRend(m){
    ['Salto vertical (CMJ)','Manos en la cintura, 3 intentos, anota el mejor. Con app (My Jump) o con cámara lenta: altura (cm) = 122,6 × t², donde t = fotogramas en el aire ÷ 240.'],
    ['Salto horizontal','Desde una línea, 3 intentos. Mide hasta el talón más atrasado.'],
    ['Sprint 10 y 20 m','Salida desde 3 apoyos, 2 intentos. Con app (Photo Finish o SprintTimer) o cámara lenta contando fotogramas ÷ 240.'],
-   ['Resistencia','Yo-Yo IR1 con su audio (conos a 20 m + 5 m de recuperación) o 2,4 km en pista de 400 m (6 vueltas).'],
+   ['Resistencia','2,4 km en pista de 400 m (6 vueltas), lo más rápido posible. Anota el tiempo.'],
    ['FC de recuperación','FC al terminar el test de resistencia menos la FC un minuto después. Sin reloj: pulso 15 s × 4.'],
    ['Fuerza (5RM)','Sentadillas y peso muerto: calienta y sube de a poco hasta el mayor peso con el que haces 5 repeticiones bien ejecutadas, sin perder técnica (espalda neutra, rodillas alineadas, misma profundidad). Si la técnica cambia o la 5.ª no sale limpia, anota el último peso que salió bien. Descansa 3 min entre intentos y no pases de 4 o 5 intentos.']];
   const medV=basico?med.filter(([a])=>/Fuerza/.test(a)):solo?med.filter(([a])=>/Salto|Fuerza/.test(a)):med;
@@ -2649,7 +2649,7 @@ const DX={
    frontal:{rehab:['adaptar','Rango completo si no hay dolor ni derrame, con RPE máximo 7.']},
    puenteexp:{rehab:['adaptar','Puente en el suelo apto. La bisagra de pie, solo sin dolor ni derrame y con carga moderada.']},
    salidas:{rehab:['adaptar','Aceleraciones al 70–80 %, sin cambios de dirección. Cambia la salida de 3 apoyos por salidas de pie progresivas.']},
-   sprint:{rehab:['adaptar','Sprint submáximo (80 %), mejor con trineo: menos velocidad y menos impacto.']},
+   sprint:{rehab:['adaptar','Sprint submáximo (80 %), mejor en cuesta suave: menos velocidad y menos impacto.']},
    skater:{rehab:['sustituir','Sin saltos laterales a una pierna. Haz desplazamiento lateral con mini band 3×8 pasos y aterrizaje lateral a dos pies.',{alt:'bandalateral',p:'3×8 pasos/lado'}],
           alta:['adaptar','El plano lateral es el mecanismo típico de lesión. Empieza con distancias cortas y caída a dos pies; pasa a una pierna cuando no haya valgo ni rotación de rodilla.']},
    intervalos:{rehab:['adaptar','Hazlo en bici o remo hasta tener el alta para correr a alta intensidad.']},
@@ -2680,7 +2680,7 @@ const DX={
           postop:['adaptar','Aterriza sin girar sobre el pie fijo.'],
           sutura:['sustituir','Sin saltos laterales. Haz desplazamiento lateral con mini band 3×8 pasos.',{alt:'bandalateral',p:'3×8 pasos/lado'}]},
    salidas:{sutura:['sustituir','Sin aceleraciones máximas hasta el alta. Haz 6×20 s de carrera continua suave o skips.',{alt:'trote',p:'6×20 s'}]},
-   sprint:{sutura:['sustituir','Sin sprint máximo hasta el alta. Sustitúyelo por trineo caminando, pesado, 3×20 m.',{alt:'trineocaminando',p:'3×20 m'}]}}},
+   sprint:{sutura:['sustituir','Sin sprint máximo hasta el alta. Sustitúyelo por caminata en cuesta pesada, 3×20 m.',{alt:'trineocaminando',p:'3×20 m'}]}}},
  hombro:{n:'Pinzamiento subacromial de hombro',corto:'Hombro',lado:true,
   fases:[['sintomatico','Con dolor'],['prevencion','Sin dolor, prevención']],
   generales:{
@@ -2759,7 +2759,7 @@ const DX={
           retorno:['adaptar','Salto al cajón apto. Drop jump desde 20 cm al principio y solo si el tendón responde bien al día siguiente.']},
    cargada:{reactiva:['adaptar','Si molesta la extensión final del tobillo, haz tirón desde colgado sin ponerte de puntillas.']},
    salidas:{reactiva:['adaptar','Aceleraciones al 70–80 % y solo con dolor ≤ 3/10. Si no, quítalas esta semana.']},
-   sprint:{reactiva:['sustituir','Sin sprint. Trineo pesado caminando 3×20 m.',{alt:'trineocaminando',p:'3×20 m'}],
+   sprint:{reactiva:['sustituir','Sin sprint. Caminata en cuesta pesada 3×20 m.',{alt:'trineocaminando',p:'3×20 m'}],
           retorno:['adaptar','Sprint lanzado progresivo: empieza al 90 %.']},
    skater:{reactiva:['sustituir','Sin saltos laterales. Desplazamiento lateral con mini band 3×8 pasos.',{alt:'bandalateral',p:'3×8 pasos/lado'}],
           retorno:['adaptar','Distancia corta al inicio. Cae sobre el antepié sin dejar caer el talón de golpe.']},
@@ -2779,7 +2779,7 @@ const DX={
    sentadilla:{inicial:['adaptar','Carga un 20–30 % menor, 3 s en la bajada y rango sin dolor.',{f:0.75}]},
    frontal:{inicial:['adaptar','Carga un 20–30 % menor y rango sin dolor: es la variante que más carga el cuádriceps.',{f:0.75}]},
    pushpress:{inicial:['adaptar','Impulso de piernas suave. Si molesta, press estricto.']},
-   salidas:{inicial:['sustituir','Sin aceleraciones. Trineo pesado caminando 3×20 m.',{alt:'trineocaminando',p:'3×20 m'}],
+   salidas:{inicial:['sustituir','Sin aceleraciones. Caminata en cuesta pesada 3×20 m.',{alt:'trineocaminando',p:'3×20 m'}],
           avanzada:['adaptar','Aceleraciones progresivas: 70 %, 85 % y 95 % en semanas sucesivas.']},
    sprint:{inicial:['sustituir','Sin sprint. Carrera continua suave 6×20 s.',{alt:'trote',p:'6×20 s'}],
           avanzada:['adaptar','Sprint lanzado al 85–90 % antes de ir al máximo.']},
@@ -2797,7 +2797,7 @@ const DX={
    cajon:{inicial:['adaptar','Saltos al cajón submáximos si no duelen. Sin drop jumps.']},
    cargada:{inicial:['adaptar','Carga un 20 % menor y sin rebote en la posición colgado, que es donde más se estira el isquiotibial.',{f:0.8}]},
    puenteexp:{inicial:['adaptar','Sin explosión en la fase inicial: puente lento con 3 s arriba. Pasa a explosivo cuando no duela.',{p:'3×8 lento · 3 s arriba'}],avanzada:['ok','Apto: progresa a la bisagra de pie con carga moderada.']},
-   salidas:{inicial:['sustituir','Sin aceleraciones máximas. Trineo pesado caminando 3×20 m.',{alt:'trineocaminando',p:'3×20 m'}],
+   salidas:{inicial:['sustituir','Sin aceleraciones máximas. Caminata en cuesta pesada 3×20 m.',{alt:'trineocaminando',p:'3×20 m'}],
           avanzada:['adaptar','Progresión: 70 %, 85 % y 95 % en semanas sucesivas, con buen calentamiento.']},
    sprint:{inicial:['sustituir','Sin sprint. Skips A y B técnicos 3×20 m.',{alt:'skipsab',p:'3×20 m'}],
           avanzada:['adaptar','Sprint lanzado al 85–90 % antes del máximo: es la parte clave del retorno.']},
@@ -2822,7 +2822,7 @@ const DX={
    sentadilla:{agudo:['adaptar','Si falta flexión de tobillo, pon un disco de 2,5 kg bajo los talones.']},
    frontal:{agudo:['adaptar','Si falta flexión de tobillo, pon un disco de 2,5 kg bajo los talones.']},
    salidas:{agudo:['adaptar','Solo si apoyas sin dolor: aceleraciones al 70–80 % y en línea recta.']},
-   sprint:{agudo:['sustituir','Sin sprint. Trineo caminando 3×20 m si no duele.',{alt:'trineocaminando',p:'3×20 m'}]},
+   sprint:{agudo:['sustituir','Sin sprint. Caminata en cuesta 3×20 m si no duele.',{alt:'trineocaminando',p:'3×20 m'}]},
    skater:{agudo:['sustituir','Sin saltos laterales: es el mecanismo del esguince. Haz equilibrio a una pierna 3×30 s.',{alt:'equilibrio',p:'3×30 s/pierna'}],
           recuperado:['adaptar','Empieza con caídas cortas y a dos pies. Tobillera si hay esguinces de repetición.']},
    intervalos:{agudo:['adaptar','Bici o remo en lugar de correr.']},
@@ -3025,9 +3025,9 @@ const ALT={
   'Puente a una pierna ×8/lado: boca arriba, un talón apoyado y la otra pierna arriba.',
   'Sube la cadera empujando con el talón y aguanta 3 s arriba. Cuanto más lejos el pie, más trabaja el isquiotibial.',
   'Sin dolor en el isquiotibial lesionado.']},
- trineocaminando:{n:'Trineo pesado caminando',img:[['sledpush-0','Manos en el trineo, cuerpo inclinado'],['sledpush-1','Pasos cortos y potentes']],pasos:[
-  'Carga el trineo para que solo puedas caminar, no correr.',
-  'Cuerpo inclinado y brazos extendidos. Empuja con pasos cortos y potentes.',
+ trineocaminando:{n:'Caminata en cuesta pesada',img:[['cinta-1','Cuesta o cinta inclinada']],pasos:[
+  'En una cuesta empinada o en la cinta con la inclinación al máximo. Si te queda fácil, suma una mochila con peso.',
+  'Cuerpo inclinado hacia adelante. Pasos cortos y potentes, empujando el suelo hacia atrás.',
   'Recupera 90 s entre repeticiones.']},
  trote:{n:'Carrera continua suave',img:[['trote-0','Trote suave']],pasos:[
   'Ritmo suave en el que puedas hablar, en llano y sin aceleraciones.',
@@ -3085,7 +3085,7 @@ function autoEj(s,d,it){
 
 /* ---------- Coach ---------- */
 let sample=null, ctl=null, busy=false;
-const RULES_IA='\n\nIDENTIDAD Y SEGURIDAD: eres el Coach IA de Sakros Go, una inteligencia artificial. Los programas y criterios los define Joaquín Adi, kinesiólogo con máster en Functional Training. Si te preguntan, di que eres una IA y no te presentes como Joaquín ni como un profesional de la salud. No diagnostiques ni indiques tratamientos. Ante dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta o se irradia, hormigueo o pérdida de fuerza, indica detener el ejercicio y consultar a un profesional. No pidas datos personales que el plan no necesite (RUT, dirección, datos bancarios).';
+const RULES_IA='\n\nIDENTIDAD Y SEGURIDAD: eres el Coach IA de Sakros Go, una inteligencia artificial. Los programas y criterios los define Joaquín Adi, kinesiólogo con máster en Functional Training. Si te preguntan, di que eres una IA y no te presentes como Joaquín ni como un profesional de la salud. No diagnostiques ni indiques tratamientos. Ante dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta o se irradia, hormigueo o pérdida de fuerza, indica detener el ejercicio y consultar a un profesional. No pidas datos personales que el plan no necesite (RUT, dirección, datos bancarios). En Sakros no hay trineo de arrastre ni se usa el test Yo-Yo: no los propongas (usa cuesta o sprint lanzado, y el test de 2,4 km).';
 const RULES=`Eres el entrenador personal del atleta, con el método EXOS. Si sus datos dicen DEPORTE: vóley playa, adapta todo a su deporte (saltos de ataque y bloqueo, desplazamientos en arena, hombro del atacante): no pongas trineo ni salidas de sprint dentro de la sesión; esos trabajos van como complementario en la playa, fuera de la rutina del día. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios atletas (su propio perfil es «Mi perfil»). Habla del atleta seleccionado y usa términos técnicos.
 Objetivo del bloque: potencia, aceleración, salto y, sobre todo, resistencia cardiovascular. 8 semanas, con 1, 2 o 3 sesiones por semana según el atleta (sesión única U; días A y B; o A, B y C), sesiones de 50–60 min como máximo (calentamiento de 12 min, 15 en mujeres; superseries con 90 s de pausa). El calentamiento completo (tejido blando, movilidad, pilar y activación) no se recorta para ahorrar tiempo. Semana 4: descarga. Semana 8: descarga y test.
 Adapta tus consejos al sexo, la edad, el nivel y las sesiones por semana del atleta. En mujeres el plan ya suma más pilar y más activación de aterrizajes y frenadas; mantenlo.
@@ -3123,7 +3123,7 @@ function contexto(){
     core?'Programa '+PROGC[pg]+': sin cargas de referencia; la carga se ajusta a la RPE de la fase.':UI.atleta==='yo'?'Referencias de partida: sentadilla posterior 120 kg ×5 (1RM ≈135), frontal 90 kg ×5–6 (1RM ≈105), peso muerto 120 kg ×3–4 (1RM ≈130).':'Cargas de la semana 1: '+(Object.keys(c).length?CARGABLES.filter(k=>c[k]).map(k=>EX[k].n+' '+c[k]+' kg').join(', '):'sin definir (las sesiones dicen «carga según RPE»)')+'.',
     `Semana que tiene abierta: S${UI.sem}, día ${UI.dia}.`,'','PLAN ACTUAL (* = ajustado por ti con la herramienta; [auto] = adaptado automáticamente por diagnóstico):'];
   if(pg==='prep')Object.keys(ZONA).forEach(z=>L.push('Prep '+ZONA[z]+': '+prepRows(z,1).map(it=>it.id+' '+EX[it.id].n+' ('+pres(1,z,it)+')').join(' | ')));
-  if(esVoley())L.push('DEPORTE: vóley playa. En la sesión no hay trineo ni salidas de sprint (se cambiaron por salto de ataque, salto de bloqueo, intervalos tipo rally y hombro de atacante). Salidas en arena, sprints cortos, arrastre y desplazamientos defensivos van como complementario en la playa, fuera de la sesión.');
+  if(esVoley())L.push('DEPORTE: vóley playa. En la sesión no hay trineo ni salidas de sprint (se cambiaron por salto de ataque, salto de bloqueo, intervalos tipo rally y hombro de atacante). Salidas en arena, sprints cortos y desplazamientos defensivos van como complementario en la playa, fuera de la sesión.');
   if(pg==='prep'){}
   else if(core||bk()>1||esVoley())DIAS().forEach(d=>{for(let s=1;s<=8;s++)L.push(`${dayName(d)} S${s} (${faseTxt(s)}): `+rows(d,s).map(it=>{const A=autoEj(s,d,it);return `${it.id} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))});
   else DIAS().forEach(d=>PLAN[d].forEach(it=>{L.push(`${dayName(d)} ${d} · ${it.id} (${EX[it.id].n}): `+[1,2,3,4,5,6,7,8].map(s=>{const A=autoEj(s,d,it);return `S${s} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))}));
