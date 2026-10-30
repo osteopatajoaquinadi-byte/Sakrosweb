@@ -56,6 +56,10 @@ h1 span{color:var(--accent)}
 .lane.lock{opacity:.45;cursor:default}.lane.lock::after{display:none}
 .cell.lock{cursor:default;opacity:.5;font-size:.65rem}
 .quien h2{margin-bottom:6px}.quienline{margin:-4px 0 10px}
+.popfondo{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px}
+.popcard{max-width:480px;width:100%;margin:0}
+@media(min-width:600px){.popfondo{align-items:center}}
+tr.grp th{text-align:left;padding-top:12px;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .locknote{margin:6px 0 0}
 .lane .pct{position:absolute;top:3px;right:5px;font-size:.6rem;color:var(--ok);font-weight:700}
 .lane[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
@@ -1888,10 +1892,17 @@ let ATL={},atlListo=false;
 const atl=()=>ATL[UI.atleta]||(UI.atleta==='yo'?{nombre:'Mi perfil'}:{nombre:'Atleta'});
 const P=c=>UI.atleta==='yo'?c:'a/'+UI.atleta+'/'+c;
 const CARGABLES=['cargada','sentadilla','pushpress','frontal','muerto','hipthrust'];
+// Tests de fuerza → carga de la semana 1. Se estima el 1RM (Epley) y se compara con la referencia
+// del plan: sentadilla posterior 120 kg ×5, frontal 90 kg ×5–6 y peso muerto 3RM de 120 kg.
+const TEST_CARGA={sentadilla:['posterior',140],frontal:['frontal',106.5],muerto:['muerto3',132]};
+function rm1Test(k){const v=String((S.tests||{})[k+'_0']||'').replace(',','.');let m=v.match(/(\d+(?:\.\d+)?)\s*[x×*]\s*(\d+)/i);
+  let kg,r;if(m){kg=parseFloat(m[1]);r=parseInt(m[2],10)}else if(k==='muerto3'&&(m=v.match(/(\d+(?:\.\d+)?)/))){kg=parseFloat(m[1]);r=3}else if(UI.atleta==='yo'&&(m=v.match(/^\s*(\d+)\s*$/))){kg=k==='posterior'?120:90;r=parseInt(m[1],10)}
+  if(!(kg>0)||!(r>=1&&r<=12))return null;return kg*(1+r/30)}
+function cargaTest(id){const t=TEST_CARGA[id];if(!t||!BASE1[id])return 0;const rm=rm1Test(t[0]);return rm?BASE1[id]*rm/t[1]:0}
 function fmtKg(v){const st=v<20?0.5:v<40?1:2.5;const r=Math.round(v/st)*st;return String(Math.round(r*10)/10).replace('.',',')}
 function escalar(str,id){
   if(!/kg/.test(str)||/^[kgx]/.test(String(id)))return str;
-  const base=BASE1[id];const ref=parseFloat(String((atl().cargas||{})[id]||'').replace(',','.'));
+  const base=BASE1[id];const ref=parseFloat(String((atl().cargas||{})[id]||'').replace(',','.'))||cargaTest(id);
   if(base&&ref>0){const f=ref/base;return str.replace(/(\d+(?:,\d+)?) kg/g,(m,n)=>fmtKg(parseFloat(n.replace(',','.'))*f)+' kg')}
   return UI.atleta==='yo'?str:str.replace(/(\d+(?:,\d+)?) kg/g,'carga según RPE');
 }
@@ -1903,7 +1914,9 @@ UI.orig={};UI.frames=UI.frames||{};
 const saveUI=()=>{try{localStorage.setItem('exos8-ui',JSON.stringify({tab:UI.tab,sem:UI.sem,dia:UI.dia,atleta:UI.atleta}))}catch(e){}};
 let db=null, mode='cargando', dirty=false;
 const key=(s,d,id)=>(bk()>1?'b'+bk()+'.':'')+`${s}${d}-${id}`;
-const PP=it=>(atl().sexo==='M'&&it.pM)?it.pM:it.p;
+// Femenino o sin declarar: la versión con más zona media y aterrizajes (más prevención).
+const PP=it=>((atl().sexo==='M'||atl().sexo==='N')&&it.pM)?it.pM:it.p;
+const sexoTxt=x=>x==='M'?'femenino':x==='H'?'masculino':x==='N'?'prefiere no decirlo':'';
 const pres0=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const p=escalar(PP(it)[s-1],it.id);const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
 /* Chequeo antes de entrenar: si salió bajo, la sesión de hoy va suave (una serie menos en cada ejercicio). */
 const chkDe=(s,d)=>{try{return ((S.sesiones||{})[sesKey(s,d)]||{}).chk||null}catch(e){return null}};
@@ -2078,7 +2091,7 @@ function render(){
   const a=atl();
   if(UI.tab==='hoy'){renderHoy(m);return}
   if(!cli&&UI.tab!=='perfil'&&UI.tab!=='nuevo'&&(!a.sexo||(UI.atleta!=='yo'&&(!a.edad||!a.sesiones))))m.append(h('div',{class:'banner'},'Faltan datos del perfil de '+a.nombre+' (sexo'+(UI.atleta!=='yo'?', edad o sesiones por semana':'')+'). ',h('button',{class:'linkbtn',onclick:()=>{UI.tab='perfil';render()}},'Completar perfil')));
-  if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests'){m.append(cardFms());renderTests(m)}else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
+  if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests'){if(cli&&!esPrep()){m.append(h('section',{class:'card'},h('h2',{text:'Tu punto de partida'}),h('p',{class:'note',text:'1. Fuerza, agilidad y campo. 2. Calidad de movimiento y control (FMS). Con tus resultados ajustamos tu entrenamiento: los pesos de partida según tu fuerza y los correctivos según tu calidad de movimiento. Repítelos al final del bloque para ver tu progreso.'})));renderTests(m);m.append(cardFms())}else{m.append(cardFms());renderTests(m)}}else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
 }
 function renderWho(){
   const box=$('#who');if(!box)return;
@@ -2087,7 +2100,7 @@ function renderWho(){
   const sel=h('select',{id:'atleta-sel','aria-label':'Atleta'},ids.map(id=>{const o=h('option',{value:id},id==='yo'?(ATL.yo&&ATL.yo.nombre)||'Mi perfil':(ATL[id].nombre||ATL[id].email||'Nuevo cliente'));if(id===UI.atleta)o.selected=true;return o}));
   sel.addEventListener('change',()=>switchAtleta(sel.value));
   const a=atl();
-  const info=[a.sexo?(a.sexo==='M'?'Mujer':'Hombre'):null,a.edad?a.edad+' años':null,a.sesiones?a.sesiones+' ses./sem':null,PROGC[prog()]+' '+freq()+'×'].filter(Boolean).join(' · ');
+  const info=[a.sexo?{M:'Femenino',H:'Masculino',N:'Sexo no declarado'}[a.sexo]:null,a.edad?a.edad+' años':null,a.sesiones?a.sesiones+' ses./sem':null,PROGC[prog()]+' '+freq()+'×'].filter(Boolean).join(' · ');
   box.replaceChildren(...[h('span',{class:'wholbl',text:'Atleta'}),sel,info?h('span',{class:'whoinfo',text:info}):null,
     h('button',{class:'btn small',onclick:()=>{UI.tab='perfil';render()}},'Perfil'),
     h('button',{class:'btn small primary',onclick:()=>{UI.tab='nuevo';render()}},'+ Nuevo'),
@@ -2115,7 +2128,7 @@ function renderPerfil(m,nuevo){
       return h('div',{style:'display:grid;gap:10px'},h('label',{class:'f',for:'pf-prog'},'Programa de entrenamiento',sel),cl,dl,bl,
         h('p',{class:'note',text:'Sakros Go Entrenamiento. Base: 8 semanas de control motor con las que empieza todo cliente nuevo. Core: espalda y suelo pélvico, con énfasis en el braceo, para hernia lumbar o incontinencia de esfuerzo. Activo: cuerpo completo para personas sedentarias o mantención. Rendimiento: potencia, salto y cardio (método EXOS). Aparte, Sakros Go Prep: 10 minutos de preparación según el FMS, para quien ya entrena.'}))})(),
     (()=>{const sel=h('select',{id:'pf-freq'},[['','Elegir…'],['1','1 vez por semana'],['2','2 veces por semana'],['3','3 veces por semana']].map(([v,l])=>{const o=h('option',{value:v},l);if(String(a.frecuencia||(nuevo?'':'2'))===v)o.selected=true;return o}));f.freq=sel;return h('label',{class:'f',for:'pf-freq'},'Sesiones de este plan por semana *',sel)})(),
-    (()=>{const sel=h('select',{id:'pf-sexo'},[['','Elegir…'],['M','Mujer'],['H','Hombre']].map(([v,l])=>{const o=h('option',{value:v},l);if((a.sexo||'')===v)o.selected=true;return o}));f.sexo=sel;return h('label',{class:'f',for:'pf-sexo'},'Sexo *',sel)})(),
+    (()=>{const sel=h('select',{id:'pf-sexo'},[['','Elegir…'],['H','Masculino'],['M','Femenino'],['N','Prefiero no decirlo']].map(([v,l])=>{const o=h('option',{value:v},l);if((a.sexo||'')===v)o.selected=true;return o}));f.sexo=sel;return h('label',{class:'f',for:'pf-sexo'},'Sexo *',sel)})(),
     h('p',{class:'note',text:'En mujeres el plan suma más activación de zona media y de aterrizajes y frenadas (prevención de LCA).'}),
     inp('email','Correo del cliente (para que entre a Sakros Go)',a.email,{ph:'cliente@correo.com'}),
     inp('objetivo','Objetivo',a.objetivo,{ph:'Ej.: mejorar salto y resistencia para hockey'}),
@@ -2130,7 +2143,7 @@ function renderPerfil(m,nuevo){
     if(!nombre){err.textContent='Escribe el nombre.';return}
     if(!(ne>=5&&ne<=100)){err.textContent='Escribe la edad en años (entre 5 y 100).';return}
     if(!(ns>=1&&ns<=14)){err.textContent='Escribe cuántos entrenamientos hace por semana (entre 1 y 14).';return}
-    if(!f.sexo.value){err.textContent='Elige el sexo.';return}
+    if(!f.sexo.value){err.textContent='Elige una opción en Sexo.';return}
     if(!f.freq.value){err.textContent='Elige cuántas sesiones de este plan hará por semana (1 a 3).';return}
     const cargas={};CARGABLES.forEach(id=>{const v=f['c-'+id].value.trim();if(v)cargas[id]=v.replace('.',',')});
     const id=nuevo?'a'+Date.now().toString(36):UI.atleta;
@@ -2348,10 +2361,20 @@ function renderTests(m){
   const T=S.tests||{};
   const upd=(f,v)=>{const cur={...(S.tests||{}),[f]:v,t:Date.now()};S.tests=cur;debounce('tests',()=>write('tests','datos',cur))};
   const yo=UI.atleta==='yo',GEN={posterior:'Sentadilla posterior: kg × reps máximas',frontal:'Sentadilla frontal: kg × reps máximas',muerto3:'Peso muerto 3RM (kg)'};
-  const rows=TESTS.map(([id,lbl0,ph0])=>{const lbl=yo?lbl0:(GEN[id]||lbl0),ph=yo?ph0:(GEN[id]&&id!=='muerto3'?'ej.: 40 × 8':'');return h('tr',{},h('td',{text:lbl}),
-    h('td',{},inp('t0-'+id,T[id+'_0'],v=>upd(id+'_0',v),ph)),h('td',{},inp('t8-'+id,T[id+'_8'],v=>upd(id+'_8',v))))});
+  const GRP=[['Fuerza y potencia',['posterior','frontal','muerto3','cmj','horizontal']],['Agilidad y velocidad',['s10','s20']],['Campo',['resistencia','fcrec']]];
+  const fila=([id,lbl0,ph0])=>{const lbl=yo?lbl0:(GEN[id]||lbl0),ph=yo?ph0:(GEN[id]&&id!=='muerto3'?'ej.: 40 × 8':'');return h('tr',{},h('td',{text:lbl}),
+    h('td',{},inp('t0-'+id,T[id+'_0'],v=>upd(id+'_0',v),ph)),h('td',{},inp('t8-'+id,T[id+'_8'],v=>upd(id+'_8',v))))};
+  const rows=GRP.flatMap(([g,ids])=>[h('tr',{class:'grp'},h('th',{colspan:'3',text:g})),...ids.map(id=>fila(TESTS.find(x=>x[0]===id)))]);
   m.append(h('section',{class:'card'},h('h2',{text:'Resultados'}),
     h('div',{class:'scroll'},h('table',{},h('thead',{},h('tr',{},h('th',{text:'Test'}),h('th',{text:'Semana 0'}),h('th',{text:'Semana 8'}))),h('tbody',{},rows)))));
+  m.append(h('p',{class:'note',text:'Tus tests de fuerza definen los pesos de partida de sentadillas y peso muerto (si tu entrenador no los fijó). Anota kg × repeticiones, por ejemplo 60 × 6.'}));
+  {const num=v=>{const x=parseFloat(String(v??'').replace(',','.'));return isNaN(x)?null:x},BAJA=['s10','s20'];
+   const ev=h('section',{class:'card'},h('h2',{text:'Tu progreso'}));let n=0;
+   TESTS.forEach(([id,l])=>{const a0=T[id+'_0'],a8=T[id+'_8'];if(!String(a0??'').trim()||!String(a8??'').trim())return;n++;
+     const x=num(a0),y=num(a8),mej=x!=null&&y!=null?(BAJA.includes(id)?y<x:y>x):null;
+     ev.append(h('div',{class:'balrow'},h('span',{text:(GEN[id]||l).split(':')[0]}),h('span',{class:'sem '+(mej==null?'a':mej?'v':'r'),text:a0+' → '+a8})))});
+   const tot=fmsTotal();if(tot!=null)ev.append(h('div',{class:'balrow'},h('span',{text:'FMS (calidad de movimiento)'}),h('span',{class:'sem '+(tot>=14?'v':'a'),text:tot+'/21'})));
+   if(!n)ev.append(h('p',{class:'note',text:'Cuando anotes la semana 0 y la semana 8, aquí verás cuánto mejoraste.'}));m.append(ev)}
   if(!modoCli())renderIso(m,T,upd);
   const med=[
    ['Salto vertical (CMJ)','Manos en la cintura, 3 intentos, anota el mejor. Con app (My Jump) o con cámara lenta: altura (cm) = 122,6 × t², donde t = fotogramas en el aire ÷ 240.'],
@@ -2522,6 +2545,7 @@ function renderProgreso(m){
     g.append(h('button',{class:'cell'+(n===t?' full':n?' part':''),'aria-label':`Semana ${s} día ${d}: ${n} de ${t}`,onclick:()=>{UI.tab='sesion';UI.sem=s;UI.dia=d;saveUI();render();scrollTo(0,0)}},n===t?'✓':n?n+'/'+t:''))}});
   m.append(h('section',{class:'card'},h('h2',{text:'Sesiones'}),h('p',{class:'note',text:sm<8?'Toca una casilla para abrir esa sesión. Las semanas siguientes se desbloquean al terminar la semana '+sm+'.':'Toca una casilla para abrir esa sesión.'}),h('div',{style:'overflow-x:auto'},g)));
   {const cc=cardCarga();if(cc)m.append(cc);const cm=cardMarcas();if(cm)m.append(cm)}
+  m.append(h('section',{class:'card'},h('h2',{text:'Tus tests'}),h('p',{class:'note',text:testsIniciados()?'Compara tu punto de partida con tu retest.':'Todavía no anotas tu punto de partida.'}),h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='tests';saveUI();render();scrollTo(0,0)}},testsIniciados()?'Ver mi progreso en los tests':'Hacer mis tests'))));
   const aj=Object.entries(S.ajustes).filter(([k,a])=>progOf(a.ej)===prog());
   m.append(h('section',{class:'card'},h('h2',{text:'Ajustes al plan'}),
     aj.length?h('ul',{},aj.sort().map(([k,a])=>h('li',{},`S${a.semana} día ${a.dia} · ${EX[a.ej]?.n||a.ej}: ${a.pres}`,a.motivo?` (${a.motivo})`:''))):h('p',{class:'note',text:'Todavía no hay cambios. Pídelos en la pestaña Coach.'})));
@@ -2907,7 +2931,7 @@ async function buscarOtro(texto,status,btn){
   btn.disabled=true;status.textContent='Revisando el plan ejercicio por ejercicio. Puede tardar un minuto…';
   const ids=[];const seen=new Set();
   allRows().forEach(([d,it])=>{const id=ALIAS[it.id]||it.id;if(seen.has(id))return;seen.add(id);ids.push(`${id}: ${EX[it.id].n} (día ${d}${it.w?', semanas '+it.w[0]+'–'+it.w[1]:''}). ${EX[it.id].pasos.slice(0,2).join(' ')}`)});
-  const prompt=`Eres fisioterapeuta deportivo y preparador físico. El atleta (${atl().nombre}${atl().sexo?', '+(atl().sexo==='M'?'mujer':'hombre'):''}${atl().edad?', '+atl().edad+' años':''}${atl().sesiones?', '+atl().sesiones+' entrenamientos por semana':''}) sigue ${esBase()?'un programa de 8 semanas de control motor (patrones de sentadilla, bisagra, zancada, equilibrio, estabilidad de tronco y un módulo de aterrizajes, suelo pélvico o equilibrio), con niveles por ejercicio y RPE 4–6. Sesiones de 30–35 min':esGlob()?'un programa de 8 semanas de cuerpo completo para personas sedentarias (piernas, empuje, tirón, brazos, abdomen y cardio suave), con mancuernas livianas, bandas y peso corporal. Sesiones de 40–50 min':esCore()?'un programa de 8 semanas de core (abdomen, glúteo y espalda) con énfasis en el braceo coordinado con el piso pélvico y la respiración, pensado para hernia lumbar e incontinencia de esfuerzo. Sesiones de 45–55 min':'un plan de 8 semanas, 2 días por semana, para potencia, aceleración, salto y resistencia cardiovascular. Sesiones de 50–60 min'}.
+  const prompt=`Eres fisioterapeuta deportivo y preparador físico. El atleta (${atl().nombre}${atl().sexo?', sexo '+sexoTxt(atl().sexo):''}${atl().edad?', '+atl().edad+' años':''}${atl().sesiones?', '+atl().sesiones+' entrenamientos por semana':''}) sigue ${esBase()?'un programa de 8 semanas de control motor (patrones de sentadilla, bisagra, zancada, equilibrio, estabilidad de tronco y un módulo de aterrizajes, suelo pélvico o equilibrio), con niveles por ejercicio y RPE 4–6. Sesiones de 30–35 min':esGlob()?'un programa de 8 semanas de cuerpo completo para personas sedentarias (piernas, empuje, tirón, brazos, abdomen y cardio suave), con mancuernas livianas, bandas y peso corporal. Sesiones de 40–50 min':esCore()?'un programa de 8 semanas de core (abdomen, glúteo y espalda) con énfasis en el braceo coordinado con el piso pélvico y la respiración, pensado para hernia lumbar e incontinencia de esfuerzo. Sesiones de 45–55 min':'un plan de 8 semanas, 2 días por semana, para potencia, aceleración, salto y resistencia cardiovascular. Sesiones de 50–60 min'}.
 Diagnóstico o condición del atleta: "${texto}".
 Revisa cada ejercicio y di si se mantiene ("ok"), se adapta ("adaptar") o se sustituye ("sustituir"). Incluye solo los que necesiten un cambio o una precaución concreta. Para cada uno, 1–2 frases concretas: rango, carga, volumen o alternativa exacta. Añade 2–4 reglas generales (criterio de dolor, señales para parar, progresión).
 Escribe en español latinoamericano neutro, con tuteo.
@@ -3050,7 +3074,7 @@ Cambios al plan: usa la herramienta ajustar_prescripcion, una vez por semana y e
 function contexto(){
   const a=atl(),c=a.cargas||{};
   const core=alt(),pg=prog();
-  const L=[`PROGRAMA: ${pg==='base'?PROG.base+' · módulos: '+modulos().map(k=>MOD[k]).join(' y ')+' · nivel general: '+(a.nivel||1)+(a.niveles?' · niveles por ejercicio: '+JSON.stringify(a.niveles):'')+' · después sigue con: '+(PROGC[a.siguiente]||PROGC.global):pg==='core'?PROG.core+(a.condicion?' · condición: '+COND[a.condicion]:''):PROG[pg]}.`,`FRECUENCIA DEL PLAN: ${freq()} sesión(es) por semana (días ${DIAS().join(', ')}).`,bk()>1?`BLOQUE ACTUAL: ${bk()} · énfasis ${enfDe(bk()).n} (${enfDe(bk()).d}) Desde el bloque 2 la carga se elige por RPE: si sobran 3 repeticiones o más, sube; si la RPE pasa la indicada, repite o baja. Los ejercicios rotan cada bloque (los principales cada 2) y el énfasis cambia cada 8 semanas: fuerza, volumen, potencia, fuerza máxima y mantención.`:'BLOQUE ACTUAL: 1 (programa inicial de 8 semanas). Al terminarlo siguen bloques de 8 semanas con otro énfasis.',`ATLETA: ${a.nombre}${a.sexo?', '+(a.sexo==='M'?'mujer':'hombre'):''}${a.edad?', '+a.edad+' años':''}${a.sesiones?', '+a.sesiones+' entrenamientos por semana':''}.${a.objetivo?' Objetivo: '+a.objetivo+'.':''}${a.notas?' Notas: '+a.notas+'.':''}`,
+  const L=[`PROGRAMA: ${pg==='base'?PROG.base+' · módulos: '+modulos().map(k=>MOD[k]).join(' y ')+' · nivel general: '+(a.nivel||1)+(a.niveles?' · niveles por ejercicio: '+JSON.stringify(a.niveles):'')+' · después sigue con: '+(PROGC[a.siguiente]||PROGC.global):pg==='core'?PROG.core+(a.condicion?' · condición: '+COND[a.condicion]:''):PROG[pg]}.`,`FRECUENCIA DEL PLAN: ${freq()} sesión(es) por semana (días ${DIAS().join(', ')}).`,bk()>1?`BLOQUE ACTUAL: ${bk()} · énfasis ${enfDe(bk()).n} (${enfDe(bk()).d}) Desde el bloque 2 la carga se elige por RPE: si sobran 3 repeticiones o más, sube; si la RPE pasa la indicada, repite o baja. Los ejercicios rotan cada bloque (los principales cada 2) y el énfasis cambia cada 8 semanas: fuerza, volumen, potencia, fuerza máxima y mantención.`:'BLOQUE ACTUAL: 1 (programa inicial de 8 semanas). Al terminarlo siguen bloques de 8 semanas con otro énfasis.',`ATLETA: ${a.nombre}${a.sexo?', sexo '+sexoTxt(a.sexo)+(a.sexo==='N'?' (el plan usa la versión con más prevención)':''):''}${a.edad?', '+a.edad+' años':''}${a.sesiones?', '+a.sesiones+' entrenamientos por semana':''}.${a.objetivo?' Objetivo: '+a.objetivo+'.':''}${a.notas?' Notas: '+a.notas+'.':''}`,
     core?'Programa '+PROGC[pg]+': sin cargas de referencia; la carga se ajusta a la RPE de la fase.':UI.atleta==='yo'?'Referencias de partida: sentadilla posterior 120 kg ×5 (1RM ≈135), frontal 90 kg ×5–6 (1RM ≈105), peso muerto 120 kg ×3–4 (1RM ≈130).':'Cargas de la semana 1: '+(Object.keys(c).length?CARGABLES.filter(k=>c[k]).map(k=>EX[k].n+' '+c[k]+' kg').join(', '):'sin definir (las sesiones dicen «carga según RPE»)')+'.',
     `Semana que tiene abierta: S${UI.sem}, día ${UI.dia}.`,'','PLAN ACTUAL (* = ajustado por ti con la herramienta; [auto] = adaptado automáticamente por diagnóstico):'];
   if(pg==='prep')Object.keys(ZONA).forEach(z=>L.push('Prep '+ZONA[z]+': '+prepRows(z,1).map(it=>it.id+' '+EX[it.id].n+' ('+pres(1,z,it)+')').join(' | ')));
@@ -3220,7 +3244,7 @@ function renderOnb(m){
     const durs={rend:'50–60',core:'45–55',global:'40–50',base:'30–35'};
     const adapt=les.map(k=>({espalda:'espalda',escapes:'suelo pélvico',rodilla:'rodilla',hombro:'hombro',tobillo:'tobillo',otra:'tu molestia (la revisa tu entrenador)'})[k]);
     const nom=h('input',{id:'onb-nom',placeholder:'Tu nombre'});nom.value=O.nom!=null?O.nom:a.nombre&&a.nombre!=='Mi perfil'&&a.nombre!=='Atleta'?a.nombre:'';
-    const sx=h('select',{id:'onb-sexo'},[['','Elegir…'],['M','Mujer'],['H','Hombre']].map(([v,l])=>{const o=h('option',{value:v},l);if((O.sx!=null?O.sx:(a.sexo||''))===v)o.selected=true;return o}));
+    const sx=h('select',{id:'onb-sexo'},[['','Elegir…'],['H','Masculino'],['M','Femenino'],['N','Prefiero no decirlo']].map(([v,l])=>{const o=h('option',{value:v},l);if((O.sx!=null?O.sx:(a.sexo||''))===v)o.selected=true;return o}));
     const ed=h('input',{id:'onb-edad',inputmode:'numeric',placeholder:'años'});ed.value=O.ed!=null?O.ed:(a.edad||'');
     const guardar=()=>{O.nom=nom.value;O.sx=sx.value;O.ed=ed.value};
     const err=h('p',{class:'note err',role:'alert'});
@@ -3239,7 +3263,7 @@ function renderOnb(m){
       h('label',{class:'tcrow',for:'onb-tc'},tc,h('span',{text:'Leí y acepto los términos y el descargo de salud.'})),err,
       h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async e=>{
         const nombre=nom.value.trim();if(!nombre){err.textContent='Escribe tu nombre.';return}
-        if(!sx.value){err.textContent='Elige el sexo: ajusta la zona media y la prevención de lesiones.';return}
+        if(!sx.value){err.textContent='Elige una opción en Sexo (puede ser «Prefiero no decirlo»): ajusta la zona media y la prevención de lesiones.';return}
         if(!tc.checked){err.textContent='Acepta los términos y el descargo de salud para crear tu plan.';return}
         const edad=parseInt(ed.value,10);
         const cond=prog==='core'?(les.includes('espalda')&&les.includes('escapes')?'ambas':les.includes('escapes')?'iue':les.includes('espalda')?'hernia':'otra'):a.condicion;
@@ -3262,26 +3286,47 @@ function renderOnb(m){
 let instEvt=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;if(UI.tab==='hoy')render()});
 addEventListener('appinstalled',()=>{try{localStorage.setItem('go-instalada','1')}catch(e){}instEvt=null;render()});
+const testsIniciados=()=>Object.entries(S.tests||{}).some(([k,v])=>/_0$/.test(k)&&String(v??'').trim()!=='');
+function cardPartida(){
+  if(esPrep())return null;
+  const t=testsIniciados(),f=fmsListo();if(t&&f)return null;
+  let oc=false;try{oc=localStorage.getItem('go-partida-'+UI.atleta)===new Date().toDateString()}catch(e){}if(oc)return null;
+  const est=ok=>h('span',{class:'sem '+(ok?'v':'a'),text:ok?'Hecho':'Pendiente'});
+  const ir=tab=>()=>{UI.tab=tab;saveUI();render();scrollTo(0,0)};
+  return h('section',{class:'card partida'},h('span',{class:'chip',text:'Tu punto de partida'}),h('h2',{text:'Realiza tus tests'}),
+    h('p',{text:'Antes de entrenar, mide cómo partes. Con tus resultados ajustamos tu entrenamiento y, al final del bloque, los repites para ver tu progreso.'}),
+    h('div',{class:'balrow'},h('span',{},h('strong',{text:'1. '+(esCore()||esBase()||esGlob()?'Tests de tu programa':'Fuerza, agilidad y campo')})),est(t)),
+    h('p',{class:'note',text:esCore()||esBase()||esGlob()?'Fuerza, equilibrio y resistencia según tu programa.':'Sentadillas y peso muerto, saltos, sprints y resistencia.'}),
+    h('div',{class:'balrow'},h('span',{},h('strong',{text:'2. Calidad de movimiento y control (FMS)'})),est(f)),
+    h('p',{class:'note',text:'7 pruebas en video que revisa el Coach IA.'}),
+    h('p',{class:'note',text:'Tus resultados modifican tu entrenamiento: los tests de fuerza definen tus pesos de partida y el FMS suma correctivos para los patrones que más lo necesitan.'}),
+    h('div',{class:'row'},!t?h('button',{class:'btn primary',onclick:ir('tests')},'Hacer mis tests'):null,!f?h('button',{class:t?'btn primary':'btn',onclick:ir('fms')},fmsAlguno()?'Seguir mi FMS':'Hacer mi FMS'):null,
+      h('button',{class:'linkbtn',onclick:()=>{try{localStorage.setItem('go-partida-'+UI.atleta,new Date().toDateString())}catch(e){}render()}},'Más tarde')));
+}
 function cardInstalar(){
   const inst=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
   let listo=false;try{listo=localStorage.getItem('go-instalada')==='1'}catch(e){}
-  if(inst||listo||!SB)return null;
+  if(inst||listo||!SB||document.getElementById('instpop'))return null;
   const ios=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  const ok=()=>{try{localStorage.setItem('go-instalada','1')}catch(e){}render()};
+  const cerrar=()=>{try{localStorage.setItem('go-instalada','1')}catch(e){}pop.remove()};
   const pasos=ios?'En Safari, toca el botón Compartir (el cuadrado con una flecha hacia arriba) y luego «Agregar a pantalla de inicio». Si estás dentro de la app de correo, primero abre sakros.cl/go en Safari y entra desde ahí.'
     :instEvt?'Toca «Instalar» y te queda el ícono de Sakros Go en tu teléfono.'
     :'Abre el menú del navegador (los tres puntos) y toca «Agregar a la pantalla principal» o «Instalar app».';
-  return h('section',{class:'card'},h('h2',{text:'Agrega Sakros Go a tu pantalla de inicio'}),
-    h('p',{text:'Así entras con un toque, sin buscar el correo. Tu sesión queda abierta en este teléfono.'}),
-    h('p',{class:'note',text:pasos}),
-    h('div',{class:'row'},instEvt?h('button',{class:'btn primary',onclick:async()=>{try{instEvt.prompt();const r=await instEvt.userChoice;if(r&&r.outcome==='accepted')ok()}catch(e){}}},'Instalar'):null,
-      h('button',{class:instEvt?'linkbtn':'btn',onclick:ok},instEvt?'Ahora no':'Listo, ya la agregué')));
+  const pop=h('div',{class:'popfondo',id:'instpop',role:'dialog','aria-modal':'true','aria-labelledby':'instpop-t'},
+    h('section',{class:'card popcard'},h('h2',{id:'instpop-t',text:'Agrega Sakros Go a tu pantalla de inicio'}),
+      h('p',{text:'Así entras con un toque, sin buscar el correo. Tu sesión queda abierta en este teléfono.'}),
+      h('p',{class:'note',text:pasos}),
+      h('div',{class:'row'},instEvt?h('button',{class:'btn primary',onclick:async()=>{try{instEvt.prompt();const r=await instEvt.userChoice;if(r&&r.outcome==='accepted')cerrar()}catch(e){}}},'Instalar'):null,
+        h('button',{class:instEvt?'btn':'btn primary',onclick:cerrar},'Listo'),
+        h('button',{class:'linkbtn',onclick:cerrar},'No me interesa'))));
+  document.body.append(pop);return null;
 }
 
 /* Hoy */
 function renderHoy(m){
   if(esPrep())return renderHoyPrep(m);
   {const ci=cardInstalar();if(ci)m.append(ci)}
+  {const cp=cardPartida();if(cp)m.append(cp)}
   const a=atl(),N=nextSes(),{s,d}=N,r=rows(d,s);
   if(N.fin&&!esBase()){m.append(cardFinBloque());const cf=cardMiSuscripcion();if(cf)m.append(cf);return}
   const pt=progTotal();

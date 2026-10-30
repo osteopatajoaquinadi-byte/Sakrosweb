@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Llegaste al límite de análisis de hoy. Sigue mañana.", code: "limite_diario" }, { status: 429 });
   }
 
-  const sexo = body.sexo === "M" ? "mujer" : body.sexo === "H" ? "hombre" : "sin dato";
+  const sexo = body.sexo === "M" ? "mujer" : body.sexo === "H" ? "hombre" : "no declarado";
   const med = (body.medidas && typeof body.medidas === "object" ? body.medidas : {}) as Record<string, unknown>;
   const num = (v: unknown) => (typeof v === "number" && isFinite(v) && v > 0 && v < 200 ? Math.round(v * 10) / 10 : null);
   const medidas =
