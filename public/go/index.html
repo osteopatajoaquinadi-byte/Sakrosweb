@@ -429,7 +429,7 @@ const EX={
   'El primer minuto de cada bloque sirve para subir la FC. El resto, en la zona objetivo.',
   'Ritmo duro pero sostenible: no puedes hablar.',
   'Pausa de 2 min activa, al 60–70 % de la FC máx.',
-  'Test (semana 8): Yo-Yo IR1 o 2,4 km a máxima intensidad. Anota también la FC de recuperación a 1 min.'],
+  'Test (semana 8): Yo-Yo IR1 o 2,4 km a máxima intensidad.'],
   clave:'Sin FC máx conocida: usa 208 − 0,7 × edad, o la más alta del test de 2,4 km.'},
  regen:{n:'Regeneración',img:[['flexor-0','Flexor de cadera: rodilla en el suelo']],pasos:[
   'Respiración 90/90: 1 min boca arriba con los pies en la pared y cadera y rodillas a 90°. Inhala 4 s por la nariz y exhala 6–8 s.',
@@ -440,13 +440,13 @@ const EX={
   'Empuja con las dos piernas y sal con el tronco inclinado unos 45°.',
   'Primeros pasos cortos y potentes, brazos fuertes desde el hombro. Endereza poco a poco.',
   'Camina de vuelta y descansa al menos 60 s. Cada salida al 100 %.'],
-  clave:'Test (semana 8): 2 intentos de 10 m. Anota el mejor.'},
+  clave:'Test (semana 8): 2 intentos de 10 m.'},
  sprint:{n:'Sprint lanzado o con trineo',img:[['trineo-0','Trineo con arnés: cuerpo inclinado'],['trineo-1','Zancada potente, brazos activos']],pasos:[
   'Lanzado: acelera progresivamente 15–20 m y corre el tramo marcado a máxima velocidad.',
   'Postura alta, el pie cae bajo la cadera, brazos activos.',
   'Con trineo: arnés en la cintura o el pecho y carga que no te frene más de un 10 % (10–20 % de tu peso). Mantén el cuerpo inclinado como en la aceleración.',
   'Recupera 90 s entre repeticiones.'],
-  clave:'Test (semana 8): 2 intentos de 20 m. Anota el mejor.'},
+  clave:'Test (semana 8): 2 intentos de 20 m.'},
  pushpress:{n:'Push press',img:[['pushpress-1','Impulso: flexión corta de rodillas'],['pushpress-0','Empuje hasta bloquear arriba']],pasos:[
   'Barra sobre los deltoides, agarre justo por fuera de los hombros, codos un poco adelantados.',
   'Flexiona las rodillas 10–15 cm en vertical, con el tronco recto y sin llevar la cadera atrás.',
@@ -2376,13 +2376,13 @@ function renderTests(m){
 function renderTestsRend(m){
   const otro=esCore()||esBase()||esGlob();
   const basico=(esBase()||esGlob())&&modoCli();
-  m.append(h('section',{class:'card'},h('h2',{text:basico?'Fuerza (pesos máximos)':otro&&modoCli()?'Fuerza y potencia':modoCli()?'Fuerza, agilidad y velocidad':'Tests · '+atl().nombre}),
+  m.append(h('section',{class:'card'},h('h2',{text:basico?'Fuerza (pesos máximos)':modoCli()?'Fuerza y potencia':'Tests · '+atl().nombre}),
     otro?h('p',{class:'note',text:'Los pesos máximos sirven para planificar tus cargas. Hazlos solo si ya entrenas con pesas y con buena técnica; si no, déjalos en blanco.'}):null,
     h('p',{class:'note',text:'Haz la semana 0 antes de empezar el bloque y repítelos en la semana 8 para ver cuánto mejoraste.'})));
   const T=S.tests||{};
   const upd=(f,v)=>{const cur={...(S.tests||{}),[f]:v,t:Date.now()};S.tests=cur;debounce('tests',()=>write('tests','datos',cur))};
   const yo=UI.atleta==='yo',GEN={posterior:'Sentadilla posterior: kg para 5 reps (5RM)',frontal:'Sentadilla frontal: kg para 5 reps (5RM)',muerto3:'Peso muerto: kg para 5 reps (5RM)'};
-  const solo=otro&&modoCli();
+  const solo=modoCli();// cliente: solo fuerza y potencia (sin sprints, Yo-Yo ni FC de recuperación)
   const GRP=basico?[['Fuerza',['posterior','frontal','muerto3']]]:solo?[['Fuerza y potencia',['posterior','frontal','muerto3','cmj','horizontal']]]:[['Fuerza y potencia',['posterior','frontal','muerto3','cmj','horizontal']],['Agilidad y velocidad',['s10','s20']],['Campo',['resistencia','fcrec']]];
   const fila=([id,lbl0,ph0])=>{const lbl=yo?lbl0:(GEN[id]||lbl0),ph=GEN[id]?'kg':(yo?ph0:'');return h('tr',{},h('td',{text:lbl}),
     h('td',{},inp('t0-'+id,T[id+'_0'],v=>upd(id+'_0',v),ph)),h('td',{},inp('t8-'+id,T[id+'_8'],v=>upd(id+'_8',v))))};
@@ -3345,7 +3345,7 @@ function cardPartida(){
     h('p',{text:'Antes de entrenar, mide cómo partes. Con tus resultados ajustamos tu entrenamiento y, al final del bloque, los repites para ver tu progreso.'}),
     h('p',{class:'note',text:'No es necesario hacerlos todos. Haz los que puedas: mientras más tests completes, más específico y personalizado se vuelve tu entrenamiento.'}),
     h('div',{class:'balrow'},h('span',{},h('strong',{text:esBase()?'1. Tests de campo':'1. Campo y fuerza'})),est(t)),
-    h('p',{class:'note',text:esBase()?'Tests de campo (puente a una pierna, Copenhague y plancha lateral).':esGlob()?'Tests de campo (puente a una pierna, Copenhague y plancha lateral) y pesos máximos (sentadillas y peso muerto).':'Tests de campo (puente a una pierna, Copenhague, plancha lateral, salto a una pierna), pesos máximos (sentadillas y peso muerto) y saltos'+(esCore()?'':', sprints y resistencia')+'. Fuerza isométrica si tienes dinamómetro.'}),
+    h('p',{class:'note',text:esBase()?'Tests de campo (puente a una pierna, Copenhague y plancha lateral).':esGlob()?'Tests de campo (puente a una pierna, Copenhague y plancha lateral) y pesos máximos (sentadillas y peso muerto).':'Tests de campo (puente a una pierna, Copenhague, plancha lateral, salto a una pierna), pesos máximos (sentadillas y peso muerto) y saltos. Fuerza isométrica si tienes dinamómetro.'}),
     h('div',{class:'balrow'},h('span',{},h('strong',{text:'2. Movilidad y control'})),est(f)),
     h('p',{class:'note',text:'7 pruebas en video que revisa el Coach IA.'}),
     h('p',{class:'note',text:'Tus resultados modifican tu entrenamiento: '+(esBase()?'':'los tests de fuerza definen tus pesos de partida, ')+'los de campo'+(esBase()||esGlob()?'':' e isometría')+' suman trabajo para tus desbalances y la evaluación de movilidad y control agrega correctivos para los patrones que más lo necesitan.'}),
