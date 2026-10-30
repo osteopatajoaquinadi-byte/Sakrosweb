@@ -1338,6 +1338,17 @@ const fmsDolor=()=>FMSL.filter(t=>fmsRes(t.id).dolor).map(t=>t.n);
 // Saltarse el Entrenamiento Base: solo con el FMS completo, 14 o más de 21 y ninguna prueba con dolor.
 const FMS_SALTO=14;
 const puedeSaltarBase=()=>{const t=fmsTotal();return t!=null&&t>=FMS_SALTO&&!fmsDolor().length};
+// Activo, Core o Rendimiento con la evaluación de movilidad y control completa y menos de 14 de 21: se recomienda el Base.
+function cardSugBase(){
+  const a=atl(),tot=fmsTotal();
+  if(esBase()||esPrep()||tot==null||tot>=FMS_SALTO||a.sugBase==='no')return null;
+  const patch=async d=>{await saveAtleta(UI.atleta,{...atl(),...d,t:Date.now()});UI.sem=1;UI.dia=DIAS()[0];saveUI();render();scrollTo(0,0)};
+  return h('section',{class:'card hero'},h('span',{class:'chip',text:'Movilidad y control: '+tot+' de 21'}),
+    h('h2',{text:'Te recomendamos empezar por el Entrenamiento Base'}),
+    h('p',{text:'Tu evaluación salió bajo '+FMS_SALTO+' puntos. Con 8 semanas de Base integras el control del movimiento y evitas lesionarte al ejecutar los entrenamientos. Al terminarlo, sigues con '+(PROGC[prog()]||'tu programa')+'.'}),
+    h('div',{class:'row'},h('button',{class:'btn primary',onclick:()=>patch({programa:'base',siguiente:prog(),sugBase:'si',modulos:(a.modulos&&a.modulos.length)?a.modulos:['equilibrio']})},'Empezar el Base'),
+      h('button',{class:'linkbtn',onclick:()=>patch({sugBase:'no'})},'Seguir con mi programa')));
+}
 function cardSaltoBase(){
   const a=atl(),sig=a.siguiente||'global',nom='Entrenamiento '+(PROGC[sig]||PROGC.global),tot=fmsTotal(),dol=fmsDolor();
   if(!esBase()||a.saltoBase==='no')return null;
@@ -2404,11 +2415,11 @@ function renderTestsCli(m){
   const upd=(f,v)=>{const cur={...(S.tests||{}),[f]:v,t:Date.now()};S.tests=cur;debounce('tests',()=>write('tests','datos',cur))};
   const rend=!(esCore()||esBase()||esGlob()),basico=esBase()||esGlob();
   m.append(h('section',{class:'card'},h('h2',{text:'Tu punto de partida'}),
-    h('p',{class:'note',text:(basico?'1. Tests de campo y de fuerza (pesos máximos).':'1. Tests de campo y de fuerza (pesos máximos), con fuerza isométrica si tienes dinamómetro.')+' 2. Movilidad y control. Con tus resultados ajustamos tu entrenamiento: los pesos de partida según tu fuerza, ejercicios extra para los desbalances entre piernas y grupos musculares, y correctivos según tu calidad de movimiento. Repítelos en la semana 4 y al final del bloque para ver tu progreso.'}),
+    h('p',{class:'note',text:(esBase()?'1. Tests de campo.':basico?'1. Tests de campo y de fuerza (pesos máximos).':'1. Tests de campo y de fuerza (pesos máximos), con fuerza isométrica si tienes dinamómetro.')+' 2. Movilidad y control. Con tus resultados ajustamos tu entrenamiento: los pesos de partida según tu fuerza, ejercicios extra para los desbalances entre piernas y grupos musculares, y correctivos según tu calidad de movimiento. Repítelos en la semana 4 y al final del bloque para ver tu progreso.'}),
     h('p',{class:'note',text:'No es necesario hacerlos todos: haz los que puedas. Mientras más tests completes, más específico, dirigido y personalizado se vuelve tu entrenamiento. Puedes sumar los que faltan cuando quieras.'}),
-    rend?null:h('p',{class:'note',text:basico?'Los pesos máximos y los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.':'Los pesos máximos y los desbalances que detecten los tests de campo e isometría se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.'})));
+    rend?null:h('p',{class:'note',text:esBase()?'Los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.':basico?'Los pesos máximos y los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.':'Los pesos máximos y los desbalances que detecten los tests de campo e isometría se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.'})));
   renderCampo(m,T,upd,!!balance(),true,basico);
-  renderTestsRend(m);
+  if(!esBase())renderTestsRend(m);
   if(!basico)renderIso(m,T,upd,true);
   if(!rend){const box=h('div');(esCore()?renderTestsCore:esGlob()?renderTestsGlob:renderTestsBase)(box);
     m.append(h('details',{class:'card'},h('summary',{},esBase()?'Tests del Entrenamiento Base (definen tu nivel de partida)':'Tests de tu programa'),box))}
@@ -3333,11 +3344,11 @@ function cardPartida(){
   return h('section',{class:'card partida'},h('span',{class:'chip',text:'Tu punto de partida'}),h('h2',{text:'Realiza tus tests'}),
     h('p',{text:'Antes de entrenar, mide cómo partes. Con tus resultados ajustamos tu entrenamiento y, al final del bloque, los repites para ver tu progreso.'}),
     h('p',{class:'note',text:'No es necesario hacerlos todos. Haz los que puedas: mientras más tests completes, más específico y personalizado se vuelve tu entrenamiento.'}),
-    h('div',{class:'balrow'},h('span',{},h('strong',{text:'1. Campo y fuerza'})),est(t)),
-    h('p',{class:'note',text:esBase()||esGlob()?'Tests de campo (puente a una pierna, Copenhague y plancha lateral) y pesos máximos (sentadillas y peso muerto).':'Tests de campo (puente a una pierna, Copenhague, plancha lateral, salto a una pierna), pesos máximos (sentadillas y peso muerto) y saltos'+(esCore()?'':', sprints y resistencia')+'. Fuerza isométrica si tienes dinamómetro.'}),
+    h('div',{class:'balrow'},h('span',{},h('strong',{text:esBase()?'1. Tests de campo':'1. Campo y fuerza'})),est(t)),
+    h('p',{class:'note',text:esBase()?'Tests de campo (puente a una pierna, Copenhague y plancha lateral).':esGlob()?'Tests de campo (puente a una pierna, Copenhague y plancha lateral) y pesos máximos (sentadillas y peso muerto).':'Tests de campo (puente a una pierna, Copenhague, plancha lateral, salto a una pierna), pesos máximos (sentadillas y peso muerto) y saltos'+(esCore()?'':', sprints y resistencia')+'. Fuerza isométrica si tienes dinamómetro.'}),
     h('div',{class:'balrow'},h('span',{},h('strong',{text:'2. Movilidad y control'})),est(f)),
     h('p',{class:'note',text:'7 pruebas en video que revisa el Coach IA.'}),
-    h('p',{class:'note',text:'Tus resultados modifican tu entrenamiento: los tests de fuerza definen tus pesos de partida, los de campo'+(esBase()||esGlob()?'':' e isometría')+' suman trabajo para tus desbalances y la evaluación de movilidad y control agrega correctivos para los patrones que más lo necesitan.'}),
+    h('p',{class:'note',text:'Tus resultados modifican tu entrenamiento: '+(esBase()?'':'los tests de fuerza definen tus pesos de partida, ')+'los de campo'+(esBase()||esGlob()?'':' e isometría')+' suman trabajo para tus desbalances y la evaluación de movilidad y control agrega correctivos para los patrones que más lo necesitan.'}),
     h('div',{class:'row'},h('button',{class:'btn primary',onclick:ir('tests')},t||fmsAlguno()?'Seguir con mis tests':'Hacer mis tests'),
       h('button',{class:'linkbtn',onclick:()=>{try{localStorage.setItem('go-partida-'+UI.atleta,new Date().toDateString())}catch(e){}render()}},'Más tarde')));
 }
@@ -3365,6 +3376,7 @@ function renderHoy(m){
   if(esPrep())return renderHoyPrep(m);
   {const ci=cardInstalar();if(ci)m.append(ci)}
   {const cp=cardPartida();if(cp)m.append(cp)}
+  {const sb=cardSugBase();if(sb)m.append(sb)}
   const a=atl(),N=nextSes(),{s,d}=N,r=rows(d,s);
   if(N.fin&&!esBase()){m.append(cardFinBloque());const cf=cardMiSuscripcion();if(cf)m.append(cf);return}
   const pt=progTotal();
