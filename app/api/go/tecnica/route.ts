@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Llegaste al límite de análisis de hoy. Sigue mañana.", code: "limite_diario" }, { status: 429 });
   }
 
-  const sexo = body.sexo === "M" ? "mujer" : body.sexo === "H" ? "hombre" : "sin dato";
+  const sexo = body.sexo === "M" ? "mujer" : body.sexo === "H" ? "hombre" : "no declarado";
   const content: Anthropic.Beta.BetaContentBlockParam[] = [
     {
       type: "text",
