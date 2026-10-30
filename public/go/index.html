@@ -1016,11 +1016,11 @@ const MOD={aterrizar:'Aterrizar y frenar',suelo:'Suelo pélvico y espalda',equil
 const NIVEL=['','Nivel 1','Nivel 2','Nivel 3'];
 const CTRL='Control: si pierdes la posición, la serie termina ahí. Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control.';
 Object.assign(EX,{
- xprep:{n:'Respiración y hollowing',video:'respiracion-diafragmatica',img:[['gato-0','Gato-camello'],['puente-1','Puente de glúteo']],pasos:[
+ xprep:{n:'Respiración y abdomen profundo',video:'respiracion-diafragmatica',img:[['gato-0','Gato-camello'],['puente-1','Puente de glúteo']],pasos:[
   'Semanas 1–2 · respiración diafragmática: boca arriba con las rodillas dobladas, una mano en el pecho y otra en el abdomen. Inhala por la nariz llevando el aire al abdomen y a las costillas de los lados (la mano del pecho casi no se mueve) y exhala lento.',
   'Hollowing: al exhalar, lleva el ombligo suave hacia adentro y arriba y cierra el piso pélvico, sin mover la pelvis. Aguanta 10 s respirando suave, sin retener el aire. Es una contracción baja (20–30 %): si se aprietan los glúteos o se hunde el pecho, es demasiado.',
-  'Semanas 3–4 · ejercicio de Lewit: boca arriba, exhala por la boca lento y hasta el final, como si apagaras una vela lejana. Sentirás que el abdomen profundo se cierra; la zona lumbar no se mueve. Después, hollowing en cuatro apoyos y sentado.',
-  'Semanas 5–6 · de hollowing a braceo: haz el hollowing y desde ahí tensa todo el contorno del abdomen (braceo), sin hundirlo ni inflarlo. Respira manteniéndolo: es la faja que usarás para moverte y cargar.',
+  'Semanas 3–4 · ejercicio de Lewit: boca arriba, exhala por la boca lento y hasta el final, como si apagaras una vela lejana. Sentirás que el abdomen profundo se cierra; la zona lumbar no se mueve. Después, abdomen profundo en cuatro apoyos y sentado.',
+  'Semanas 5–6 · del abdomen profundo al braceo: activa el abdomen profundo y desde ahí tensa todo el contorno del abdomen (braceo), sin hundirlo ni inflarlo. Respira manteniéndolo: es la faja que usarás para moverte y cargar.',
   'Semanas 7–8 · en tareas: mantén un braceo suave respirando de pie, caminando, al agacharte y al levantar una caja.',
   'Termina con gato-camello ×6 y puente de glúteo ×8.'],
   clave:'Primero aprendes a encender el abdomen profundo sin carga (hollowing) y después a convertirlo en una faja firme (braceo) para moverte y cargar. Nunca aguantes el aire.'},
@@ -1077,11 +1077,11 @@ Object.assign(EX,{
   'Reacciona rápido: da el paso o el cambio de dirección y estabiliza 2 s en buena posición.',
   'Puntos de control: rodilla sobre el pie, cadera atrás, tronco quieto al frenar.'],clave:'La técnica tiene que aparecer sola, sin pensarla: esa es la meta del control motor.'},
  xdeadbug:{n:'Dead bug',video:'deadbug',niv:['solo piernas','completo','completo con banda'],img:[['deadbug-0','Brazos al techo, caderas y rodillas a 90°'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
-  'Boca arriba, brazos al techo y caderas y rodillas a 90°. Semanas 1–4: hollowing suave (ombligo adentro y arriba, piso pélvico cerrado). Semanas 5–8: braceo suave.',
+  'Boca arriba, brazos al techo y caderas y rodillas a 90°. Semanas 1–4: activación suave del abdomen profundo (ombligo adentro y arriba, piso pélvico cerrado). Semanas 5–8: braceo suave.',
   'Exhala mientras extiendes brazo y pierna contrarios, despacio, y vuelve.',
   'Puntos de control: la zona lumbar no se despega, el abdomen no se abomba, respiras sin aguantar el aire.'],clave:CTRL},
  xbirddog:{n:'Bird dog',niv:['por partes (brazos, luego piernas)','completo','completo con banda'],img:[],pasos:[
-  'En cuatro apoyos, manos bajo los hombros y rodillas bajo las caderas. Semanas 1–4: hollowing suave antes de moverte. Semanas 5–8: braceo suave.',
+  'En cuatro apoyos, manos bajo los hombros y rodillas bajo las caderas. Semanas 1–4: activación suave del abdomen profundo antes de moverte. Semanas 5–8: braceo suave.',
   'Exhala y extiende brazo y pierna contrarios hasta la horizontal; aguanta 3 s respirando.',
   'Puntos de control: la pelvis no rota (prueba con un vaso de plástico en la zona lumbar).'],clave:CTRL},
  xplancha:{n:'Plancha (variante del día)',niv:['con rodillas apoyadas','completa','completa con desafío'],img:[['plancha-0','Rodillas apoyadas'],['plancha-1','Plancha completa'],['sidebridge-1','Plancha lateral']],pasos:[
@@ -1127,7 +1127,7 @@ Object.assign(EX,{
   'Bajar al suelo y levantarse: usa los apoyos que necesites y en cada semana intenta usar uno menos.',
   'Puntos de control: movimientos lentos, sin impulso, respirando.'],clave:'Levantarse del suelo con soltura es uno de los mejores indicadores de autonomía.'}
 });
-const PREPX=['Diafragmática 2 min + hollowing boca arriba 6×10 s + gato-camello ×6 + puente ×8','Diafragmática 1 min + hollowing boca arriba 8×10 s + gato-camello ×6 + puente ×8','Lewit ×5 + hollowing en 4 apoyos 6×10 s + puente ×8','Lewit ×5 + hollowing sentado y en 4 apoyos 8×10 s + puente ×8','Hollowing → braceo boca arriba 5×10 s + braceo en 4 apoyos 3×20 s + puente ×8','Hollowing → braceo de pie 5×10 s + braceo caminando 1 min + puente ×8','Braceo respirando: de pie 30 s, caminando 1 min, al agacharte ×6 + puente ×8','Braceo respirando: caminando 1 min, al levantar una caja ×6 + puente ×8'];
+const PREPX=['Diafragmática 2 min + abdomen profundo boca arriba 6×10 s + gato-camello ×6 + puente ×8','Diafragmática 1 min + abdomen profundo boca arriba 8×10 s + gato-camello ×6 + puente ×8','Lewit ×5 + abdomen profundo en 4 apoyos 6×10 s + puente ×8','Lewit ×5 + abdomen profundo sentado y en 4 apoyos 8×10 s + puente ×8','Hollowing → braceo boca arriba 5×10 s + braceo en 4 apoyos 3×20 s + puente ×8','Hollowing → braceo de pie 5×10 s + braceo caminando 1 min + puente ×8','Braceo respirando: de pie 30 s, caminando 1 min, al agacharte ×6 + puente ×8','Braceo respirando: caminando 1 min, al levantar una caja ×6 + puente ×8'];
 const x8=a=>a.length===8?a:a.concat(Array(8-a.length).fill(a[a.length-1]));
 const PLANX={
  A:[
@@ -1225,7 +1225,7 @@ function renderTestsBase(m){
     h('li',{},h('strong',{text:'Sentadilla a una pierna a cajón: '}),'5 repeticiones por lado. Un punto por cada uno: rodilla sobre el pie, pelvis nivelada, tronco quieto, llega al cajón y sube sin caerse. Anota el peor lado.'),
     h('li',{},h('strong',{text:'Bisagra con palo: '}),'8 repeticiones. Anota cuántos de los 3 contactos (cabeza, espalda alta y sacro) mantiene todo el tiempo.'),
     h('li',{},h('strong',{text:'Bird dog: '}),'cada lado, hasta 10 s. Anota los segundos sin que la pelvis rote (el peor lado).'),
-    h('li',{},h('strong',{text:'Hollowing (transverso): '}),'boca arriba, rodillas dobladas, dedos 2 cm por dentro de los huesos de la cadera. Haz el hollowing 10 s. Grado 0: firme bajo los dedos y respiras normal. 1: tarda 2–3 s en aparecer o aguantas el aire un momento. 2: no se siente, el abdomen se abomba o el tronco se dobla. 3: no te sale o se infla el pecho al intentarlo.'),
+    h('li',{},h('strong',{text:'Hollowing (transverso): '}),'boca arriba, rodillas dobladas, dedos 2 cm por dentro de los huesos de la cadera. Activa el abdomen profundo 10 s. Grado 0: firme bajo los dedos y respiras normal. 1: tarda 2–3 s en aparecer o aguantas el aire un momento. 2: no se siente, el abdomen se abomba o el tronco se dobla. 3: no te sale o se infla el pecho al intentarlo.'),
     h('li',{},h('strong',{text:'Módulo aterrizar: '}),'drop landing desde 30 cm y hop and stick, con video de frente. Un punto por: rodilla sobre el pie, caída silenciosa, cadera atrás, tronco quieto, aguanta 2 s.'),
     h('li',{},h('strong',{text:'Módulo suelo pélvico: '}),'tos fuerte de pie con la vejiga cómoda (escape sí o no) y cuestionario ICIQ-SF.'),
     h('li',{},h('strong',{text:'Módulo equilibrio: '}),'Timed Up and Go (pararse, caminar 3 m, volver y sentarse) y levantarse del suelo contando los apoyos que usa (manos, rodillas, silla).'))));
@@ -2198,16 +2198,18 @@ function renderSesion(m){
   const sec=h('section',{class:'sess'},
     h('div',{class:'row'},h('span',{class:'chip'+(!core&&(s===4||s===8)?' descarga':''),text:'Semana '+s+' · '+fase}),done(s,d)[0]===done(s,d)[1]?h('span',{class:'chip ok',text:'Sesión completa'}):null),
     h('h2',{text:titulo}));
+  // Vista cliente: lo que se anota de la sesión va al final, después de los ejercicios.
+  const finBox=h('section',{class:'card'},h('h2',{text:'Al terminar la sesión'}),h('p',{class:'note',text:'Anota cómo te fue: el Coach IA lo usa para ajustar tu próxima sesión.'})),R=modoCli()?finBox:sec;
   if(!core){
     if(esBase()){
       const mods=modulos();
-      sec.append(h('p',{class:'dxline'},h('strong',{text:'Módulo de hoy: '}),MOD[mods.length>1?(src==='A'?mods[0]:mods[1]):mods[0]]+'. ',h('strong',{text:'Tu nivel: '}),NIVEL[atl().nivel||1]+' (cada ejercicio puede subir por separado).'));
+      sec.append(h('p',{class:'dxline'},h('strong',{text:'Módulo de hoy: '}),MOD[mods.length>1?(src==='A'?mods[0]:mods[1]):mods[0]]+'. ',h('strong',{text:'Tu nivel: '}),NIVEL[atl().nivel||1]+(modoCli()?'.':' (cada ejercicio puede subir por separado).')));
       if(s===3||s===5||s===7){const [n,tt]=limpiaFase(s);const pct=tt?Math.round(n/tt*100):0;
         sec.append(h('p',{class:'dxline'},h('strong',{text:'Nueva fase: '+faseTxt(s).split(' · ')[1]+'. '}),tt?('En las 2 semanas anteriores marcaste técnica limpia en '+n+' de '+tt+' ejercicios ('+pct+' %). '+(pct>=80?'Puedes avanzar.':'Te conviene repetir la fase anterior: vuelve a la semana '+(s-2)+'.')):'Avanza si la técnica salió limpia en la mayoría de los ejercicios de las 2 semanas anteriores; si no, repite la fase.'))}
       if(s===8)sec.append(h('p',{class:'dxline',text:'Última semana: al terminarla, repite los tests y pasa a tu programa de entrenamiento.'}));
       const bd=h('details',{},h('summary',{},'Cómo se trabaja el control motor'),h('ul',{class:'medir'},
-        ['Cada sesión empieza con respiración y hollowing: en las semanas 1–4 aprendes a encender el abdomen profundo y en las 5–8 lo conviertes en braceo para moverte y cargar.','Intensidad baja (RPE 4–6): es aprendizaje, no cansancio. Si la técnica se pierde, la serie termina.','Respeta el tempo: 3 s bajando, 1 s de pausa, 1 s subiendo.','Usa el espejo o grábate de perfil una serie por sesión.','Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control. Con técnica limpia 2 sesiones seguidas, sube ese ejercicio de nivel.','Para la sesión si aparece dolor que aumenta, mareo o dolor en el pecho.'].map(x=>h('li',{text:x}))));
-      if(s===1&&!ses.fecha)bd.open=true;
+        ['Cada sesión empieza con respiración y activación del abdomen profundo: en las semanas 1–4 aprendes a encender el abdomen profundo y en las 5–8 lo conviertes en braceo para moverte y cargar.','Intensidad baja (esfuerzo 4–6 de 10): es aprendizaje, no cansancio. Si la técnica se pierde, la serie termina.','Respeta el tempo: 3 s bajando, 1 s de pausa, 1 s subiendo.','Usa el espejo o grábate de perfil una serie por sesión.','Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control. Con técnica limpia 2 sesiones seguidas, sube ese ejercicio de nivel.','Para la sesión si aparece dolor que aumenta, mareo o dolor en el pecho.'].map(x=>h('li',{text:x}))));
+      if(s===1&&!ses.fecha&&!modoCli())bd.open=true;
       sec.append(bd);
     }
     if(esGlob()){
@@ -2218,15 +2220,15 @@ function renderSesion(m){
       if(s===4)sec.append(h('p',{class:'dxline',text:'Al terminar esta semana, haz el retest de la semana 4 (pestaña Tests).'}));
       const bd=h('details',{},h('summary',{},'Cómo saber si la intensidad está bien'),h('ul',{class:'medir'},
         ['RPE 5–6 (fases 1 y 2): terminas cada serie sintiendo que podrías hacer 4 o 5 repeticiones más.','RPE 7 (fase 3): podrías hacer 2 o 3 más.','En el cardio: puedes hablar en frases, pero no cantar.','Respira siempre: exhala en el esfuerzo y no aguantes el aire.','Dolor articular, mareo, dolor en el pecho o falta de aire desproporcionada: para la sesión y consulta.','El dolor muscular de los primeros días es normal; si dura más de 3 días, la carga fue alta.'].map(x=>h('li',{text:x}))));
-      if(s===1&&!ses.fecha)bd.open=true;
+      if(s===1&&!ses.fecha&&!modoCli())bd.open=true;
       sec.append(bd);
     }
     if(d==='U'&&!esGlob()&&!esBase())sec.append(h('p',{class:'dxline',text:'Con una sola sesión por semana, suma por tu cuenta 1 o 2 salidas de 30–40 min en zona 2 (60–70 % de la FC máxima): es lo que más sostiene la resistencia.'}));
     const dl=dxLine();if(dl)sec.append(dl);
-    sec.append(h('div',{class:'row'},
+    R.append(h('div',{class:'row'},
       field('Fecha','s-fecha',ses.fecha,v=>upd('fecha',v),{ph:'dd/mm'}),
       field('Minutos','s-min',ses.min,v=>upd('min',v),{num:1,ph:String(dur(d,s))}),
-      field('RPE sesión','s-rpe',ses.rpe,v=>upd('rpe',v),{num:1,ph:esBase()?'4–6':esGlob()?(s<=4?'5–6':'6–7'):'1–10'})),
+      field('Esfuerzo (1–10)','s-rpe',ses.rpe,v=>upd('rpe',v),{num:1,ph:esBase()?'4–6':esGlob()?(s<=4?'5–6':'6–7'):'1–10'})),
       field('Cómo te sentiste','s-nota',ses.nota,v=>upd('nota',v),{area:1,ph:'Sueño, molestias, energía…'}));
   }else{
     const a=atl(),cond=a.condicion;
@@ -2245,17 +2247,17 @@ function renderSesion(m){
     const bd=h('details',{},h('summary',{},'Patrón de braceo y señales para parar'),
       h('ol',{},['Inhala por la nariz: costillas que se expanden hacia los lados, abdomen relajado.','Activa el piso pélvico antes del esfuerzo (Knack): cerrar y elevar.','Braceo graduado, con la circunferencia del abdomen firme y sin hundirlo: 25–30 % control, 50 % fuerza moderada, 70 % cargas altas, lanzamientos y potencia (desde la semana 5).','Exhala en el esfuerzo sin soltar el braceo. Nunca en apnea (Valsalva).'].map(x=>h('li',{text:x}))),
       h('p',{class:'clave',text:'Baja la carga o el nivel de braceo si aparece escape de orina, peso o presión perineal, dolor lumbar mayor de 3/10 o un abdomen que se abomba o se hunde. Con dolor irradiado, hormigueo o adormecimiento en la pierna: para y revalora.'}));
-    if(s===1&&!ses.fecha)bd.open=true;
+    if(s===1&&!ses.fecha&&!modoCli())bd.open=true;
     sec.append(bd);
     const yn=(k,lbl)=>h('div',{class:'freq',role:'group','aria-label':lbl},h('span',{class:'wholbl',text:lbl}),[['no','No'],['si','Sí']].map(([v,l])=>h('button',{class:'opt','aria-pressed':(ses[k]||'')===v,onclick:()=>{upd(k,v);render()}},l)));
-    sec.append(h('div',{class:'row'},
+    R.append(h('div',{class:'row'},
       field('Fecha','s-fecha',ses.fecha,v=>upd('fecha',v),{ph:'dd/mm'}),
       field('Minutos','s-min',ses.min,v=>upd('min',v),{num:1,ph:String(dur(d,s))}),
-      field('RPE sesión','s-rpe',ses.rpe,v=>upd('rpe',v),{num:1,ph:s===1?'5–6':s<=4?'6–7':'7–8'}),
+      field('Esfuerzo (1–10)','s-rpe',ses.rpe,v=>upd('rpe',v),{num:1,ph:s===1?'5–6':s<=4?'6–7':'7–8'}),
       field('Dolor lumbar','s-dolor',ses.dolor,v=>upd('dolor',v),{num:1,ph:'0–10'})),
       yn('escape','Escape de orina'),yn('peso','Peso perineal'),yn('irradiado','Dolor irradiado u hormigueo'));
-    if(senal(ses))sec.append(h('div',{class:'banner',role:'alert'},h('strong',{text:'Hoy: '}),senalTxt(ses)+'. ',ses.irradiado==='si'?'Para la sesión y revalora.':'Baja un nivel de braceo y la carga en lo que queda, y no progreses la semana que viene.'));
-    sec.append(field('Cómo te sentiste','s-nota',ses.nota,v=>upd('nota',v),{area:1,ph:'Braceo, piso pélvico, molestias, energía…'}));
+    if(senal(ses))R.append(h('div',{class:'banner',role:'alert'},h('strong',{text:'Hoy: '}),senalTxt(ses)+'. ',ses.irradiado==='si'?'Para la sesión y revalora.':'Baja un nivel de braceo y la carga en lo que queda, y no progreses la semana que viene.'));
+    R.append(field('Cómo te sentiste','s-nota',ses.nota,v=>upd('nota',v),{area:1,ph:'Braceo, piso pélvico, molestias, energía…'}));
   }
   sec.insertBefore(h('div',{class:'row'},h('button',{class:'btn primary big',onclick:()=>iniciarSesion(s,d)},'Empezar en modo sesión'),h('span',{class:'note',text:'Un ejercicio por pantalla, con temporizador.'})),sec.children[2]||null);
   m.append(sec);
@@ -2266,6 +2268,7 @@ function renderSesion(m){
     if(it.seg&&i>0&&a[i-1].sup===it.sup)return;
     const par=it.sup&&!esCore()?a.find(x=>x!==it&&x.sup===it.sup):null;
     m.append(par?superCard(s,d,it,par):exCard(s,d,it))});
+  if(modoCli())m.append(finBox);
   {const cv=cardComplVoley(s);if(cv)m.append(cv)}
 }
 function exCard(s,d,it,sub){
@@ -2301,7 +2304,7 @@ function exCard(s,d,it,sub){
       dxBox(it.id),ctrlBox(s,d,it),
       !esClave(it.id)?null:h('div',{class:'row'},
         field('Kg reales','kg-'+k,reg.kg,v=>{const c=upd('kg',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:kgPh}),
-        field('RPE','rpe-'+k,reg.rpe,v=>{const c=upd('rpe',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:'1–10'})),
+        field('Esfuerzo (1–10)','rpe-'+k,reg.rpe,v=>{const c=upd('rpe',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:'1–10'})),
       tecBox(s,d,it,V),
       h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null));
     return {media,body,V};
@@ -2321,7 +2324,7 @@ function exCard(s,d,it,sub){
       ctrlBox(s,d,it),
       !esClave(it.id)?null:h('div',{class:'row'},
         field('Kg reales','kg-'+k,reg.kg,v=>{const c=upd('kg',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:kgPh}),
-        field('RPE','rpe-'+k,reg.rpe,v=>{const c=upd('rpe',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:'1–10'}),
+        field('Esfuerzo (1–10)','rpe-'+k,reg.rpe,v=>{const c=upd('rpe',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:'1–10'}),
         field('Nota','nota-'+k,reg.nota,v=>{const c=upd('nota',v);debounce(k,()=>write('registro',k,c))},{ph:'Reps, sensaciones…'})),
             h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null)));
 }
@@ -3289,14 +3292,15 @@ function renderOnb(m){
     card.append(h('div',{class:'onbhead'},h('span',{class:'chip ok',text:'Listo'}),h('h2',{text:'Este es tu plan'})),res);
     if(prog!=='prep')card.append(h('button',{class:'bigopt','aria-pressed':!!O.ctrl,onclick:()=>{guardar();O.ctrl=!O.ctrl;render()}},h('b',{text:'Ya tengo buen control motor'}),h('span',{text:'Entreno hace tiempo y me muevo bien: quiero saltarme el Entrenamiento Base con mi evaluación de movilidad y control.'})));
     if(sugCore)card.append(h('p',{class:'dxline'},'Por lo que marcaste, te conviene empezar por ',h('strong',{text:PROG.core.split(' (')[0]}),'. ',h('button',{class:'linkbtn',onclick:()=>{guardar();O.obj='core';render()}},'Cambiar a ese plan')));
-    const tc=h('input',{type:'checkbox',id:'onb-tc'});
+    const tc=h('input',{type:'checkbox',id:'onb-tc'}),tc2=h('input',{type:'checkbox',id:'onb-salud'});
     card.append(h('div',{class:'row'},h('label',{class:'f',for:'onb-nom'},'Nombre',nom),h('label',{class:'f',for:'onb-edad'},'Edad',ed)),h('label',{class:'f',for:'onb-sexo'},'Sexo',sx),
       h('details',{},h('summary',{},'Términos y descargo de salud'),puntosTerminos(),h('p',{},h('a',{href:'/go/terminos.html',target:'_blank',rel:'noopener'},'Leer los términos completos'))),
-      h('label',{class:'tcrow',for:'onb-tc'},tc,h('span',{text:'Leí y acepto los términos y el descargo de salud.'})),err,
+      h('label',{class:'tcrow',for:'onb-tc'},tc,h('span',{text:'Leí y acepto los términos y el descargo de salud.'})),
+      h('label',{class:'tcrow',for:'onb-salud'},tc2,h('span',{text:'Autorizo que Sakros guarde y use mis datos de salud (molestias, tests, evaluación de movimiento y videos de técnica) para armar y ajustar mi plan.'})),err,
       h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async e=>{
         const nombre=nom.value.trim();if(!nombre){err.textContent='Escribe tu nombre.';return}
         if(!sx.value){err.textContent='Elige una opción en Sexo (puede ser «Prefiero no decirlo»): ajusta la zona media y la prevención de lesiones.';return}
-        if(!tc.checked){err.textContent='Acepta los términos y el descargo de salud para crear tu plan.';return}
+        if(!tc.checked||!tc2.checked){err.textContent='Marca las dos casillas para crear tu plan.';return}
         const edad=parseInt(ed.value,10);
         const cond=prog==='core'?(les.includes('espalda')&&les.includes('escapes')?'ambas':les.includes('escapes')?'iue':les.includes('espalda')?'hernia':'otra'):a.condicion;
         const mods=[];if(prog==='core'||les.includes('escapes')||les.includes('espalda'))mods.push('suelo');if(prog==='rend')mods.push('aterrizar');if(prog==='global'||edad>=60)mods.push('equilibrio');
@@ -3311,6 +3315,7 @@ function renderOnb(m){
         if(Object.keys(patch).length)saveSalud(patch);else render();scrollTo(0,0);
       }},'Crear mi plan'),h('button',{class:'linkbtn',onclick:()=>{O.paso=3;render()}},'← Volver')));
   }
+  if(O.paso===4)m.append(cardQuien());
   m.append(card);
 }
 
