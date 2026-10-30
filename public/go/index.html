@@ -3334,7 +3334,7 @@ function cardPartida(){
     h('div',{class:'balrow'},h('span',{},h('strong',{text:'2. Movilidad y control'})),est(f)),
     h('p',{class:'note',text:'7 pruebas en video que revisa el Coach IA.'}),
     h('p',{class:'note',text:'Tus resultados modifican tu entrenamiento: los tests de fuerza definen tus pesos de partida, los de campo e isometría suman trabajo para tus desbalances y la evaluación de movilidad y control agrega correctivos para los patrones que más lo necesitan.'}),
-    h('div',{class:'row'},!t?h('button',{class:'btn primary',onclick:ir('tests')},'Hacer mis tests'):null,!f?h('button',{class:t?'btn primary':'btn',onclick:ir('fms')},fmsAlguno()?'Seguir mi evaluación':'Hacer mi evaluación'):null,
+    h('div',{class:'row'},h('button',{class:'btn primary',onclick:ir('tests')},t||fmsAlguno()?'Seguir con mis tests':'Hacer mis tests'),
       h('button',{class:'linkbtn',onclick:()=>{try{localStorage.setItem('go-partida-'+UI.atleta,new Date().toDateString())}catch(e){}render()}},'Más tarde')));
 }
 function cardInstalar(){
