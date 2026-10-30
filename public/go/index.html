@@ -2091,7 +2091,7 @@ function render(){
   const a=atl();
   if(UI.tab==='hoy'){renderHoy(m);return}
   if(!cli&&UI.tab!=='perfil'&&UI.tab!=='nuevo'&&(!a.sexo||(UI.atleta!=='yo'&&(!a.edad||!a.sesiones))))m.append(h('div',{class:'banner'},'Faltan datos del perfil de '+a.nombre+' (sexo'+(UI.atleta!=='yo'?', edad o sesiones por semana':'')+'). ',h('button',{class:'linkbtn',onclick:()=>{UI.tab='perfil';render()}},'Completar perfil')));
-  if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests'){if(cli&&!esPrep()){m.append(h('section',{class:'card'},h('h2',{text:'Tu punto de partida'}),h('p',{class:'note',text:'1. Fuerza, agilidad y campo. 2. Calidad de movimiento y control (FMS). Con tus resultados ajustamos tu entrenamiento: los pesos de partida según tu fuerza y los correctivos según tu calidad de movimiento. Repítelos al final del bloque para ver tu progreso.'})));renderTests(m);m.append(cardFms())}else{m.append(cardFms());renderTests(m)}}else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
+  if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests'){if(cli&&!esPrep()){m.append(h('section',{class:'card'},h('h2',{text:'Tu punto de partida'}),h('p',{class:'note',text:'1. Fuerza, agilidad y campo. 2. Calidad de movimiento y control (FMS). Con tus resultados ajustamos tu entrenamiento: los pesos de partida según tu fuerza y los correctivos según tu calidad de movimiento. Repítelos al final del bloque para ver tu progreso.'}),h('p',{class:'note',text:'No es necesario hacerlos todos: haz los que puedas. Mientras más tests completes, más específico, dirigido y personalizado se vuelve tu entrenamiento. Puedes sumar los que faltan cuando quieras.'})));renderTests(m);m.append(cardFms())}else{m.append(cardFms());renderTests(m)}}else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
 }
 function renderWho(){
   const box=$('#who');if(!box)return;
@@ -3295,6 +3295,7 @@ function cardPartida(){
   const ir=tab=>()=>{UI.tab=tab;saveUI();render();scrollTo(0,0)};
   return h('section',{class:'card partida'},h('span',{class:'chip',text:'Tu punto de partida'}),h('h2',{text:'Realiza tus tests'}),
     h('p',{text:'Antes de entrenar, mide cómo partes. Con tus resultados ajustamos tu entrenamiento y, al final del bloque, los repites para ver tu progreso.'}),
+    h('p',{class:'note',text:'No es necesario hacerlos todos. Haz los que puedas: mientras más tests completes, más específico y personalizado se vuelve tu entrenamiento.'}),
     h('div',{class:'balrow'},h('span',{},h('strong',{text:'1. '+(esCore()||esBase()||esGlob()?'Tests de tu programa':'Fuerza, agilidad y campo')})),est(t)),
     h('p',{class:'note',text:esCore()||esBase()||esGlob()?'Fuerza, equilibrio y resistencia según tu programa.':'Sentadillas y peso muerto, saltos, sprints y resistencia.'}),
     h('div',{class:'balrow'},h('span',{},h('strong',{text:'2. Calidad de movimiento y control (FMS)'})),est(f)),
