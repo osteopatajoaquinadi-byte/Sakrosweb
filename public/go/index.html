@@ -1605,7 +1605,7 @@ function renderHoyPrep(m){
   const cs=cardMiSuscripcion();if(cs)m.append(cs);
   if(hist.length)m.append(h('section',{class:'card'},h('h2',{text:'Tus preparaciones'}),h('ul',{},hist.slice(0,6).map(([k,v])=>h('li',{text:(v.fecha||'')+' · '+(ZONA[v.dia]||'')+(v.min?' · '+v.min+' min':'')+(v.nota?' · '+v.nota:'')})))));
   {const cr=cardRecordatorios();if(cr)m.append(cr)}
-  m.append(h('section',{class:'card'},h('h2',{text:'Tu entrenador'}),h('p',{class:'note',text:'¿Dudas sobre tu evaluación de movilidad y control, una molestia o tu rutina del gimnasio? Escríbele al Coach.'}),
+  m.append(h('section',{class:'card'},h('h2',{text:'Coach IA'}),h('p',{class:'note',text:'¿Dudas sobre tu evaluación de movilidad y control, una molestia o tu rutina del gimnasio? Escríbele al Coach.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:'prep',dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mi plan'))));
 }
 function renderSesionPrep(m){
@@ -3377,13 +3377,10 @@ function renderHoy(m){
     N.fin?null:h('div',{class:'row'},h('button',{class:'linkbtn',onclick:()=>{UI.sem=s;UI.dia=d;UI.tab='sesion';saveUI();render()}},'Ver la sesión completa'),
       DIAS().length>1?h('span',{class:'note'},'Otro día: ',...DIAS().filter(x=>x!==d).map(x=>h('button',{class:'linkbtn',style:'margin-left:8px',onclick:()=>iniciarSesion(s,x)},dayName(x)))):null)));
   const cs=cardMiSuscripcion();if(cs)m.append(cs);
-  const T=S.tests||{};
-  if(!Object.keys(T).some(k=>k!=='t'&&T[k]))m.append(h('section',{class:'card'},h('h2',{text:'Antes de empezar: tus tests'}),
-    h('p',{class:'note',text:'Mídete ahora para comparar en la semana 8. Así ves tu progreso con números.'}),h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='tests';render()}},'Hacer los tests'))));
-  if(!fmsAlguno())m.append(cardFms());
+  // Los tests y la evaluación de movilidad y control ya están en «Tu punto de partida», arriba.
   {const cv=cardComplVoley(s);if(cv)m.append(cv)}
   {const cr=cardRecordatorios();if(cr)m.append(cr)}
-  m.append(h('section',{class:'card'},h('h2',{text:'Tu entrenador'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
+  m.append(h('section',{class:'card'},h('h2',{text:'Coach IA'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:prog(),dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mis respuestas'))));
 }
 
