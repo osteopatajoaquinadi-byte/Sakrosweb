@@ -195,6 +195,9 @@ details.card>summary{font-weight:700}
 .cargab .cb i{display:block;width:70%;background:var(--accent);border-radius:4px 4px 0 0}.cargab .cb.desc i{background:var(--deload)}
 .cargab .v{font-size:.7rem;color:var(--muted)}.cargab .pct{font-size:.72rem;font-weight:700}
 .tec{margin-top:6px}.tec summary{cursor:pointer;color:var(--accent);font-weight:600}.tec p{margin:6px 0;font-size:.92rem}
+.ssmedia{display:grid;grid-template-columns:1fr 1fr;gap:2px}.ssmedia .media{aspect-ratio:4/5}
+.ex.ss .sub{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}.ex.ss .sub h4{margin:0;font-size:1rem}
+.sslinea{font-size:1.05rem;line-height:1.35}
 .resum{margin:6px 0 2px;font-size:.92rem;line-height:1.4;color:var(--ink)}.resum strong{color:var(--accent)}
 .blqh{display:flex;align-items:center;gap:8px;margin:18px 0 6px;font-family:var(--display);font-size:1.25rem;text-transform:uppercase;letter-spacing:.02em}
 .blqh .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:1rem}
@@ -2239,10 +2242,12 @@ function renderSesion(m){
   rows(d,s).forEach((it,i,a)=>{
     if(it.blq&&(!i||a[i-1].blq!==it.blq)){const bm=esCore()?0:a.filter(x=>x.blq===it.blq).reduce((q,x)=>q+tmin(x,s),0);
       m.append(h('h3',{class:'blqh'},h('span',{class:'n',text:String(it.blq)}),blqNom(it.blq),bm?h('span',{class:'note',text:' · ≈ '+bm+' min'}):null))}
-    m.append(exCard(s,d,it))});
+    if(it.seg&&i>0&&a[i-1].sup===it.sup)return;
+    const par=it.sup&&!esCore()?a.find(x=>x!==it&&x.sup===it.sup):null;
+    m.append(par?superCard(s,d,it,par):exCard(s,d,it))});
   {const cv=cardComplVoley(s);if(cv)m.append(cv)}
 }
-function exCard(s,d,it){
+function exCard(s,d,it,sub){
   const k=key(s,d,it.id),reg=S.registro[k]||{},aj=S.ajustes[k];
   const A=autoEj(s,d,it),showOrig=!!UI.orig[k];
   const V=(showOrig||!A.changed)?{n:EX[it.id].n,img:EX[it.id].img,pasos:EX[it.id].pasos,clave:EX[it.id].clave,pres:pres(s,d,it)}:A;
@@ -2266,6 +2271,20 @@ function exCard(s,d,it){
     h('span',{},h('strong',{text:showOrig?'Plan original. ':'Adaptado automáticamente. '}),showOrig?('Versión adaptada: '+A.n+' · '+A.pres+'.'):(A.motivo+' Original: '+EX[it.id].n+' · '+pres(s,d,it)+'.')),
     h('button',{class:'btn',onclick:()=>{UI.orig[k]=!showOrig;render()}},showOrig?'Ver adaptado':'Ver plan original')):null;
   const kgPh=(V.pres.match(/(\d+(?:,\d+)?) kg/)||[])[0]||'';
+  if(sub){
+    const body=h('div',{class:'sub'},
+      h('div',{class:'head'},h('span',{class:'blk',text:it.b}),h('h4',{text:V.n})),
+      h('div',{class:'pres'},V.pres,rpe?h('span',{class:'rpe',text:'RPE máx. '+rpe}):null),
+      resumenBox(it.id,V),autoBox,
+      aj?h('div',{class:'adj'},h('span',{},h('strong',{text:'Ajustado por el Coach. '}),aj.motivo||'',' Plan original: '+escalar(it.p[s-1],it.id)+'.'),h('button',{class:'btn',onclick:()=>remove('ajustes',k).then(render)},'Volver al plan')):null,
+      dxBox(it.id),ctrlBox(s,d,it),
+      !esClave(it.id)?null:h('div',{class:'row'},
+        field('Kg reales','kg-'+k,reg.kg,v=>{const c=upd('kg',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:kgPh}),
+        field('RPE','rpe-'+k,reg.rpe,v=>{const c=upd('rpe',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:'1–10'})),
+      tecBox(s,d,it,V),
+      h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null));
+    return {media,body,V};
+  }
   return h('article',{class:'ex'+(reg.hecho?' done':'')+(media?'':' nomedia')},media,
     h('div',{class:'body'},
       h('div',{class:'head'},h('span',{class:'blk',text:it.b}),h('h3',{text:V.n})),
@@ -2284,6 +2303,33 @@ function exCard(s,d,it){
         field('RPE','rpe-'+k,reg.rpe,v=>{const c=upd('rpe',v);debounce(k,()=>write('registro',k,c))},{num:1,ph:'1–10'}),
         field('Nota','nota-'+k,reg.nota,v=>{const c=upd('nota',v);debounce(k,()=>write('registro',k,c))},{ph:'Reps, sensaciones…'})),
             h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null)));
+}
+/* Superserie en una sola tarjeta: una línea con las vueltas y un solo «Marcar hecho» para los dos. */
+function ssLinea(s,d,a,b){
+  const pa=autoEj(s,d,a),pb=autoEj(s,d,b);
+  const parte=x=>{const p=String(x.pres).replace(/ · Nivel \d:.*$/,'');const m=/^(.*?)(\d+)×\s*(.*)$/.exec(p);if(!m)return null;const pre=m[1].trim();
+    const nom=!pre?x.n:/^(De|En|Con|A) /.test(pre)?x.n+' '+pre.toLowerCase():pre.split(' ').length>1?pre:x.n+(x.n.toLowerCase().includes(pre.toLowerCase())?'':' ('+pre.toLowerCase()+')');
+    return {n:+m[2],t:nom+' ×'+m[3]}};
+  const A=parte(pa),B=parte(pb);
+  if(A&&B)return Math.max(A.n,B.n)+' vueltas: '+A.t+' → '+B.t+' → pausa 90 s';
+  return 'Alterna: '+pa.n+' ('+pa.pres+') → '+pb.n+' ('+pb.pres+'), pausa 90 s';
+}
+function superCard(s,d,a,b){
+  const A=exCard(s,d,a,true),B=exCard(s,d,b,true);
+  const ka=key(s,d,a.id),kb=key(s,d,b.id),hecho=!!(S.registro[ka]?.hecho&&S.registro[kb]?.hecho);
+  const btn=h('button',{class:'check','aria-pressed':hecho,onclick:async()=>{const v=!hecho;
+    for(const [k,it] of [[ka,a],[kb,b]]){const cur={...(S.registro[k]||{semana:s,dia:d,ej:it.id}),hecho:v,t:Date.now()};S.registro[k]=cur;await write('registro',k,cur)}render()}},
+    h('span',{class:'box',text:'✓'}),hecho?'Hecho':'Marcar hecho');
+  const mm=tmin(a,s)+tmin(b,s);
+  const medias=[A.media,B.media].filter(Boolean);
+  return h('article',{class:'ex ss'+(hecho?' done':'')+(medias.length?'':' nomedia')},
+    medias.length?h('div',{class:'ssmedia'},medias):null,
+    h('div',{class:'body'},
+      h('div',{class:'head'},h('span',{class:'blk',text:String(a.b).replace(/[A-Z]$/,'')}),h('h3',{text:'Superserie: '+A.V.n+' + '+B.V.n})),
+      mm&&!esCore()?h('p',{class:'note',text:'≈ '+mm+' min'}):null,
+      h('div',{class:'pres sslinea',text:ssLinea(s,d,a,b)}),
+      h('div',{class:'row'},btn),
+      A.body,B.body));
 }
 function renderTests(m){
   if(esPrep())return;
@@ -3279,7 +3325,7 @@ function renderPlay(m){
   m.append(h('div',{class:'playtop'},h('button',{class:'btn small',onclick:()=>{UI.tab=UI.prevTab&&UI.prevTab!=='play'?UI.prevTab:(modoCli()?'hoy':'sesion');saveUI();render()}},'Salir'),
     h('span',{class:'note',text:dayName(d)+(esPrep()?'':' · Semana '+s)}),h('span',{id:'play-clock',class:'clock',text:'Tiempo '+fmtT((Date.now()-P.t0)/1000)})),
     h('div',{class:'steps','aria-label':'Paso '+(P.i+1)+' de '+steps.length},steps.map((x,j)=>h('i',{class:j<P.i?'ok':j===P.i?'on':''}))),
-    h('p',{class:'note',text:'Ejercicio '+(P.i+1)+' de '+steps.length+(g.length>1?' · Superserie: alterna una serie de cada uno':'')}));
+    h('p',{class:'note',text:'Ejercicio '+(P.i+1)+' de '+steps.length}),g.length===2?h('div',{class:'pres sslinea'},h('strong',{text:'Superserie · '}),ssLinea(s,d,g[0],g[1])):null);
   const inputs=[];
   g.forEach(it=>{
     const k=key(s,d,it.id),reg=S.registro[k]||{},A=autoEj(s,d,it),V=A.changed?A:{n:EX[it.id].n,img:EX[it.id].img,pasos:EX[it.id].pasos,clave:EX[it.id].clave,pres:pres(s,d,it)};
