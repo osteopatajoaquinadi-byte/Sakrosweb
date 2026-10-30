@@ -2091,7 +2091,7 @@ function render(){
   const a=atl();
   if(UI.tab==='hoy'){renderHoy(m);return}
   if(!cli&&UI.tab!=='perfil'&&UI.tab!=='nuevo'&&(!a.sexo||(UI.atleta!=='yo'&&(!a.edad||!a.sesiones))))m.append(h('div',{class:'banner'},'Faltan datos del perfil de '+a.nombre+' (sexo'+(UI.atleta!=='yo'?', edad o sesiones por semana':'')+'). ',h('button',{class:'linkbtn',onclick:()=>{UI.tab='perfil';render()}},'Completar perfil')));
-  if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests'){if(cli&&!esPrep()){m.append(h('section',{class:'card'},h('h2',{text:'Tu punto de partida'}),h('p',{class:'note',text:'1. Fuerza, agilidad y campo. 2. Calidad de movimiento y control (FMS). Con tus resultados ajustamos tu entrenamiento: los pesos de partida según tu fuerza y los correctivos según tu calidad de movimiento. Repítelos al final del bloque para ver tu progreso.'}),h('p',{class:'note',text:'No es necesario hacerlos todos: haz los que puedas. Mientras más tests completes, más específico, dirigido y personalizado se vuelve tu entrenamiento. Puedes sumar los que faltan cuando quieras.'})));renderTests(m);m.append(cardFms())}else{m.append(cardFms());renderTests(m)}}else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
+  if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests'){if(cli&&!esPrep())renderTestsCli(m);else{m.append(cardFms());renderTests(m)}}else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
 }
 function renderWho(){
   const box=$('#who');if(!box)return;
@@ -2356,7 +2356,12 @@ function renderTests(m){
   if(esCore())return renderTestsCore(m);
   if(esGlob())return renderTestsGlob(m);
   if(esBase())return renderTestsBase(m);
-  m.append(h('section',{class:'card'},h('h2',{text:'Tests · '+atl().nombre}),
+  renderTestsRend(m);
+}
+function renderTestsRend(m){
+  const otro=esCore()||esBase()||esGlob();
+  m.append(h('section',{class:'card'},h('h2',{text:otro||modoCli()?'Fuerza, agilidad y campo':'Tests · '+atl().nombre}),
+    otro?h('p',{class:'note',text:'Los pesos máximos sirven para planificar tus cargas. Hazlos solo si ya entrenas con pesas y con buena técnica; si no, déjalos en blanco.'}):null,
     h('p',{class:'note',text:'Haz la semana 0 antes de empezar el bloque y repítelos en la semana 8 para ver cuánto mejoraste.'})));
   const T=S.tests||{};
   const upd=(f,v)=>{const cur={...(S.tests||{}),[f]:v,t:Date.now()};S.tests=cur;debounce('tests',()=>write('tests','datos',cur))};
@@ -2367,7 +2372,7 @@ function renderTests(m){
   const rows=GRP.flatMap(([g,ids])=>[h('tr',{class:'grp'},h('th',{colspan:'3',text:g})),...ids.map(id=>fila(TESTS.find(x=>x[0]===id)))]);
   m.append(h('section',{class:'card'},h('h2',{text:'Resultados'}),
     h('div',{class:'scroll'},h('table',{},h('thead',{},h('tr',{},h('th',{text:'Test'}),h('th',{text:'Semana 0'}),h('th',{text:'Semana 8'}))),h('tbody',{},rows)))));
-  m.append(h('p',{class:'note',text:'Tus tests de fuerza definen los pesos de partida de sentadillas y peso muerto (si tu entrenador no los fijó). Anota kg × repeticiones, por ejemplo 60 × 6.'}));
+  m.append(h('p',{class:'note',text:'Pesos máximos: anota kg × repeticiones máximas limpias (por ejemplo 60 × 6) y el peso muerto como 3RM. Con ellos se planifican tus pesos de partida de sentadillas y peso muerto (si tu entrenador no los fijó).'}));
   {const num=v=>{const x=parseFloat(String(v??'').replace(',','.'));return isNaN(x)?null:x},BAJA=['s10','s20'];
    const ev=h('section',{class:'card'},h('h2',{text:'Tu progreso'}));let n=0;
    TESTS.forEach(([id,l])=>{const a0=T[id+'_0'],a8=T[id+'_8'];if(!String(a0??'').trim()||!String(a8??'').trim())return;n++;
@@ -2385,6 +2390,21 @@ function renderTests(m){
    ['Fuerza','Sentadillas: máximo de repeticiones limpias dejando 1 en reserva. Peso muerto: sube hasta un 3RM limpio.']];
   m.append(h('section',{class:'card'},h('h2',{text:'Cómo medirlos'}),h('ul',{class:'medir'},med.map(([a,b])=>h('li',{},h('strong',{text:a+': '}),b)))));
   function inp(id,v,on,ph){const e=h('input',{id,placeholder:ph||'','aria-label':id});e.value=v??'';e.addEventListener('input',()=>on(e.value));return e}
+}
+// Vista cliente: 1) fuerza, agilidad y campo (+ isometría opcional), 2) FMS. Los tests propios de Activo, Base y Core quedan abajo.
+function renderTestsCli(m){
+  const T=S.tests||{};
+  const upd=(f,v)=>{const cur={...(S.tests||{}),[f]:v,t:Date.now()};S.tests=cur;debounce('tests',()=>write('tests','datos',cur))};
+  const rend=!(esCore()||esBase()||esGlob());
+  m.append(h('section',{class:'card'},h('h2',{text:'Tu punto de partida'}),
+    h('p',{class:'note',text:'1. Fuerza, agilidad y campo, con fuerza isométrica si tienes dinamómetro. 2. Calidad de movimiento y control (FMS). Con tus resultados ajustamos tu entrenamiento: los pesos de partida según tu fuerza, ejercicios extra para los desbalances entre piernas y grupos musculares, y correctivos según tu calidad de movimiento. Repítelos en la semana 4 y al final del bloque para ver tu progreso.'}),
+    h('p',{class:'note',text:'No es necesario hacerlos todos: haz los que puedas. Mientras más tests completes, más específico, dirigido y personalizado se vuelve tu entrenamiento. Puedes sumar los que faltan cuando quieras.'}),
+    rend?null:h('p',{class:'note',text:'Los pesos máximos y los desbalances que detecten los tests de campo e isometría se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.'})));
+  renderTestsRend(m);
+  renderIso(m,T,upd,true);
+  if(!rend){const box=h('div');(esCore()?renderTestsCore:esGlob()?renderTestsGlob:renderTestsBase)(box);
+    m.append(h('details',{class:'card'},h('summary',{},esBase()?'Tests del Entrenamiento Base (definen tu nivel de partida)':'Tests de tu programa'),box))}
+  m.append(cardFms());
 }
 function renderTestsGlob(m){
   const T=S.tests||{};
@@ -2450,13 +2470,14 @@ function renderTestsCore(m){
     h('li',{},h('strong',{text:'Oswestry: '}),'cuestionario de discapacidad por dolor lumbar, en porcentaje (0 a 100 %).'),
     h('li',{},h('strong',{text:'Escape al toser o saltar: '}),'tos fuerte de pie con la vejiga cómoda; anota sí o no. El salto solo si ya no hay escape al toser.'))));
 }
-function renderIso(m,T,upd){
+function renderIso(m,T,upd,cli){
   const B=balance();
+  if(cli)renderCampo(m,T,upd,!!B);
   const cell=(g,l,mo)=>{const e=h('input',{id:`iso-${g}-${l}-${mo}`,inputmode:'decimal','aria-label':`${g} ${LADO[l]} semana ${mo}`});e.value=T[`iso_${g}_${l}_${mo}`]??'';e.addEventListener('input',()=>upd(`iso_${g}_${l}_${mo}`,e.value));return h('td',{},e)};
   const head=h('tr',{},h('th',{text:'Grupo ('+proto('unidad')+')'}),[0,4,8].flatMap(mo=>[h('th',{text:'S'+mo+' izq.'}),h('th',{text:'S'+mo+' der.'})]));
   const rows=ISO.map(([g,n])=>h('tr',{},h('td',{text:n}),[0,4,8].flatMap(mo=>[cell(g,'i',mo),cell(g,'d',mo)])));
-  m.append(h('section',{class:'card'},h('h2',{text:'Fuerza isométrica'}),
-    h('p',{class:'note',text:'Dinamómetro, siempre con el mismo protocolo. La semana 4 es el retest: si el desbalance se corrigió, el plan vuelve solo a lo normal.'}),
+  m.append(h('section',{class:'card'},h('h2',{text:cli?'Fuerza isométrica (opcional)':'Fuerza isométrica'}),
+    h('p',{class:'note',text:cli?'Con dinamómetro, siempre con el mismo protocolo. Si no tienes uno, sáltala o hazla en Sakros. La semana 4 es el retest: si el desbalance se corrigió, el plan vuelve solo a lo normal.':'Dinamómetro, siempre con el mismo protocolo. La semana 4 es el retest: si el desbalance se corrigió, el plan vuelve solo a lo normal.'}),
     h('div',{class:'scroll'},h('table',{class:'iso'},h('thead',{},head),h('tbody',{},rows)))));
   const chip=(lv,txt)=>h('span',{class:'sem '+(lv==='ok'?'v':lv==='amb'?'a':lv?'r':'n'),text:txt});
   const res=h('section',{class:'card'},h('h2',{text:'Balance'+(B?' · semana '+B.m:'')}));
@@ -2473,6 +2494,9 @@ function renderIso(m,T,upd){
   }
   res.append(h('p',{class:'note',text:'Referencias: H:Q verde ≥ 0,60, rojo < 0,50. ADD:ABD verde ≥ 0,90, rojo < 0,80; por encima de 1,25, abductores débiles. Asimetría verde < 10 %, rojo > 15 %.'}));
   m.append(res);
+  if(cli){const pr=['cua','isq','add','abd','general'].map(k=>[k,proto(k)]).filter(([,v])=>v);
+    if(pr.length)m.append(h('details',{class:'card'},h('summary',{},'Cómo medir la fuerza isométrica'),h('ul',{class:'medir'},pr.map(([k,v])=>h('li',{},h('strong',{text:({cua:'Cuádriceps',isq:'Isquiotibiales',add:'Aductores',abd:'Abductores',general:'Indicaciones generales'})[k]+': '}),v)))));
+    return}
   renderCampo(m,T,upd,!!B);
   const pf={};
   const pin=(k,lbl)=>{const e=h('textarea',{id:'proto-'+k,rows:2});e.value=proto(k);pf[k]=e;return h('label',{class:'f',for:'proto-'+k},lbl,e)};
@@ -3088,7 +3112,9 @@ function contexto(){
   regs.forEach(r=>L.push(`S${r.semana}${r.dia} ${r.ej}: ${r.hecho?'hecho':'pendiente'}${r.kg?', '+r.kg+' kg':''}${r.rpe?', RPE '+r.rpe:''}${r.nota?', nota: '+r.nota:''}${r.tec&&r.tec.ia?', video de técnica: corregir '+((r.tec.ia.corregir||[]).join('; ')||'nada')+(r.tec.coment?' · comentario del entrenador: '+r.tec.coment:''):''}`));
   const ses=Object.entries(S.sesiones).filter(([k])=>(k[0]==='p'?'prep':k[0]==='c'?'core':k[0]==='g'?'global':k[0]==='x'?'base':'rend')===pg);
   if(ses.length){L.push('','SESIONES:');ses.sort().forEach(([k,v])=>L.push(`S${v.semana||k}${v.dia||''}: ${v.fecha||''} ${v.chk?'[chequeo '+v.chk.score+'/5'+(v.chk.ajuste==='suave'?', suave':'')+(v.chk.dolor>=4?', DOLOR '+v.chk.dolor+'/5':'')+'] ':''}${v.min?v.min+' min':''} ${v.rpe?'RPE sesión '+v.rpe:''}${pg==='core'?` dolor lumbar ${v.dolor||'-'}/10, escape ${v.escape||'-'}, peso perineal ${v.peso||'-'}, irradiado ${v.irradiado||'-'}`:''} ${v.nota?'· '+v.nota:''}`))}
-  const T=S.tests||{};const tl=pg==='base'?testsBase().map(([id,l])=>[0,4,8].some(m=>T['x_'+id+'_'+m])?`${l}: S0 ${T['x_'+id+'_0']||'-'} / S4 ${T['x_'+id+'_4']||'-'} / S8 ${T['x_'+id+'_8']||'-'}`:null).filter(Boolean):pg==='global'?TESTSG.map(([id,l])=>[0,4,8].some(m=>T['g_'+id+'_'+m])?`${l}: S0 ${T['g_'+id+'_0']||'-'} / S4 ${T['g_'+id+'_4']||'-'} / S8 ${T['g_'+id+'_8']||'-'}`:null).filter(Boolean):core?TESTSC.map(([id,l])=>[0,4,8].some(m=>T['k_'+id+'_'+m])?`${l}: S0 ${T['k_'+id+'_0']||'-'} / S4 ${T['k_'+id+'_4']||'-'} / S8 ${T['k_'+id+'_8']||'-'}`:null).filter(Boolean):TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean);
+  const T=S.tests||{};const tl=pg==='base'?testsBase().map(([id,l])=>[0,4,8].some(m=>T['x_'+id+'_'+m])?`${l}: S0 ${T['x_'+id+'_0']||'-'} / S4 ${T['x_'+id+'_4']||'-'} / S8 ${T['x_'+id+'_8']||'-'}`:null).filter(Boolean):pg==='global'?TESTSG.map(([id,l])=>[0,4,8].some(m=>T['g_'+id+'_'+m])?`${l}: S0 ${T['g_'+id+'_0']||'-'} / S4 ${T['g_'+id+'_4']||'-'} / S8 ${T['g_'+id+'_8']||'-'}`:null).filter(Boolean):core?TESTSC.map(([id,l])=>[0,4,8].some(m=>T['k_'+id+'_'+m])?`${l}: S0 ${T['k_'+id+'_0']||'-'} / S4 ${T['k_'+id+'_4']||'-'} / S8 ${T['k_'+id+'_8']||'-'}`:null).filter(Boolean):TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${(UI.atleta!=='yo'&&{posterior:'Sentadilla posterior (kg × reps)',frontal:'Sentadilla frontal (kg × reps)'}[id])||l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean);
+  if(pg==='base'||pg==='global'||core)tl.push(...TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${(UI.atleta!=='yo'&&{posterior:'Sentadilla posterior (kg × reps)',frontal:'Sentadilla frontal (kg × reps)'}[id])||l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean));
+  {const ci=Object.entries(T).filter(([k,v])=>/^(c|iso)_/.test(k)&&String(v??'').trim()).map(([k,v])=>k+'='+v);if(ci.length)tl.push('Campo e isometría (c_ = campo, iso_ = dinamómetro; _i/_d = izq./der.; _0/_4/_8 = semana): '+ci.join(', '))}
   if(tl.length){L.push('','TESTS:',...tl)}
   L.push('',fmsContexto());
   const dl=dxActivos();
@@ -3296,11 +3322,11 @@ function cardPartida(){
   return h('section',{class:'card partida'},h('span',{class:'chip',text:'Tu punto de partida'}),h('h2',{text:'Realiza tus tests'}),
     h('p',{text:'Antes de entrenar, mide cómo partes. Con tus resultados ajustamos tu entrenamiento y, al final del bloque, los repites para ver tu progreso.'}),
     h('p',{class:'note',text:'No es necesario hacerlos todos. Haz los que puedas: mientras más tests completes, más específico y personalizado se vuelve tu entrenamiento.'}),
-    h('div',{class:'balrow'},h('span',{},h('strong',{text:'1. '+(esCore()||esBase()||esGlob()?'Tests de tu programa':'Fuerza, agilidad y campo')})),est(t)),
-    h('p',{class:'note',text:esCore()||esBase()||esGlob()?'Fuerza, equilibrio y resistencia según tu programa.':'Sentadillas y peso muerto, saltos, sprints y resistencia.'}),
+    h('div',{class:'balrow'},h('span',{},h('strong',{text:'1. Fuerza, agilidad y campo'})),est(t)),
+    h('p',{class:'note',text:'Pesos máximos (sentadillas y peso muerto), saltos, sprints y resistencia. Tests de campo (puente a una pierna, Copenhague, plancha lateral, salto a una pierna) y fuerza isométrica si tienes dinamómetro.'}),
     h('div',{class:'balrow'},h('span',{},h('strong',{text:'2. Calidad de movimiento y control (FMS)'})),est(f)),
     h('p',{class:'note',text:'7 pruebas en video que revisa el Coach IA.'}),
-    h('p',{class:'note',text:'Tus resultados modifican tu entrenamiento: los tests de fuerza definen tus pesos de partida y el FMS suma correctivos para los patrones que más lo necesitan.'}),
+    h('p',{class:'note',text:'Tus resultados modifican tu entrenamiento: los tests de fuerza definen tus pesos de partida, los de campo e isometría suman trabajo para tus desbalances y el FMS agrega correctivos para los patrones que más lo necesitan.'}),
     h('div',{class:'row'},!t?h('button',{class:'btn primary',onclick:ir('tests')},'Hacer mis tests'):null,!f?h('button',{class:t?'btn primary':'btn',onclick:ir('fms')},fmsAlguno()?'Seguir mi FMS':'Hacer mi FMS'):null,
       h('button',{class:'linkbtn',onclick:()=>{try{localStorage.setItem('go-partida-'+UI.atleta,new Date().toDateString())}catch(e){}render()}},'Más tarde')));
 }
