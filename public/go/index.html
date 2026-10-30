@@ -502,7 +502,7 @@ const PLAN={
   {id:'cajon',b:'2A',p:['Cajón 3×3','Cajón 3×3','Cajón 3×3','Cajón 2×3','Drop jump 3×4','Drop jump 3×4','Drop jump 3×4','Test CMJ y horizontal']},
   {id:'puenteexp',b:'2B',p:['Suelo 3×6','Suelo 3×6','Suelo 3×8','Suelo 2×6','De pie 3×5','De pie 3×5','De pie 4×5','Suelo 2×6']},
   {id:'cargada',b:'3',p:['3×3 · 50 kg','3×3 · 52,5 kg','3×3 · 55 kg','2×3 · 45 kg','4×2 · 57,5 kg','4×2 · 60 kg','4×2 · 62,5 kg','3×2 · 50 kg']},
-  {id:'sentadilla',b:'4A',p:['4×5 · 100 kg','4×5 · 105 kg','4×5 · 107,5 kg','3×5 · 90 kg','4×3 · 110 kg +C','4×3 · 115 kg +C','4×3 · 117,5 kg +C','120 kg al máximo de reps'],rpe:RPE_SQ},
+  {id:'sentadilla',b:'4A',p:['4×5 · 100 kg','4×5 · 105 kg','4×5 · 107,5 kg','3×5 · 90 kg','4×3 · 110 kg +C','4×3 · 115 kg +C','4×3 · 117,5 kg +C','Test 5RM'],rpe:RPE_SQ},
   {id:'pallof',b:'4B',p:['Plancha lateral 3×8/lado','Plancha lateral 3×8/lado','Plancha lateral 3×8/lado','Plancha lateral 2×8/lado','Bicho muerto 3×8/lado','Bicho muerto 3×8/lado','Bicho muerto 3×8/lado','Bicho muerto 2×8/lado']},
   {id:'intervalos',b:'5',p:['3×3 min','3×4 min','3×4 min','2×3 min','3×4 min','3×4 min','4×3 min','Test de resistencia']},
   {id:'regen',b:'6',p:fill('2 min')}],
@@ -515,9 +515,9 @@ const PLAN={
   {id:'sprint',b:'3',p:['2×20 m','2×20 m','2×20 m','2×20 m','2×30 m','2×30 m','2×30 m','Test 20 m']},
   {id:'pushpress',b:'4A',p:['3×4 · 50 kg','3×4 · 52,5 kg','3×4 · 55 kg','2×3 · 45 kg','4×3 · 57,5 kg','4×3 · 60 kg','4×3 · 62,5 kg','3×3 · 50 kg']},
   {id:'skater',b:'4B',p:['Skater 3×4/lado','Skater 3×4/lado','Skater 3×4/lado','Skater 2×4/lado','Caída lateral 3×4/lado','Caída lateral 3×4/lado','Caída lateral 3×4/lado','Skater 2×4/lado']},
-  {id:'frontal',b:'5A',p:['3×4 · 77,5 kg','3×4 · 80 kg','3×4 · 85 kg','2×4 · 70 kg','4×3 · 87,5 kg','4×3 · 90 kg','4×3 · 92,5 kg','90 kg al máximo de reps'],rpe:RPE_SQ},
+  {id:'frontal',b:'5A',p:['3×4 · 77,5 kg','3×4 · 80 kg','3×4 · 85 kg','2×4 · 70 kg','4×3 · 87,5 kg','4×3 · 90 kg','4×3 · 92,5 kg','Test 5RM'],rpe:RPE_SQ},
   {id:'dominadas',b:'5B',p:r8('3×6–8','2×6')},
-  {id:'muerto',b:'6',p:['3×5 · 97,5 kg','3×5 · 100 kg','3×5 · 105 kg','2×5 · 85 kg','3×3 · 107,5 kg','3×3 · 112,5 kg','3×3 · 115 kg','Test 3RM'],rpe:[7,7,7.5,'5–6',7.5,8,8.5,null]},
+  {id:'muerto',b:'6',p:['3×5 · 97,5 kg','3×5 · 100 kg','3×5 · 105 kg','2×5 · 85 kg','3×3 · 107,5 kg','3×3 · 112,5 kg','3×3 · 115 kg','Test 5RM'],rpe:[7,7,7.5,'5–6',7.5,8,8.5,null]},
   {id:'hipthrust',b:'6B',p:['3×6 · 90 kg','3×6 · 95 kg','3×6 · 100 kg','2×6 · 75 kg','3×6 · 100 kg','3×6 · 105 kg','3×6 · 110 kg','2×6 · 80 kg']},
   {id:'t3030',b:'7',p:['1×8','1×10','1×10','1×6','1×10','1×12','1×12','1×6']},
   {id:'regen',b:'8',p:fill('2 min')}]
@@ -1882,7 +1882,7 @@ function senalPrevia(s,d){
 const TESTS=[
  ['cmj','Salto vertical CMJ (cm)'],['horizontal','Salto horizontal (cm)'],['s10','Sprint 10 m (s)'],['s20','Sprint 20 m (s)'],
  ['resistencia','Yo-Yo IR1 o 2,4 km'],['fcrec','FC de recuperación a 1 min'],
- ['posterior','Sentadilla posterior: 120 kg al máximo de reps','5'],['frontal','Sentadilla frontal: 90 kg al máximo de reps','5–6'],['muerto3','Peso muerto 3RM (kg)','~120']];
+ ['posterior','Sentadilla posterior 5RM (kg)','kg'],['frontal','Sentadilla frontal 5RM (kg)','kg'],['muerto3','Peso muerto 5RM (kg)','kg']];
 
 /* ---------- Estado ---------- */
 const S={registro:{},sesiones:{},ajustes:{},chat:[],tests:{},salud:{},fms:{}};
@@ -1894,10 +1894,11 @@ const P=c=>UI.atleta==='yo'?c:'a/'+UI.atleta+'/'+c;
 const CARGABLES=['cargada','sentadilla','pushpress','frontal','muerto','hipthrust'];
 // Tests de fuerza → carga de la semana 1. Se estima el 1RM (Epley) y se compara con la referencia
 // del plan: sentadilla posterior 120 kg ×5, frontal 90 kg ×5–6 y peso muerto 3RM de 120 kg.
+// El test es un 5RM (5 repeticiones bien ejecutadas, sin perder técnica): si se anota solo el peso, se toma como 5 reps.
 const TEST_CARGA={sentadilla:['posterior',140],frontal:['frontal',106.5],muerto:['muerto3',132]};
 function rm1Test(k){const v=String((S.tests||{})[k+'_0']||'').replace(',','.');let m=v.match(/(\d+(?:\.\d+)?)\s*[x×*]\s*(\d+)/i);
-  let kg,r;if(m){kg=parseFloat(m[1]);r=parseInt(m[2],10)}else if(k==='muerto3'&&(m=v.match(/(\d+(?:\.\d+)?)/))){kg=parseFloat(m[1]);r=3}else if(UI.atleta==='yo'&&(m=v.match(/^\s*(\d+)\s*$/))){kg=k==='posterior'?120:90;r=parseInt(m[1],10)}
-  if(!(kg>0)||!(r>=1&&r<=12))return null;return kg*(1+r/30)}
+  let kg,r;if(m){kg=parseFloat(m[1]);r=parseInt(m[2],10)}else if((m=v.match(/(\d+(?:\.\d+)?)/))){kg=parseFloat(m[1]);r=5}
+  if(!(kg>=20)||!(r>=1&&r<=12))return null;return kg*(1+r/30)}
 function cargaTest(id){const t=TEST_CARGA[id];if(!t||!BASE1[id])return 0;const rm=rm1Test(t[0]);return rm?BASE1[id]*rm/t[1]:0}
 function fmtKg(v){const st=v<20?0.5:v<40?1:2.5;const r=Math.round(v/st)*st;return String(Math.round(r*10)/10).replace('.',',')}
 function escalar(str,id){
@@ -2365,15 +2366,15 @@ function renderTestsRend(m){
     h('p',{class:'note',text:'Haz la semana 0 antes de empezar el bloque y repítelos en la semana 8 para ver cuánto mejoraste.'})));
   const T=S.tests||{};
   const upd=(f,v)=>{const cur={...(S.tests||{}),[f]:v,t:Date.now()};S.tests=cur;debounce('tests',()=>write('tests','datos',cur))};
-  const yo=UI.atleta==='yo',GEN={posterior:'Sentadilla posterior: kg × reps máximas',frontal:'Sentadilla frontal: kg × reps máximas',muerto3:'Peso muerto 3RM (kg)'};
+  const yo=UI.atleta==='yo',GEN={posterior:'Sentadilla posterior: kg para 5 reps (5RM)',frontal:'Sentadilla frontal: kg para 5 reps (5RM)',muerto3:'Peso muerto: kg para 5 reps (5RM)'};
   const solo=otro&&modoCli();
   const GRP=solo?[['Fuerza y potencia',['posterior','frontal','muerto3','cmj','horizontal']]]:[['Fuerza y potencia',['posterior','frontal','muerto3','cmj','horizontal']],['Agilidad y velocidad',['s10','s20']],['Campo',['resistencia','fcrec']]];
-  const fila=([id,lbl0,ph0])=>{const lbl=yo?lbl0:(GEN[id]||lbl0),ph=yo?ph0:(GEN[id]&&id!=='muerto3'?'ej.: 40 × 8':'');return h('tr',{},h('td',{text:lbl}),
+  const fila=([id,lbl0,ph0])=>{const lbl=yo?lbl0:(GEN[id]||lbl0),ph=GEN[id]?'kg':(yo?ph0:'');return h('tr',{},h('td',{text:lbl}),
     h('td',{},inp('t0-'+id,T[id+'_0'],v=>upd(id+'_0',v),ph)),h('td',{},inp('t8-'+id,T[id+'_8'],v=>upd(id+'_8',v))))};
   const rows=GRP.flatMap(([g,ids])=>[h('tr',{class:'grp'},h('th',{colspan:'3',text:g})),...ids.map(id=>fila(TESTS.find(x=>x[0]===id)))]);
   m.append(h('section',{class:'card'},h('h2',{text:'Resultados'}),
     h('div',{class:'scroll'},h('table',{},h('thead',{},h('tr',{},h('th',{text:'Test'}),h('th',{text:'Semana 0'}),h('th',{text:'Semana 8'}))),h('tbody',{},rows)))));
-  m.append(h('p',{class:'note',text:'Pesos máximos: anota kg × repeticiones máximas limpias (por ejemplo 60 × 6) y el peso muerto como 3RM. Con ellos se planifican tus pesos de partida de sentadillas y peso muerto (si tu entrenador no los fijó).'}));
+  m.append(h('p',{class:'note',text:'Pesos máximos (5RM): el mayor peso con el que haces 5 repeticiones bien ejecutadas, sin perder técnica. Anota solo los kg. Con ellos se planifican tus pesos de partida de sentadillas y peso muerto (si tu entrenador no los fijó).'}));
   {const num=v=>{const x=parseFloat(String(v??'').replace(',','.'));return isNaN(x)?null:x},BAJA=['s10','s20'];
    const ev=h('section',{class:'card'},h('h2',{text:'Tu progreso'}));let n=0;
    TESTS.forEach(([id,l])=>{const a0=T[id+'_0'],a8=T[id+'_8'];if(!String(a0??'').trim()||!String(a8??'').trim())return;n++;
@@ -2388,7 +2389,7 @@ function renderTestsRend(m){
    ['Sprint 10 y 20 m','Salida desde 3 apoyos, 2 intentos. Con app (Photo Finish o SprintTimer) o cámara lenta contando fotogramas ÷ 240.'],
    ['Resistencia','Yo-Yo IR1 con su audio (conos a 20 m + 5 m de recuperación) o 2,4 km en pista de 400 m (6 vueltas).'],
    ['FC de recuperación','FC al terminar el test de resistencia menos la FC un minuto después. Sin reloj: pulso 15 s × 4.'],
-   ['Fuerza','Sentadillas: máximo de repeticiones limpias dejando 1 en reserva. Peso muerto: sube hasta un 3RM limpio.']];
+   ['Fuerza (5RM)','Sentadillas y peso muerto: calienta y sube de a poco hasta el mayor peso con el que haces 5 repeticiones bien ejecutadas, sin perder técnica (espalda neutra, rodillas alineadas, misma profundidad). Si la técnica cambia o la 5.ª no sale limpia, anota el último peso que salió bien. Descansa 3 min entre intentos y no pases de 4 o 5 intentos.']];
   const medV=solo?med.filter(([a])=>/Salto|Fuerza/.test(a)):med;
   m.append(h(modoCli()?'details':'section',{class:'card'},modoCli()?h('summary',{},'Cómo medirlos'):h('h2',{text:'Cómo medirlos'}),h('ul',{class:'medir'},medV.map(([a,b])=>h('li',{},h('strong',{text:a+': '}),b)))));
   function inp(id,v,on,ph){const e=h('input',{id,placeholder:ph||'','aria-label':id});e.value=v??'';e.addEventListener('input',()=>on(e.value));return e}
@@ -3051,7 +3052,7 @@ function autoEj(s,d,it){
   const fs=c.map(x=>x.o.f).filter(Boolean);const f=fs.length?Math.min(...fs):1;
   let sufs=[...new Set(c.map(x=>x.o.suf).filter(Boolean))];
   const out={...base,changed:true};const partes=[];
-  const esTest=/máximo de reps|Test 3RM/.test(base.pres)&&(sub||f<1);
+  const esTest=/máximo de reps|Test [35]RM/.test(base.pres)&&(sub||f<1);
   const calc=esTest?escalar(it.p[3],it.id):base.pres;const finTest=esTest?' · sin test esta semana':'';
   if(sub){
     const al=sub.o.alt?ALT[sub.o.alt]:null;
@@ -3117,8 +3118,8 @@ function contexto(){
   regs.forEach(r=>L.push(`S${r.semana}${r.dia} ${r.ej}: ${r.hecho?'hecho':'pendiente'}${r.kg?', '+r.kg+' kg':''}${r.rpe?', RPE '+r.rpe:''}${r.nota?', nota: '+r.nota:''}${r.tec&&r.tec.ia?', video de técnica: corregir '+((r.tec.ia.corregir||[]).join('; ')||'nada')+(r.tec.coment?' · comentario del entrenador: '+r.tec.coment:''):''}`));
   const ses=Object.entries(S.sesiones).filter(([k])=>(k[0]==='p'?'prep':k[0]==='c'?'core':k[0]==='g'?'global':k[0]==='x'?'base':'rend')===pg);
   if(ses.length){L.push('','SESIONES:');ses.sort().forEach(([k,v])=>L.push(`S${v.semana||k}${v.dia||''}: ${v.fecha||''} ${v.chk?'[chequeo '+v.chk.score+'/5'+(v.chk.ajuste==='suave'?', suave':'')+(v.chk.dolor>=4?', DOLOR '+v.chk.dolor+'/5':'')+'] ':''}${v.min?v.min+' min':''} ${v.rpe?'RPE sesión '+v.rpe:''}${pg==='core'?` dolor lumbar ${v.dolor||'-'}/10, escape ${v.escape||'-'}, peso perineal ${v.peso||'-'}, irradiado ${v.irradiado||'-'}`:''} ${v.nota?'· '+v.nota:''}`))}
-  const T=S.tests||{};const tl=pg==='base'?testsBase().map(([id,l])=>[0,4,8].some(m=>T['x_'+id+'_'+m])?`${l}: S0 ${T['x_'+id+'_0']||'-'} / S4 ${T['x_'+id+'_4']||'-'} / S8 ${T['x_'+id+'_8']||'-'}`:null).filter(Boolean):pg==='global'?TESTSG.map(([id,l])=>[0,4,8].some(m=>T['g_'+id+'_'+m])?`${l}: S0 ${T['g_'+id+'_0']||'-'} / S4 ${T['g_'+id+'_4']||'-'} / S8 ${T['g_'+id+'_8']||'-'}`:null).filter(Boolean):core?TESTSC.map(([id,l])=>[0,4,8].some(m=>T['k_'+id+'_'+m])?`${l}: S0 ${T['k_'+id+'_0']||'-'} / S4 ${T['k_'+id+'_4']||'-'} / S8 ${T['k_'+id+'_8']||'-'}`:null).filter(Boolean):TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${(UI.atleta!=='yo'&&{posterior:'Sentadilla posterior (kg × reps)',frontal:'Sentadilla frontal (kg × reps)'}[id])||l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean);
-  if(pg==='base'||pg==='global'||core)tl.push(...TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${(UI.atleta!=='yo'&&{posterior:'Sentadilla posterior (kg × reps)',frontal:'Sentadilla frontal (kg × reps)'}[id])||l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean));
+  const T=S.tests||{};const tl=pg==='base'?testsBase().map(([id,l])=>[0,4,8].some(m=>T['x_'+id+'_'+m])?`${l}: S0 ${T['x_'+id+'_0']||'-'} / S4 ${T['x_'+id+'_4']||'-'} / S8 ${T['x_'+id+'_8']||'-'}`:null).filter(Boolean):pg==='global'?TESTSG.map(([id,l])=>[0,4,8].some(m=>T['g_'+id+'_'+m])?`${l}: S0 ${T['g_'+id+'_0']||'-'} / S4 ${T['g_'+id+'_4']||'-'} / S8 ${T['g_'+id+'_8']||'-'}`:null).filter(Boolean):core?TESTSC.map(([id,l])=>[0,4,8].some(m=>T['k_'+id+'_'+m])?`${l}: S0 ${T['k_'+id+'_0']||'-'} / S4 ${T['k_'+id+'_4']||'-'} / S8 ${T['k_'+id+'_8']||'-'}`:null).filter(Boolean):TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${(UI.atleta!=='yo'&&{posterior:'Sentadilla posterior 5RM (kg)',frontal:'Sentadilla frontal 5RM (kg)'}[id])||l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean);
+  if(pg==='base'||pg==='global'||core)tl.push(...TESTS.map(([id,l])=>(T[id+'_0']||T[id+'_8'])?`${(UI.atleta!=='yo'&&{posterior:'Sentadilla posterior 5RM (kg)',frontal:'Sentadilla frontal 5RM (kg)'}[id])||l}: S0 ${T[id+'_0']||'-'} / S8 ${T[id+'_8']||'-'}`:null).filter(Boolean));
   {const ci=Object.entries(T).filter(([k,v])=>/^(c|iso)_/.test(k)&&String(v??'').trim()).map(([k,v])=>k+'='+v);if(ci.length)tl.push('Campo e isometría (c_ = campo, iso_ = dinamómetro; _i/_d = izq./der.; _0/_4/_8 = semana): '+ci.join(', '))}
   if(tl.length){L.push('','TESTS:',...tl)}
   L.push('',fmsContexto());
