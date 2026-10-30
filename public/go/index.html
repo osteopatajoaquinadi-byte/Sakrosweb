@@ -1783,11 +1783,22 @@ function voley(r){
   out.splice(i+1,0,{id:'vhombro',b:'1h',p:VOLEY_P.vhombro,tm:VOLEY_TM.vhombro});
   return out;
 }
-function cardComplVoley(){
+/* Progresión semanal de desplazamiento en arena (shuffles): técnica → frenada → caída y recuperación →
+   reacción a señal → con salto. Semanas 4 y 8: descarga y test. */
+const SHUF=[
+  ['Shuffle lateral técnico','3×(3 idas y vueltas de 5 m), pausa 45 s. Posición baja de recepción, pies sin cruzarse ni juntarse, pecho al frente.'],
+  ['Shuffle con frenada','4×(5 m + frenada en 2 pasos y vuelta), pausa 45 s. Frena con la pierna de afuera, rodilla sobre el pie.'],
+  ['Shuffle, caída y recuperación','4×(shuffle 5 m → caída al lado → levantarse → shuffle de vuelta), pausa 60 s.'],
+  ['Shuffle técnico (descarga)','2×(3 idas y vueltas de 5 m) suave, cuidando la técnica.'],
+  ['Shuffle reactivo a señal','6×6 s, pausa 30 s. Un compañero apunta a izquierda o derecha y cambias de dirección al instante.'],
+  ['Shuffle reactivo con balón','6×8 s, pausa 40 s. El compañero lanza el balón a un lado: desplázate y recíbelo en posición.'],
+  ['Shuffle reactivo + salto de bloqueo','6×(señal → 2 shuffles → salto de bloqueo → caída estable), pausa 40 s.'],
+  ['Test 5-10-5 en arena','3 intentos (5 m a un lado, 10 m al otro, 5 m de vuelta), pausa completa. Anota el mejor tiempo en tu nota de la sesión.']];
+function cardComplVoley(s){
   if(!esVoley())return null;
-  const L=[['Salidas en arena desde posición de recepción','6×6–10 m, pausa completa'],['Sprints cortos en arena','4×15 m'],
-    ['Arrastre de trineo o de compañero con banda (si tienes)','4×15 m'],['Desplazamientos defensivos: shuffle, caída y recuperación','4×20 s, pausa 40 s'],
-    ['Saltos de ataque en arena','3×5']];
+  const w=Math.min(8,Math.max(1,s||UI.sem||1)),sh=SHUF[w-1];
+  const L=[[sh[0]+' (semana '+w+')',sh[1]],['Sprints cortos en arena','4×15 m'],
+    ['Arrastre de trineo o de compañero con banda (si tienes)','4×15 m'],['Saltos de ataque en arena','3×5']];
   return h('section',{class:'card'},h('h2',{text:'Complementario en la playa'}),
     h('p',{class:'note',text:'Fuera de la sesión del día: 1 o 2 veces por semana, en la arena y en un día distinto al entrenamiento de fuerza, o al final de la práctica de vóley. Si no tienes espacio, sáltalo: la sesión ya trae saltos y rallies.'}),
     h('ul',{class:'medir'},L.map(([n,p])=>h('li',{},h('strong',{text:n+': '}),p))));
@@ -2229,7 +2240,7 @@ function renderSesion(m){
     if(it.blq&&(!i||a[i-1].blq!==it.blq)){const bm=esCore()?0:a.filter(x=>x.blq===it.blq).reduce((q,x)=>q+tmin(x,s),0);
       m.append(h('h3',{class:'blqh'},h('span',{class:'n',text:String(it.blq)}),blqNom(it.blq),bm?h('span',{class:'note',text:' · ≈ '+bm+' min'}):null))}
     m.append(exCard(s,d,it))});
-  {const cv=cardComplVoley();if(cv)m.append(cv)}
+  {const cv=cardComplVoley(s);if(cv)m.append(cv)}
 }
 function exCard(s,d,it){
   const k=key(s,d,it.id),reg=S.registro[k]||{},aj=S.ajustes[k];
@@ -3234,7 +3245,7 @@ function renderHoy(m){
   if(!Object.keys(T).some(k=>k!=='t'&&T[k]))m.append(h('section',{class:'card'},h('h2',{text:'Antes de empezar: tus tests'}),
     h('p',{class:'note',text:'Mídete ahora para comparar en la semana 8. Así ves tu progreso con números.'}),h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='tests';render()}},'Hacer los tests'))));
   if(!fmsAlguno())m.append(cardFms());
-  {const cv=cardComplVoley();if(cv)m.append(cv)}
+  {const cv=cardComplVoley(s);if(cv)m.append(cv)}
   {const cr=cardRecordatorios();if(cr)m.append(cr)}
   m.append(h('section',{class:'card'},h('h2',{text:'Tu entrenador'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:prog(),dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mis respuestas'))));
