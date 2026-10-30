@@ -9,7 +9,7 @@ const API = "https://api.mercadopago.com";
 
 // Versión vigente de los términos (public/go/terminos.html). Si cambian,
 // súbela: se pedirá aceptarlos de nuevo antes de pagar.
-export const TERMINOS_V = "2026-10";
+export const TERMINOS_V = "2026-11";
 type Db = ReturnType<typeof getServiceClient>;
 
 async function mp<T>(path: string, init?: RequestInit): Promise<T> {

@@ -55,6 +55,7 @@ h1 span{color:var(--accent)}
 .lane.descarga::after{background:var(--deload)}
 .lane.lock{opacity:.45;cursor:default}.lane.lock::after{display:none}
 .cell.lock{cursor:default;opacity:.5;font-size:.65rem}
+.quien h2{margin-bottom:6px}.quienline{margin:-4px 0 10px}
 .locknote{margin:6px 0 0}
 .lane .pct{position:absolute;top:3px;right:5px;font-size:.6rem;color:var(--ok);font-weight:700}
 .lane[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
@@ -3015,6 +3016,7 @@ function autoEj(s,d,it){
 
 /* ---------- Coach ---------- */
 let sample=null, ctl=null, busy=false;
+const RULES_IA='\n\nIDENTIDAD Y SEGURIDAD: eres el Coach IA de Sakros Go, una inteligencia artificial. Los programas y criterios los define Joaquín Adi, kinesiólogo con máster en Functional Training. Si te preguntan, di que eres una IA y no te presentes como Joaquín ni como un profesional de la salud. No diagnostiques ni indiques tratamientos. Ante dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta o se irradia, hormigueo o pérdida de fuerza, indica detener el ejercicio y consultar a un profesional. No pidas datos personales que el plan no necesite (RUT, dirección, datos bancarios).';
 const RULES=`Eres el entrenador personal del atleta, con el método EXOS. Si sus datos dicen DEPORTE: vóley playa, adapta todo a su deporte (saltos de ataque y bloqueo, desplazamientos en arena, hombro del atacante): no pongas trineo ni salidas de sprint dentro de la sesión; esos trabajos van como complementario en la playa, fuera de la rutina del día. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios atletas (su propio perfil es «Mi perfil»). Habla del atleta seleccionado y usa términos técnicos.
 Objetivo del bloque: potencia, aceleración, salto y, sobre todo, resistencia cardiovascular. 8 semanas, con 1, 2 o 3 sesiones por semana según el atleta (sesión única U; días A y B; o A, B y C), sesiones de 50–60 min como máximo (calentamiento de 12 min, 15 en mujeres; superseries con 90 s de pausa). El calentamiento completo (tejido blando, movilidad, pilar y activación) no se recorta para ahorrar tiempo. Semana 4: descarga. Semana 8: descarga y test.
 Adapta tus consejos al sexo, la edad, el nivel y las sesiones por semana del atleta. En mujeres el plan ya suma más pilar y más activación de aterrizajes y frenadas; mantenlo.
@@ -3119,8 +3121,9 @@ function cardRecordatorios(){
     dias.length&&dias.length!==freq()&&!esPrep()?h('p',{class:'note',text:'Tu plan es de '+freq()+(freq()===1?' día':' días')+' por semana y elegiste '+dias.length+'.'}):null);
 }
 function renderCoach(m){
-  m.append(h('section',{class:'card'},h('h2',{text:'Tu entrenador'}),
-    h('p',{class:'note',text:'Cuéntale cómo fue la sesión o pídele cambios. Ve tu plan, tus registros y tus tests, y puede ajustar las cargas directamente. El chat queda guardado.'})));
+  m.append(h('section',{class:'card'},h('h2',{text:'Coach IA'}),
+    h('p',{class:'note',text:'Cuéntale cómo fue la sesión o pídele cambios. Ve tu plan, tus registros y tus tests, y puede ajustar las cargas directamente. El chat queda guardado.'}),
+    h('p',{class:'note',text:'Es una inteligencia artificial que trabaja con los programas y criterios de Joaquín Adi, kinesiólogo. Orienta tu entrenamiento, pero puede equivocarse y no diagnostica: si tienes dolor que no cede o una duda de salud, consulta a un profesional.'})));
   m.append(h('div',{class:'chat',id:'chatlog'}));
   const ta=h('textarea',{id:'chat-in',rows:2,placeholder:sample===null&&mode!=='cargando'?'El chat no está disponible en esta vista':'Escribe aquí…'});
   const send=h('button',{class:'btn primary',id:'chat-send',onclick:()=>{const v=ta.value.trim();if(v){ta.value='';ask(v)}}},'Enviar');
@@ -3150,7 +3153,7 @@ async function ask(text){
   if(busy)return;
   if(!sample){setSync('El chat no está disponible en esta vista');return}
   busy=true;await addMsg('u',text);
-  const turns=[{role:'user',content:(esPrep()?RULES_PREP:esBase()?RULES_BASE:esGlob()?RULES_GLOB:esCore()?RULES_CORE:RULES)+(modoCli()?'\n\nIMPORTANTE: ahora te escribe la propia persona desde su vista de cliente, no el entrenador. Háblale directo, con lenguaje simple y sin tecnicismos. Si pide un cambio grande o describe dolor, síntomas de alarma o algo clínico, sugiérele consultarlo con su entrenador antes de cambiar el plan.':'')+'\n\nDATOS DEL ATLETA:\n'+contexto()},...S.chat.slice(-20).map(c=>({role:c.rol==='u'?'user':'assistant',content:c.texto}))];
+  const turns=[{role:'user',content:(esPrep()?RULES_PREP:esBase()?RULES_BASE:esGlob()?RULES_GLOB:esCore()?RULES_CORE:RULES)+RULES_IA+(modoCli()?'\n\nIMPORTANTE: ahora te escribe la propia persona desde su vista de cliente, no el entrenador. Háblale directo, con lenguaje simple y sin tecnicismos. Si pide un cambio grande o describe dolor, síntomas de alarma o algo clínico, sugiérele consultarlo con su entrenador antes de cambiar el plan.':'')+'\n\nDATOS DEL ATLETA:\n'+contexto()},...S.chat.slice(-20).map(c=>({role:c.rol==='u'?'user':'assistant',content:c.texto}))];
   liveBubble=h('div',{class:'msg a'},h('p',{class:'tool',text:'Pensando…'}));renderChatLog();liveBubble.scrollIntoView({block:'end'});
   ctl=new AbortController();const stop=$('#chat-stop');if(stop)stop.hidden=false;
   let finalText='';
@@ -3196,7 +3199,7 @@ function renderOnb(m){
   const paso=(n,t)=>h('div',{class:'onbhead'},h('span',{class:'chip',text:'Paso '+n+' de 3'}),h('h2',{text:t}));
   const opt=(sel,txt,sub,on)=>h('button',{class:'bigopt','aria-pressed':sel,onclick:on},h('b',{text:txt}),sub?h('span',{text:sub}):null);
   if(O.paso===1){
-    card.append(h('p',{class:'brandline',text:'Bienvenido a Sakros Go. Con 3 respuestas armamos tu plan.'}),paso(1,'¿Qué quieres lograr?'),
+    card.append(h('p',{class:'brandline',text:'Bienvenido a Sakros Go. Con 3 respuestas armamos tu plan.'}),h('p',{class:'note quienline',text:'Programas diseñados por Joaquín Adi, kinesiólogo con máster en Functional Training, y ajustados contigo por el Coach IA.'}),paso(1,'¿Qué quieres lograr?'),
       opt(O.obj==='global','Empezar a entrenar o mantenerme en forma','Desde cero, con todo el cuerpo y sin lesionarme.',()=>{O.obj='global';O.paso=2;render()}),
       opt(O.obj==='core','Fortalecer espalda, abdomen y suelo pélvico','Para dolor lumbar, hernia o escapes de orina al hacer esfuerzo.',()=>{O.obj='core';O.paso=2;render()}),
       opt(O.obj==='rend','Rendir más en mi deporte','Saltar más, ser más rápido y aguantar más.',()=>{O.obj='rend';O.paso=2;render()}),
@@ -3466,22 +3469,29 @@ const PLANES={prep:{n:'Sakros Go Prep',d:'10 minutos de preparación antes de tu
 // Prep: 3 sesiones de prueba y sirve cualquier plan. Entrenamiento: semana 1 de prueba y necesita el plan Entrenamiento.
 const bloqueada=s=>ROL==='cliente'&&(esPrep()?s>3:(s>1||bk()>1))&&!(ACC&&ACC.activo&&(esPrep()||planAcc()==='entrenamiento'));
 const necesitaTerminos=()=>ROL==='cliente'&&!!ACC&&((atl().terminos||{}).v!==ACC.terminosV);
-const terminosOk=()=>({v:(ACC&&ACC.terminosV)||'2026-10',t:Date.now()});
+const terminosOk=()=>({v:(ACC&&ACC.terminosV)||'2026-11',salud:true,t:Date.now()});
+const QUIEN='Sakros Go lo dirige Joaquín Adi, kinesiólogo con máster en Functional Training. Su formación lo habilita para evaluar la calidad del movimiento. La planificación está pensada para que entrenes tus objetivos sin perder de vista tus patrones de movimiento.';
+const QUIEN_IA='Tus objetivos y tu planificación se arman con el Coach IA, una inteligencia artificial que trabaja con los programas y criterios definidos por Joaquín. La app no es una atención kinesiológica: no hay evaluación presencial, diagnóstico ni tratamiento.';
+function cardQuien(){return h('section',{class:'card quien'},h('h2',{text:'Quién está detrás de tu plan'}),h('p',{text:QUIEN}),h('p',{class:'note',text:QUIEN_IA}))}
 function puntosTerminos(){return h('ul',{class:'medir'},
   ['Sakros Go es un programa de entrenamiento. No reemplaza una evaluación ni un tratamiento de salud.',
    'Si tienes una lesión, una enfermedad o estás embarazada, consulta con un profesional antes de empezar.',
    'Detén el ejercicio y consulta si sientes dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta, hormigueo o escape de orina que no cede.',
-   'El Coach usa inteligencia artificial: orienta, pero no diagnostica. Ante dudas de salud, consulta a tu profesional.',
+   'El Coach IA es una inteligencia artificial: arma y ajusta tu plan con los criterios de Joaquín Adi, kinesiólogo, pero puede equivocarse y no diagnostica. Ante dudas de salud, consulta a tu profesional.',
+   'Tus datos de salud se guardan cifrados, en una base protegida a la que solo accedes tú y tu profesional de Sakros. No los vendemos ni los usamos para publicidad.',
+   'Si tienes menos de 18 años, necesitas la autorización de tu madre, padre o tutor.',
    'La suscripción es mensual y se renueva sola. Puedes cancelarla cuando quieras desde la app; el acceso sigue hasta el final del mes pagado.',
    'El mes corre igual aunque no completes tus entrenamientos.'].map(x=>h('li',{text:x})))}
 function renderTerminos(m){
-  const ck=h('input',{type:'checkbox',id:'tc-ok'});const err=h('p',{class:'note err',role:'alert'});
+  const ck=h('input',{type:'checkbox',id:'tc-ok'}),ck2=h('input',{type:'checkbox',id:'tc-salud'});const err=h('p',{class:'note err',role:'alert'});
+  m.append(cardQuien());
   m.append(h('section',{class:'card onb'},h('h2',{text:'Antes de empezar'}),
     h('p',{class:'note',text:'Lee los puntos clave de los términos y el descargo de salud.'}),puntosTerminos(),
     h('p',{},h('a',{href:'/go/terminos.html',target:'_blank',rel:'noopener'},'Leer los términos completos')),
-    h('label',{class:'tcrow',for:'tc-ok'},ck,h('span',{text:'Leí y acepto los términos y el descargo de salud.'})),err,
+    h('label',{class:'tcrow',for:'tc-ok'},ck,h('span',{text:'Leí y acepto los términos y el descargo de salud.'})),
+    h('label',{class:'tcrow',for:'tc-salud'},ck2,h('span',{text:'Autorizo que Sakros guarde y use mis datos de salud (molestias, tests, evaluación de movimiento y videos de técnica) para armar y ajustar mi plan.'})),err,
     h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async e=>{
-      if(!ck.checked){err.textContent='Marca la casilla para continuar.';return}
+      if(!ck.checked||!ck2.checked){err.textContent='Marca las dos casillas para continuar.';return}
       e.target.disabled=true;const ok=await saveAtleta(UI.atleta,{...atl(),terminos:terminosOk()});e.target.disabled=false;
       if(!ok){err.textContent='No se pudo guardar. Revisa la conexión.';return}
       UI.tab='hoy';render();scrollTo(0,0)}},'Aceptar y continuar'))));
