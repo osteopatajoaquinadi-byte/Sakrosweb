@@ -53,6 +53,9 @@ h1 span{color:var(--accent)}
 .lane small{display:block;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .lane::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:3px;border-radius:2px;background:var(--accent)}
 .lane.descarga::after{background:var(--deload)}
+.lane.lock{opacity:.45;cursor:default}.lane.lock::after{display:none}
+.cell.lock{cursor:default;opacity:.5;font-size:.65rem}
+.locknote{margin:6px 0 0}
 .lane .pct{position:absolute;top:3px;right:5px;font-size:.6rem;color:var(--ok);font-weight:700}
 .lane[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .lane[aria-pressed="true"] small{color:var(--surface);opacity:.75}
@@ -2062,6 +2065,7 @@ function render(){
   document.querySelectorAll('.tab').forEach(b=>{b.hidden=!vis.includes(b.dataset.tab)||['onb','play','terminos'].includes(UI.tab);b.setAttribute('aria-selected',b.dataset.tab===UI.tab||(b.dataset.tab==='tests'&&UI.tab==='fms')||(b.dataset.tab==='hoy'&&UI.tab==='sesion'&&cli))});
   const ml=$('#modo-link');if(ml){ml.hidden=MODO_FIJO;ml.textContent=cli?'Vista entrenador':'Vista cliente';ml.onclick=()=>setModo(cli?'coach':'cliente')}
   if(atlListo&&!DIAS().includes(UI.dia))UI.dia=DIAS()[0];
+  if(atlListo&&cli&&UI.sem>semMax())UI.sem=semMax();
   renderWho();renderSelectors();
   const m=$('#main');m.replaceChildren();
   if(UI.tab==='onb'){renderOnb(m);return}
@@ -2146,13 +2150,15 @@ function renderSelectors(){
   const box=$('#selectors');box.replaceChildren();
   if(['tests','progreso','salud','perfil','nuevo','hoy','play','onb','terminos','paywall','fms'].includes(UI.tab))return;
   if(esPrep()){if(UI.tab==='sesion'&&!modoCli())box.append(selProg());return}
-  const lanes=h('div',{class:'lanes',role:'group','aria-label':'Semana'});
+  const lanes=h('div',{class:'lanes',role:'group','aria-label':'Semana'}),sm=semMax();
   for(let s=1;s<=8;s++){
+    if(s>sm){lanes.append(h('button',{class:'lane lock',disabled:true,'aria-label':'Semana '+s+': se desbloquea al terminar la semana '+(s-1)},h('b',{text:'S'+s}),h('small',{text:'🔒'})));continue}
     const dd=DIAS().map(x=>done(s,x));const pct=Math.round(dd.reduce((q,x)=>q+x[0],0)/dd.reduce((q,x)=>q+x[1],0)*100);
     lanes.append(h('button',{class:'lane'+(esBase()?(s<=2?' descarga':''):esGlob()?(s<=2?' descarga':''):esCore()?(s===1?' descarga':''):(s===4||s===8?' descarga':'')),'aria-pressed':UI.sem===s,onclick:()=>{UI.sem=s;saveUI();render()}},
       h('b',{text:'S'+s}),h('small',{text:bk()>1?laneBloque(s):esBase()?(s<=2?'Aprender':s<=4?'Automat.':s<=6?'Desafiar':s===8?'Retest':'Transferir'):esGlob()?(s<=2?'Adapt.':s<=4?'Base':s===8?'Retest':'Progreso'):esCore()?(s===1?'Control':s<=4?'Carga':s<=6?'Fuerza':s===8?'Retest':'Potencia'):s===4?'Descarga':s===8?'Test':s>4?'Intensa':'Carga'}),pct?h('span',{class:'pct',text:pct+'%'}):null));
   }
   box.append(lanes);
+  if(sm<8)box.append(h('p',{class:'note locknote',text:'Termina la semana '+sm+' para desbloquear la siguiente.'}));
   if(UI.tab==='sesion'&&!modoCli()){
     box.append(selProg());
     if(!esBase())box.append(selBloque());
@@ -2510,9 +2516,10 @@ function cardMarcas(){
 function renderProgreso(m){
   if(esPrep())return renderProgresoPrep(m);
   const g=h('div',{class:'grid8'},h('span'),[1,2,3,4,5,6,7,8].map(s=>h('span',{class:'note',text:'S'+s})));
-  DIAS().forEach(d=>{g.append(h('strong',{text:dayName(d)}));for(let s=1;s<=8;s++){const [n,t]=done(s,d);
+  const sm=semMax();
+  DIAS().forEach(d=>{g.append(h('strong',{text:dayName(d)}));for(let s=1;s<=8;s++){if(s>sm){g.append(h('span',{class:'cell lock','aria-label':'Semana '+s+': bloqueada',text:'🔒'}));continue}const [n,t]=done(s,d);
     g.append(h('button',{class:'cell'+(n===t?' full':n?' part':''),'aria-label':`Semana ${s} día ${d}: ${n} de ${t}`,onclick:()=>{UI.tab='sesion';UI.sem=s;UI.dia=d;saveUI();render();scrollTo(0,0)}},n===t?'✓':n?n+'/'+t:''))}});
-  m.append(h('section',{class:'card'},h('h2',{text:'Sesiones'}),h('p',{class:'note',text:'Toca una casilla para abrir esa sesión.'}),h('div',{style:'overflow-x:auto'},g)));
+  m.append(h('section',{class:'card'},h('h2',{text:'Sesiones'}),h('p',{class:'note',text:sm<8?'Toca una casilla para abrir esa sesión. Las semanas siguientes se desbloquean al terminar la semana '+sm+'.':'Toca una casilla para abrir esa sesión.'}),h('div',{style:'overflow-x:auto'},g)));
   {const cc=cardCarga();if(cc)m.append(cc);const cm=cardMarcas();if(cm)m.append(cm)}
   const aj=Object.entries(S.ajustes).filter(([k,a])=>progOf(a.ej)===prog());
   m.append(h('section',{class:'card'},h('h2',{text:'Ajustes al plan'}),
@@ -3164,6 +3171,8 @@ const KEYLIFT=new Set([...CARGABLES,'khipthrust','khipthrustp','krdl','kgoblet',
 const esClave=id=>KEYLIFT.has(id);
 const needsOnb=()=>{const a=atl();return !a.onb&&!a.programa&&!a.sexo};
 function nextSes(){for(let s=1;s<=8;s++)for(const d of DIAS()){const [n,t]=done(s,d);if(n<t)return {s,d,n,t}}const d=DIAS()[DIAS().length-1];return {s:8,d,n:1,t:1,fin:true}}
+// Vista cliente: solo hasta la semana en curso; las siguientes se desbloquean al terminarla.
+const semMax=()=>modoCli()?nextSes().s:8;
 function progTotal(){let n=0,t=0;for(let s=1;s<=8;s++)DIAS().forEach(d=>{const x=done(s,d);n+=x[0];t+=x[1]});return t?Math.round(n/t*100):0}
 function iniciarSesion(s,d){
   if(bloqueada(s)){UI.tab='paywall';render();scrollTo(0,0);return}
