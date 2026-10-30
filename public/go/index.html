@@ -3318,7 +3318,8 @@ function renderOnb(m){
 let instEvt=null;
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;if(UI.tab==='hoy')render()});
 addEventListener('appinstalled',()=>{try{localStorage.setItem('go-instalada','1')}catch(e){}instEvt=null;render()});
-const testsIniciados=()=>Object.entries(S.tests||{}).some(([k,v])=>/_0$/.test(k)&&String(v??'').trim()!=='');
+// Solo campo, fuerza e isometría: los tests propios de Base, Activo y Core (x_, g_, k_) no cuentan aquí.
+const testsIniciados=()=>Object.entries(S.tests||{}).some(([k,v])=>/_0$/.test(k)&&!/^[xgk]_/.test(k)&&String(v??'').trim()!=='');
 function cardPartida(){
   if(esPrep())return null;
   const t=testsIniciados(),f=fmsListo();if(t&&f)return null;
