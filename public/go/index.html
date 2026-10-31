@@ -311,11 +311,12 @@ function mediaVideo(k,alt,cls){
   return h('div',{class:'media tall vidm'+(cls?' '+cls:''),onclick:()=>{v.paused?v.play().catch(()=>{}):v.pause()}},v,h('span',{class:'tag',text:'Video · toca para pausar'}));
 }
 // Ejercicios sin video con animación 3D (maniquí Sakros Go). Se cargan solo al mostrarse.
-const ANIM={kgoblet:'sent',gcurl:'zlat',kbirddog:'bird',kbirddogc:'bird',xbirddog:'bird',mdcut:'shuf'};
-const animDe=(id,V)=>ANIM[id]&&V.n===EX[id].n?ANIM[id]:null;
+const ANIM=new Set('kgoblet gcurl sentadilla ksplit gstep kstepup xstepup xsent1 klanzscoop muerto kmuertobarra krdl gbisagra xbisagra xrdl1 xbis1 kremobarra kextension cargada pushpress klandmine kjammer gpress dominadas kjalon gflex xempuje ftspu3 ftspu4 kplanchar xplancha klateral klateralr klateralabd frs2 kbirddog kbirddogc xbirddog frs3 frs4 frs1 ftspu2 ftspu1 krollout kcurlup gcorea gcoreb kremomanc gremom gremob kremoband xtiron kfacepull kchop gmartillo kmonster vhombro hipthrust khipthrust khipthrustp fhs2 fhs3 fhs4 fsm1 fsm2 fsm3 fsm4 faslr1 faslr2 faslr3 faslr4 kgranjero xcarry kcarrera gcaminata ginterv xlanz klanzover klanzrotp xlevantar cajon skater vsalto vbloqueo mdcross tejidoA tejidoB frodPI frodPS frodPC frodPR pilarA pilarB regen gcalor gestira kprep xmequi xcalma xmsuelo xmat factPI factPS factPC factPR fds1 fds2 fds3 fds4 fil1 fil2 fil3 fil4 fhs1 mdcut'.split(' '));
+// En Base, la animación sigue el nivel del ejercicio (ej. flexión en la pared, en banco o de rodillas).
+const animDe=(id,V)=>ANIM.has(id)&&V.n===EX[id].n?(EX[id].niv?id+'@'+nivelDe(id):id):null;
 let _mq=null;
 function cargaManiqui(){if(_mq)return _mq;const js=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
-  _mq=(window.THREE?Promise.resolve():js('/go/three.min.js')).then(()=>window.Maniqui?null:js('/go/maniqui.js'));_mq.catch(()=>{_mq=null});return _mq}
+  _mq=(window.THREE?Promise.resolve():js('/go/three.min.js')).then(()=>window.Maniqui?null:js('/go/maniqui-motor.js')).then(()=>window.MQ_EJ&&window.MQ?null:js('/go/maniqui.js'));_mq.catch(()=>{_mq=null});return _mq}
 function mediaAnim(a,alt,cls){
   const box=h('div',{class:'media tall mq'+(cls?' '+cls:''),role:'img','aria-label':'Animación 3D: '+alt});
   const st=h('span',{class:'tag',text:'Animación 3D · cargando…'});box.append(st);
