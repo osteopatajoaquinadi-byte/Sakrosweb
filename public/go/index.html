@@ -88,6 +88,10 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px soli
 .media img{width:100%;height:100%;object-fit:cover;display:block}
 .media.tall{aspect-ratio:4/5;background:#0d1217}
 .media.tall img{object-fit:contain}
+.media.mq{background:#e3e8ed;overflow:hidden;touch-action:pan-y}.media.mq .mq-cv{display:block;width:100%;height:100%}
+.mq-marca{position:absolute;top:8px;left:10px;font:700 .8rem/1 'Barlow Condensed',Arial Narrow,sans-serif;letter-spacing:.08em;color:#16202a;opacity:.8;pointer-events:none}.mq-marca b{color:#c9402a}
+.mq-cue{position:absolute;left:8px;right:8px;top:30px;background:rgba(255,255,255,.88);color:#16202a;font-size:.82rem;font-weight:600;line-height:1.3;padding:5px 9px;border-radius:8px;pointer-events:none}.mq-cue:empty{display:none}
+.ssmedia .mq-cue{font-size:.66rem;top:24px;padding:3px 6px}.ssmedia .mq .tag{display:none}.ssmedia .mq-marca{font-size:.66rem}
 .media .tag{position:absolute;left:8px;bottom:8px;max-width:calc(100% - 16px);text-align:left;background:rgba(10,16,22,.72);color:#fff;font-size:.72rem;padding:2px 8px;border-radius:999px}
 .media .dots{position:absolute;right:8px;top:10px;display:flex;gap:4px}
 .media .dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55)}
@@ -270,7 +274,7 @@ const RES={
   pilarB:['Plancha frontal 30 s','plancha lateral 20 s/lado','puente glúteo ×10','Pallof ×8/lado','pared: marching y switches'],
   actA:['Mini band lateral y skips A','snap-down ×5','aterrizaje a dos pies ×3','aterrizaje a una pierna ×3/lado'],
   actB:['Snap-down ×5','frenada en 3 pasos ×3','frenada y cambio ×2/lado','aterrizaje lateral a una pierna ×3/lado'],
-  xmsuelo:['Knack antes de cada esfuerzo','exhala al empujar','progresa de acostado a de pie'],
+  xmsuelo:['Activa el suelo pélvico antes de cada esfuerzo','exhala al empujar','progresa de acostado a de pie'],
   vhombro:['Rotación externa con banda ×10/lado','Y-T-W ×6 cada letra','flexión de escápula ×10']};
 RES.movB=RES.movA;
 const RESC={pallof:'cadera arriba (plancha lateral) o zona lumbar pegada al suelo (bicho muerto): el tronco no se mueve.',
@@ -303,12 +307,24 @@ function mediaVideo(k,alt,cls){
   v.muted=true;const o=vidObs();if(o)o.observe(v);else v.autoplay=true;
   return h('div',{class:'media tall vidm'+(cls?' '+cls:''),onclick:()=>{v.paused?v.play().catch(()=>{}):v.pause()}},v,h('span',{class:'tag',text:'Video · toca para pausar'}));
 }
+// Ejercicios sin video con animación 3D (maniquí Sakros Go). Se cargan solo al mostrarse.
+const ANIM={kgoblet:'sent',gcurl:'zlat',kbirddog:'bird',kbirddogc:'bird',xbirddog:'bird',mdcut:'shuf'};
+const animDe=(id,V)=>ANIM[id]&&V.n===EX[id].n?ANIM[id]:null;
+let _mq=null;
+function cargaManiqui(){if(_mq)return _mq;const js=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
+  _mq=(window.THREE?Promise.resolve():js('/go/three.min.js')).then(()=>window.Maniqui?null:js('/go/maniqui.js'));_mq.catch(()=>{_mq=null});return _mq}
+function mediaAnim(a,alt,cls){
+  const box=h('div',{class:'media tall mq'+(cls?' '+cls:''),role:'img','aria-label':'Animación 3D: '+alt});
+  const st=h('span',{class:'tag',text:'Animación 3D · cargando…'});box.append(st);
+  cargaManiqui().then(()=>{if(!box.isConnected&&!document.body.contains(box)){}const m=window.Maniqui&&window.Maniqui.mount(box,a);st.textContent=m?'Animación 3D · arrastra para girar · toca para pausar':'No se pudo mostrar la animación'}).catch(()=>{st.textContent='Sin conexión: la animación se verá al volver la señal'});
+  return box;
+}
 const vidDe=(id,V)=>{const k=EX[id]&&EX[id].video;return k&&VIDEOS[k]&&V.n===EX[id].n?k:null};
 const IMGS={"boxsquat-0":"/go/img/boxsquat-0.jpg","boxsquat-1":"/go/img/boxsquat-1.jpg","bulgara-0":"/go/img/bulgara-0.jpg","bulgara-1":"/go/img/bulgara-1.jpg","caida-0":"/go/img/caida-0.jpg","caida-1":"/go/img/caida-1.jpg","chop-0":"/go/img/chop-0.jpg","chop-1":"/go/img/chop-1.jpg","cinta-0":"/go/img/cinta-0.jpg","cinta-1":"/go/img/cinta-1.jpg","curl-0":"/go/img/curl-0.jpg","curl-1":"/go/img/curl-1.jpg","deadbug-0":"/go/img/deadbug-0.jpg","deadbug-1":"/go/img/deadbug-1.jpg","dominadas-0":"/go/img/dominadas-0.jpg","dominadas-1":"/go/img/dominadas-1.jpg","drop-0":"/go/img/drop-0.jpg","drop-1":"/go/img/drop-1.jpg","extension-0":"/go/img/extension-0.jpg","facepull-0":"/go/img/facepull-0.jpg","facepull-1":"/go/img/facepull-1.jpg","flexinc-0":"/go/img/flexinc-0.jpg","flexinc-1":"/go/img/flexinc-1.jpg","flexor-0":"/go/img/flexor-0.jpg","flexor-1":"/go/img/flexor-1.jpg","flexsuelo-0":"/go/img/flexsuelo-0.jpg","flexsuelo-1":"/go/img/flexsuelo-1.jpg","gato-0":"/go/img/gato-0.jpg","gato-1":"/go/img/gato-1.jpg","goblet-0":"/go/img/goblet-0.jpg","goblet-1":"/go/img/goblet-1.jpg","granjero-1":"/go/img/granjero-1.jpg","hipthrust-0":"/go/img/hipthrust-0.jpg","hipthrust-1":"/go/img/hipthrust-1.jpg","jalon-0":"/go/img/jalon-0.jpg","jalon-1":"/go/img/jalon-1.jpg","jammer-0":"/go/img/jammer-0.jpg","jammer-1":"/go/img/jammer-1.jpg","landmine-0":"/go/img/landmine-0.jpg","landmine-1":"/go/img/landmine-1.jpg","lanzatras-0":"/go/img/lanzatras-0.jpg","lanzatras-1":"/go/img/lanzatras-1.jpg","lanzover-0":"/go/img/lanzover-0.jpg","lanzover-1":"/go/img/lanzover-1.jpg","lanzpecho-0":"/go/img/lanzpecho-0.jpg","lanzpecho-1":"/go/img/lanzpecho-1.jpg","lanzscoop-0":"/go/img/lanzscoop-0.jpg","lanzscoop-1":"/go/img/lanzscoop-1.jpg","lanzsup-0":"/go/img/lanzsup-0.jpg","lanzsup-1":"/go/img/lanzsup-1.jpg","martillo-0":"/go/img/martillo-0.jpg","martillo-1":"/go/img/martillo-1.jpg","monster-0":"/go/img/monster-0.jpg","monster-1":"/go/img/monster-1.jpg","muerto-1":"/go/img/muerto-1.jpg","nordic-0":"/go/img/nordic-0.jpg","nordic-1":"/go/img/nordic-1.jpg","pallof-0":"/go/img/pallof-0.jpg","pallof-1":"/go/img/pallof-1.jpg","pared-0":"/go/img/pared-0.jpg","pared-1":"/go/img/pared-1.jpg","patada-0":"/go/img/patada-0.jpg","patada-1":"/go/img/patada-1.jpg","plancha-0":"/go/img/plancha-0.jpg","plancha-1":"/go/img/plancha-1.jpg","pressh-0":"/go/img/pressh-0.jpg","pressh-1":"/go/img/pressh-1.jpg","puente-0":"/go/img/puente-0.jpg","puente-1":"/go/img/puente-1.jpg","puentepierna-0":"/go/img/puentepierna-0.jpg","puentepierna-1":"/go/img/puentepierna-1.jpg","pushpress-0":"/go/img/pushpress-0.jpg","pushpress-1":"/go/img/pushpress-1.jpg","rdl-0":"/go/img/rdl-0.jpg","remo-0":"/go/img/remo-0.jpg","remo-1":"/go/img/remo-1.jpg","remobarra-0":"/go/img/remobarra-0.jpg","remobarra-1":"/go/img/remobarra-1.jpg","remobis-1":"/go/img/remobis-1.jpg","remoinv-0":"/go/img/remoinv-0.jpg","remoinv-1":"/go/img/remoinv-1.jpg","remomanc-0":"/go/img/remomanc-0.jpg","remomanc-1":"/go/img/remomanc-1.jpg","rollout-0":"/go/img/rollout-0.jpg","rollout-1":"/go/img/rollout-1.jpg","sakbisagra-1":"/go/img/sakbisagra-1.jpg","sakbisagra-2":"/go/img/sakbisagra-2.jpg","sakbisagra-3":"/go/img/sakbisagra-3.jpg","sakcajon-1":"/go/img/sakcajon-1.jpg","sakcajon-2":"/go/img/sakcajon-2.jpg","sakcajon-3":"/go/img/sakcajon-3.jpg","sakcolgado-1":"/go/img/sakcolgado-1.jpg","sakcolgado-2":"/go/img/sakcolgado-2.jpg","sakfrontal-1":"/go/img/sakfrontal-1.jpg","sakfrontal-2":"/go/img/sakfrontal-2.jpg","sakfrontal-3":"/go/img/sakfrontal-3.jpg","sakfrontal-4":"/go/img/sakfrontal-4.jpg","sakmuerto-1":"/go/img/sakmuerto-1.jpg","sakmuerto-2":"/go/img/sakmuerto-2.jpg","sakplancha-1":"/go/img/sakplancha-1.jpg","sakplancha-2":"/go/img/sakplancha-2.jpg","sakpuentex-1":"/go/img/sakpuentex-1.jpg","sakpuentex-2":"/go/img/sakpuentex-2.jpg","sakrodillo-1":"/go/img/sakrodillo-1.jpg","sakrodillo-2":"/go/img/sakrodillo-2.jpg","sakrodillo-3":"/go/img/sakrodillo-3.jpg","saksentadilla-1":"/go/img/saksentadilla-1.jpg","saksentadilla-2":"/go/img/saksentadilla-2.jpg","saktiron-1":"/go/img/saktiron-1.jpg","salida-0":"/go/img/salida-0.jpg","salida-1":"/go/img/salida-1.jpg","salto-0":"/go/img/salto-0.jpg","salto-1":"/go/img/salto-1.jpg","shrug-0":"/go/img/shrug-0.jpg","shrug-1":"/go/img/shrug-1.jpg","sidebridge-0":"/go/img/sidebridge-0.jpg","sidebridge-1":"/go/img/sidebridge-1.jpg","skater-0":"/go/img/skater-0.jpg","skater-1":"/go/img/skater-1.jpg","skip-0":"/go/img/skip-0.jpg","skip-1":"/go/img/skip-1.jpg","sledpush-0":"/go/img/sledpush-0.jpg","sledpush-1":"/go/img/sledpush-1.jpg","split-0":"/go/img/split-0.jpg","split-1":"/go/img/split-1.jpg","stepup-0":"/go/img/stepup-0.jpg","stepup-1":"/go/img/stepup-1.jpg","swing-0":"/go/img/swing-0.jpg","swing-1":"/go/img/swing-1.jpg","talones-0":"/go/img/talones-0.jpg","talones-1":"/go/img/talones-1.jpg","tobillo-0":"/go/img/tobillo-0.jpg","trapbar-0":"/go/img/trapbar-0.jpg","trapbar-1":"/go/img/trapbar-1.jpg","tricep-0":"/go/img/tricep-0.jpg","tricep-1":"/go/img/tricep-1.jpg","trineo-0":"/go/img/trineo-0.jpg","trineo-1":"/go/img/trineo-1.jpg","trote-0":"/go/img/trote-0.jpg","wgs-0":"/go/img/wgs-0.jpg","wgs-1":"/go/img/wgs-1.jpg"};
 /* ---------- Plan ---------- */
 const FASE=['Carga','Carga','Carga','Descarga','Carga intensa','Carga intensa','Carga intensa','Descarga y test'];
 const DUR={A:[56,59,59,47,59,62,65,57],B:[56,58,60,48,62,62,64,57]};
-const DIA={A:'Desplazamiento lateral, potencia vertical y fuerza',B:'Aceleración, paso cruzado y potencia de cadera'};
+const DIA={A:'Desplazamiento lateral, potencia vertical y fuerza',B:'Paso cruzado, potencia de cadera y fuerza'};
 const r8=(a,d)=>[a,a,a,d,a,a,a,d];
 const fill=v=>Array(8).fill(v);
 const EX={
@@ -434,14 +450,14 @@ const EX={
  regen:{n:'Regeneración',img:[['flexor-0','Flexor de cadera: rodilla en el suelo']],pasos:[
   'Respiración 90/90: 1 min boca arriba con los pies en la pared y cadera y rodillas a 90°. Inhala 4 s por la nariz y exhala 6–8 s.',
   'Flexor de cadera: 30 s por lado con una rodilla en el suelo, apretando el glúteo de la pierna de atrás.']},
- salidas:{n:'Salidas desde 3 apoyos',img:[['salida-0','Posición de 3 apoyos'],['salida-1','Salida: empuje y braceo'],['pared-1','Inclinación de la aceleración']],pasos:[
+ salidas:{n:'Salidas desde 3 apoyos',img:[['salida-0','Posición de 3 apoyos'],['salida-1','Salida: empuje y brazos'],['pared-1','Inclinación de la aceleración']],pasos:[
   'Pie adelantado justo detrás de la línea. Pie trasero a la altura de la mitad de la pantorrilla del delantero.',
   'Mano contraria al pie adelantado en el suelo, cadera un poco más alta que los hombros.',
   'Empuja con las dos piernas y sal con el tronco inclinado unos 45°.',
   'Primeros pasos cortos y potentes, brazos fuertes desde el hombro. Endereza poco a poco.',
   'Camina de vuelta y descansa al menos 60 s. Cada salida al 100 %.'],
   clave:'Test (semana 8): 2 intentos de 10 m.'},
- sprint:{n:'Sprint lanzado',img:[['salida-1','Aceleración: empuje y braceo'],['pared-1','Postura de aceleración']],pasos:[
+ sprint:{n:'Sprint lanzado',img:[['salida-1','Aceleración: empuje y abdomen activo'],['pared-1','Postura de aceleración']],pasos:[
   'Lanzado: acelera progresivamente 15–20 m y corre el tramo marcado a máxima velocidad.',
   'Postura alta, el pie cae bajo la cadera, brazos activos.',
   'Variante: en una cuesta suave (3–5 %) para acelerar contra resistencia, con el cuerpo inclinado como en la salida.',
@@ -499,7 +515,7 @@ const PLAN={
   {id:'movA',b:'1b',p:fill('4 min')},
   {id:'pilarA',b:'1c',p:r8('1 vuelta','1 vuelta'),pM:r8('2 vueltas','1 vuelta')},
   {id:'actA',b:'1d',p:r8('1 serie','1 serie'),pM:r8('2 series','1 serie')},
-  {id:'mdcut',b:'2',p:['Nivel 1 · pared 1×10 s/lado + shuffle continuo con corte 2×3/lado (5 m)','Nivel 1 · pared 1×10 s/lado + shuffle continuo con corte 2×3/lado (5 m)','Nivel 2 · pared 1×10 s/lado + cortes dirigidos 2×4/lado (5–10 m)','Nivel 1 · shuffle con corte 1×3/lado (5 m) · descarga','Nivel 2 · cortes dirigidos 2×4/lado (5–10 m)','Nivel 2 · cortes dirigidos 2×5/lado (5–10 m)','Nivel 3 · secuencia shuffle → corte → sprint 2×3/lado (10 m)','Nivel 3 · secuencia shuffle → corte → sprint 1×3/lado (10 m)']},
+  {id:'mdcut',b:'2',p:['Nivel 1 · pared 1×10 s/lado + shuffle continuo con corte 2×3/lado (5 m)','Nivel 1 · pared 1×10 s/lado + shuffle continuo con corte 2×3/lado (5 m)','Nivel 2 · pared 1×10 s/lado + cortes dirigidos 2×4/lado (5–10 m)','Nivel 1 · shuffle con corte 1×3/lado (5 m) · descarga','Nivel 2 · cortes dirigidos 2×4/lado (5–10 m)','Nivel 2 · cortes dirigidos 2×5/lado (5–10 m)','Nivel 3 · secuencia shuffle → corte → aceleración 2×3/lado (5 m)','Nivel 3 · secuencia shuffle → corte → aceleración 1×3/lado (5 m)']},
   {id:'cajon',b:'2A',p:['Cajón 3×3','Cajón 3×3','Cajón 3×3','Cajón 2×3','Drop jump 3×4','Drop jump 3×4','Drop jump 3×4','Test CMJ y horizontal']},
   {id:'puenteexp',b:'2B',p:['Suelo 3×6','Suelo 3×6','Suelo 3×8','Suelo 2×6','De pie 3×5','De pie 3×5','De pie 4×5','Suelo 2×6']},
   {id:'cargada',b:'3',p:['3×3 · 50 kg','3×3 · 52,5 kg','3×3 · 55 kg','2×3 · 45 kg','4×2 · 57,5 kg','4×2 · 60 kg','4×2 · 62,5 kg','3×2 · 50 kg']},
@@ -514,9 +530,7 @@ const PLAN={
   {id:'movB',b:'1b',p:fill('4 min')},
   {id:'pilarB',b:'1c',p:r8('1 vuelta + pared','1 vuelta + pared'),pM:r8('2 vueltas + pared','1 vuelta + pared')},
   {id:'actB',b:'1d',p:r8('1 serie','1 serie'),pM:r8('2 series','1 serie')},
-  {id:'salidas',b:'2',p:['3×10 m','3×10 m','3×10 m','2×10 m','3×10 m','3×10 m','3×10 m','Test 10 m']},
-  {id:'sprint',b:'3',p:['2×20 m','2×20 m','2×20 m','2×20 m','2×30 m','2×30 m','2×30 m','Test 20 m']},
-  {id:'mdcross',b:'3x',p:['Nivel 1 · pared 1×10 s/lado + paso cruzado a la base 2×3/lado','Nivel 1 · pared 1×10 s/lado + paso cruzado a la base 2×3/lado','Nivel 2 · pared 1×10 s/lado + shuffle → paso cruzado → sprint 2×3/lado (5–10 m)','Nivel 1 · paso cruzado a la base 1×3/lado · descarga','Nivel 2 · shuffle → paso cruzado → sprint 2×4/lado (5–10 m)','Nivel 2 · shuffle → paso cruzado → sprint 2×4/lado (10 m)','Nivel 3 · corte → paso cruzado → sprint 2×3/lado (10–15 m)','Nivel 3 · corte → paso cruzado → sprint 1×3/lado (10 m)']},
+  {id:'mdcross',b:'3x',p:['Nivel 1 · pared 1×10 s/lado + paso cruzado a la base 2×3/lado','Nivel 1 · pared 1×10 s/lado + paso cruzado a la base 2×3/lado','Nivel 2 · pared 1×10 s/lado + shuffle → paso cruzado → aceleración 2×3/lado (5–10 m)','Nivel 1 · paso cruzado a la base 1×3/lado · descarga','Nivel 2 · shuffle → paso cruzado → aceleración 2×4/lado (5–10 m)','Nivel 2 · shuffle → paso cruzado → aceleración 2×4/lado (10 m)','Nivel 3 · corte → paso cruzado → aceleración 2×3/lado (10–15 m)','Nivel 3 · corte → paso cruzado → aceleración 1×3/lado (10 m)']},
   {id:'pushpress',b:'4A',p:['3×4 · 50 kg','3×4 · 52,5 kg','3×4 · 55 kg','2×3 · 45 kg','4×3 · 57,5 kg','4×3 · 60 kg','4×3 · 62,5 kg','3×3 · 50 kg']},
   {id:'skater',b:'4B',p:['Skater 3×4/lado','Skater 3×4/lado','Skater 3×4/lado','Skater 2×4/lado','Caída lateral 3×4/lado','Caída lateral 3×4/lado','Caída lateral 3×4/lado','Skater 2×4/lado']},
   {id:'frontal',b:'5A',p:['3×4 · 77,5 kg','3×4 · 80 kg','3×4 · 85 kg','2×4 · 70 kg','4×3 · 87,5 kg','4×3 · 90 kg','4×3 · 92,5 kg','Test 5RM'],rpe:RPE_SQ},
@@ -533,7 +547,7 @@ PLAN.C=[{..._row('B','tejidoB')},{..._row('B','movB')},{..._row('A','pilarA')},{
   {..._row('B','hipthrust'),b:'4A'},{..._row('A','kpallofsr'),b:'4B'},
   {..._row('A','mdcut'),b:'5'},{id:'regen',b:'6',p:fill('2 min')}];
 PLAN.U=[{..._row('A','tejidoA')},{..._row('A','movA')},{..._row('A','pilarA')},{..._row('A','actA')},
-  {..._row('B','salidas'),b:'2',p:['3×10 m','3×10 m','3×10 m','2×10 m','3×10 m','3×10 m','3×10 m','Test 10 m']},
+  
   {..._row('A','cargada'),b:'3'},{..._row('A','sentadilla'),b:'4A'},{..._row('A','kremomanc'),b:'4B'},
   {..._row('B','muerto'),b:'5A'},{..._row('B','dominadas'),b:'5B'},{..._row('A','kpallofsr'),b:'6'},{..._row('A','mdcut'),b:'7'},{..._row('A','regen'),b:'8'}];
 DUR.C=[55,57,60,45,60,63,65,48];DUR.U=[63,66,66,52,66,69,72,60];
@@ -542,14 +556,14 @@ EX.mdcut={n:'Velocidad multidireccional: desplazamiento lateral y corte',img:[['
   'Pared (técnica): manos en la pared, cuerpo inclinado y base más ancha que los hombros. Mantén la posición de corte 10 s por lado y luego carga y despega la pierna de afuera ×5.',
   'Shuffle: base baja, pies sin juntarse ni cruzarse, pecho al frente. Empuja el suelo con la pierna de afuera, cargando el borde interno del pie.',
   'Corte: baja el centro de gravedad, inclínate hacia la nueva dirección («ángulo adentro, ángulo afuera») y sal explosivo.',
-  'Nivel 1: continuo en 5 m. Nivel 2: cortes dirigidos (a un cono o a la voz de un compañero). Nivel 3: secuencias con sprint.',
+  'Nivel 1: continuo en 5 m. Nivel 2: cortes dirigidos (a un cono o a la voz de un compañero). Nivel 3: secuencias con una aceleración corta de 3–5 m.',
   'Cada repetición al 100 % y pausa completa: menos de 90 s entre repeticiones y hasta 2 min entre series.'],
   clave:'Quédate «bajo el techo»: la cabeza no sube ni baja. Si la técnica se pierde, la serie termina.'};
 EX.mdcross={n:'Velocidad multidireccional: paso cruzado',img:[['pared-1','Postura contra la pared'],['salida-1','Salida explosiva']],pasos:[
   'Pared (técnica): posición de paso cruzado 10 s por lado y luego carga y despega ×5.',
   'Desde la base, empuja con la pierna de adentro (borde externo del pie) y cruza la rodilla de afuera por delante «como si rompieras un vidrio».',
-  'Hombros y brazos contrarrotan para equilibrar la cadera. Sal directo al sprint.',
-  'Nivel 1: paso cruzado a la base. Nivel 2: shuffle → paso cruzado → sprint. Nivel 3: corte → paso cruzado → sprint.',
+  'Hombros y brazos contrarrotan para equilibrar la cadera. Sal con una aceleración corta de 3–5 m.',
+  'Nivel 1: paso cruzado a la base. Nivel 2: shuffle → paso cruzado → aceleración. Nivel 3: corte → paso cruzado → aceleración.',
   'Cada repetición al 100 %: pausa de hasta 90 s.'],
   clave:'La rodilla de afuera apunta a donde vas: el giro sale de la cadera, no de los pies.'};
 EX.zona2={n:'Aeróbico continuo en zona 2',img:[['cinta-1','Cinta inclinada a ritmo suave'],['remo-1','Remo continuo']],pasos:[
@@ -563,200 +577,200 @@ PLAN.B=PLAN.B.filter(x=>x.id!=='hipthrust');
 const PROG={rend:'Entrenamiento Rendimiento: salta más y aguanta más (potencia, salto y cardio)',core:'Entrenamiento Core: espalda y suelo pélvico fuertes (abdomen, glúteo y espalda)'};
 const PROGC={rend:'Rendimiento',core:'Core'};
 const COND={hernia:'Hernia lumbar',iue:'Incontinencia de esfuerzo',ambas:'Hernia lumbar e incontinencia',otra:'Otra / prevención'};
-const BR='Braceo: inhala, piso pélvico (Knack), braceo al % marcado y exhala en el esfuerzo. Nunca en apnea.';
+const BR='Activación del abdomen: inhala, piso pélvico, abdomen firme al % marcado y exhala en el esfuerzo. Nunca en apnea.';
 const EXC={
- kprep:{n:'Preparación: respiración, hollowing y movilidad',img:[['gato-0','Gato-camello: espalda redonda'],['gato-1','Gato-camello: espalda hacia abajo'],['puente-1','Puente glúteo a braceo 30 %']],pasos:[
+ kprep:{n:'Preparación: respiración, abdomen profundo y movilidad',img:[['gato-0','Gato-camello: espalda redonda'],['gato-1','Gato-camello: espalda hacia abajo'],['puente-1','Puente glúteo con abdomen firme al 30 %']],pasos:[
   'Respiración 90/90 con piso pélvico, 5 respiraciones: boca arriba con los pies en la pared y caderas y rodillas a 90°. Inhala por la nariz expandiendo las costillas hacia los lados; al exhalar, cierra y eleva el piso pélvico.',
-  'Hollowing de recordatorio 5×5 s: lleva suave el ombligo hacia dentro sin mover la pelvis y respira normal.',
+  'Abdomen profundo de recordatorio 5×5 s: lleva suave el ombligo hacia dentro sin mover la pelvis y respira normal.',
   'Gato-camello ×6: en cuadrupedia, redondea y extiende la espalda despacio, sin forzar los extremos.',
   '90/90 de cadera ×5 por lado: sentado con las dos rodillas a 90°, gira las piernas de un lado al otro con el tronco erguido.',
-  'Puente glúteo ×10 a braceo 30 %: Knack y exhala al subir.'],
-  clave:'Es el momento de «encender» el patrón: piso pélvico, braceo suave y respiración. Si al levantarte hoy tuviste dolor lumbar, haz este bloque con calma y sin flexión lumbar en la primera hora del día.'},
+  'Puente glúteo ×10 con abdomen firme al 30 %: Activa el suelo pélvico y exhala al subir.'],
+  clave:'Es el momento de «encender» el patrón: piso pélvico, activación suave del abdomen y respiración. Si al levantarte hoy tuviste dolor lumbar, haz este bloque con calma y sin flexión lumbar en la primera hora del día.'},
  kcurlup:{n:'Curl-up de McGill',img:[],pasos:[
   'Boca arriba, una rodilla flexionada y la otra pierna estirada. Manos bajo la zona lumbar para mantener su curva.',
-  'Inhala, Knack y braceo al 30 %. Eleva solo la cabeza y los hombros unos centímetros, como si la cabeza estuviera apoyada en una balanza. Aguanta el tiempo marcado respirando corto.',
+  'Inhala, activa el suelo pélvico y el abdomen al 30 %. Eleva solo la cabeza y los hombros unos centímetros, como si la cabeza estuviera apoyada en una balanza. Aguanta el tiempo marcado respirando corto.',
   'La zona lumbar no se aplana contra las manos y el mentón no se pega al pecho.',
   'Baja y cambia la pierna flexionada a mitad de las series.'],
   clave:'No es un abdominal clásico: no hay flexión de la columna lumbar.'},
  kdeadbug:{n:'Dead bug',video:'deadbug',img:[['deadbug-0','Brazos al techo, caderas y rodillas a 90°'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
   'Boca arriba, brazos al techo y caderas y rodillas a 90°.',
-  'Inhala, Knack y braceo al 30 %. Al exhalar, extiende un brazo atrás y la pierna contraria al frente, sin tocar el suelo.',
+  'Inhala, activa el suelo pélvico y el abdomen al 30 %. Al exhalar, extiende un brazo atrás y la pierna contraria al frente, sin tocar el suelo.',
   'La zona lumbar no se despega del suelo y el abdomen no se abomba. Vuelve y cambia de lado.'],
   clave:'Si la zona lumbar se despega, acorta el rango de la pierna.'},
  kplanchar:{n:'Plancha frontal sobre rodillas',img:[['plancha-0','Rodillas y antebrazos apoyados'],['plancha-1','Versión completa (fase 2)']],pasos:[
   'Antebrazos bajo los hombros y rodillas apoyadas, con el cuerpo recto de las rodillas a la cabeza.',
-  'Knack y braceo al 50 %. Mantén la posición respirando durante toda la plancha.',
+  'Suelo pélvico y abdomen firme al 50 %. Mantén la posición respirando durante toda la plancha.',
   'Sin hundir la zona lumbar ni subir la cadera.'],
   clave:'Respira corto y suave: la plancha no se aguanta en apnea.'},
  kpuente:{n:'Puente glúteo bilateral',video:'puente-bilateral',img:[['puente-0','Abajo: pies a la anchura de la cadera'],['puente-1','Arriba: rodilla, cadera y hombro alineados']],pasos:[
   'Boca arriba con rodillas flexionadas y pies a la anchura de la cadera.',
-  'Inhala abajo. Al subir, Knack, exhala y empuja con los talones hasta alinear rodilla, cadera y hombro.',
+  'Inhala abajo. Al subir, activa el suelo pélvico, exhala y empuja con los talones hasta alinear rodilla, cadera y hombro.',
   'Aguanta arriba el tiempo marcado apretando los glúteos. Las costillas no se abren y la zona lumbar no se arquea.'],
   clave:BR},
  kclam:{n:'Clamshell con banda',img:[],pasos:[
   'De lado, caderas y rodillas a unos 45°, con una mini band sobre las rodillas.',
-  'Braceo al 30 %. Abre la rodilla de arriba sin separar los pies y sin que la pelvis rote hacia atrás.',
+  'Abdomen firme al 30 %. Abre la rodilla de arriba sin separar los pies y sin que la pelvis rote hacia atrás.',
   'Baja controlado.'],
   clave:'La pelvis queda quieta: si gira, baja la resistencia de la banda.'},
  kremoband:{n:'Remo con banda de pie',img:[['remo-0','Remo: brazos extendidos'],['remo-1','Codos atrás, escápulas juntas']],pasos:[
-  'Banda anclada a la altura del pecho. De pie, rodillas suaves y braceo al 30 %.',
+  'Banda anclada a la altura del pecho. De pie, rodillas suaves y abdomen firme al 30 %.',
   'Tira llevando los codos atrás y las escápulas atrás y abajo. Exhala al tirar.',
   'El tronco se mantiene neutro: no te echas hacia atrás.'],
   clave:'Hombros lejos de las orejas.'},
  klateralr:{n:'Plancha lateral sobre rodillas',img:[['sakplancha-1','Antebrazo y rodillas apoyados'],['sakplancha-2','Cadera arriba, cuerpo alineado']],pasos:[
   'De costado, antebrazo bajo el hombro y rodillas flexionadas.',
-  'Knack y braceo al 50 %. Sube la cadera hasta alinear rodillas, cadera y cabeza.',
+  'Suelo pélvico y abdomen firme al 50 %. Sube la cadera hasta alinear rodillas, cadera y cabeza.',
   'Aguanta el tiempo marcado respirando y baja. Repite y cambia de lado.'],
   clave:'La cadera no cae ni se va hacia atrás.'},
  kbirddog:{n:'Bird dog',img:[],pasos:[
-  'En cuadrupedia, manos bajo los hombros y rodillas bajo las caderas. Braceo al 30 %.',
+  'En cuadrupedia, manos bajo los hombros y rodillas bajo las caderas. Abdomen firme al 30 %.',
   'Extiende un brazo al frente y la pierna contraria atrás, hasta la horizontal. Aguanta el tiempo marcado.',
   'La pelvis no rota: puedes apoyar un vaso de plástico en la zona lumbar como control.',
   'Vuelve barriendo el suelo con la mano y la rodilla y cambia de lado.'],
   clave:'Es uno de los tres grandes de McGill: control antes que rango.'},
  kpallofsr:{n:'Pallof press en semirrodillas',video:'pallof-semirrodillas',img:[['pallof-0','Manos en el esternón'],['pallof-1','Brazos extendidos, el tronco no gira']],pasos:[
   'De lado al anclaje (polea o banda), con la rodilla de dentro en el suelo y la de fuera adelante.',
-  'Braceo al 30–50 %. Exhala mientras extiendes los brazos al frente y aguanta 3 s sin que el tronco gire.',
+  'Abdomen firme al 30–50 %. Exhala mientras extiendes los brazos al frente y aguanta 3 s sin que el tronco gire.',
   'Vuelve las manos al esternón. Haz todas las repeticiones y cambia de lado.'],
   clave:'La carga es suficiente cuando cuesta mantener el tronco quieto.'},
  kpuente1:{n:'Puente a una pierna (apoyo amplio)',video:'puente-una-pierna',img:[['puentepierna-0','Abajo: un pie apoyado'],['puentepierna-1','Arriba: la pelvis no cae']],pasos:[
   'Boca arriba, un pie apoyado y la otra pierna con la rodilla flexionada en el aire.',
-  'Knack y exhala al subir la cadera empujando con el talón.',
+  'Activa el suelo pélvico y exhala al subir la cadera empujando con el talón.',
   'La pelvis queda horizontal, sin caer hacia el lado de la pierna libre.'],
   clave:'Si la pelvis cae, apoya el pie libre un poco y progresa.'},
  kmonster:{n:'Monster walk con banda',img:[['monster-0','Mini band, media sentadilla'],['monster-1','Paso lateral sin juntar los pies']],pasos:[
-  'Mini band sobre las rodillas o en los tobillos, en media sentadilla y braceo al 30 %.',
+  'Mini band sobre las rodillas o en los tobillos, en media sentadilla y abdomen firme al 30 %.',
   'Da pasos laterales o en diagonal cortos, sin juntar los pies y con las rodillas empujando hacia fuera.',
   'Tronco quieto, sin balancearte.'],
   clave:'Siente el trabajo en el lateral de la cadera.'},
  kfacepull:{n:'Face pull con banda',img:[['facepull-0','Brazos extendidos al anclaje'],['facepull-1','Tira hacia la cara con rotación externa']],pasos:[
-  'Banda o polea a la altura de la cara. Braceo al 30 %.',
+  'Banda o polea a la altura de la cara. Abdomen firme al 30 %.',
   'Tira hacia la cara separando las manos y termina con los pulgares hacia atrás (rotación externa).',
   'Exhala al tirar. Escápulas atrás y abajo.'],
   clave:'Sin arquear la zona lumbar.'},
  kdeadbugc:{n:'Dead bug con banda o disco',video:'deadbug-disco',img:[['deadbug-0','Disco o banda en las manos'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
   'Igual que el dead bug, sosteniendo un disco de 2–5 kg o una banda anclada detrás de la cabeza.',
-  'Braceo al 50 %. Exhala en la extensión de brazo y pierna.',
+  'Abdomen firme al 50 %. Exhala en la extensión de brazo y pierna.',
   'La zona lumbar sigue pegada al suelo.'],
   clave:'Si el abdomen se abomba, baja el peso.'},
  kplanchat:{n:'Plancha completa con toque de hombro',img:[['plancha-1','Plancha completa']],pasos:[
   'Plancha alta (manos bajo los hombros) con los pies algo separados.',
-  'Braceo al 50 %. Toca el hombro contrario con una mano, alternando.',
+  'Abdomen firme al 50 %. Toca el hombro contrario con una mano, alternando.',
   'La pelvis no rota ni se balancea.'],
   clave:'Separa más los pies si la pelvis se mueve.'},
  khipthrust:{n:'Hip thrust con barra o mancuerna',img:[['hipthrust-0','Abajo: espalda alta en el banco'],['hipthrust-1','Arriba: cadera extendida']],pasos:[
   'Espalda alta apoyada en el banco, barra (con almohadilla) o mancuerna sobre la cadera.',
-  'Inhala abajo. Knack, exhala y sube hasta extender la cadera, con 1 s de pausa arriba.',
+  'Inhala abajo. Activa el suelo pélvico, exhala y sube hasta extender la cadera, con 1 s de pausa arriba.',
   'Mentón metido y costillas abajo: sin hiperextender la zona lumbar.'],
   clave:BR},
  krdl:{n:'Peso muerto rumano con mancuernas',img:[['sakbisagra-2','De pie: carga en la cadera'],['sakbisagra-3','Bisagra hasta pasar las rodillas'],['rdl-0','Versión con barra']],pasos:[
   'De pie con las mancuernas delante de los muslos y rodillas suaves.',
-  'Inhala y bracea al 50 %. Lleva la cadera atrás con la columna neutra, bajando las mancuernas cerca de las piernas.',
-  'Baja solo hasta donde mantienes la columna neutra. Knack y exhala al subir empujando la cadera al frente.'],
+  'Inhala y activa el abdomen al 50 %. Lleva la cadera atrás con la columna neutra, bajando las mancuernas cerca de las piernas.',
+  'Baja solo hasta donde mantienes la columna neutra. Activa el suelo pélvico y exhala al subir empujando la cadera al frente.'],
   clave:'La bisagra es el patrón para levantar objetos del día a día sin cargar la zona lumbar.'},
  kgoblet:{n:'Sentadilla goblet a cajón',img:[['goblet-0','Mancuerna al pecho'],['goblet-1','Abajo: tronco erguido']],pasos:[
   'Mancuerna o kettlebell al pecho y un cajón detrás.',
   'Inhala al bajar con la cadera atrás hasta tocar el cajón, sin relajarte.',
-  'Knack y exhala al subir. Rodillas en la dirección de los pies.'],
-  clave:'Braceo al 50 %.'},
+  'Activa el suelo pélvico y exhala al subir. Rodillas en la dirección de los pies.'],
+  clave:'Abdomen firme al 50 %.'},
  kremomanc:{n:'Remo con mancuerna con apoyo',img:[['remomanc-0','Mano y rodilla en el banco'],['remomanc-1','Codo atrás, cerca del cuerpo']],pasos:[
   'Mano y rodilla del mismo lado en el banco, espalda neutra.',
-  'Braceo al 30–50 %. Tira de la mancuerna llevando el codo atrás; exhala al tirar.',
+  'Abdomen firme al 30–50 %. Tira de la mancuerna llevando el codo atrás; exhala al tirar.',
   'Sin rotar el tronco.'],
   clave:'El tronco queda paralelo al banco todo el tiempo.'},
  klateral:{n:'Plancha lateral completa',img:[['sidebridge-0','Antebrazo bajo el hombro'],['sidebridge-1','Cadera arriba, cuerpo alineado']],pasos:[
   'De costado, antebrazo bajo el hombro y piernas extendidas.',
-  'Knack y braceo al 50 %. Sube la cadera hasta alinear el cuerpo y aguanta respirando.',
+  'Suelo pélvico y abdomen firme al 50 %. Sube la cadera hasta alinear el cuerpo y aguanta respirando.',
   'Cambia de lado.'],
   clave:'Si la cadera cae antes de tiempo, termina la serie sobre las rodillas.'},
  kpallofpaso:{n:'Pallof press de pie con paso lateral',img:[['pallof-0','Manos en el esternón'],['pallof-1','Brazos extendidos']],pasos:[
   'De pie, de lado al anclaje, con los brazos extendidos al frente.',
-  'Braceo al 50 %. Da pasos laterales alejándote y volviendo, sin que el tronco ni los brazos giren.',
+  'Abdomen firme al 50 %. Da pasos laterales alejándote y volviendo, sin que el tronco ni los brazos giren.',
   'Exhala en cada paso.'],
   clave:'El tronco no gira.'},
  kbirddogc:{n:'Bird dog con banda o tobillera',img:[],pasos:[
   'Igual que el bird dog, con una tobillera o una banda que resista la pierna.',
-  'Braceo al 30–50 %. Extiende brazo y pierna contrarios y aguanta 3 s.',
+  'Abdomen firme al 30–50 %. Extiende brazo y pierna contrarios y aguanta 3 s.',
   'La pelvis no rota.'],
   clave:'Control antes que carga.'},
  kstepup:{n:'Step-up a cajón bajo',img:[['stepup-0','Un pie en el cajón'],['stepup-1','Arriba: cadera extendida']],pasos:[
   'Un pie en un cajón de 20–40 cm, con mancuernas si toca.',
-  'Braceo al 50 %. Exhala y sube empujando con el pie de arriba, sin impulsarte con el de abajo.',
+  'Abdomen firme al 50 %. Exhala y sube empujando con el pie de arriba, sin impulsarte con el de abajo.',
   'Rodilla sobre el pie y la pelvis horizontal. Baja controlado.'],
   clave:'Sin impacto: se sube y se baja caminando.'},
  kpuentetalon:{n:'Puente a una pierna con talón en banco',img:[['puentepierna-1','Puente a una pierna']],pasos:[
   'Boca arriba con un talón sobre un banco y la otra pierna arriba.',
-  'Knack, exhala y sube la cadera empujando con el talón.',
+  'Activa el suelo pélvico, exhala y sube la cadera empujando con el talón.',
   'Pelvis horizontal. Baja controlado.'],
   clave:'Trabajan glúteo e isquiotibiales.'},
  kjalon:{n:'Jalón con banda o polea',img:[['jalon-0','Brazos arriba'],['jalon-1','Barra al pecho, codos abajo']],pasos:[
   'Sentado o de rodillas, con la banda o la polea arriba.',
-  'Braceo al 30–50 %. Tira llevando los codos hacia abajo y atrás, hasta el pecho. Exhala al tirar.',
+  'Abdomen firme al 30–50 %. Tira llevando los codos hacia abajo y atrás, hasta el pecho. Exhala al tirar.',
   'Sin arquear la zona lumbar.'],
   clave:'Las costillas no se abren.'},
  kmaleta:{n:'Paseo de maleta',video:'paseo-maleta',img:[['granjero-1','Paseo con carga (en la maleta, una sola mano)']],pasos:[
   'Una mancuerna o kettlebell en una sola mano.',
-  'Braceo al 50 %. Camina erguido con pasos cortos, sin inclinarte hacia ningún lado.',
+  'Abdomen firme al 50 %. Camina erguido con pasos cortos, sin inclinarte hacia ningún lado.',
   'Cambia de mano en cada vuelta.'],
   clave:'Es antiflexión lateral: el tronco no se dobla hacia la carga.'},
  krollout:{n:'Rollout con rueda o fitball, rango corto',img:[['rollout-0','Inicio: de rodillas, rueda bajo los hombros'],['rollout-1','Rango corto: la lumbar sigue neutra']],pasos:[
   'De rodillas con la rueda (o los antebrazos sobre un fitball) bajo los hombros.',
-  'Braceo al 70 %. Rueda hacia delante solo hasta donde la zona lumbar se mantiene neutra.',
+  'Abdomen firme al 70 %. Rueda hacia delante solo hasta donde la zona lumbar se mantiene neutra.',
   'Exhala al volver.'],
   clave:'Si la zona lumbar se hunde, acorta el rango.'},
  khipthrustp:{n:'Hip thrust pesado',img:[['hipthrust-0','Abajo'],['hipthrust-1','Arriba: cadera extendida']],pasos:[
   'Igual que en la fase 2, con más carga.',
-  'Braceo al 70 %, Knack y exhala en cada repetición.',
+  'Abdomen firme al 70 %, activa el suelo pélvico y exhala en cada repetición.',
   'Pausa de 1 s arriba sin hiperextender la zona lumbar.'],
   clave:BR},
  ktrapbar:{n:'Peso muerto con trap bar o kettlebell desde cajón',img:[['trapbar-0','Inicio: cadera atrás, espalda neutra'],['trapbar-1','Bloqueo: de pie']],pasos:[
   'Dentro de la trap bar o con la kettlebell sobre un cajón, pies a la anchura de la cadera.',
-  'Inhala y bracea al 70 %. Knack y empuja el suelo hasta ponerte de pie, exhalando en el esfuerzo.',
+  'Inhala y activa el abdomen al 70 %. Activa el suelo pélvico y empuja el suelo hasta ponerte de pie, exhalando en el esfuerzo.',
   'Baja con la cadera atrás y la columna neutra.'],
-  clave:'Es el levantamiento del día a día: bisagra y braceo.'},
+  clave:'Es el levantamiento del día a día: bisagra y abdomen activo.'},
  kgobletp:{n:'Sentadilla goblet profunda',img:[['goblet-0','Mancuerna al pecho'],['goblet-1','Abajo: tronco erguido']],pasos:[
   'Mancuerna o kettlebell al pecho.',
   'Inhala al bajar hasta donde mantienes la columna neutra.',
-  'Knack y exhala al subir. Braceo al 50–70 %.'],
+  'Activa el suelo pélvico y exhala al subir. Abdomen firme al 50–70 %.'],
   clave:'Rodillas en la dirección de los pies.'},
  kremoinv:{n:'Remo invertido en TRX o barra',img:[['remoinv-0','Abajo: cuerpo como una plancha'],['remoinv-1','Pecho a la barra']],pasos:[
   'Colgado del TRX o de una barra baja, con el cuerpo recto como una plancha.',
-  'Braceo al 50 %. Tira del pecho hacia las manos y exhala al subir.',
+  'Abdomen firme al 50 %. Tira del pecho hacia las manos y exhala al subir.',
   'La cadera no cae.'],
   clave:'Cuanto más horizontal el cuerpo, más difícil.'},
  kgranjero:{n:'Paseo de granjero pesado',img:[['granjero-1','Una carga en cada mano']],pasos:[
   'Una mancuerna o kettlebell pesada en cada mano.',
-  'Braceo al 70 %. Camina erguido con las costillas abajo y pasos cortos.',
+  'Abdomen firme al 70 %. Camina erguido con las costillas abajo y pasos cortos.',
   'Respira durante todo el recorrido.'],
   clave:'Si aparece escape o peso perineal, baja la carga.'},
  klateralabd:{n:'Plancha lateral con abducción de cadera',img:[['sidebridge-1','Plancha lateral']],pasos:[
   'En plancha lateral completa.',
-  'Braceo al 50–70 %. Sube y baja la pierna de arriba sin que la cadera caiga.',
+  'Abdomen firme al 50–70 %. Sube y baja la pierna de arriba sin que la cadera caiga.',
   'Cambia de lado.'],
   clave:'Trabaja el glúteo medio del lado de arriba y el core lateral del de abajo.'},
  kchop:{n:'Chop o lift en polea (diagonal)',img:[['chop-0','Inicio: arriba y al lado'],['chop-1','Final: diagonal abajo']],pasos:[
   'De pie, de lado a la polea, con los brazos extendidos.',
-  'Braceo al 50–70 %. Lleva la cuerda en diagonal girando desde la cadera y los pies, no desde la zona lumbar.',
+  'Abdomen firme al 50–70 %. Lleva la cuerda en diagonal girando desde la cadera y los pies, no desde la zona lumbar.',
   'Exhala en el esfuerzo y vuelve controlado.'],
   clave:'Rota la cadera, no la columna lumbar.'},
  ksplit:{n:'Split squat con mancuernas',img:[['split-0','Arriba: piernas separadas'],['split-1','Abajo: rodilla trasera cerca del suelo']],pasos:[
   'Un pie adelante y otro atrás, con mancuernas a los lados.',
-  'Inhala al bajar en vertical. Knack y exhala al subir. Braceo al 50–70 %.',
+  'Inhala al bajar en vertical. Activa el suelo pélvico y exhala al subir. Abdomen firme al 50–70 %.',
   'La rodilla delantera sigue al pie.'],
   clave:'Tronco erguido.'},
  kextension:{n:'Extensión de espalda a 45° (isométrica)',img:[['extension-0','Banco a 45°: cuerpo alineado']],pasos:[
   'En el banco a 45°, con la cadera apoyada.',
-  'Braceo al 50 %. Sube solo hasta alinear el cuerpo (posición neutra) y aguanta 5 s.',
+  'Abdomen firme al 50 %. Sube solo hasta alinear el cuerpo (posición neutra) y aguanta 5 s.',
   'Nunca en hiperextensión. Baja controlado.'],
   clave:'Es fuerza de extensores en neutro, no movilidad lumbar.'},
  kremobisagra:{n:'Remo con mancuerna en bisagra, sin apoyo',img:[['remobis-1','Bisagra con la espalda neutra']],pasos:[
   'En bisagra de cadera, con la columna neutra y una mancuerna en una mano.',
-  'Braceo al 50–70 %. Tira del codo atrás y exhala.',
+  'Abdomen firme al 50–70 %. Tira del codo atrás y exhala.',
   'El tronco no rota.'],
   clave:'Bisagra y antirrotación a la vez.'},
  kcarrera:{n:'Paseo de pesos con cambios (granjero → maleta)',img:[['granjero-1','Paseo con carga']],pasos:[
   'Camina con una carga en cada mano (granjero). A mitad del recorrido, deja una y sigue con una sola (maleta).',
-  'Braceo al 70 %. Erguido, sin inclinarte.',
+  'Abdomen firme al 70 %. Erguido, sin inclinarte.',
   'Respira durante todo el recorrido.'],
   clave:'Si aparece escape o peso perineal, baja la carga.'},
  kcalma:{n:'Vuelta a la calma',video:'respiracion-diafragmatica',img:[['flexor-0','Estiramiento del flexor de cadera'],['flexor-1','Glúteo de atrás apretado']],pasos:[
@@ -768,74 +782,74 @@ Object.assign(EX,EXC);
 Object.assign(EX,{
  klanzsup:{n:'Lanzamiento de pecho boca arriba',video:'lanz-supino',img:[['lanzsup-0','Balón en el pecho, rodillas flexionadas'],['lanzsup-1','Lanza vertical y recibe con brazos largos']],pasos:[
   'Boca arriba con rodillas flexionadas y un balón medicinal de 2–3 kg en el pecho.',
-  'Inhala, Knack y braceo al 30 %. Lanza el balón hacia arriba exhalando fuerte, sin despegar la zona lumbar ni las costillas.',
+  'Inhala, activa el suelo pélvico y el abdomen al 30 %. Lanza el balón hacia arriba exhalando fuerte, sin despegar la zona lumbar ni las costillas.',
   'Recíbelo con los brazos largos y vuelve a llevarlo al pecho controlado.'],
   clave:'Primer contacto con la velocidad: el abdomen no se abomba al lanzar.'},
  klanzpecho:{n:'Pase de pecho con balón medicinal',video:'pase-pecho',img:[['lanzpecho-0','Balón en el pecho'],['lanzpecho-1','Empuje explosivo, brazos extendidos']],pasos:[
   'De pie frente a una pared (a 2–3 m) o a un compañero, con un balón de 3–4 kg en el pecho.',
-  'Inhala, Knack y braceo al 50 %. Empuja el balón explosivo exhalando fuerte («tss»), con el tronco firme.',
+  'Inhala, activa el suelo pélvico y el abdomen al 50 %. Empuja el balón explosivo exhalando fuerte («tss»), con el tronco firme.',
   'Recíbelo amortiguando con los brazos y reajusta antes del siguiente.'],
   clave:'La fuerza sale de piernas y tronco firme, sin arquear la zona lumbar.'},
  klanzrot:{n:'Lanzamiento rotacional en semirrodillas',video:'lanz-rotacional',img:[],pasos:[
   'En semirrodillas, de lado a una pared (a 1–2 m), con un balón de 2–4 kg a la altura de la cadera de atrás.',
-  'Braceo al 50 % y Knack. Gira desde la cadera y el tórax y lanza el balón contra la pared exhalando fuerte.',
+  'Abdomen firme al 50 % y suelo pélvico activo. Gira desde la cadera y el tórax y lanza el balón contra la pared exhalando fuerte.',
   'La zona lumbar no rota: el giro sale de la cadera y la columna torácica. Haz todas las repeticiones y cambia de lado.'],
   clave:'Rotación potente con la pelvis estable.'},
  klanzrotp:{n:'Lanzamiento rotacional de pie',img:[],pasos:[
   'De pie, de lado a la pared, pies a la anchura de los hombros y balón de 3–5 kg a la altura de la cadera de atrás.',
-  'Braceo al 50–70 % y Knack. Carga la cadera de atrás y lanza girando la cadera y el pie de atrás, exhalando fuerte.',
+  'Abdomen firme al 50–70 % y suelo pélvico activo. Carga la cadera de atrás y lanza girando la cadera y el pie de atrás, exhalando fuerte.',
   'La pelvis y el tronco giran juntos: la zona lumbar no se tuerce sola. Cambia de lado.'],
   clave:'Intención máxima en cada lanzamiento; si la velocidad baja, termina la serie.'},
  klanzover:{n:'Lanzamiento por encima de la cabeza',img:[['lanzover-0','Balón al pecho, de pie'],['lanzover-1','Brazos atrás de la cabeza, lanza al frente']],pasos:[
   'De pie frente a una pared o en campo abierto, con un balón de 2–4 kg.',
-  'Lleva el balón por encima de la cabeza con las costillas abajo y braceo al 50–70 % (sin arquear la zona lumbar).',
+  'Lleva el balón por encima de la cabeza con las costillas abajo y abdomen firme al 50–70 % (sin arquear la zona lumbar).',
   'Lanza hacia el frente exhalando fuerte, con un paso si hace falta. Recoge y repite.'],
   clave:'El arco atrás es corto: la potencia viene de piernas y tronco firme, no de hiperextender la columna.'},
  klanzatras:{n:'Lanzamiento hacia atrás por encima de la cabeza',video:'lanz-atras',img:[['lanzatras-0','Bisagra con el balón entre las piernas'],['lanzatras-1','Extensión de cadera explosiva, lanza atrás']],pasos:[
   'De pie con un balón de 3–6 kg. Bisagra de cadera con la columna neutra y el balón entre las rodillas.',
-  'Inhala, Knack y braceo al 70 %. Extiende la cadera de forma explosiva y lanza el balón hacia atrás por encima de la cabeza, exhalando fuerte.',
+  'Inhala, activa el suelo pélvico y el abdomen al 70 %. Extiende la cadera de forma explosiva y lanza el balón hacia atrás por encima de la cabeza, exhalando fuerte.',
   'Al terminar, el cuerpo queda alineado: la extensión es de cadera, no de la zona lumbar.'],
   clave:'Es la bisagra hecha potencia. Campo libre detrás.'},
  klanzscoop:{n:'Lanzamiento vertical desde sentadilla',img:[['lanzscoop-0','Sentadilla con el balón entre las piernas'],['lanzscoop-1','Extensión completa, balón arriba']],pasos:[
   'De pie con un balón de 3–5 kg, baja a media sentadilla con el balón entre las piernas.',
-  'Braceo al 70 % y Knack. Extiende piernas y cadera de forma explosiva y lanza el balón hacia arriba, exhalando fuerte.',
+  'Abdomen firme al 70 % y suelo pélvico activo. Extiende piernas y cadera de forma explosiva y lanza el balón hacia arriba, exhalando fuerte.',
   'Déjalo caer delante y repite. Sin salto si todavía hay escape: solo extensión hasta la punta de los pies.'],
   clave:'Triple extensión con el tronco firme.'},
  ksentbarra:{n:'Sentadilla frontal con barra',video:'sent-frontal',img:[['sakfrontal-3','Barra apoyada en los hombros'],['sakfrontal-2','Abajo: tronco vertical'],['sakfrontal-4','Codos altos y barra pegada al cuello']],pasos:[
   'Barra sobre los deltoides anteriores, codos altos y pies a la anchura de los hombros.',
-  'Inhala y bracea al 70 % antes de bajar. Baja con el tronco vertical hasta donde mantienes la columna neutra.',
-  'Knack y exhala al subir, sin soltar el braceo. Nunca en apnea.'],
+  'Inhala y activa el abdomen al 70 % antes de bajar. Baja con el tronco vertical hasta donde mantienes la columna neutra.',
+  'Activa el suelo pélvico y exhala al subir, sin soltar el abdomen. Nunca en apnea.'],
   clave:'El tronco vertical carga menos la zona lumbar que la sentadilla posterior.'},
  kmuertobarra:{n:'Peso muerto con barra o trap bar',img:[['sakmuerto-1','Inicio: cadera atrás, espalda neutra'],['sakmuerto-2','Agarre por fuera de las piernas'],['trapbar-0','Versión con trap bar']],pasos:[
   'Barra sobre el medio del pie (o dentro de la trap bar), espalda neutra y dorsales activos.',
-  'Inhala y bracea al 70 %. Knack y empuja el suelo, exhalando en la parte alta, con la barra pegada al cuerpo.',
+  'Inhala y activa el abdomen al 70 %. Activa el suelo pélvico y empuja el suelo, exhalando en la parte alta, con la barra pegada al cuerpo.',
   'Bloquea cadera y rodillas a la vez, sin echarte atrás. Baja con la cadera atrás y reajusta antes de la siguiente.'],
   clave:'Si la columna pierde el neutro o aparece escape, termina la serie.'},
  kremobarra:{n:'Remo con barra en bisagra',img:[['remobarra-0','Bisagra, barra colgando'],['remobarra-1','Barra al abdomen']],pasos:[
   'En bisagra de cadera con la columna neutra y agarre a la anchura de los hombros.',
-  'Braceo al 50–70 %. Tira de la barra al abdomen llevando los codos atrás y exhala.',
+  'Abdomen firme al 50–70 %. Tira de la barra al abdomen llevando los codos atrás y exhala.',
   'El tronco no se levanta para ayudar.'],
   clave:'Bisagra isométrica y espalda a la vez.'},
  klandmine:{n:'Landmine press a una mano, de pie',img:[['landmine-0','Barra a la altura del hombro'],['landmine-1','Empuje en diagonal']],pasos:[
   'Extremo de la barra a la altura del hombro, de pie, pies a la anchura de la cadera.',
-  'Braceo al 50–70 %. Empuja en diagonal exhalando, sin rotar ni arquear la zona lumbar.',
+  'Abdomen firme al 50–70 %. Empuja en diagonal exhalando, sin rotar ni arquear la zona lumbar.',
   'Baja controlado. Cambia de lado.'],
   clave:'Antirrotación con empuje.'},
  kjammer:{n:'Landmine jammer (empuje explosivo)',img:[['jammer-0','Media sentadilla, barra al hombro'],['jammer-1','Extensión explosiva de piernas a brazo']],pasos:[
   'Extremo de la barra al hombro, en media sentadilla.',
-  'Braceo al 70 % y Knack. Extiende piernas y cadera de forma explosiva y empuja la barra hasta extender el brazo, exhalando fuerte.',
+  'Abdomen firme al 70 % y suelo pélvico activo. Extiende piernas y cadera de forma explosiva y empuja la barra hasta extender el brazo, exhalando fuerte.',
   'Recibe la barra de vuelta al hombro amortiguando con las piernas. Cambia de lado.'],
   clave:'La potencia viaja de los pies a la mano con el tronco firme.'},
  kswing:{n:'Kettlebell swing',video:'swing',img:[['swing-0','Arriba: cadera extendida'],['swing-1','Bisagra: kettlebell entre las piernas']],pasos:[
   'Kettlebell delante, pies algo más anchos que la cadera. Bisagra y lleva la kettlebell entre las piernas.',
-  'Extiende la cadera de forma explosiva: la kettlebell sube por inercia hasta la altura del pecho. Exhala fuerte («tss») arriba con braceo al 50–70 % y Knack.',
+  'Extiende la cadera de forma explosiva: la kettlebell sube por inercia hasta la altura del pecho. Exhala fuerte («tss») arriba con el abdomen firme al 50–70 % y el suelo pélvico activo.',
   'Arriba, cuerpo alineado: sin echarte atrás. Deja caer la kettlebell y vuelve a la bisagra.'],
   clave:'Es bisagra, no sentadilla ni tirón de brazos. Si hay escape, vuelve al peso muerto rumano.'},
 
- kpuentex:{...EX.puenteexp,n:'Puente explosivo con barra',clave:'Braceo al 50–70 %, Knack y exhala fuerte en la extensión. Si la velocidad baja, termina la serie.'}});
+ kpuentex:{...EX.puenteexp,n:'Puente explosivo con barra',clave:'Abdomen firme al 50–70 %, activa el suelo pélvico y exhala fuerte en la extensión. Si la velocidad baja, termina la serie.'}});
 EX.krdl={...EX.krdl,n:'Peso muerto rumano con barra',img:[['sakbisagra-2','De pie: barra en la cadera'],['sakbisagra-3','Bisagra hasta pasar las rodillas'],['rdl-0','Bisagra con barra']]};
 const W3=(w,a)=>{const r=Array(8).fill(null);a.forEach((v,i)=>r[w-1+i]=v);return r};
-const bz=(a,b)=>a.map(x=>x+' · braceo '+b);
+const bz=(a,b)=>a.map(x=>x+' · abdomen firme '+b);
 const PLANC={
  A:[
   {id:'kprep',b:'1',p:fill('8 min')},
@@ -1037,12 +1051,12 @@ const CTRL='Control: si pierdes la posición, la serie termina ahí. Marca «Té
 Object.assign(EX,{
  xprep:{n:'Respiración y abdomen profundo',video:'respiracion-diafragmatica',img:[['gato-0','Gato-camello'],['puente-1','Puente de glúteo']],pasos:[
   'Semanas 1–2 · respiración diafragmática: boca arriba con las rodillas dobladas, una mano en el pecho y otra en el abdomen. Inhala por la nariz llevando el aire al abdomen y a las costillas de los lados (la mano del pecho casi no se mueve) y exhala lento.',
-  'Hollowing: al exhalar, lleva el ombligo suave hacia adentro y arriba y cierra el piso pélvico, sin mover la pelvis. Aguanta 10 s respirando suave, sin retener el aire. Es una contracción baja (20–30 %): si se aprietan los glúteos o se hunde el pecho, es demasiado.',
+  'Abdomen profundo: al exhalar, lleva el ombligo suave hacia adentro y arriba y cierra el piso pélvico, sin mover la pelvis. Aguanta 10 s respirando suave, sin retener el aire. Es una contracción baja (20–30 %): si se aprietan los glúteos o se hunde el pecho, es demasiado.',
   'Semanas 3–4 · ejercicio de Lewit: boca arriba, exhala por la boca lento y hasta el final, como si apagaras una vela lejana. Sentirás que el abdomen profundo se cierra; la zona lumbar no se mueve. Después, abdomen profundo en cuatro apoyos y sentado.',
-  'Semanas 5–6 · del abdomen profundo al braceo: activa el abdomen profundo y desde ahí tensa todo el contorno del abdomen (braceo), sin hundirlo ni inflarlo. Respira manteniéndolo: es la faja que usarás para moverte y cargar.',
-  'Semanas 7–8 · en tareas: mantén un braceo suave respirando de pie, caminando, al agacharte y al levantar una caja.',
+  'Semanas 5–6 · del abdomen profundo al activación del abdomen: activa el abdomen profundo y desde ahí tensa todo el contorno del abdomen , sin hundirlo ni inflarlo. Respira manteniéndolo: es la faja que usarás para moverte y cargar.',
+  'Semanas 7–8 · en tareas: mantén un activación suave del abdomen respirando de pie, caminando, al agacharte y al levantar una caja.',
   'Termina con gato-camello ×6 y puente de glúteo ×8.'],
-  clave:'Primero aprendes a encender el abdomen profundo sin carga (hollowing) y después a convertirlo en una faja firme (braceo) para moverte y cargar. Nunca aguantes el aire.'},
+  clave:'Primero aprendes a encender el abdomen profundo sin carga (abdomen profundo) y después a convertirlo en una faja firme  para moverte y cargar. Nunca aguantes el aire.'},
  xbisagra:{n:'Bisagra de cadera con palo',niv:['palo, frente al espejo','palo, sin espejo','con kettlebell liviana'],img:[['sakbisagra-2','De pie, columna neutra'],['sakbisagra-3','Cadera atrás sin perder la neutra']],pasos:[
   'Palo apoyado en la espalda con 3 contactos: cabeza, espalda alta y sacro.',
   'Rodillas suaves. Lleva la cadera atrás como si cerraras una puerta con el glúteo, sin perder ningún contacto.',
@@ -1089,22 +1103,22 @@ Object.assign(EX,{
   'Puntos de control: rodilla sobre el pie, tronco erguido, frenar sin tambalearte.'],clave:CTRL},
  xlevantar:{n:'Levantar del suelo y dejar en una mesa',niv:['caja liviana desde una silla','caja liviana desde el suelo','caja mediana desde el suelo'],img:[['sakbisagra-3','Bisagra con la espalda neutra']],pasos:[
   'La caja delante de tus pies. Bisagra de cadera y rodillas, espalda neutra.',
-  'Braceo y exhala al levantar. Gira con los pies (no con la cintura) y déjala en la mesa.',
+  'Activación del abdomen y exhala al levantar. Gira con los pies (no con la cintura) y déjala en la mesa.',
   'Puntos de control: espalda neutra, caja cerca del cuerpo, giro con los pies.'],clave:'Es el movimiento del día a día que más protege la espalda.'},
  xreact:{n:'Respuesta a una señal',niv:['paso a la señal y estabiliza 2 s','paso y frenada a la señal','cambio de dirección a la señal'],img:[['salida-1','Salida y frenada']],pasos:[
   'Un compañero (o una app de señales) indica una dirección.',
   'Reacciona rápido: da el paso o el cambio de dirección y estabiliza 2 s en buena posición.',
   'Puntos de control: rodilla sobre el pie, cadera atrás, tronco quieto al frenar.'],clave:'La técnica tiene que aparecer sola, sin pensarla: esa es la meta del control motor.'},
  xdeadbug:{n:'Dead bug',video:'deadbug',niv:['solo piernas','completo','completo con banda'],img:[['deadbug-0','Brazos al techo, caderas y rodillas a 90°'],['deadbug-1','Extiende brazo y pierna contrarios']],pasos:[
-  'Boca arriba, brazos al techo y caderas y rodillas a 90°. Semanas 1–4: activación suave del abdomen profundo (ombligo adentro y arriba, piso pélvico cerrado). Semanas 5–8: braceo suave.',
+  'Boca arriba, brazos al techo y caderas y rodillas a 90°. Semanas 1–4: activación suave del abdomen profundo (ombligo adentro y arriba, piso pélvico cerrado). Semanas 5–8: activación suave del abdomen.',
   'Exhala mientras extiendes brazo y pierna contrarios, despacio, y vuelve.',
   'Puntos de control: la zona lumbar no se despega, el abdomen no se abomba, respiras sin aguantar el aire.'],clave:CTRL},
  xbirddog:{n:'Bird dog',niv:['por partes (brazos, luego piernas)','completo','completo con banda'],img:[],pasos:[
-  'En cuatro apoyos, manos bajo los hombros y rodillas bajo las caderas. Semanas 1–4: activación suave del abdomen profundo antes de moverte. Semanas 5–8: braceo suave.',
+  'En cuatro apoyos, manos bajo los hombros y rodillas bajo las caderas. Semanas 1–4: activación suave del abdomen profundo antes de moverte. Semanas 5–8: activación suave del abdomen.',
   'Exhala y extiende brazo y pierna contrarios hasta la horizontal; aguanta 3 s respirando.',
   'Puntos de control: la pelvis no rota (prueba con un vaso de plástico en la zona lumbar).'],clave:CTRL},
  xplancha:{n:'Plancha (variante del día)',niv:['con rodillas apoyadas','completa','completa con desafío'],img:[['plancha-0','Rodillas apoyadas'],['plancha-1','Plancha completa'],['sidebridge-1','Plancha lateral']],pasos:[
-  'Antebrazos bajo los hombros, cuerpo recto. Braceo y respira durante toda la serie.',
+  'Antebrazos bajo los hombros, cuerpo recto. Abdomen activo y respira durante toda la serie.',
   'Variante del día: frontal, lateral o con toque de hombro según la semana.',
   'Puntos de control: sin hundir la zona lumbar, cadera quieta, respiración continua.'],clave:CTRL},
  xpallof:{n:'Pallof press',video:'pallof-pie',niv:['de pie, banda suave','semirrodillas','de pie, banda dura'],img:[['pallof-0','Manos en el esternón'],['pallof-1','Brazos extendidos']],pasos:[
@@ -1120,11 +1134,11 @@ Object.assign(EX,{
   'Puntos de control: hombros lejos de las orejas, tronco quieto.'],clave:CTRL},
  xcarry:{n:'Paseo con carga',niv:['carga liviana','carga media','carga pesada'],img:[['granjero-1','Paseo con carga']],pasos:[
   'Maleta: una carga en una mano. Granjero: una en cada mano.',
-  'Camina erguido con pasos cortos y braceo, respirando.',
+  'Camina erguido con pasos cortos y abdomen activo, respirando.',
   'Puntos de control: el tronco no se inclina hacia la carga, hombros nivelados.'],clave:CTRL},
  xlanz:{n:'Lanzamiento con balón medicinal',niv:['balón de 1–2 kg','balón de 3 kg','balón de 4 kg'],img:[['lanzpecho-0','Balón en el pecho'],['lanzpecho-1','Empuje explosivo']],pasos:[
   'Pase de pecho o lanzamiento rotacional contra la pared, según la semana.',
-  'Braceo y exhala fuerte al lanzar. Recibe amortiguando.',
+  'Activación del abdomen y exhala fuerte al lanzar. Recibe amortiguando.',
   'Puntos de control: la fuerza sale de piernas y tronco firme; la zona lumbar no se arquea ni se tuerce.'],clave:CTRL},
  xcalma:{n:'Cierre y autoevaluación',img:[['flexor-0','Estiramiento del flexor de cadera']],pasos:[
   'Respiración de cocodrilo: boca abajo con la frente sobre las manos. Inhala por la nariz llevando el aire a la espalda baja y a los costados (sientes que la zona lumbar sube) y exhala lento y largo, 6–8 s. 5 respiraciones.',
@@ -1135,10 +1149,10 @@ Object.assign(EX,{
   'Hop and stick: salto corto a una pierna y caída en la misma pierna, aguanta 2 s.',
   'Cambio de dirección reactivo: frena y sal hacia la dirección que te indican.',
   'Puntos de control: rodilla sobre el pie (nunca hacia dentro), tronco quieto, caída sin ruido.'],clave:'Una caída que no se aguanta 2 s no cuenta. Con antecedente de LCA, empieza por la pierna operada.'},
- xmsuelo:{n:'Módulo: suelo pélvico y espalda',img:[['puente-1','Puente con Knack']],pasos:[
-  'Knack: cierra y eleva el piso pélvico (como cortar el chorro de orina y subir), sin aguantar el aire ni empujar hacia abajo.',
+ xmsuelo:{n:'Módulo: suelo pélvico y espalda',img:[['puente-1','Puente con suelo pélvico activo']],pasos:[
+  'Activa el suelo pélvico: cierra y eleva el piso pélvico (como cortar el chorro de orina y subir), sin aguantar el aire ni empujar hacia abajo.',
   'Progresión: acostado → sentado → de pie → con tos → al levantar una caja → con saltitos.',
-  'Orden en el esfuerzo: Knack, braceo y después el movimiento; exhala en el esfuerzo.',
+  'Orden en el esfuerzo: suelo pélvico, abdomen firme y después el movimiento; exhala en el esfuerzo.',
   'Puntos de control: sin apnea, sin escape, sin sensación de peso perineal.'],clave:'Los saltitos solo si en las semanas anteriores no hubo escape. Si hay dolor irradiado, para y consulta.'},
  xmequi:{n:'Módulo: equilibrio y suelo',img:[],pasos:[
   'Equilibrio con la progresión del día, siempre cerca de una pared o una silla.',
@@ -1146,7 +1160,7 @@ Object.assign(EX,{
   'Bajar al suelo y levantarse: usa los apoyos que necesites y en cada semana intenta usar uno menos.',
   'Puntos de control: movimientos lentos, sin impulso, respirando.'],clave:'Levantarse del suelo con soltura es uno de los mejores indicadores de autonomía.'}
 });
-const PREPX=['Diafragmática 2 min + abdomen profundo boca arriba 6×10 s + gato-camello ×6 + puente ×8','Diafragmática 1 min + abdomen profundo boca arriba 8×10 s + gato-camello ×6 + puente ×8','Lewit ×5 + abdomen profundo en 4 apoyos 6×10 s + puente ×8','Lewit ×5 + abdomen profundo sentado y en 4 apoyos 8×10 s + puente ×8','Hollowing → braceo boca arriba 5×10 s + braceo en 4 apoyos 3×20 s + puente ×8','Hollowing → braceo de pie 5×10 s + braceo caminando 1 min + puente ×8','Braceo respirando: de pie 30 s, caminando 1 min, al agacharte ×6 + puente ×8','Braceo respirando: caminando 1 min, al levantar una caja ×6 + puente ×8'];
+const PREPX=['Diafragmática 2 min + abdomen profundo boca arriba 6×10 s + gato-camello ×6 + puente ×8','Diafragmática 1 min + abdomen profundo boca arriba 8×10 s + gato-camello ×6 + puente ×8','Lewit ×5 + abdomen profundo en 4 apoyos 6×10 s + puente ×8','Lewit ×5 + abdomen profundo sentado y en 4 apoyos 8×10 s + puente ×8','Abdomen profundo → abdomen firme boca arriba 5×10 s + activación del abdomen en 4 apoyos 3×20 s + puente ×8','Abdomen profundo → abdomen firme de pie 5×10 s + activación del abdomen caminando 1 min + puente ×8','Activación del abdomen respirando: de pie 30 s, caminando 1 min, al agacharte ×6 + puente ×8','Activación del abdomen respirando: caminando 1 min, al levantar una caja ×6 + puente ×8'];
 const x8=a=>a.length===8?a:a.concat(Array(8-a.length).fill(a[a.length-1]));
 const PLANX={
  A:[
@@ -1161,7 +1175,6 @@ const PLANX={
   {id:'xstepup',b:'3',tm:4,w:[5,6],p:W3(5,['3×8/lado','3×8/lado · más alto o con carga'])},
   {id:'xzancdin',b:'2A',tm:4,w:[7,8],p:W3(7,['3×6/lado','3×8/lado'])},
   {id:'xlevantar',b:'2B',tm:4,w:[7,8],p:W3(7,['3×6','3×8'])},
-  {id:'xreact',b:'3',tm:4,w:[7,8],p:W3(7,['5×3 señales','6×3 señales'])},
   {id:'xequi',b:'4',tm:4,p:['3×20 s · pies juntos o semitándem','3×30 s','3×20 s · tándem o una pierna','3×20 s · ojos cerrados (si tu nivel lo permite)','3×20 s · con banda que tira hacia un lado','3×30 s · con banda','3×20 s · recibiendo una pelota','3×30 s · con pelota y contando hacia atrás']},
   {id:'xcalma',b:'6',tm:2,p:fill('2 min')}],
  B:[
@@ -1178,17 +1191,17 @@ const PLANX={
 };
 const MODROW={
  aterrizar:{id:'xmat',b:'5',tm:5,p:['Snap-down 3×5','Snap-down 3×6','Aterrizaje a dos pies (20–30 cm) 3×5 + frenada en 3 pasos ×3','Aterrizaje a dos pies 3×6 + frenada ×4','Aterrizaje a una pierna 3×4/lado + hop and stick 2×3/lado','Aterrizaje a una pierna 3×5/lado + hop and stick 3×3/lado','Cambio de dirección reactivo 5×2 + drop jump estable 3×4','Cambio de dirección reactivo 6×2 + drop jump estable 3×4']},
- suelo:{id:'xmsuelo',b:'5',tm:5,p:['Knack acostado 10×3 s + 5×10 s','Knack acostado 10×3 s + 6×10 s','Knack sentado y de pie 10×3 s + tos suave 3×5','Knack de pie 10×3 s + tos suave 3×6','Knack al levantar una caja 3×6','Knack al levantar una caja 3×8','Knack con tos fuerte 3×5 + saltitos 3×10 (solo sin escape)','Knack con tos fuerte 3×5 + saltitos 3×15 (solo sin escape)']},
+ suelo:{id:'xmsuelo',b:'5',tm:5,p:['Activación del suelo pélvico acostado 10×3 s + 5×10 s','Activación del suelo pélvico acostado 10×3 s + 6×10 s','Activación del suelo pélvico sentado y de pie 10×3 s + tos suave 3×5','Activación del suelo pélvico de pie 10×3 s + tos suave 3×6','Activación del suelo pélvico al levantar una caja 3×6','Activación del suelo pélvico al levantar una caja 3×8','Activación del suelo pélvico con tos fuerte 3×5 + saltitos 3×10 (solo sin escape)','Activación del suelo pélvico con tos fuerte 3×5 + saltitos 3×15 (solo sin escape)']},
  equilibrio:{id:'xmequi',b:'5',tm:5,p:['Pies juntos → semitándem 3×20 s + bajar al suelo con silla 2×','Semitándem 3×30 s + bajar al suelo con silla 3×','Tándem 3×20 s + talón-punta 2×5 m + suelo con silla 3×','Tándem 3×30 s + talón-punta 3×5 m + suelo con silla 3×','Una pierna con apoyo de dedo 3×15 s + caminar girando la cabeza 3×10 m + suelo sin silla 3×','Una pierna 3×20 s + girando la cabeza 3×10 m + suelo sin silla 4×','Una pierna recibiendo una pelota 3×20 s + paso de recuperación 3×6 + suelo con menos apoyos 4×','Una pierna con pelota 3×30 s + paso de recuperación 3×8 + suelo con menos apoyos 4×']}
 };
 const FASEX=['Fase 1 · Aprender','Fase 1 · Aprender','Fase 2 · Automatizar','Fase 2 · Automatizar','Fase 3 · Desafiar','Fase 3 · Desafiar','Fase 4 · Transferir','Fase 4 · Transferir y retest'];
-const DIAX={A:'Tren inferior y equilibrio',B:'Tronco, braceo y tren superior'};
+const DIAX={A:'Tren inferior y equilibrio',B:'Tronco, activación del abdomen y tren superior'};
 const modulos=()=>{const m=(atl().modulos||[]).filter(k=>MODROW[k]);return m.length?m.slice(0,2):['equilibrio']};
 function rowsBase(src){const mods=modulos();const mk=mods.length>1?(src==='A'?mods[0]:mods[1]):mods[0];
   const r=PLANX[src].slice();const i=r.findIndex(x=>x.id==='xcalma');r.splice(i,0,MODROW[mk]);return r}
 const nivelDe=id=>{const a=atl(),n=(a.niveles||{})[id]||a.nivel||1;return Math.min(3,Math.max(1,n))};
 const TESTSX=[['silla','Sentarse y pararse en 30 s (reps)',1],['equi','Equilibrio a una pierna, mejor lado (s, máx. 30)',1],['equid','Equilibrio a una pierna, peor lado (s, máx. 30)',1],
- ['sent1','Sentadilla a una pierna: calidad del peor lado (0–5)',1],['bisagra','Bisagra con palo: contactos que mantiene (0–3)',1],['birddog','Bird dog: segundos sin rotar la pelvis (0–10)',1],['tra','Hollowing: grado 0–3 (0 = firme y respirando)',-1]];
+ ['sent1','Sentadilla a una pierna: calidad del peor lado (0–5)',1],['bisagra','Bisagra con palo: contactos que mantiene (0–3)',1],['birddog','Bird dog: segundos sin rotar la pelvis (0–10)',1],['tra','Abdomen profundo: grado 0–3 (0 = firme y respirando)',-1]];
 const TESTSXM={aterrizar:[['drop','Drop landing: calidad (0–5)',1],['hop','Hop and stick: calidad de la peor pierna (0–5)',1]],
  suelo:[['tos','Escape al toser de pie (0 = no, 1 = sí)',-1],['iciq','ICIQ-SF (0–21)',-1]],
  equilibrio:[['tug','Timed Up and Go (s)',-1],['suelo','Levantarse del suelo: apoyos que usa (0–5)',-1]]};
@@ -1244,7 +1257,7 @@ function renderTestsBase(m){
     h('li',{},h('strong',{text:'Sentadilla a una pierna a cajón: '}),'5 repeticiones por lado. Un punto por cada uno: rodilla sobre el pie, pelvis nivelada, tronco quieto, llega al cajón y sube sin caerse. Anota el peor lado.'),
     h('li',{},h('strong',{text:'Bisagra con palo: '}),'8 repeticiones. Anota cuántos de los 3 contactos (cabeza, espalda alta y sacro) mantiene todo el tiempo.'),
     h('li',{},h('strong',{text:'Bird dog: '}),'cada lado, hasta 10 s. Anota los segundos sin que la pelvis rote (el peor lado).'),
-    h('li',{},h('strong',{text:'Hollowing (transverso): '}),'boca arriba, rodillas dobladas, dedos 2 cm por dentro de los huesos de la cadera. Activa el abdomen profundo 10 s. Grado 0: firme bajo los dedos y respiras normal. 1: tarda 2–3 s en aparecer o aguantas el aire un momento. 2: no se siente, el abdomen se abomba o el tronco se dobla. 3: no te sale o se infla el pecho al intentarlo.'),
+    h('li',{},h('strong',{text:'Abdomen profundo (transverso): '}),'boca arriba, rodillas dobladas, dedos 2 cm por dentro de los huesos de la cadera. Activa el abdomen profundo 10 s. Grado 0: firme bajo los dedos y respiras normal. 1: tarda 2–3 s en aparecer o aguantas el aire un momento. 2: no se siente, el abdomen se abomba o el tronco se dobla. 3: no te sale o se infla el pecho al intentarlo.'),
     h('li',{},h('strong',{text:'Módulo aterrizar: '}),'drop landing desde 30 cm y hop and stick, con video de frente. Un punto por: rodilla sobre el pie, caída silenciosa, cadera atrás, tronco quieto, aguanta 2 s.'),
     h('li',{},h('strong',{text:'Módulo suelo pélvico: '}),'tos fuerte de pie con la vejiga cómoda (escape sí o no) y cuestionario ICIQ-SF.'),
     h('li',{},h('strong',{text:'Módulo equilibrio: '}),'Timed Up and Go (pararse, caminar 3 m, volver y sentarse) y levantarse del suelo contando los apoyos que usa (manos, rodillas, silla).'))));
@@ -1313,24 +1326,24 @@ Object.assign(EX,{
  fsm4:{n:'Círculo de hombro con tronco rotado',img:[],pasos:['En la misma posición de lado, con las rodillas apoyadas.','Lleva el brazo de arriba en un círculo grande por encima de la cabeza y por detrás de la espalda, sin despegar las rodillas.'],clave:'Movimiento lento y amplio, respirando.'},
  faslr1:{n:'Elevación de pierna con ayuda de las manos',img:[],pasos:['Boca arriba, una pierna estirada en el suelo.','Toma la otra pierna por detrás del muslo y súbela estirada lo más que puedas. Aguanta 2 s mientras empujas la pierna del suelo contra el suelo.'],clave:'La pierna de abajo no se dobla.'},
  faslr2:{n:'Elevación de pierna con banda',img:[],pasos:['Boca arriba, con una banda o toalla en el pie de la pierna que sube.','Sube la pierna estirada con ayuda de la banda. Arriba, dobla la rodilla y vuelve a estirarla; baja lento.'],clave:'Gana rango sin que la pelvis se mueva.'},
- faslr3:{n:'Bajada de la pierna contraria',img:[],pasos:['Boca arriba, sostén una pierna arriba con la banda.','Baja la otra pierna estirada hasta casi tocar el suelo y vuelve a subirla, sin que la zona lumbar se despegue.'],clave:'Braceo suave y respiración continua.'},
- faslr4:{n:'Bajada de pierna con el core activo',img:[],pasos:['Boca arriba, con una pesa liviana sostenida arriba con el brazo estirado. Braceo suave.','Sube y baja una pierna estirada sin que la zona lumbar se despegue ni la pesa se mueva.'],clave:'Es la elevación del test, ahora con el tronco desafiado.'},
- ftspu1:{n:'Brazos al frente arrodillado',img:[],pasos:['Arrodillado, tronco erguido y una pesa liviana pegada al pecho.','Estira los brazos al frente y vuelve, sin arquear la zona lumbar ni mover la pelvis. Braceo.'],clave:'Costillas abajo, glúteos apretados.'},
- ftspu2:{n:'Caminata de manos con rodillas apoyadas',img:[['plancha-0','Plancha sobre rodillas']],pasos:['En cuatro apoyos, con braceo.','Camina con las manos adelante hasta una plancha sobre las rodillas y vuelve, sin que la cadera se hunda.'],clave:'El cuerpo se mueve en bloque.'},
+ faslr3:{n:'Bajada de la pierna contraria',img:[],pasos:['Boca arriba, sostén una pierna arriba con la banda.','Baja la otra pierna estirada hasta casi tocar el suelo y vuelve a subirla, sin que la zona lumbar se despegue.'],clave:'Activación suave del abdomen y respiración continua.'},
+ faslr4:{n:'Bajada de pierna con el core activo',img:[],pasos:['Boca arriba, con una pesa liviana sostenida arriba con el brazo estirado. Activación suave del abdomen.','Sube y baja una pierna estirada sin que la zona lumbar se despegue ni la pesa se mueva.'],clave:'Es la elevación del test, ahora con el tronco desafiado.'},
+ ftspu1:{n:'Brazos al frente arrodillado',img:[],pasos:['Arrodillado, tronco erguido y una pesa liviana pegada al pecho.','Estira los brazos al frente y vuelve, sin arquear la zona lumbar ni mover la pelvis. Abdomen activo.'],clave:'Costillas abajo, glúteos apretados.'},
+ ftspu2:{n:'Caminata de manos con rodillas apoyadas',img:[['plancha-0','Plancha sobre rodillas']],pasos:['En cuatro apoyos, con el abdomen activo.','Camina con las manos adelante hasta una plancha sobre las rodillas y vuelve, sin que la cadera se hunda.'],clave:'El cuerpo se mueve en bloque.'},
  ftspu3:{n:'Flexión de brazos en cajón',img:[['flexinc-0','Manos en un apoyo alto'],['flexinc-1','Cuerpo recto']],pasos:['Manos en un cajón o banco firme, cuerpo recto de los talones a la cabeza.','Baja el pecho al borde y empuja, sin que la cadera se quede atrás.'],clave:'Sube en bloque, como en el test.'},
  ftspu4:{n:'Bajada lenta de flexión',img:[['flexsuelo-0','Plancha alta'],['flexsuelo-1','Abajo, en bloque']],pasos:['Desde la plancha alta, baja lento en 3–4 s hasta el suelo, en bloque.','Apoya las rodillas para volver arriba y repite.'],clave:'Sin que la zona lumbar se hunda.'},
  frs1:{n:'Plancha alta con rodilla al codo',img:[['plancha-1','Plancha alta']],pasos:['En plancha alta, manos bajo los hombros.','Lleva una rodilla hacia el codo del mismo lado, lento, sin que la cadera rote ni suba. Alterna.'],clave:'La pelvis queda paralela al suelo.'},
  frs2:{n:'Elevación de cadera de lado',img:[['sidebridge-0','Apoyo en antebrazo y rodillas'],['sidebridge-1','Cadera arriba']],pasos:['De lado, apoyado en el antebrazo y con las rodillas dobladas.','Sube la cadera hasta alinear el cuerpo y aguanta 2 s. Baja lento.'],clave:'El hombro queda sobre el codo.'},
- frs3:{n:'Bird dog con codo a rodilla',img:[],pasos:['En cuatro apoyos, braceo suave.','Extiende brazo y pierna contrarios hasta la horizontal, aguanta 2 s y junta el codo con la rodilla bajo el cuerpo.'],clave:'Prueba con un vaso en la zona lumbar: no se debe caer.'},
+ frs3:{n:'Bird dog con codo a rodilla',img:[],pasos:['En cuatro apoyos, activación suave del abdomen.','Extiende brazo y pierna contrarios hasta la horizontal, aguanta 2 s y junta el codo con la rodilla bajo el cuerpo.'],clave:'Prueba con un vaso en la zona lumbar: no se debe caer.'},
  frs4:{n:'Gateo con rodillas suspendidas',img:[],pasos:['En cuatro apoyos, despega las rodillas 2–3 cm del suelo.','Avanza mano y pie contrarios a la vez, adelante y atrás, sin que la cadera se mueva.'],clave:'Pasos cortos y lentos.'},
  frodPI:{n:'Rodillo: piernas',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en cuádriceps, aductores, pantorrillas y glúteo: unos 30 s por zona, lento.','En un punto sensible, quédate encima 2–3 respiraciones. Molestia tolerable, nunca dolor fuerte.'],clave:'Prepara el tejido de lo que vas a entrenar hoy.'},
  frodPS:{n:'Rodillo: espalda alta y hombros',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo']],pasos:['Rodillo bajo la espalda alta: extiéndete sobre él en 3–4 alturas, con las manos detrás de la cabeza.','De lado, rodillo bajo la axila para el dorsal. Pelota contra la pared para el pectoral: unos 30 s por zona.'],clave:'Respira lento y suelta el peso sobre el rodillo.'},
  frodPC:{n:'Rodillo: cuerpo completo',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en espalda alta, glúteo, cuádriceps y pantorrillas: unos 20–30 s por zona.','Quédate un poco más donde sientas más tensión.'],clave:'Rápido y amplio: es preparación, no un masaje largo.'},
  frodPR:{n:'Rodillo: pies y piernas',img:[['sakrodillo-1','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Pelota bajo la planta del pie, 30 s por pie.','Rodillo en pantorrillas, cuádriceps y glúteo, unos 30 s por zona.'],clave:'Los pies y las pantorrillas son los que más reciben en la carrera y el salto.'},
- factPI:{n:'Activación: braceo y patrón de piernas',img:[['goblet-0','Sentadilla'],['puente-1','Puente']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones boca arriba con braceo suave.','Sentadilla lenta ×8, bisagra de cadera ×8 y puente de glúteo ×8, con braceo.'],clave:'Ensaya con el cuerpo lo que vas a cargar después.'},
- factPS:{n:'Activación: braceo y patrón de tren superior',img:[['flexinc-0','Flexión en apoyo alto'],['remo-1','Remo con banda']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con braceo suave.','Flexión en pared o mesa ×8, remo con banda ×10 y brazos en «Y» y «T» con banda ×8.'],clave:'Hombros lejos de las orejas y costillas abajo.'},
- factPC:{n:'Activación: braceo y cuerpo completo',img:[['goblet-0','Sentadilla'],['flexinc-0','Flexión en apoyo alto']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con braceo suave.','Sentadilla ×8, flexión en apoyo alto ×8, remo con banda ×10 y bird dog ×5 por lado.'],clave:'Ritmo tranquilo, técnica limpia.'},
- factPR:{n:'Activación: carrera y saltos',img:[['skip-0','Skipping']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con braceo suave.','Skipping suave 2×20 s, zancadas caminando ×6 por lado y saltitos en el lugar 2×20 s.'],clave:'Aterriza suave, con las rodillas sobre los pies.'}
+ factPI:{n:'Activación: abdomen y patrón de piernas',img:[['goblet-0','Sentadilla'],['puente-1','Puente']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones boca arriba con activación suave del abdomen.','Sentadilla lenta ×8, bisagra de cadera ×8 y puente de glúteo ×8, con el abdomen activo.'],clave:'Ensaya con el cuerpo lo que vas a cargar después.'},
+ factPS:{n:'Activación: abdomen y patrón de tren superior',img:[['flexinc-0','Flexión en apoyo alto'],['remo-1','Remo con banda']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con activación suave del abdomen.','Flexión en pared o mesa ×8, remo con banda ×10 y brazos en «Y» y «T» con banda ×8.'],clave:'Hombros lejos de las orejas y costillas abajo.'},
+ factPC:{n:'Activación: abdomen y cuerpo completo',img:[['goblet-0','Sentadilla'],['flexinc-0','Flexión en apoyo alto']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con activación suave del abdomen.','Sentadilla ×8, flexión en apoyo alto ×8, remo con banda ×10 y bird dog ×5 por lado.'],clave:'Ritmo tranquilo, técnica limpia.'},
+ factPR:{n:'Activación: carrera y saltos',img:[['skip-0','Skipping']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con activación suave del abdomen.','Skipping suave 2×20 s, zancadas caminando ×6 por lado y saltitos en el lugar 2×20 s.'],clave:'Aterriza suave, con las rodillas sobre los pies.'}
 });
 const CORRP={ds:'2×6–10',hs:'2×6–10/lado',il:'2×6–10/lado',sm:'2×8–12/lado',aslr:'2×6–10/lado',tspu:'2×6–10',rs:'2×6–10/lado'};
 const esCorr=id=>/^f(ds|hs|il|sm|aslr|tspu|rs)\d$/.test(String(id));
@@ -1658,7 +1671,7 @@ function fmsContexto(){
   return L.join('\n');
 }
 const RULES_PREP=`Eres el entrenador de la persona en Sakros Go Prep. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, kinesiólogo y osteópata, o la propia persona desde la vista de cliente.
-Sakros Go Prep: 10 minutos antes de cualquier entrenamiento (gimnasio, rutina propia o deporte), según la zona del día (piernas, tren superior, cuerpo completo, carrera o deporte): 3 min de rodillo de la zona, 2 correctivos y 3 min de activación con braceo y el patrón que se va a cargar. Nace de la experiencia del centro de entrenamiento de Sakros (2015–2020): con 10 minutos de preparación por zona, el FMS promedio pasó de 9 a 14 puntos en 6 meses. Es la experiencia del centro, no un estudio controlado: no prometas resultados ni prevención de lesiones.
+Sakros Go Prep: 10 minutos antes de cualquier entrenamiento (gimnasio, rutina propia o deporte), según la zona del día (piernas, tren superior, cuerpo completo, carrera o deporte): 3 min de rodillo de la zona, 2 correctivos y 3 min de activación con el abdomen activo y el patrón que se va a cargar. Nace de la experiencia del centro de entrenamiento de Sakros (2015–2020): con 10 minutos de preparación por zona, el FMS promedio pasó de 9 a 14 puntos en 6 meses. Es la experiencia del centro, no un estudio controlado: no prometas resultados ni prevención de lesiones.
 Correctivos: salen del FMS por video. Orden de prioridad: primero las pruebas con dolor (no se corrigen con ejercicio: derivar al kinesiólogo), después las asimetrías y los puntajes de 1, en el orden elevación de pierna extendida, movilidad de hombro, estabilidad en rotación, flexión de estabilidad de tronco, estocada en línea, paso de valla y sentadilla profunda. Cada correctivo tiene 4 pasos y avanza con técnica limpia en 2 sesiones seguidas. Con asimetría, se empieza por el lado débil y se hace una serie extra de ese lado.
 Sobre su rutina del gimnasio: puedes orientar en técnica, dosis y descanso, y recomendar el programa de entrenamiento de Sakros Go si no tiene una rutina bien dirigida.
 Seguridad: dolor que aumenta, dolor irradiado, hormigueo o pérdida de fuerza → parar y consultar con su kinesiólogo.
@@ -1708,14 +1721,14 @@ const SCHG={fuerza:['3×8','3×8','3×10','2×8 · '+DESC4,'3×8 · +peso','3×1
  fuerzamax:['3×8 · RPE 7','3×6 · RPE 8','4×6 · RPE 8','2×8 · '+DESC4,'4×6 · +peso','4×6 · +peso','4×5 · +peso','Tests'],
  mantencion:['3×10','3×10','3×10','2×10 · '+DESC4,'3×10','3×10','3×10','Tests']};
 const VARTXT={fuerza:' · pausa 1 s abajo',volumen:' · tempo 3-0-1',potencia:'',fuerzamax:'',mantencion:''};
-const BRACEO={fuerza:' · braceo 70 %',volumen:' · braceo 50 %',potencia:' · braceo 50–70 %, exhala fuerte',fuerzamax:' · braceo 70 %',mantencion:' · braceo 50 %'};
+const BRACEO={fuerza:' · abdomen firme 70 %',volumen:' · abdomen firme 50 %',potencia:' · abdomen firme 50–70 %, exhala fuerte',fuerzamax:' · abdomen firme 70 %',mantencion:' · abdomen firme 50 %'};
 // Plantillas: [b, tipo, banco de ejercicios]
 const BLK={
  rend:{
   A:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['cajon','skater']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['kpallofsr','kchop']],['5','cardio',['mdcut','mdcross']],['6','prep',['regen']]],
-  B:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarB']],['1d','prep',['actB']],['2','pot',['salidas','sprint']],['3A','pri',['pushpress']],['3B','acc',['dominadas']],['4','pri',['muerto','hipthrust']],['4B','core',['klanzrot','kchop']],['5','cardio',['mdcross','mdcut']],['6','prep',['regen']]],
+  B:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarB']],['1d','prep',['actB']],['2','pot',['cajon','skater']],['3A','pri',['pushpress']],['3B','acc',['dominadas']],['4','pri',['muerto','hipthrust']],['4B','core',['klanzrot','kchop']],['5','cardio',['mdcross','mdcut']],['6','prep',['regen']]],
   C:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarA']],['1d','prep',['actB']],['2','pot',['skater','cajon']],['3A','pri',['hipthrust','muerto']],['3B','acc',['dominadas']],['4A','pri',['frontal','sentadilla']],['4B','core',['kpallofsr','kchop']],['5','cardio',['mdcut','mdcross']],['6','prep',['regen']]],
-  U:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['salidas','cajon']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['kpallofsr','kchop']],['5A','pri',['muerto','hipthrust']],['5B','acc',['dominadas']],['6','cardio',['mdcut','mdcross']],['7','prep',['regen']]]},
+  U:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['cajon','puenteexp']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['kpallofsr','kchop']],['5A','pri',['muerto','hipthrust']],['5B','acc',['dominadas']],['6','cardio',['mdcut','mdcross']],['7','prep',['regen']]]},
  core:{
   A:[['1','prep',['kprep']],['2A','core',['kdeadbugc','krollout']],['2B','pot',['klanzpecho','klanzover','klanzatras']],['3A','pri',['ksentbarra','kgoblet']],['3B','pri',['kmuertobarra','krdl']],['3C','acc',['khipthrust','khipthrustp','kpuentex']],['4','acc',['kremobarra','kremomanc']],['5','carry',['kgranjero','kmaleta']],['6','prep',['kcalma']]],
   B:[['1','prep',['kprep']],['2A','core',['klateral','klateralabd']],['2B','pot',['klanzrot','klanzrotp']],['2C','core',['kbirddogc','kpallofsr']],['3A','pri',['ksplit','kstepup']],['3B','acc',['klandmine']],['3C','pot',['kswing','kjammer','kpuentex']],['4','acc',['kjalon','kremoband']],['5','carry',['kcarrera','kmaleta']],['6','prep',['kcalma']]]},
@@ -1796,11 +1809,12 @@ Object.assign(EX,{
   'Aproximación de 3 pasos (diestro: izquierda-derecha-izquierda). El penúltimo paso es largo y rápido, con los brazos atrás.',
   'Junta los pies, baja la cadera y lanza los brazos arriba para despegar a dos pies con todo.',
   'Arriba, brazo de ataque atrás y codo alto, como si fueras a rematar.',
-  'Cae con los dos pies a la vez, rodillas sobre los pies y en silencio. Camina de vuelta y descansa 30–40 s.',
+  'Cae con los dos pies a la vez, rodillas sobre los pies y en silencio. Vuelve a tu posición y descansa solo 5–10 s entre saltos, como entre un punto y otro.',
   'En arena o en piso firme. Cada salto al 100 %: si la altura baja, termina la serie.'],
   clave:'Es el salto que más se repite en el partido: aproximación, carga y caída controlada en cada repetición.'},
  vbloqueo:{n:'Salto de bloqueo con desplazamiento',img:[],pasos:[
   'De frente a la red imaginaria, manos a la altura de los hombros.',
+  'Alterna bloqueo a la calle y a la diagonal: en la calle, sube con las manos cerrando la línea; en la diagonal, gira las manos hacia el centro de la cancha.',
   'Desplázate 1–2 pasos laterales (o paso cruzado) y salta a dos pies con las manos arriba y hacia adelante, como si invadieras la red.',
   'Cae en el mismo lugar, estable 1 s, y vuelve al centro.',
   'Puntos de control: no te vas hacia adelante al caer y las rodillas no se van hacia adentro.'],
@@ -1813,15 +1827,17 @@ Object.assign(EX,{
   clave:'El vóley playa es intermitente: puntos cortos y explosivos con pausas breves. Este bloque entrena justo eso.'}
 });
 const VOLEY_SUST={salidas:'vsalto',sprint:'vbloqueo',t3030:'vrally'};
-const VOLEY_P={vsalto:['3×4','3×4','4×4','2×3 · descarga','4×3','4×4','5×3','Test: alcance en salto de ataque'],
-  vbloqueo:['3×3/lado','3×3/lado','3×4/lado','2×3/lado · descarga','4×3/lado','4×3/lado','4×4/lado','2×3/lado'],
+const VOLEY_P={vsalto:['3×4 · pausa 5–10 s','3×4 · pausa 5–10 s','4×4 · pausa 5–10 s','2×3 · descarga','4×3 · pausa 5–10 s','4×4 · pausa 5–10 s','5×3 · pausa 5–10 s','Test: alcance en salto de ataque'],
+  vbloqueo:['3×3/lado · calle y diagonal','3×3/lado · calle y diagonal','3×4/lado · calle y diagonal','2×3/lado · descarga','4×3/lado · calle y diagonal','4×3/lado · calle y diagonal','4×4/lado · calle y diagonal','2×3/lado'],
   vrally:['2×6','2×6','2×8','1×6 · descarga','3×6','3×8','3×8','Test: 10 rallies'],vhombro:Array(8).fill('1 vuelta')};
 const VOLEY_TM={vsalto:6,vbloqueo:6,vrally:12,vhombro:3};
-function voley(r){
+function voley(r,d){
   if(!esVoley())return r;
   const out=r.map(it=>{const id=VOLEY_SUST[it.id];if(!id)return it;return {...it,id,p:bk()>1&&id!=='vrally'?it.p:VOLEY_P[id],tm:VOLEY_TM[id]}});
   let i=-1;out.forEach((it,j)=>{if(String(it.b).startsWith('1'))i=j});
   out.splice(i+1,0,{id:'vhombro',b:'1h',p:VOLEY_P.vhombro,tm:VOLEY_TM.vhombro});
+  // Saltos de vóley en la sesión (antes reemplazaban a las salidas y al sprint, que ya no están por espacio).
+  if(bk()===1&&(d==='B'||d==='U')){const add=[{id:'vsalto',b:'2v',p:VOLEY_P.vsalto,tm:VOLEY_TM.vsalto}];if(d==='B')add.push({id:'vbloqueo',b:'2w',p:VOLEY_P.vbloqueo,tm:VOLEY_TM.vbloqueo});out.splice(i+2,0,...add)}
   return out;
 }
 /* Progresión semanal de desplazamiento en arena (shuffles): técnica → frenada → caída y recuperación →
@@ -1877,7 +1893,7 @@ function blq4(r){
   return out;
 }
 const supKey=it=>it&&it.sup||null;
-function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(voley(rows0(d,s)))}
+function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(voley(rows0(d,s),d))}
 function allRows(){const out=[],seen=new Set();const P0=esBase()?{A:rowsBase('A'),B:rowsBase('B')}:esCore()?PLANC:esGlob()?PLANG:PLAN;Object.keys(P0).forEach(d=>P0[d].forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);out.push([d,it])}}));return out}
 const faseTxt=s=>esPrep()?'Prep':bk()>1?faseBloque(s):(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
 const sesKey=(s,d)=>(bk()>1?'b'+bk()+'.':'')+(esPrep()?'p':esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
@@ -2157,7 +2173,7 @@ function renderPerfil(m,nuevo){
       const sync=()=>{cl.hidden=sel.value!=='core';bl.hidden=sel.value!=='base';dl.hidden=sel.value!=='rend';if(f.cgCard)f.cgCard.hidden=sel.value!=='rend'};
       sel.addEventListener('change',sync);f.syncProg=sync;
       return h('div',{style:'display:grid;gap:10px'},h('label',{class:'f',for:'pf-prog'},'Programa de entrenamiento',sel),cl,dl,bl,
-        h('p',{class:'note',text:'Sakros Go Entrenamiento. Base: 8 semanas de control motor para quien nunca ha entrenado y quiere empezar a moverse (más básico que Activo). Core: espalda y suelo pélvico, con énfasis en el braceo, para hernia lumbar o incontinencia de esfuerzo. Activo: cuerpo completo para personas sedentarias o mantención. Rendimiento: potencia, salto y cardio (método EXOS). Aparte, Sakros Go Prep: 10 minutos de preparación según la evaluación de movilidad y control, para quien ya entrena.'}))})(),
+        h('p',{class:'note',text:'Sakros Go Entrenamiento. Base: 8 semanas de control motor para quien nunca ha entrenado y quiere empezar a moverse (más básico que Activo). Core: espalda y suelo pélvico, con énfasis en la activación del abdomen, para hernia lumbar o incontinencia de esfuerzo. Activo: cuerpo completo para personas sedentarias o mantención. Rendimiento: potencia, salto y cardio (método EXOS). Aparte, Sakros Go Prep: 10 minutos de preparación según la evaluación de movilidad y control, para quien ya entrena.'}))})(),
     (()=>{const sel=h('select',{id:'pf-freq'},[['','Elegir…'],['1','1 vez por semana'],['2','2 veces por semana'],['3','3 veces por semana']].map(([v,l])=>{const o=h('option',{value:v},l);if(String(a.frecuencia||(nuevo?'':'2'))===v)o.selected=true;return o}));f.freq=sel;return h('label',{class:'f',for:'pf-freq'},'Sesiones de este plan por semana *',sel)})(),
     (()=>{const sel=h('select',{id:'pf-sexo'},[['','Elegir…'],['H','Masculino'],['M','Femenino'],['N','Prefiero no decirlo']].map(([v,l])=>{const o=h('option',{value:v},l);if((a.sexo||'')===v)o.selected=true;return o}));f.sexo=sel;return h('label',{class:'f',for:'pf-sexo'},'Sexo *',sel)})(),
     h('p',{class:'note',text:'En mujeres el plan suma más activación de zona media y de aterrizajes y frenadas (prevención de LCA).'}),
@@ -2238,7 +2254,7 @@ function renderSesion(m){
         sec.append(h('p',{class:'dxline'},h('strong',{text:'Nueva fase: '+faseTxt(s).split(' · ')[1]+'. '}),tt?('En las 2 semanas anteriores marcaste técnica limpia en '+n+' de '+tt+' ejercicios ('+pct+' %). '+(pct>=80?'Puedes avanzar.':'Te conviene repetir la fase anterior: vuelve a la semana '+(s-2)+'.')):'Avanza si la técnica salió limpia en la mayoría de los ejercicios de las 2 semanas anteriores; si no, repite la fase.'))}
       if(s===8)sec.append(h('p',{class:'dxline',text:'Última semana: al terminarla, repite los tests y pasa a tu programa de entrenamiento.'}));
       const bd=h('details',{},h('summary',{},'Cómo se trabaja el control motor'),h('ul',{class:'medir'},
-        ['Cada nivel sube un peldaño en la escalera del movimiento: del suelo (boca arriba o en 4 apoyos) a rodillas, semirrodillas, de pie y a una pierna; y de asistido a sin ayuda y con carga. Así el cuerpo aprende primero el control y después lo lleva a la vida real.','Cada sesión empieza con respiración y activación del abdomen profundo: en las semanas 1–4 aprendes a encender el abdomen profundo y en las 5–8 lo conviertes en braceo para moverte y cargar.','Intensidad baja (esfuerzo 4–6 de 10): es aprendizaje, no cansancio. Si la técnica se pierde, la serie termina.','Respeta el tempo: 3 s bajando, 1 s de pausa, 1 s subiendo.','Usa el espejo o grábate de perfil una serie por sesión.','Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control. Con técnica limpia 2 sesiones seguidas, sube ese ejercicio de nivel.','Para la sesión si aparece dolor que aumenta, mareo o dolor en el pecho.'].map(x=>h('li',{text:x}))));
+        ['Cada nivel sube un peldaño en la escalera del movimiento: del suelo (boca arriba o en 4 apoyos) a rodillas, semirrodillas, de pie y a una pierna; y de asistido a sin ayuda y con carga. Así el cuerpo aprende primero el control y después lo lleva a la vida real.','Cada sesión empieza con respiración y activación del abdomen profundo: en las semanas 1–4 aprendes a encender el abdomen profundo y en las 5–8 lo conviertes en una faja firme del abdomen para moverte y cargar.','Intensidad baja (esfuerzo 4–6 de 10): es aprendizaje, no cansancio. Si la técnica se pierde, la serie termina.','Respeta el tempo: 3 s bajando, 1 s de pausa, 1 s subiendo.','Usa el espejo o grábate de perfil una serie por sesión.','Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control. Con técnica limpia 2 sesiones seguidas, sube ese ejercicio de nivel.','Para la sesión si aparece dolor que aumenta, mareo o dolor en el pecho.'].map(x=>h('li',{text:x}))));
       if(s===1&&!ses.fecha&&!modoCli())bd.open=true;
       sec.append(bd);
     }
@@ -2262,21 +2278,21 @@ function renderSesion(m){
       field('Cómo te sentiste','s-nota',ses.nota,v=>upd('nota',v),{area:1,ph:'Sueño, molestias, energía…'}));
   }else{
     const a=atl(),cond=a.condicion;
-    if(d==='U')sec.append(h('p',{class:'dxline',text:'Con una sola sesión por semana se alternan los días A (semanas impares) y B (semanas pares). Suma cada día 5 minutos de respiración con piso pélvico y braceo al 30 %.'}));
+    if(d==='U')sec.append(h('p',{class:'dxline',text:'Con una sola sesión por semana se alternan los días A (semanas impares) y B (semanas pares). Suma cada día 5 minutos de respiración con piso pélvico y abdomen firme al 30 %.'}));
     if(d==='C')sec.append(h('p',{class:'dxline',text:'Con 3 sesiones por semana, el día C repite el día A en las semanas impares y el día B en las pares.'}));
     const prev=senalPrevia(s,d);
-    if(prev)sec.append(h('div',{class:'banner',role:'status'},h('strong',{text:'Señal en S'+prev.semana+' '+dayName(prev.dia)+': '}),senalTxt(prev)+'. ',prev.irradiado==='si'?'Con dolor irradiado u hormigueo, para y revalora antes de seguir.':'Hoy no progreses: repite lo de la semana anterior y baja un nivel de braceo y la carga.'));
-    const nf={2:[2,'control',' Desde hoy entran la barra y los lanzamientos con balón: siempre con braceo y exhalando en el esfuerzo.'],5:[3,'carga',' Haz antes el retest de la semana 4 (pestaña Tests). Desde ahora entra el braceo al 70 % en las cargas altas.'],7:[4,'fuerza',' Potencia: intención explosiva, exhalación rápida y braceo firme. Si aparece escape, vuelve a la versión de fuerza del ejercicio.']}[s];
-    if(nf)sec.append(h('p',{class:'dxline'},h('strong',{text:'Antes de empezar la fase '+nf[0]+': '}),'pasa solo si la fase de '+nf[1]+' se completó sin escape, sin dolor mayor de 3/10 y con el braceo estable. Si no, repite la semana '+(s-1)+'.'+nf[2]));
+    if(prev)sec.append(h('div',{class:'banner',role:'status'},h('strong',{text:'Señal en S'+prev.semana+' '+dayName(prev.dia)+': '}),senalTxt(prev)+'. ',prev.irradiado==='si'?'Con dolor irradiado u hormigueo, para y revalora antes de seguir.':'Hoy no progreses: repite lo de la semana anterior y baja un nivel de activación del abdomen y la carga.'));
+    const nf={2:[2,'control',' Desde hoy entran la barra y los lanzamientos con balón: siempre con el abdomen activo y exhalando en el esfuerzo.'],5:[3,'carga',' Haz antes el retest de la semana 4 (pestaña Tests). Desde ahora entra el abdomen firme al 70 % en las cargas altas.'],7:[4,'fuerza',' Potencia: intención explosiva, exhalación rápida y abdomen bien firme. Si aparece escape, vuelve a la versión de fuerza del ejercicio.']}[s];
+    if(nf)sec.append(h('p',{class:'dxline'},h('strong',{text:'Antes de empezar la fase '+nf[0]+': '}),'pasa solo si la fase de '+nf[1]+' se completó sin escape, sin dolor mayor de 3/10 y con el abdomen estable. Si no, repite la semana '+(s-1)+'.'+nf[2]));
     if(s===8)sec.append(h('p',{class:'dxline',text:'Última semana: al terminarla, repite los tests (pestaña Tests) para comparar con la semana 0.'}));
     const ct={hernia:'Hernia lumbar: sin flexión lumbar repetida con carga, ni en la primera hora después de levantarte. Evita estar mucho tiempo sentado justo antes de entrenar.',
-      iue:'Incontinencia: Knack antes de cada esfuerzo y exhala en el esfuerzo. Sin impacto ni saltos mientras haya escape; en lanzamientos y swing, exhalación fuerte y, si hay escape, vuelve a la versión de fuerza.'};
+      iue:'Incontinencia: Activa el suelo pélvico antes de cada esfuerzo y exhala en el esfuerzo. Sin impacto ni saltos mientras haya escape; en lanzamientos y swing, exhalación fuerte y, si hay escape, vuelve a la versión de fuerza.'};
     const cl=cond==='ambas'?[ct.hernia,ct.iue,'Si coexisten, se aplica la regla más conservadora.']:ct[cond]?[ct[cond]]:[];
     if(cl.length)sec.append(h('ul',{class:'medir'},cl.map(x=>h('li',{text:x}))));
     const dl=dxLine();if(dl)sec.append(dl);
-    const bd=h('details',{},h('summary',{},'Patrón de braceo y señales para parar'),
-      h('ol',{},['Inhala por la nariz: costillas que se expanden hacia los lados, abdomen relajado.','Activa el piso pélvico antes del esfuerzo (Knack): cerrar y elevar.','Braceo graduado, con la circunferencia del abdomen firme y sin hundirlo: 25–30 % control, 50 % fuerza moderada, 70 % cargas altas, lanzamientos y potencia (desde la semana 5).','Exhala en el esfuerzo sin soltar el braceo. Nunca en apnea (Valsalva).'].map(x=>h('li',{text:x}))),
-      h('p',{class:'clave',text:'Baja la carga o el nivel de braceo si aparece escape de orina, peso o presión perineal, dolor lumbar mayor de 3/10 o un abdomen que se abomba o se hunde. Con dolor irradiado, hormigueo o adormecimiento en la pierna: para y revalora.'}));
+    const bd=h('details',{},h('summary',{},'Activación del abdomen y señales para parar'),
+      h('ol',{},['Inhala por la nariz: costillas que se expanden hacia los lados, abdomen relajado.','Activa el suelo pélvico antes del esfuerzo: cierra y eleva.','Activación graduada del abdomen, con la circunferencia del abdomen firme y sin hundirlo: 25–30 % control, 50 % fuerza moderada, 70 % cargas altas, lanzamientos y potencia (desde la semana 5).','Exhala en el esfuerzo sin soltar el abdomen. Nunca en apnea (Valsalva).'].map(x=>h('li',{text:x}))),
+      h('p',{class:'clave',text:'Baja la carga o el nivel de activación del abdomen si aparece escape de orina, peso o presión perineal, dolor lumbar mayor de 3/10 o un abdomen que se abomba o se hunde. Con dolor irradiado, hormigueo o adormecimiento en la pierna: para y revalora.'}));
     if(s===1&&!ses.fecha&&!modoCli())bd.open=true;
     sec.append(bd);
     const yn=(k,lbl)=>h('div',{class:'freq',role:'group','aria-label':lbl},h('span',{class:'wholbl',text:lbl}),[['no','No'],['si','Sí']].map(([v,l])=>h('button',{class:'opt','aria-pressed':(ses[k]||'')===v,onclick:()=>{upd(k,v);render()}},l)));
@@ -2286,8 +2302,8 @@ function renderSesion(m){
       field('Esfuerzo (1–10)','s-rpe',ses.rpe,v=>upd('rpe',v),{num:1,ph:s===1?'5–6':s<=4?'6–7':'7–8'}),
       field('Dolor lumbar','s-dolor',ses.dolor,v=>upd('dolor',v),{num:1,ph:'0–10'})),
       yn('escape','Escape de orina'),yn('peso','Peso perineal'),yn('irradiado','Dolor irradiado u hormigueo'));
-    if(senal(ses))R.append(h('div',{class:'banner',role:'alert'},h('strong',{text:'Hoy: '}),senalTxt(ses)+'. ',ses.irradiado==='si'?'Para la sesión y revalora.':'Baja un nivel de braceo y la carga en lo que queda, y no progreses la semana que viene.'));
-    R.append(field('Cómo te sentiste','s-nota',ses.nota,v=>upd('nota',v),{area:1,ph:'Braceo, piso pélvico, molestias, energía…'}));
+    if(senal(ses))R.append(h('div',{class:'banner',role:'alert'},h('strong',{text:'Hoy: '}),senalTxt(ses)+'. ',ses.irradiado==='si'?'Para la sesión y revalora.':'Baja un nivel de activación del abdomen y la carga en lo que queda, y no progreses la semana que viene.'));
+    R.append(field('Cómo te sentiste','s-nota',ses.nota,v=>upd('nota',v),{area:1,ph:'Activación del abdomen, piso pélvico, molestias, energía…'}));
   }
   sec.insertBefore(h('div',{class:'row'},h('button',{class:'btn primary big',onclick:()=>iniciarSesion(s,d)},'Empezar en modo sesión'),h('span',{class:'note',text:'Un ejercicio por pantalla, con temporizador.'})),sec.children[2]||null);
   m.append(sec);
@@ -2310,7 +2326,9 @@ function exCard(s,d,it,sub){
   let media=null;
   const tall=frames.some(f=>f[0].startsWith('sak'));
   const vk=vidDe(it.id,V);
+  const an=!vk&&animDe(it.id,V);
   if(vk)media=mediaVideo(vk,V.n);
+  else if(an)media=mediaAnim(an,V.n);
   else if(frames.length){
     const lbl=i=>(frames.length>1?(i+1)+'/'+frames.length+' · ':'')+frames[i][1];
     const img=h('img',{src:IMGS[frames[fi][0]],alt:frames[fi][1],loading:'lazy'});
@@ -2627,9 +2645,9 @@ function renderProgreso(m){
     h('li',{text:'Para la sesión con dolor en el pecho, mareo, falta de aire desproporcionada o dolor articular que aumenta.'}))));return}
   if(esCore()){m.append(h('section',{class:'card'},h('h2',{text:'Reglas del Entrenamiento Core'}),h('ul',{},
     h('li',{text:'Fases: control (S1), carga (S2–4), fuerza con barra (S5–6) y potencia con lanzamientos (S7–8). Dentro de cada fase: primero +1 serie o +2 repeticiones, después +carga (2–5 %).'}),
-    h('li',{text:'Lanzamientos y swing: máxima intención, exhalación fuerte y braceo. Si la velocidad baja, termina la serie.'}),
-    h('li',{text:'Si pierdes el braceo o el piso pélvico en las últimas repeticiones, quédate en el paso anterior.'}),
-    h('li',{text:'Escape de orina, peso perineal o dolor lumbar mayor de 3/10: baja el nivel de braceo y la carga. Dolor irradiado u hormigueo: para y revalora.'}),
+    h('li',{text:'Lanzamientos y swing: máxima intención, exhalación fuerte y abdomen activo. Si la velocidad baja, termina la serie.'}),
+    h('li',{text:'Si pierdes la activación del abdomen o el piso pélvico en las últimas repeticiones, quédate en el paso anterior.'}),
+    h('li',{text:'Escape de orina, peso perineal o dolor lumbar mayor de 3/10: baja el nivel de activación del abdomen y la carga. Dolor irradiado u hormigueo: para y revalora.'}),
     h('li',{text:'RPE: control 5–6; carga 6–7; fuerza y potencia 7–8.'}),
     h('li',{text:'Separa los días al menos 48 h.'}))));return}
   m.append(h('section',{class:'card'},h('h2',{text:'Reglas'}),h('ul',{},
@@ -2962,7 +2980,7 @@ function renderSalud(m){
     h('div',{class:'dxhead'},h('div',{},h('strong',{text:'Modo automático'}),h('p',{class:'note',text:sal.auto===false?'Desactivado: el plan no cambia, solo ves las indicaciones.':'Activado: el plan cambia solo. Sustituye ejercicios y baja cargas según cada diagnóstico; si hay varios, aplica el más restrictivo.'})),
       h('button',{class:'check','aria-pressed':sal.auto!==false,onclick:()=>saveSalud({auto:sal.auto===false})},h('span',{class:'box',text:'✓'}),sal.auto===false?'Activar':'Activo'))));
   if(esGlob()||esBase())m.append(h('section',{class:'card'},h('h2',{text:esBase()?'Entrenamiento Base':'Entrenamiento Activo'}),h('p',{class:'note',text:'Si activas diagnósticos, cada ejercicio muestra sus indicaciones y el Coach las tiene en cuenta. En Global no cambian el ejercicio automáticamente: adapta el rango o la carga según la indicación.'})));
-  if(esCore())m.append(h('section',{class:'card'},h('h2',{text:'Programa Core'}),h('p',{class:'note',text:'Este programa ya está diseñado para hernia lumbar e incontinencia de esfuerzo (elige la condición en el perfil). Si activas otros diagnósticos, cada ejercicio muestra sus indicaciones y el Coach las tiene en cuenta; en Core no cambian el ejercicio automáticamente, para no romper la progresión del braceo.'})));
+  if(esCore())m.append(h('section',{class:'card'},h('h2',{text:'Programa Core'}),h('p',{class:'note',text:'Este programa ya está diseñado para hernia lumbar e incontinencia de esfuerzo (elige la condición en el perfil). Si activas otros diagnósticos, cada ejercicio muestra sus indicaciones y el Coach las tiene en cuenta; en Core no cambian el ejercicio automáticamente, para no romper la progresión dla activación del abdomen.'})));
   for(const [k,dx] of Object.entries(DX)){
     const st=sal[k]||{},on=!!st.on,fase=st.fase||dx.fases[0][0];
     const card=h('section',{class:'card dxcard'+(on?' on':'')},
@@ -2995,7 +3013,7 @@ async function buscarOtro(texto,status,btn){
   btn.disabled=true;status.textContent='Revisando el plan ejercicio por ejercicio. Puede tardar un minuto…';
   const ids=[];const seen=new Set();
   allRows().forEach(([d,it])=>{const id=ALIAS[it.id]||it.id;if(seen.has(id))return;seen.add(id);ids.push(`${id}: ${EX[it.id].n} (día ${d}${it.w?', semanas '+it.w[0]+'–'+it.w[1]:''}). ${EX[it.id].pasos.slice(0,2).join(' ')}`)});
-  const prompt=`Eres fisioterapeuta deportivo y preparador físico. El atleta (${atl().nombre}${atl().sexo?', sexo '+sexoTxt(atl().sexo):''}${atl().edad?', '+atl().edad+' años':''}${atl().sesiones?', '+atl().sesiones+' entrenamientos por semana':''}) sigue ${esBase()?'un programa de 8 semanas de control motor (patrones de sentadilla, bisagra, zancada, equilibrio, estabilidad de tronco y un módulo de aterrizajes, suelo pélvico o equilibrio), con niveles por ejercicio y RPE 4–6. Sesiones de 30–35 min':esGlob()?'un programa de 8 semanas de cuerpo completo para personas sedentarias (piernas, empuje, tirón, brazos, abdomen y cardio suave), con mancuernas livianas, bandas y peso corporal. Sesiones de 40–50 min':esCore()?'un programa de 8 semanas de core (abdomen, glúteo y espalda) con énfasis en el braceo coordinado con el piso pélvico y la respiración, pensado para hernia lumbar e incontinencia de esfuerzo. Sesiones de 45–55 min':'un plan de 8 semanas, 2 días por semana, para potencia, aceleración, salto y resistencia cardiovascular. Sesiones de 50–60 min'}.
+  const prompt=`Eres fisioterapeuta deportivo y preparador físico. El atleta (${atl().nombre}${atl().sexo?', sexo '+sexoTxt(atl().sexo):''}${atl().edad?', '+atl().edad+' años':''}${atl().sesiones?', '+atl().sesiones+' entrenamientos por semana':''}) sigue ${esBase()?'un programa de 8 semanas de control motor (patrones de sentadilla, bisagra, zancada, equilibrio, estabilidad de tronco y un módulo de aterrizajes, suelo pélvico o equilibrio), con niveles por ejercicio y RPE 4–6. Sesiones de 30–35 min':esGlob()?'un programa de 8 semanas de cuerpo completo para personas sedentarias (piernas, empuje, tirón, brazos, abdomen y cardio suave), con mancuernas livianas, bandas y peso corporal. Sesiones de 40–50 min':esCore()?'un programa de 8 semanas de core (abdomen, glúteo y espalda) con énfasis en la activación del abdomen coordinado con el piso pélvico y la respiración, pensado para hernia lumbar e incontinencia de esfuerzo. Sesiones de 45–55 min':'un plan de 8 semanas, 2 días por semana, para potencia, aceleración, salto y resistencia cardiovascular. Sesiones de 50–60 min'}.
 Diagnóstico o condición del atleta: "${texto}".
 Revisa cada ejercicio y di si se mantiene ("ok"), se adapta ("adaptar") o se sustituye ("sustituir"). Incluye solo los que necesiten un cambio o una precaución concreta. Para cada uno, 1–2 frases concretas: rango, carga, volumen o alternativa exacta. Añade 2–4 reglas generales (criterio de dolor, señales para parar, progresión).
 Escribe en español latinoamericano neutro, con tuteo.
@@ -3104,7 +3122,7 @@ function autoEj(s,d,it){
 
 /* ---------- Coach ---------- */
 let sample=null, ctl=null, busy=false;
-const RULES_IA='\n\nIDENTIDAD Y SEGURIDAD: eres el Coach IA de Sakros Go, una inteligencia artificial. Los programas y criterios los define Joaquín Adi, kinesiólogo con máster en Functional Training. Si te preguntan, di que eres una IA y no te presentes como Joaquín ni como un profesional de la salud. No diagnostiques ni indiques tratamientos. Ante dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta o se irradia, hormigueo o pérdida de fuerza, indica detener el ejercicio y consultar a un profesional. No pidas datos personales que el plan no necesite (RUT, dirección, datos bancarios). En Sakros no hay trineo de arrastre ni se usa el test Yo-Yo: no los propongas (usa cuesta o sprint lanzado, y el test de 2,4 km).\nMÉTODO (EXOS, por movimientos): cada sesión va de cuerpo completo explosivo a fuerza principal (bilateral), fuerza secundaria (unilateral) y rotación (de estabilidad o de propulsión). En la semana se equilibran empuje y tirón del tren superior (horizontal y vertical), empuje de piernas, cadera dominante y rodilla dominante, y se trabaja en los 3 planos. Si cambias un ejercicio, reemplázalo por otro del mismo tipo de movimiento (por ejemplo, un remo por otro tirón horizontal) para no romper el equilibrio. La velocidad multidireccional (shuffle, corte y paso cruzado) va en 3 niveles: continuo, dirigido y secuencias.';
+const RULES_IA='\n\nIDENTIDAD Y SEGURIDAD: eres el Coach IA de Sakros Go, una inteligencia artificial. Los programas y criterios los define Joaquín Adi, kinesiólogo con máster en Functional Training. Si te preguntan, di que eres una IA y no te presentes como Joaquín ni como un profesional de la salud. No diagnostiques ni indiques tratamientos. Ante dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta o se irradia, hormigueo o pérdida de fuerza, indica detener el ejercicio y consultar a un profesional. No pidas datos personales que el plan no necesite (RUT, dirección, datos bancarios). En Sakros no hay trineo de arrastre ni se usa el test Yo-Yo: no los propongas (usa cuesta o sprint lanzado, y el test de 2,4 km).\nMÉTODO (EXOS, por movimientos): cada sesión va de cuerpo completo explosivo a fuerza principal (bilateral), fuerza secundaria (unilateral) y rotación (de estabilidad o de propulsión). En la semana se equilibran empuje y tirón del tren superior (horizontal y vertical), empuje de piernas, cadera dominante y rodilla dominante, y se trabaja en los 3 planos. Si cambias un ejercicio, reemplázalo por otro del mismo tipo de movimiento (por ejemplo, un remo por otro tirón horizontal) para no romper el equilibrio. La velocidad multidireccional (shuffle, corte y paso cruzado) va en 3 niveles: continuo, dirigido y secuencias.\nLENGUAJE: con el cliente no uses las palabras Knack, braceo ni hollowing; di «activa el suelo pélvico», «activa el abdomen» o «abdomen profundo».';
 const RULES=`Eres el entrenador personal del atleta, con el método EXOS. Si sus datos dicen DEPORTE: vóley playa, adapta todo a su deporte (saltos de ataque y bloqueo, desplazamientos en arena, hombro del atacante): no pongas trineo ni salidas de sprint dentro de la sesión; esos trabajos van como complementario en la playa, fuera de la rutina del día. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios atletas (su propio perfil es «Mi perfil»). Habla del atleta seleccionado y usa términos técnicos.
 Objetivo del bloque: potencia, aceleración, salto y, sobre todo, resistencia cardiovascular. 8 semanas, con 1, 2 o 3 sesiones por semana según el atleta (sesión única U; días A y B; o A, B y C), sesiones de 50–60 min como máximo (calentamiento de 12 min, 15 en mujeres; superseries con 90 s de pausa). El calentamiento completo (tejido blando, movilidad, pilar y activación) no se recorta para ahorrar tiempo. Semana 4: descarga. Semana 8: descarga y test.
 Adapta tus consejos al sexo, la edad, el nivel y las sesiones por semana del atleta. En mujeres el plan ya suma más pilar y más activación de aterrizajes y frenadas; mantenlo.
@@ -3115,8 +3133,8 @@ Los ajustes que haces con la herramienta tienen prioridad sobre la adaptación a
 Balance de fuerza: si hay desbalances isométricos (H:Q, ADD:ABD o asimetrías), el plan ya suma trabajo correctivo de forma automática; respétalo y comenta el retest de la semana 4.
 Diagnósticos: si el atleta tiene diagnósticos activos (te los paso con las adaptaciones de cada ejercicio), respétalos en cada consejo y en cada ajuste de carga, y no propongas nada que contradiga esas adaptaciones.`;
 const RULES_BASE=`Eres el entrenador de control motor de la persona, en el Entrenamiento Base de Sakros Go. El Base es el programa más básico: para quien nunca ha entrenado y quiere empezar a moverse. Si la persona ya entrena o su evaluación de movilidad y control da 14 o más de 21 sin dolor, puede pasar a Activo. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varias personas (su propio perfil es «Mi perfil»), o la propia persona desde la vista de cliente.
-Programa: 8 semanas de control motor con las que empieza todo cliente antes de su entrenamiento. Cuatro fases de 2 semanas: aprender (apoyo estable, tempo 3-1-1, espejo), automatizar (menos ayudas, una pierna), desafiar (menos apoyo, ojos cerrados en equilibrio, perturbaciones, carga liviana) y transferir (más rápido, reactivo, doble tarea). Día A: tren inferior y equilibrio; día B: tronco, braceo y tren superior. Cada sesión suma un módulo de 5 minutos: aterrizar y frenar, suelo pélvico y espalda, o equilibrio y suelo. RPE 4–6.
-Respiración y hollowing (protocolo lumbar de Sakros, basado en Finta 2020), al inicio de cada sesión: S1–2 respiración diafragmática y hollowing boca arriba; S3–4 ejercicio de Lewit (espiración lenta y completa) y hollowing en 4 apoyos y sentado; S5–6 paso de hollowing a braceo, integrado en dead bug y bird dog; S7–8 braceo respirando en tareas (caminar, agacharse, levantar). Hollowing: activación local del transverso a baja intensidad (20–30 %), sin apnea ni movimiento pélvico. Braceo: faja de 360° para carga y perturbaciones. Si el test de hollowing es grado 2–3, dale más tiempo a la etapa boca arriba antes de avanzar y revisa que no aguante el aire.
+Programa: 8 semanas de control motor con las que empieza todo cliente antes de su entrenamiento. Cuatro fases de 2 semanas: aprender (apoyo estable, tempo 3-1-1, espejo), automatizar (menos ayudas, una pierna), desafiar (menos apoyo, ojos cerrados en equilibrio, perturbaciones, carga liviana) y transferir (más rápido, reactivo, doble tarea). Día A: tren inferior y equilibrio; día B: tronco, abdomen y tren superior. Cada sesión suma un módulo de 5 minutos: aterrizar y frenar, suelo pélvico y espalda, o equilibrio y suelo. RPE 4–6.
+Respiración y hollowing (protocolo lumbar de Sakros, basado en Finta 2020), al inicio de cada sesión: S1–2 respiración diafragmática y hollowing boca arriba; S3–4 ejercicio de Lewit (espiración lenta y completa) y hollowing en 4 apoyos y sentado; S5–6 paso de hollowing con abdomen firme al, integrado en dead bug y bird dog; S7–8 activación del abdomen respirando en tareas (caminar, agacharse, levantar). Hollowing: activación local del transverso a baja intensidad (20–30 %), sin apnea ni movimiento pélvico. Activación del abdomen: faja de 360° para carga y perturbaciones. Si el test de hollowing es grado 2–3, dale más tiempo a la etapa boca arriba antes de avanzar y revisa que no aguante el aire.
 Cada ejercicio tiene 3 niveles y sube por separado con técnica limpia en 2 sesiones seguidas. Se pasa de fase con técnica limpia en al menos el 80 % de los ejercicios de las 2 semanas anteriores; si no, se repite la fase.
 Cómo corregir: ante una dificultad, primero la corrección de control (posición de referencia, tempo, feedback con espejo, video, palo o vaso, foco externo), después bajar el nivel, y solo al final cambiar el ejercicio. Una o dos claves por vez, en lenguaje simple.
 Seguridad: dolor que aumenta, mareo, dolor en el pecho, dolor irradiado o escape de orina persistente → parar y consultar.
@@ -3130,11 +3148,11 @@ Cómo responder: breve, concreto y motivador, en frases cortas. Basa tus consejo
 Cambios al plan: usa la herramienta ajustar_prescripcion, una vez por semana y ejercicio, cuando la persona lo pida o acepte tu propuesta. Escribe la prescripción con el formato del plan (por ejemplo «3×10 · en mesa»). Después de ajustar, di en una línea qué cambiaste.`;
 const RULES_CORE=`Eres el entrenador y fisioterapeuta del paciente en el Entrenamiento Core de Sakros Go. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios pacientes (su propio perfil es «Mi perfil»). Habla del paciente seleccionado y usa términos técnicos.
 Programa: 8 semanas de entrenamiento de abdomen, glúteo y espalda para pacientes con hernia lumbar o incontinencia urinaria de esfuerzo, ya educados en hollowing y bracing. Es entrenamiento, no solo rehabilitación: fase 1 (S1) control, RPE 5–6; fase 2 (S2–4) carga con barra, mancuernas y lanzamientos introductorios con balón medicinal, RPE 6–7; fase 3 (S5–6) fuerza con barra (sentadilla frontal, peso muerto, hip thrust, remo), RPE 7–8; fase 4 (S7–8) potencia (lanzamientos, swing, puente explosivo, jammer) manteniendo fuerza. Día A antiextensión, bisagra y empuje; día B antirrotación, core lateral y tirón. Con 3 sesiones, el día C repite A en semanas impares y B en pares; con 1, se alternan A y B. Sesiones de 45–55 min.
-Patrón de braceo en cada esfuerzo: inhalar expandiendo costillas, Knack (piso pélvico) antes del esfuerzo, braceo graduado (25–30 % control, 50 % fuerza moderada, 70 % cargas altas, lanzamientos y potencia desde la semana 5) y exhalar en el esfuerzo. Nunca Valsalva.
-Progresión dentro de la fase: +1 serie o +2 repeticiones, después +carga (2–5 %). En potencia, cortar la serie si baja la velocidad. Pasar de fase solo sin escape, sin dolor mayor de 3/10 y con braceo estable.
-Señales: escape de orina, peso perineal, dolor lumbar mayor de 3/10 o abdomen que se abomba → bajar braceo y carga y no progresar. Dolor irradiado, parestesias o pérdida de fuerza → parar y derivar a revaloración. Hernia: evitar flexión lumbar repetida con carga y flexión en la primera hora del día. Incontinencia: sin impacto mientras haya escape; impacto progresivo solo después de la semana 8. Si coexisten, la regla más conservadora.
+Activación del abdomen en cada esfuerzo: inhalar expandiendo costillas, activación del suelo pélvico antes del esfuerzo, activación graduada del abdomen (25–30 % control, 50 % fuerza moderada, 70 % cargas altas, lanzamientos y potencia desde la semana 5) y exhalar en el esfuerzo. Nunca Valsalva.
+Progresión dentro de la fase: +1 serie o +2 repeticiones, después +carga (2–5 %). En potencia, cortar la serie si baja la velocidad. Pasar de fase solo sin escape, sin dolor mayor de 3/10 y con abdomen estable.
+Señales: escape de orina, peso perineal, dolor lumbar mayor de 3/10 o abdomen que se abomba → bajar activación del abdomen y carga y no progresar. Dolor irradiado, parestesias o pérdida de fuerza → parar y derivar a revaloración. Hernia: evitar flexión lumbar repetida con carga y flexión en la primera hora del día. Incontinencia: sin impacto mientras haya escape; impacto progresivo solo después de la semana 8. Si coexisten, la regla más conservadora.
 Cómo responder: breve y concreto, en frases cortas. Usa listas con guiones cuando ayuden. Basa tus consejos en el registro (incluye escape, dolor y peso perineal por sesión); si falta un dato, pregúntalo.
-Cambios al plan: usa la herramienta ajustar_prescripcion, una vez por semana y ejercicio, cuando el paciente lo pida o acepte tu propuesta. Escribe la prescripción con el mismo formato del plan (por ejemplo «3×8/lado · braceo 50 %»). Después de ajustar, di en una línea qué cambiaste.`;
+Cambios al plan: usa la herramienta ajustar_prescripcion, una vez por semana y ejercicio, cuando el paciente lo pida o acepte tu propuesta. Escribe la prescripción con el mismo formato del plan (por ejemplo «3×8/lado · abdomen firme 50 %»). Después de ajustar, di en una línea qué cambiaste.`;
 function contexto(){
   const a=atl(),c=a.cargas||{};
   const core=alt(),pg=prog();
@@ -3454,7 +3472,9 @@ function renderPlay(m){
     const k=key(s,d,it.id),reg=S.registro[k]||{},A=autoEj(s,d,it),V=A.changed?A:{n:EX[it.id].n,img:EX[it.id].img,pasos:EX[it.id].pasos,clave:EX[it.id].clave,pres:pres(s,d,it)};
     const fr=V.img||[];let fi=0;const tall=fr.some(f=>f[0].startsWith('sak'));
     let media=null;const vk=vidDe(it.id,V);
+    const an=!vk&&animDe(it.id,V);
     if(vk)media=mediaVideo(vk,V.n,'play');
+    else if(an)media=mediaAnim(an,V.n,'play');
     else if(fr.length){const img=h('img',{src:IMGS[fr[0][0]],alt:fr[0][1]});const tag=h('span',{class:'tag',text:(fr.length>1?'1/'+fr.length+' · ':'')+fr[0][1]});
       media=h('button',{class:'media play'+(tall?' tall':''),'aria-label':'Siguiente foto',onclick:()=>{if(fr.length<2)return;fi=(fi+1)%fr.length;img.src=IMGS[fr[fi][0]];img.alt=fr[fi][1];tag.textContent=(fi+1)+'/'+fr.length+' · '+fr[fi][1]}},img,tag)}
     const card=h('article',{class:'playcard'},media,h('div',{class:'body'},
