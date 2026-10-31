@@ -228,6 +228,9 @@ details.card>summary{font-weight:700}
   .ex{grid-template-columns:240px minmax(0,1fr)}
   .media{aspect-ratio:auto;height:100%;min-height:200px}
   .media.tall{aspect-ratio:3/4;height:auto;align-self:start}
+  .ex.ss{grid-template-columns:320px minmax(0,1fr)}
+  .ex>.ssmedia{align-self:start}
+  .ssmedia .media,.ssmedia .media.tall{aspect-ratio:4/5;height:auto;min-height:0;min-width:0}
 }
 @media (prefers-reduced-motion:no-preference){.check,.lane,.cell{transition:background .15s,border-color .15s}}
 .fmsstrip{display:flex;gap:4px;overflow-x:auto;margin:8px 0}.fmsstrip img,.fmsstrip .ph{width:64px;height:84px;object-fit:cover;border-radius:6px;background:var(--sunk);flex:0 0 auto}
