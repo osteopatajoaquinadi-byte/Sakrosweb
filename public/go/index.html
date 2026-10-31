@@ -308,7 +308,7 @@ const IMGS={"boxsquat-0":"/go/img/boxsquat-0.jpg","boxsquat-1":"/go/img/boxsquat
 /* ---------- Plan ---------- */
 const FASE=['Carga','Carga','Carga','Descarga','Carga intensa','Carga intensa','Carga intensa','Descarga y test'];
 const DUR={A:[56,59,59,47,59,62,65,57],B:[56,58,60,48,62,62,64,57]};
-const DIA={A:'Fuerza, potencia vertical y potencia aeróbica',B:'Aceleración, potencia de cadera y capacidad anaeróbica'};
+const DIA={A:'Desplazamiento lateral, potencia vertical y fuerza',B:'Aceleración, paso cruzado y potencia de cadera'};
 const r8=(a,d)=>[a,a,a,d,a,a,a,d];
 const fill=v=>Array(8).fill(v);
 const EX={
@@ -499,13 +499,16 @@ const PLAN={
   {id:'movA',b:'1b',p:fill('4 min')},
   {id:'pilarA',b:'1c',p:r8('1 vuelta','1 vuelta'),pM:r8('2 vueltas','1 vuelta')},
   {id:'actA',b:'1d',p:r8('1 serie','1 serie'),pM:r8('2 series','1 serie')},
+  {id:'mdcut',b:'2',p:['Nivel 1 · pared 1×10 s/lado + shuffle continuo con corte 2×3/lado (5 m)','Nivel 1 · pared 1×10 s/lado + shuffle continuo con corte 2×3/lado (5 m)','Nivel 2 · pared 1×10 s/lado + cortes dirigidos 2×4/lado (5–10 m)','Nivel 1 · shuffle con corte 1×3/lado (5 m) · descarga','Nivel 2 · cortes dirigidos 2×4/lado (5–10 m)','Nivel 2 · cortes dirigidos 2×5/lado (5–10 m)','Nivel 3 · secuencia shuffle → corte → sprint 2×3/lado (10 m)','Nivel 3 · secuencia shuffle → corte → sprint 1×3/lado (10 m)']},
   {id:'cajon',b:'2A',p:['Cajón 3×3','Cajón 3×3','Cajón 3×3','Cajón 2×3','Drop jump 3×4','Drop jump 3×4','Drop jump 3×4','Test CMJ y horizontal']},
   {id:'puenteexp',b:'2B',p:['Suelo 3×6','Suelo 3×6','Suelo 3×8','Suelo 2×6','De pie 3×5','De pie 3×5','De pie 4×5','Suelo 2×6']},
   {id:'cargada',b:'3',p:['3×3 · 50 kg','3×3 · 52,5 kg','3×3 · 55 kg','2×3 · 45 kg','4×2 · 57,5 kg','4×2 · 60 kg','4×2 · 62,5 kg','3×2 · 50 kg']},
   {id:'sentadilla',b:'4A',p:['4×5 · 100 kg','4×5 · 105 kg','4×5 · 107,5 kg','3×5 · 90 kg','4×3 · 110 kg +C','4×3 · 115 kg +C','4×3 · 117,5 kg +C','Test 5RM'],rpe:RPE_SQ},
-  {id:'pallof',b:'4B',p:['Plancha lateral 3×8/lado','Plancha lateral 3×8/lado','Plancha lateral 3×8/lado','Plancha lateral 2×8/lado','Bicho muerto 3×8/lado','Bicho muerto 3×8/lado','Bicho muerto 3×8/lado','Bicho muerto 2×8/lado']},
-  {id:'intervalos',b:'5',p:['3×3 min','3×4 min','3×4 min','2×3 min','3×4 min','3×4 min','4×3 min','Test de resistencia']},
-  {id:'regen',b:'6',p:fill('2 min')}],
+  {id:'kremomanc',b:'4B',p:r8('3×8/lado','2×8/lado')},
+  {id:'ksplit',b:'5A',p:['3×8/lado','3×8/lado','3×10/lado','2×8/lado','3×6/lado · +peso','3×6/lado · +peso','3×6/lado · +peso','2×6/lado']},
+  {id:'gflex',b:'5B',p:['3×8–10 · pies en el suelo','3×8–10','3×10–12','2×8','3×8 · pies elevados o con lastre','3×8 · pies elevados o con lastre','3×10 · pies elevados o con lastre','2×8']},
+  {id:'kpallofsr',b:'6',p:r8('3×8/lado','2×8/lado')},
+  {id:'regen',b:'7',p:fill('2 min')}],
  B:[
   {id:'tejidoB',b:'1a',p:fill('3 min')},
   {id:'movB',b:'1b',p:fill('4 min')},
@@ -513,27 +516,42 @@ const PLAN={
   {id:'actB',b:'1d',p:r8('1 serie','1 serie'),pM:r8('2 series','1 serie')},
   {id:'salidas',b:'2',p:['3×10 m','3×10 m','3×10 m','2×10 m','3×10 m','3×10 m','3×10 m','Test 10 m']},
   {id:'sprint',b:'3',p:['2×20 m','2×20 m','2×20 m','2×20 m','2×30 m','2×30 m','2×30 m','Test 20 m']},
+  {id:'mdcross',b:'3x',p:['Nivel 1 · pared 1×10 s/lado + paso cruzado a la base 2×3/lado','Nivel 1 · pared 1×10 s/lado + paso cruzado a la base 2×3/lado','Nivel 2 · pared 1×10 s/lado + shuffle → paso cruzado → sprint 2×3/lado (5–10 m)','Nivel 1 · paso cruzado a la base 1×3/lado · descarga','Nivel 2 · shuffle → paso cruzado → sprint 2×4/lado (5–10 m)','Nivel 2 · shuffle → paso cruzado → sprint 2×4/lado (10 m)','Nivel 3 · corte → paso cruzado → sprint 2×3/lado (10–15 m)','Nivel 3 · corte → paso cruzado → sprint 1×3/lado (10 m)']},
   {id:'pushpress',b:'4A',p:['3×4 · 50 kg','3×4 · 52,5 kg','3×4 · 55 kg','2×3 · 45 kg','4×3 · 57,5 kg','4×3 · 60 kg','4×3 · 62,5 kg','3×3 · 50 kg']},
   {id:'skater',b:'4B',p:['Skater 3×4/lado','Skater 3×4/lado','Skater 3×4/lado','Skater 2×4/lado','Caída lateral 3×4/lado','Caída lateral 3×4/lado','Caída lateral 3×4/lado','Skater 2×4/lado']},
   {id:'frontal',b:'5A',p:['3×4 · 77,5 kg','3×4 · 80 kg','3×4 · 85 kg','2×4 · 70 kg','4×3 · 87,5 kg','4×3 · 90 kg','4×3 · 92,5 kg','Test 5RM'],rpe:RPE_SQ},
   {id:'dominadas',b:'5B',p:r8('3×6–8','2×6')},
-  {id:'muerto',b:'6',p:['3×5 · 97,5 kg','3×5 · 100 kg','3×5 · 105 kg','2×5 · 85 kg','3×3 · 107,5 kg','3×3 · 112,5 kg','3×3 · 115 kg','Test 5RM'],rpe:[7,7,7.5,'5–6',7.5,8,8.5,null]},
-  {id:'hipthrust',b:'6B',p:['3×6 · 90 kg','3×6 · 95 kg','3×6 · 100 kg','2×6 · 75 kg','3×6 · 100 kg','3×6 · 105 kg','3×6 · 110 kg','2×6 · 80 kg']},
-  {id:'t3030',b:'7',p:['1×8','1×10','1×10','1×6','1×10','1×12','1×12','1×6']},
+  {id:'muerto',b:'6A',p:['3×5 · 97,5 kg','3×5 · 100 kg','3×5 · 105 kg','2×5 · 85 kg','3×3 · 107,5 kg','3×3 · 112,5 kg','3×3 · 115 kg','Test 5RM'],rpe:[7,7,7.5,'5–6',7.5,8,8.5,null]},
+  {id:'klanzrot',b:'6B',p:r8('3×5/lado','2×5/lado')},
+  {id:'hipthrust',b:'7',p:['3×6 · 90 kg','3×6 · 95 kg','3×6 · 100 kg','2×6 · 75 kg','3×6 · 100 kg','3×6 · 105 kg','3×6 · 110 kg','2×6 · 80 kg']},
   {id:'regen',b:'8',p:fill('2 min')}]
 };
 
 const _row=(d,id)=>PLAN[d].find(x=>x.id===id);
 PLAN.C=[{..._row('B','tejidoB')},{..._row('B','movB')},{..._row('A','pilarA')},{..._row('B','actB')},
   {..._row('B','skater'),b:'2'},{..._row('A','puenteexp'),b:'3A'},{..._row('B','dominadas'),b:'3B'},
-  {..._row('B','hipthrust'),b:'4A'},{..._row('A','pallof'),b:'4B'},
-  {id:'zona2',b:'5',p:['20 min','22 min','25 min','15 min','25 min','28 min','30 min','15 min']},{id:'regen',b:'6',p:fill('2 min')}];
+  {..._row('B','hipthrust'),b:'4A'},{..._row('A','kpallofsr'),b:'4B'},
+  {..._row('A','mdcut'),b:'5'},{id:'regen',b:'6',p:fill('2 min')}];
 PLAN.U=[{..._row('A','tejidoA')},{..._row('A','movA')},{..._row('A','pilarA')},{..._row('A','actA')},
   {..._row('B','salidas'),b:'2',p:['3×10 m','3×10 m','3×10 m','2×10 m','3×10 m','3×10 m','3×10 m','Test 10 m']},
-  {..._row('A','cargada'),b:'3'},{..._row('A','sentadilla'),b:'4A'},{..._row('A','pallof'),b:'4B'},
-  {..._row('B','muerto'),b:'5A'},{..._row('B','dominadas'),b:'5B'},{..._row('A','intervalos'),b:'6',p:['3×3 min','3×3 min','3×3 min','2×3 min','3×3 min','3×3 min','3×3 min','Test de resistencia']},{..._row('A','regen'),b:'7'}];
+  {..._row('A','cargada'),b:'3'},{..._row('A','sentadilla'),b:'4A'},{..._row('A','kremomanc'),b:'4B'},
+  {..._row('B','muerto'),b:'5A'},{..._row('B','dominadas'),b:'5B'},{..._row('A','kpallofsr'),b:'6'},{..._row('A','mdcut'),b:'7'},{..._row('A','regen'),b:'8'}];
 DUR.C=[55,57,60,45,60,63,65,48];DUR.U=[63,66,66,52,66,69,72,60];
-DIA.C='Fuerza unilateral, saltos laterales y base aeróbica';DIA.U='Sesión completa: potencia, fuerza y potencia aeróbica';
+DIA.C='Fuerza unilateral, saltos laterales y velocidad multidireccional';DIA.U='Sesión completa: potencia, fuerza y velocidad multidireccional';
+EX.mdcut={n:'Velocidad multidireccional: desplazamiento lateral y corte',img:[['skater-0','Base baja, peso en el borde interno'],['pared-1','Postura contra la pared']],pasos:[
+  'Pared (técnica): manos en la pared, cuerpo inclinado y base más ancha que los hombros. Mantén la posición de corte 10 s por lado y luego carga y despega la pierna de afuera ×5.',
+  'Shuffle: base baja, pies sin juntarse ni cruzarse, pecho al frente. Empuja el suelo con la pierna de afuera, cargando el borde interno del pie.',
+  'Corte: baja el centro de gravedad, inclínate hacia la nueva dirección («ángulo adentro, ángulo afuera») y sal explosivo.',
+  'Nivel 1: continuo en 5 m. Nivel 2: cortes dirigidos (a un cono o a la voz de un compañero). Nivel 3: secuencias con sprint.',
+  'Cada repetición al 100 % y pausa completa: menos de 90 s entre repeticiones y hasta 2 min entre series.'],
+  clave:'Quédate «bajo el techo»: la cabeza no sube ni baja. Si la técnica se pierde, la serie termina.'};
+EX.mdcross={n:'Velocidad multidireccional: paso cruzado',img:[['pared-1','Postura contra la pared'],['salida-1','Salida explosiva']],pasos:[
+  'Pared (técnica): posición de paso cruzado 10 s por lado y luego carga y despega ×5.',
+  'Desde la base, empuja con la pierna de adentro (borde externo del pie) y cruza la rodilla de afuera por delante «como si rompieras un vidrio».',
+  'Hombros y brazos contrarrotan para equilibrar la cadera. Sal directo al sprint.',
+  'Nivel 1: paso cruzado a la base. Nivel 2: shuffle → paso cruzado → sprint. Nivel 3: corte → paso cruzado → sprint.',
+  'Cada repetición al 100 %: pausa de hasta 90 s.'],
+  clave:'La rodilla de afuera apunta a donde vas: el giro sale de la cadera, no de los pies.'};
 EX.zona2={n:'Aeróbico continuo en zona 2',img:[['cinta-1','Cinta inclinada a ritmo suave'],['remo-1','Remo continuo']],pasos:[
   'Ritmo continuo al 60–70 % de la FC máxima: puedes hablar en frases cortas.',
   'En bici, remo, cinta inclinada o trote suave.',
@@ -905,16 +923,17 @@ Object.assign(EX,{
   'Exhala y sube la cadera empujando con los talones hasta alinear rodilla, cadera y hombro. Aprieta los glúteos arriba.',
   'Baja despacio. En las semanas 7–8, hazlo a una pierna.'],
   clave:'La zona lumbar no se arquea: el trabajo es de glúteo.'},
- gcurl:{n:'Curl de bíceps',img:[['curl-0','Brazos estirados, palmas al frente'],['curl-1','Flexiona los codos sin moverlos']],pasos:[
-  'De pie, una mancuerna en cada mano (o una banda bajo los pies), palmas al frente.',
-  'Flexiona los codos subiendo el peso sin mover los codos ni balancear el cuerpo. Exhala al subir.',
-  'Baja en 2 s.'],
-  clave:'Elige un peso con el que la última repetición cueste, pero salga limpia.'},
- gtricep:{n:'Extensión de tríceps por encima de la cabeza',img:[['tricep-0','Mancuerna arriba con las dos manos'],['tricep-1','Baja detrás de la cabeza']],pasos:[
-  'De pie o sentado, una mancuerna sujeta con las dos manos por encima de la cabeza.',
-  'Baja la mancuerna detrás de la cabeza flexionando los codos, que apuntan al techo.',
-  'Extiende los brazos y exhala. Las costillas no se abren.'],
-  clave:'Si molesta el hombro, cambia por la patada de tríceps del día B.'},
+ gcurl:{n:'Zancada lateral',img:[],pasos:[
+  'De pie con los pies juntos. Da un paso amplio al lado y lleva la cadera atrás sobre esa pierna, con la otra estirada.',
+  'La rodilla que se dobla sigue la dirección del pie; el tronco se inclina un poco hacia delante con la espalda recta.',
+  'Empuja el suelo para volver al centro. Exhala al volver.',
+  'Desde la semana 5, con una mancuerna sujeta frente al pecho.'],
+  clave:'Es el movimiento lateral que casi nunca se entrena: prepara cadera y rodilla para cambios de dirección.'},
+ gtricep:{n:'Pallof press con banda',video:'pallof-pie',img:[['pallof-0','Banda al costado, manos al pecho'],['pallof-1','Brazos estirados sin girar']],pasos:[
+  'Banda atada a la altura del pecho, a tu costado. Tómala con las dos manos frente al pecho.',
+  'Separa un poco los pies, rodillas suaves y abdomen firme.',
+  'Estira los brazos al frente y aguanta los segundos indicados sin que el tronco gire. Vuelve y repite. Luego cambia de lado.'],
+  clave:'Entrenas al tronco a resistir el giro: la base de una espalda que no se lesiona.'},
  gcorea:{n:'Abdomen: dead bug + plancha',img:[['deadbug-0','Dead bug: brazos al techo, rodillas a 90°'],['deadbug-1','Extiende brazo y pierna contrarios'],['plancha-0','Plancha con rodillas apoyadas'],['plancha-1','Plancha completa']],pasos:[
   'Dead bug: boca arriba, brazos al techo y caderas y rodillas a 90°. Exhala mientras extiendes un brazo y la pierna contraria, sin que la zona lumbar se despegue del suelo. Alterna.',
   'Plancha: antebrazos bajo los hombros, con las rodillas apoyadas al principio y completa desde la semana 5. Cuerpo recto, respirando.',
@@ -945,16 +964,16 @@ Object.assign(EX,{
   'Desde la semana 3: con mancuernas delante de los muslos. Rodillas suaves, cadera atrás y espalda recta; baja hasta media tibia o hasta donde mantengas la espalda recta.',
   'Sube empujando la cadera al frente y apretando los glúteos. Exhala al subir.'],
   clave:'Es el movimiento para levantar cosas del suelo sin cargar la zona lumbar.'},
- gmartillo:{n:'Curl martillo',img:[['martillo-0','Palmas mirándose'],['martillo-1','Sube sin mover el codo']],pasos:[
-  'De pie, una mancuerna en cada mano con las palmas mirándose.',
-  'Sube flexionando los codos sin moverlos ni balancear el cuerpo. Exhala al subir.',
-  'Baja en 2 s.'],
-  clave:'Trabaja bíceps y antebrazo: ayuda a la fuerza de agarre.'},
- gpatada:{n:'Patada de tríceps',img:[['patada-0','Codo pegado al cuerpo'],['patada-1','Extiende el brazo atrás']],pasos:[
-  'Mano y rodilla apoyadas en un banco o una silla, y la mancuerna en la otra mano.',
-  'Codo pegado al cuerpo y a la altura del tronco. Extiende el brazo atrás y exhala.',
-  'Vuelve despacio sin mover el codo.'],
-  clave:'Usa poco peso: el codo no se mueve.'},
+ gmartillo:{n:'Chop con banda (diagonal)',img:[['chop-0','Inicio: arriba y al lado'],['chop-1','Final: abajo y al otro lado']],pasos:[
+  'Banda atada arriba a un costado. Tómala con las dos manos, brazos casi estirados.',
+  'Lleva la banda en diagonal hacia la cadera contraria, con el tronco firme: los brazos guían, el tronco acompaña sin perder la postura.',
+  'Vuelve controlado. Progresión: de rodillas, semirrodillas y de pie.'],
+  clave:'Tronco firme: el movimiento sale de la cadera y los hombros, no de la zona lumbar.'},
+ gpatada:{n:'Paseo con carga (maleta)',video:'paseo-maleta',img:[['granjero-1','Caminar erguido con el peso']],pasos:[
+  'Una mancuerna o bolsa con peso en una mano, al costado.',
+  'Camina erguido los metros indicados sin inclinarte hacia el peso. Cambia de mano y vuelve.',
+  'Pasos normales, hombros nivelados y respiración tranquila.'],
+  clave:'Fuerza de agarre y un tronco que resiste la inclinación: carga útil para el día a día.'},
  gcoreb:{n:'Abdomen: bird dog + plancha lateral',img:[['sakplancha-1','Plancha lateral con rodillas apoyadas'],['sakplancha-2','Cadera arriba, cuerpo alineado'],['sidebridge-1','Plancha lateral completa (semanas 7–8)']],pasos:[
   'Bird dog: en cuatro apoyos, extiende un brazo al frente y la pierna contraria atrás, aguanta 3 s sin girar la cadera y alterna.',
   'Plancha lateral: antebrazo bajo el hombro, con las rodillas apoyadas al principio y piernas extendidas en las semanas 7–8. Cada lado.',
@@ -980,8 +999,8 @@ const PLANG={
   {id:'gflex',b:'3',p:['2×8 · en pared','2×10 · en pared','3×8 · en mesa','3×10 · en mesa','3×8 · en banco','3×10 · en banco','3×6–8 · rodillas o suelo','3×8–10 · rodillas o suelo']},
   {id:'gremob',b:'4',p:['2×12','2×15','3×12','3×15','3×12 · banda más dura','3×15 · banda más dura','3×12 · banda dura','3×15 · banda dura']},
   {id:'gpuente',b:'5',p:['2×12','2×15','3×12','3×15','3×12 · 2 s arriba','3×15 · 2 s arriba','3×8/lado · a una pierna','3×10/lado · a una pierna']},
-  {id:'gcurl',b:'6A',p:['2×12','2×12','3×10','3×12','3×10 · +peso','3×12','3×10 · +peso','3×12']},
-  {id:'gtricep',b:'6B',p:['2×12','2×12','3×10','3×12','3×10 · +peso','3×12','3×10 · +peso','3×12']},
+  {id:'gcurl',b:'6A',p:['2×6/lado · sin peso','2×8/lado · sin peso','3×8/lado','3×10/lado','3×8/lado · con mancuerna','3×10/lado · con mancuerna','3×8/lado · +peso','3×10/lado · +peso']},
+  {id:'gtricep',b:'6B',p:['2×8/lado · 2 s','2×10/lado · 2 s','3×8/lado · 3 s','3×10/lado · 3 s','3×8/lado · banda más dura','3×10/lado · banda más dura','3×8/lado · de pie','3×10/lado · de pie']},
   {id:'gcorea',b:'7',p:['2 vueltas · dead bug 6/lado + plancha en rodillas 15 s','2 vueltas · dead bug 8/lado + plancha en rodillas 20 s','3 vueltas · dead bug 8/lado + plancha en rodillas 20 s','3 vueltas · dead bug 8/lado + plancha en rodillas 30 s','3 vueltas · dead bug 10/lado + plancha completa 20 s','3 vueltas · dead bug 10/lado + plancha completa 25 s','3 vueltas · dead bug 10/lado + plancha completa 30 s','3 vueltas · dead bug 12/lado + plancha completa 30 s']},
   {id:'gcaminata',b:'8',p:['10 min','10 min','12 min','12 min','12 min','15 min','15 min','15 min']},
   {id:'gestira',b:'9',p:fill('3 min')}],
@@ -991,14 +1010,14 @@ const PLANG={
   {id:'gpress',b:'3',p:['2×10 · liviano','2×12 · liviano','3×10','3×12','3×10 · +peso','3×12','3×10 · +peso','3×12']},
   {id:'gremom',b:'4',p:['2×10/lado','2×12/lado','3×10/lado','3×12/lado','3×10/lado · +peso','3×12/lado','3×10/lado · +peso','3×12/lado']},
   {id:'gbisagra',b:'5',p:['2×10 · con palo','2×12 · con palo','3×10 · mancuernas livianas','3×12 · mancuernas livianas','3×10 · +peso','3×12','3×10 · +peso','3×12']},
-  {id:'gmartillo',b:'6A',p:['2×12','2×12','3×10','3×12','3×10 · +peso','3×12','3×10 · +peso','3×12']},
-  {id:'gpatada',b:'6B',p:['2×12/lado','2×12/lado','3×10/lado','3×12/lado','3×10/lado · +peso','3×12/lado','3×10/lado · +peso','3×12/lado']},
+  {id:'gmartillo',b:'6A',p:['2×8/lado · de rodillas','2×10/lado · de rodillas','3×8/lado · semirrodillas','3×10/lado · semirrodillas','3×8/lado · de pie','3×10/lado · de pie','3×8/lado · banda más dura','3×10/lado · banda más dura']},
+  {id:'gpatada',b:'6B',p:['2×15 m/lado · liviano','2×20 m/lado · liviano','3×20 m/lado','3×20 m/lado','3×20 m/lado · +peso','3×25 m/lado · +peso','3×25 m/lado · +peso','3×30 m/lado']},
   {id:'gcoreb',b:'7',p:['2 vueltas · bird dog 6/lado + plancha lateral en rodillas 15 s/lado','2 vueltas · bird dog 8/lado + plancha lateral en rodillas 15 s/lado','3 vueltas · bird dog 8/lado + plancha lateral en rodillas 20 s/lado','3 vueltas · bird dog 8/lado + plancha lateral en rodillas 25 s/lado','3 vueltas · bird dog 10/lado + plancha lateral en rodillas 30 s/lado','3 vueltas · bird dog 10/lado + plancha lateral en rodillas 30 s/lado','3 vueltas · bird dog 10/lado + plancha lateral completa 15 s/lado','3 vueltas · bird dog 10/lado + plancha lateral completa 20 s/lado']},
   {id:'ginterv',b:'8',p:['10 min continuos','10 min continuos','4×(1 min rápido + 2 min suave)','4×(1 min rápido + 2 min suave)','5×(1 min rápido + 2 min suave)','5×(1 min rápido + 2 min suave)','6×(1 min rápido + 1 min suave)','6×(1 min rápido + 1 min suave)']},
   {id:'gestira',b:'9',p:fill('3 min')}]
 };
 const FASEG=['Fase 1 · Adaptación','Fase 1 · Adaptación','Fase 2 · Base','Fase 2 · Base','Fase 3 · Progreso','Fase 3 · Progreso','Fase 3 · Progreso','Fase 3 · Progreso y retest'];
-const DIAG={A:'Cuerpo completo: sentadilla, empuje y tirón',B:'Cuerpo completo: escalón, hombros y bisagra'};
+const DIAG={A:'Cuerpo completo: sentadilla, empuje, tirón y movimiento lateral',B:'Cuerpo completo: escalón, hombros, bisagra y rotación'};
 const TESTSG=[['silla','Sentarse y pararse en 30 s (reps)'],['flex','Flexiones: reps máximas (anota el tipo)'],['plancha','Plancha con rodillas o completa (s)'],['camina','Caminata de 6 min (metros)'],['equi','Equilibrio a una pierna, ojos abiertos (s, máx. 30)'],['fc','FC en reposo (lpm)'],['cintura','Perímetro de cintura (cm)'],['peso','Peso (kg)']];
 function tminG(it,s){
   const p=String(it.p[s-1]||''),id=it.id;
@@ -1063,7 +1082,7 @@ Object.assign(EX,{
   'Pie completo en el escalón. Sube empujando con esa pierna, sin impulsarte con la de abajo.',
   'Arriba, aguanta 1 s sobre una pierna. Baja en 3 s.',
   'Puntos de control: rodilla sobre el pie, pelvis nivelada.'],clave:CTRL},
- xzancdin:{n:'Zancada dinámica',video:'zancada-rodilla',niv:['hacia atrás, con apoyo','atrás y adelante, sin apoyo','caminando, con mancuernas livianas'],img:[['split-1','Abajo, tronco erguido']],pasos:[
+ xzancdin:{n:'Zancada dinámica',video:'zancada-rodilla',niv:['hacia atrás, con apoyo','atrás, adelante y al lado, sin apoyo','en tres direcciones (adelante, al lado y atrás), con mancuernas livianas'],img:[['split-1','Abajo, tronco erguido']],pasos:[
   'Da un paso, baja controlado y vuelve con un impulso firme.',
   'Al volver, quédate en una pierna con la rodilla de la otra arriba 1 s, sin tambalearte.',
   'Más rápido que en las fases anteriores, pero con la misma alineación.',
@@ -1308,10 +1327,10 @@ Object.assign(EX,{
  frodPS:{n:'Rodillo: espalda alta y hombros',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo']],pasos:['Rodillo bajo la espalda alta: extiéndete sobre él en 3–4 alturas, con las manos detrás de la cabeza.','De lado, rodillo bajo la axila para el dorsal. Pelota contra la pared para el pectoral: unos 30 s por zona.'],clave:'Respira lento y suelta el peso sobre el rodillo.'},
  frodPC:{n:'Rodillo: cuerpo completo',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en espalda alta, glúteo, cuádriceps y pantorrillas: unos 20–30 s por zona.','Quédate un poco más donde sientas más tensión.'],clave:'Rápido y amplio: es preparación, no un masaje largo.'},
  frodPR:{n:'Rodillo: pies y piernas',img:[['sakrodillo-1','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Pelota bajo la planta del pie, 30 s por pie.','Rodillo en pantorrillas, cuádriceps y glúteo, unos 30 s por zona.'],clave:'Los pies y las pantorrillas son los que más reciben en la carrera y el salto.'},
- factPI:{n:'Activación: braceo y patrón de piernas',img:[['goblet-0','Sentadilla'],['puente-1','Puente']],pasos:['5 respiraciones boca arriba con braceo suave.','Sentadilla lenta ×8, bisagra de cadera ×8 y puente de glúteo ×8, con braceo.'],clave:'Ensaya con el cuerpo lo que vas a cargar después.'},
- factPS:{n:'Activación: braceo y patrón de tren superior',img:[['flexinc-0','Flexión en apoyo alto'],['remo-1','Remo con banda']],pasos:['5 respiraciones con braceo suave.','Flexión en pared o mesa ×8, remo con banda ×10 y brazos en «Y» y «T» con banda ×8.'],clave:'Hombros lejos de las orejas y costillas abajo.'},
- factPC:{n:'Activación: braceo y cuerpo completo',img:[['goblet-0','Sentadilla'],['flexinc-0','Flexión en apoyo alto']],pasos:['5 respiraciones con braceo suave.','Sentadilla ×8, flexión en apoyo alto ×8, remo con banda ×10 y bird dog ×5 por lado.'],clave:'Ritmo tranquilo, técnica limpia.'},
- factPR:{n:'Activación: carrera y saltos',img:[['skip-0','Skipping']],pasos:['5 respiraciones con braceo suave.','Skipping suave 2×20 s, zancadas caminando ×6 por lado y saltitos en el lugar 2×20 s.'],clave:'Aterriza suave, con las rodillas sobre los pies.'}
+ factPI:{n:'Activación: braceo y patrón de piernas',img:[['goblet-0','Sentadilla'],['puente-1','Puente']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones boca arriba con braceo suave.','Sentadilla lenta ×8, bisagra de cadera ×8 y puente de glúteo ×8, con braceo.'],clave:'Ensaya con el cuerpo lo que vas a cargar después.'},
+ factPS:{n:'Activación: braceo y patrón de tren superior',img:[['flexinc-0','Flexión en apoyo alto'],['remo-1','Remo con banda']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con braceo suave.','Flexión en pared o mesa ×8, remo con banda ×10 y brazos en «Y» y «T» con banda ×8.'],clave:'Hombros lejos de las orejas y costillas abajo.'},
+ factPC:{n:'Activación: braceo y cuerpo completo',img:[['goblet-0','Sentadilla'],['flexinc-0','Flexión en apoyo alto']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con braceo suave.','Sentadilla ×8, flexión en apoyo alto ×8, remo con banda ×10 y bird dog ×5 por lado.'],clave:'Ritmo tranquilo, técnica limpia.'},
+ factPR:{n:'Activación: carrera y saltos',img:[['skip-0','Skipping']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con braceo suave.','Skipping suave 2×20 s, zancadas caminando ×6 por lado y saltitos en el lugar 2×20 s.'],clave:'Aterriza suave, con las rodillas sobre los pies.'}
 });
 const CORRP={ds:'2×6–10',hs:'2×6–10/lado',il:'2×6–10/lado',sm:'2×8–12/lado',aslr:'2×6–10/lado',tspu:'2×6–10',rs:'2×6–10/lado'};
 const esCorr=id=>/^f(ds|hs|il|sm|aslr|tspu|rs)\d$/.test(String(id));
@@ -1693,10 +1712,10 @@ const BRACEO={fuerza:' · braceo 70 %',volumen:' · braceo 50 %',potencia:' · b
 // Plantillas: [b, tipo, banco de ejercicios]
 const BLK={
  rend:{
-  A:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['cajon','skater']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['pallof']],['5','cardio',['intervalos','t3030']],['6','prep',['regen']]],
-  B:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarB']],['1d','prep',['actB']],['2','pot',['salidas','sprint']],['3A','pri',['pushpress']],['3B','acc',['dominadas']],['4','pri',['muerto','hipthrust']],['5','cardio',['t3030','zona2']],['6','prep',['regen']]],
-  C:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarA']],['1d','prep',['actB']],['2','pot',['skater','cajon']],['3A','pri',['hipthrust','muerto']],['3B','acc',['dominadas']],['4A','pri',['frontal','sentadilla']],['4B','core',['pallof']],['5','cardio',['zona2','intervalos']],['6','prep',['regen']]],
-  U:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['salidas','cajon']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['pallof']],['5A','pri',['muerto','hipthrust']],['5B','acc',['dominadas']],['6','cardio',['intervalos','zona2']],['7','prep',['regen']]]},
+  A:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['cajon','skater']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['kpallofsr','kchop']],['5','cardio',['mdcut','mdcross']],['6','prep',['regen']]],
+  B:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarB']],['1d','prep',['actB']],['2','pot',['salidas','sprint']],['3A','pri',['pushpress']],['3B','acc',['dominadas']],['4','pri',['muerto','hipthrust']],['4B','core',['klanzrot','kchop']],['5','cardio',['mdcross','mdcut']],['6','prep',['regen']]],
+  C:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarA']],['1d','prep',['actB']],['2','pot',['skater','cajon']],['3A','pri',['hipthrust','muerto']],['3B','acc',['dominadas']],['4A','pri',['frontal','sentadilla']],['4B','core',['kpallofsr','kchop']],['5','cardio',['mdcut','mdcross']],['6','prep',['regen']]],
+  U:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['salidas','cajon']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['kpallofsr','kchop']],['5A','pri',['muerto','hipthrust']],['5B','acc',['dominadas']],['6','cardio',['mdcut','mdcross']],['7','prep',['regen']]]},
  core:{
   A:[['1','prep',['kprep']],['2A','core',['kdeadbugc','krollout']],['2B','pot',['klanzpecho','klanzover','klanzatras']],['3A','pri',['ksentbarra','kgoblet']],['3B','pri',['kmuertobarra','krdl']],['3C','acc',['khipthrust','khipthrustp','kpuentex']],['4','acc',['kremobarra','kremomanc']],['5','carry',['kgranjero','kmaleta']],['6','prep',['kcalma']]],
   B:[['1','prep',['kprep']],['2A','core',['klateral','klateralabd']],['2B','pot',['klanzrot','klanzrotp']],['2C','core',['kbirddogc','kpallofsr']],['3A','pri',['ksplit','kstepup']],['3B','acc',['klandmine']],['3C','pot',['kswing','kjammer','kpuentex']],['4','acc',['kjalon','kremoband']],['5','carry',['kcarrera','kmaleta']],['6','prep',['kcalma']]]},
@@ -1808,13 +1827,13 @@ function voley(r){
 /* Progresión semanal de desplazamiento en arena (shuffles): técnica → frenada → caída y recuperación →
    reacción a señal → con salto. Semanas 4 y 8: descarga y test. */
 const SHUF=[
-  ['Shuffle lateral técnico','3×(3 idas y vueltas de 5 m), pausa 45 s. Posición baja de recepción, pies sin cruzarse ni juntarse, pecho al frente.'],
-  ['Shuffle con frenada','4×(5 m + frenada en 2 pasos y vuelta), pausa 45 s. Frena con la pierna de afuera, rodilla sobre el pie.'],
-  ['Shuffle, caída y recuperación','4×(shuffle 5 m → caída al lado → levantarse → shuffle de vuelta), pausa 60 s.'],
-  ['Shuffle técnico (descarga)','2×(3 idas y vueltas de 5 m) suave, cuidando la técnica.'],
-  ['Shuffle reactivo a señal','6×6 s, pausa 30 s. Un compañero apunta a izquierda o derecha y cambias de dirección al instante.'],
-  ['Shuffle reactivo con balón','6×8 s, pausa 40 s. El compañero lanza el balón a un lado: desplázate y recíbelo en posición.'],
-  ['Shuffle reactivo + salto de bloqueo','6×(señal → 2 shuffles → salto de bloqueo → caída estable), pausa 40 s.'],
+  ['Nivel 1 · Shuffle continuo con corte','Pared: posición de corte 10 s por lado. Luego 3×(3 idas y vueltas de 5 m), pausa 45 s. Base baja, pies sin cruzarse, empuja con la pierna de afuera.'],
+  ['Nivel 1 · Shuffle con frenada','4×(5 m + frenada en 2 pasos y vuelta), pausa 45 s. Frena con la pierna de afuera, rodilla sobre el pie.'],
+  ['Nivel 2 · Cortes dirigidos + paso cruzado','4×(shuffle 5 m → corte → paso cruzado 3 m), pausa 60 s. La rodilla de afuera cruza por delante hacia la nueva dirección.'],
+  ['Nivel 1 · Shuffle técnico (descarga)','2×(3 idas y vueltas de 5 m) suave, cuidando la técnica.'],
+  ['Nivel 2 · Reactivo a señal','6×6 s, pausa 30 s. Un compañero apunta a izquierda o derecha: shuffle o paso cruzado según la distancia.'],
+  ['Nivel 3 · Secuencia con salto','6×(shuffle → corte → paso cruzado → salto de bloqueo → caída estable), pausa 45 s.'],
+  ['Nivel 3 · Espejo con compañero','4–6×(6–8 s en una zona de 5 m), pausa 45 s. Uno lidera y el otro lo sigue; cambien de rol.'],
   ['Test 5-10-5 en arena','3 intentos (5 m a un lado, 10 m al otro, 5 m de vuelta), pausa completa. Anota el mejor tiempo en tu nota de la sesión.']];
 function cardComplVoley(s){
   if(!esVoley())return null;
@@ -1825,10 +1844,10 @@ function cardComplVoley(s){
     h('p',{class:'note',text:'Fuera de la sesión del día: 1 o 2 veces por semana, en la arena y en un día distinto al entrenamiento de fuerza, o al final de la práctica de vóley. Si no tienes espacio, sáltalo: la sesión ya trae saltos y rallies.'}),
     h('ul',{class:'medir'},L.map(([n,p])=>h('li',{},h('strong',{text:n+': '}),p))));
 }
-const BLQN={rend:['','Preparación','Potencia','Fuerza','Energía y cierre'],core:['','Preparación','Core y potencia','Fuerza','Carga y cierre'],
+const BLQN={rend:['','Preparación','Velocidad y potencia','Fuerza y rotación','Cierre'],core:['','Preparación','Core y potencia','Fuerza','Carga y cierre'],
   global:['','Calentamiento','Piernas','Tren superior','Core, cardio y cierre'],base:['','Preparación','Control motor','Fuerza y patrones','Módulo y cierre']};
 const blqNom=n=>(BLQN[prog()]||BLQN.rend)[n]||'';
-const B_POT=new Set(['cajon','salidas','sprint','cargada','puenteexp','skater','vsalto','vbloqueo']);
+const B_POT=new Set(['mdcut','mdcross','cajon','salidas','sprint','cargada','puenteexp','skater','vsalto','vbloqueo']);
 const B_ENE=new Set(['intervalos','t3030','zona2','regen','trote','vrally']);
 function blq4(r){
   const pg=prog(),L='abcdefghij',U='ABCDEFGHIJ';
@@ -1960,7 +1979,7 @@ function chkAviso(s,d){
     h('button',{class:'linkbtn',onclick:async()=>{const sk=sesKey(s,d);const cur={...S.sesiones[sk],chk:{...c,normal:!c.normal},t:Date.now()};S.sesiones[sk]=cur;await write('sesiones',sk,cur);render()}},c.normal?'Volver a suave':'Hacerla normal'));
 }
 
-const TM={tejido:3,mov:4,pilar:3,act:2,cajon:5,puenteexp:3,cargada:7,sentadilla:10,pallof:2,regen:2,salidas:4,sprint:3,pushpress:6,skater:2,frontal:8,dominadas:2,muerto:8,hipthrust:3,zona2:0,intervalos:0,t3030:0};
+const TM={mdcut:12,mdcross:12,kremomanc:4,ksplit:5,gflex:3,kpallofsr:3,klanzrot:3,tejido:3,mov:4,pilar:3,act:2,cajon:5,puenteexp:3,cargada:7,sentadilla:10,pallof:2,regen:2,salidas:4,sprint:3,pushpress:6,skater:2,frontal:8,dominadas:2,muerto:8,hipthrust:3,zona2:0,intervalos:0,t3030:0};
 function tmin(it,s){
   if(it.tm!=null)return it.tm;
   if(String(it.id).startsWith('g'))return tminG(it,s);
@@ -2219,7 +2238,7 @@ function renderSesion(m){
         sec.append(h('p',{class:'dxline'},h('strong',{text:'Nueva fase: '+faseTxt(s).split(' · ')[1]+'. '}),tt?('En las 2 semanas anteriores marcaste técnica limpia en '+n+' de '+tt+' ejercicios ('+pct+' %). '+(pct>=80?'Puedes avanzar.':'Te conviene repetir la fase anterior: vuelve a la semana '+(s-2)+'.')):'Avanza si la técnica salió limpia en la mayoría de los ejercicios de las 2 semanas anteriores; si no, repite la fase.'))}
       if(s===8)sec.append(h('p',{class:'dxline',text:'Última semana: al terminarla, repite los tests y pasa a tu programa de entrenamiento.'}));
       const bd=h('details',{},h('summary',{},'Cómo se trabaja el control motor'),h('ul',{class:'medir'},
-        ['Cada sesión empieza con respiración y activación del abdomen profundo: en las semanas 1–4 aprendes a encender el abdomen profundo y en las 5–8 lo conviertes en braceo para moverte y cargar.','Intensidad baja (esfuerzo 4–6 de 10): es aprendizaje, no cansancio. Si la técnica se pierde, la serie termina.','Respeta el tempo: 3 s bajando, 1 s de pausa, 1 s subiendo.','Usa el espejo o grábate de perfil una serie por sesión.','Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control. Con técnica limpia 2 sesiones seguidas, sube ese ejercicio de nivel.','Para la sesión si aparece dolor que aumenta, mareo o dolor en el pecho.'].map(x=>h('li',{text:x}))));
+        ['Cada nivel sube un peldaño en la escalera del movimiento: del suelo (boca arriba o en 4 apoyos) a rodillas, semirrodillas, de pie y a una pierna; y de asistido a sin ayuda y con carga. Así el cuerpo aprende primero el control y después lo lleva a la vida real.','Cada sesión empieza con respiración y activación del abdomen profundo: en las semanas 1–4 aprendes a encender el abdomen profundo y en las 5–8 lo conviertes en braceo para moverte y cargar.','Intensidad baja (esfuerzo 4–6 de 10): es aprendizaje, no cansancio. Si la técnica se pierde, la serie termina.','Respeta el tempo: 3 s bajando, 1 s de pausa, 1 s subiendo.','Usa el espejo o grábate de perfil una serie por sesión.','Marca «Técnica limpia» solo si todas las repeticiones cumplieron los puntos de control. Con técnica limpia 2 sesiones seguidas, sube ese ejercicio de nivel.','Para la sesión si aparece dolor que aumenta, mareo o dolor en el pecho.'].map(x=>h('li',{text:x}))));
       if(s===1&&!ses.fecha&&!modoCli())bd.open=true;
       sec.append(bd);
     }
@@ -2627,7 +2646,7 @@ const ALIASC={kmuertobarra:'muerto',ksentbarra:'frontal',kpuentex:'puenteexp',ks
 const ALIASG={gcalor:'prep',gsilla:'sentadilla',gbisagra:'muerto',gpuente:'pilar',gcorea:'pilar',gcoreb:'pallof',gpress:'pushpress',gflex:'pushpress',gremob:'dominadas',gremom:'dominadas',gcaminata:'zona2',ginterv:'intervalos'};
 const ALIASX={xprep:'prep',xbisagra:'muerto',xrdl1:'muerto',xbis1:'muerto',xlevantar:'muerto',xsent:'frontal',xsent1:'frontal',xdeadbug:'pallof',xbirddog:'pallof',xplancha:'pilar',xpallof:'pallof',xempuje:'pushpress',xtiron:'dominadas',xmat:'cajon',xreact:'skater'};
 const aliasOf=id=>(String(id).startsWith('k')?ALIASC[id]:String(id).startsWith('g')?ALIASG[id]:String(id).startsWith('x')?ALIASX[id]:ALIAS[id])||id;
-const ALIAS={actA:'act',actB:'act',prepA:'prep',prepB:'prep',movA:'prep',movB:'prep',tejidoA:'tejido',tejidoB:'tejido',pilarA:'pilar',pilarB:'pilar'};
+const ALIAS={mdcut:'skater',mdcross:'salidas',actA:'act',actB:'act',prepA:'prep',prepB:'prep',movA:'prep',movB:'prep',tejidoA:'tejido',tejidoB:'tejido',pilarA:'pilar',pilarB:'pilar'};
 const DX={
  lca:{n:'LCA (ligamento cruzado anterior)',corto:'LCA',lado:true,
   fases:[['rehab','Reconstrucción < 9 meses o sin alta deportiva'],['alta','Alta deportiva o > 9 meses']],
@@ -3085,7 +3104,7 @@ function autoEj(s,d,it){
 
 /* ---------- Coach ---------- */
 let sample=null, ctl=null, busy=false;
-const RULES_IA='\n\nIDENTIDAD Y SEGURIDAD: eres el Coach IA de Sakros Go, una inteligencia artificial. Los programas y criterios los define Joaquín Adi, kinesiólogo con máster en Functional Training. Si te preguntan, di que eres una IA y no te presentes como Joaquín ni como un profesional de la salud. No diagnostiques ni indiques tratamientos. Ante dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta o se irradia, hormigueo o pérdida de fuerza, indica detener el ejercicio y consultar a un profesional. No pidas datos personales que el plan no necesite (RUT, dirección, datos bancarios). En Sakros no hay trineo de arrastre ni se usa el test Yo-Yo: no los propongas (usa cuesta o sprint lanzado, y el test de 2,4 km).';
+const RULES_IA='\n\nIDENTIDAD Y SEGURIDAD: eres el Coach IA de Sakros Go, una inteligencia artificial. Los programas y criterios los define Joaquín Adi, kinesiólogo con máster en Functional Training. Si te preguntan, di que eres una IA y no te presentes como Joaquín ni como un profesional de la salud. No diagnostiques ni indiques tratamientos. Ante dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta o se irradia, hormigueo o pérdida de fuerza, indica detener el ejercicio y consultar a un profesional. No pidas datos personales que el plan no necesite (RUT, dirección, datos bancarios). En Sakros no hay trineo de arrastre ni se usa el test Yo-Yo: no los propongas (usa cuesta o sprint lanzado, y el test de 2,4 km).\nMÉTODO (EXOS, por movimientos): cada sesión va de cuerpo completo explosivo a fuerza principal (bilateral), fuerza secundaria (unilateral) y rotación (de estabilidad o de propulsión). En la semana se equilibran empuje y tirón del tren superior (horizontal y vertical), empuje de piernas, cadera dominante y rodilla dominante, y se trabaja en los 3 planos. Si cambias un ejercicio, reemplázalo por otro del mismo tipo de movimiento (por ejemplo, un remo por otro tirón horizontal) para no romper el equilibrio. La velocidad multidireccional (shuffle, corte y paso cruzado) va en 3 niveles: continuo, dirigido y secuencias.';
 const RULES=`Eres el entrenador personal del atleta, con el método EXOS. Si sus datos dicen DEPORTE: vóley playa, adapta todo a su deporte (saltos de ataque y bloqueo, desplazamientos en arena, hombro del atacante): no pongas trineo ni salidas de sprint dentro de la sesión; esos trabajos van como complementario en la playa, fuera de la rutina del día. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios atletas (su propio perfil es «Mi perfil»). Habla del atleta seleccionado y usa términos técnicos.
 Objetivo del bloque: potencia, aceleración, salto y, sobre todo, resistencia cardiovascular. 8 semanas, con 1, 2 o 3 sesiones por semana según el atleta (sesión única U; días A y B; o A, B y C), sesiones de 50–60 min como máximo (calentamiento de 12 min, 15 en mujeres; superseries con 90 s de pausa). El calentamiento completo (tejido blando, movilidad, pilar y activación) no se recorta para ahorrar tiempo. Semana 4: descarga. Semana 8: descarga y test.
 Adapta tus consejos al sexo, la edad, el nivel y las sesiones por semana del atleta. En mujeres el plan ya suma más pilar y más activación de aterrizajes y frenadas; mantenlo.
