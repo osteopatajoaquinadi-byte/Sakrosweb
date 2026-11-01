@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { goMiembro } from "@/lib/go-auth";
+import { errorServidor } from "@/lib/go-errores";
 
 // FMS por video: la app extrae cuadros de cada video (3 repeticiones por
 // lado) y los envía aquí. El Coach los compara con los criterios del FMS y
@@ -193,6 +194,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Demasiadas consultas seguidas. Inténtalo en un minuto.", code: "rate_limited" }, { status: 429 });
     }
     console.error("Sakros Go FMS:", e);
+    await errorServidor("Evaluación de movilidad", e, m);
     return NextResponse.json({ error: "No se pudo analizar el video. Inténtalo de nuevo." }, { status: 502 });
   }
 }

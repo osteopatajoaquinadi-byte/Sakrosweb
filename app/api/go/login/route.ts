@@ -4,6 +4,7 @@ import { Resend } from "resend";
 import { getServiceClient } from "@/lib/supabase";
 import { emailFrom } from "@/lib/email";
 import { renderBrandedEmail } from "@/lib/email-template";
+import { errorServidor } from "@/lib/go-errores";
 
 // Envía el enlace de acceso a Sakros Go. Se genera con la API de
 // administración de Supabase y se manda con Resend: el enlace lleva un
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest) {
   const { data: autorizado, error: errAut } = await db.rpc("go_email_autorizado", { p_email: email });
   if (errAut) {
     console.error("Sakros Go login (autorizado):", errAut.message);
+    await errorServidor("Login (correo autorizado)", errAut);
     return NextResponse.json({ error: "No se pudo revisar tu correo. Inténtalo de nuevo." }, { status: 500 });
   }
   if (autorizado !== true) {
@@ -53,6 +55,7 @@ export async function POST(request: NextRequest) {
   const tokenHash = data?.properties?.hashed_token;
   if (error || !tokenHash) {
     console.error("Sakros Go login:", error?.message);
+    await errorServidor("Login (generar enlace)", error ?? "sin token");
     return NextResponse.json({ error: "No se pudo generar el enlace. Inténtalo de nuevo." }, { status: 500 });
   }
 
@@ -75,6 +78,7 @@ export async function POST(request: NextRequest) {
     .catch((e: unknown) => ({ error: e }));
   if (envio.error) {
     console.error("Sakros Go login (Resend):", envio.error);
+    await errorServidor("Login (enviar correo)", envio.error);
     return NextResponse.json({ error: "No se pudo enviar el correo. Inténtalo de nuevo." }, { status: 502 });
   }
   return NextResponse.json({ ok: true });

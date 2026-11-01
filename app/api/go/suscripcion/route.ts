@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { goMiembro } from "@/lib/go-auth";
 import { mercadoPagoEnabled } from "@/lib/mercadopago";
+import { errorServidor } from "@/lib/go-errores";
 import {
   TERMINOS_V,
   cancelarSuscripcion,
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: pre.init_point });
   } catch (e) {
     console.error("Sakros Go, crear suscripción:", e);
+    await errorServidor("Crear suscripción", e, m);
     return NextResponse.json({ error: "No se pudo iniciar el pago. Inténtalo de nuevo." }, { status: 502 });
   }
 }
@@ -86,6 +88,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("Sakros Go, cancelar suscripción:", e);
+    await errorServidor("Cancelar suscripción", e, m);
     return NextResponse.json({ error: "No se pudo cancelar. Inténtalo de nuevo." }, { status: 502 });
   }
 }

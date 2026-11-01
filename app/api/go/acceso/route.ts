@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { goMiembro } from "@/lib/go-auth";
 import { TERMINOS_V, leerVenta, sincronizarSuscripcion } from "@/lib/go-suscripcion";
+import { errorServidor } from "@/lib/go-errores";
 
 // Estado del acceso del cliente (suscripción o acceso dado por el coach).
 // Si la suscripción está por vencer, consulta a Mercado Pago por si ya hubo
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
       ({ data: a } = await db.from("go_accesos").select("*").eq("atleta", m.atleta).maybeSingle());
     } catch (e) {
       console.error("Sakros Go, sincronizar suscripción:", e);
+      await errorServidor("Sincronizar suscripción", e, m);
     }
   }
   const activo = !!a?.hasta && new Date(a.hasta) > new Date();

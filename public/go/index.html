@@ -264,6 +264,22 @@ h2.sec{margin:18px 4px 8px;font-size:1.1rem}p.big{font-family:var(--display);fon
 
 <script src="/go/supabase.js"></script>
 <script>
+/* Registro de errores: cada error inesperado se envía a /api/go/errores (máximo 8 por visita, sin repetir)
+   para que el entrenador se entere aunque nadie lo reporte. */
+const APP_V='2026-11-01';const _errVistos=new Set();let _errN=0;
+function reportarError(tipo,mensaje,detalle){
+  try{
+    mensaje=String(mensaje||'').replace(/^Uncaught (\w*Error: )?/,'').slice(0,500);if(!mensaje)return;
+    if(/ResizeObserver loop|^Script error\.?$|chrome-extension:|moz-extension:|safari-extension:/i.test(mensaje+' '+(detalle||'')))return;
+    const k=tipo+'|'+mensaje;if(_errVistos.has(k)||_errN>=8)return;_errVistos.add(k);_errN++;
+    let atleta=null,sb=null;try{atleta=(YO&&YO.atleta)||null;sb=SB}catch(e){}
+    const enviar=h=>fetch('/api/go/errores',{method:'POST',headers:h,keepalive:true,body:JSON.stringify({tipo,mensaje,detalle:String(detalle||'').slice(0,4000),url:location.pathname+location.hash,version:APP_V,atleta})}).catch(()=>{});
+    const h={'Content-Type':'application/json'};
+    if(sb&&sb.auth)sb.auth.getSession().then(({data})=>{if(data&&data.session)h.Authorization='Bearer '+data.session.access_token;enviar(h)},()=>enviar(h));else enviar(h);
+  }catch(e){}
+}
+window.addEventListener('error',e=>{if(e.target&&e.target!==window)return;reportarError('error',e.message,(e.error&&e.error.stack)||((e.filename||'')+':'+e.lineno+':'+e.colno))});
+window.addEventListener('unhandledrejection',e=>{const r=e.reason;if(r&&(r.code==='cancelled'||r.name==='AbortError'))return;reportarError('promesa',(r&&r.message)||(r&&r.code)||String(r),r&&r.stack)});
 const VIDEOS_B64={};
 const VIDEOS={'bajada-escalon':'x','deadbug':'x','deadbug-disco':'x','equilibrio-rodilla':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','respiracion-diafragmatica':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-silla':'x','snap-down':'x','swing':'x','zancada-estatica':'x','zancada-rodilla':'x'};const _vurl={};
 function videoURL(k){return '/go/media/'+k+'.mp4'}
@@ -2038,7 +2054,7 @@ function outbox(){try{return JSON.parse(localStorage.getItem(OUTBOX_K)||'[]')}ca
 function encolar(path,id,data){const q=outbox().filter(x=>!(x.path===path&&x.id===id));q.push({path,id,data});try{localStorage.setItem(OUTBOX_K,JSON.stringify(q))}catch(e){}setSync('Sin conexión: '+q.length+' cambio'+(q.length>1?'s':'')+' por enviar')}
 async function vaciarOutbox(){
   if(!db||mode!=='nube')return;const q=outbox();if(!q.length)return;const rest=[];
-  for(const x of q){try{await db.collection(x.path).doc(x.id).set(x.data)}catch(e){rest.push(x)}}
+  for(const x of q){try{await db.collection(x.path).doc(x.id).set(x.data)}catch(e){rest.push(x);if(navigator.onLine)reportarError('sincronizacion','No se pudo enviar un cambio guardado sin conexión: '+(e&&e.code||'sin código'))}}
   try{localStorage.setItem(OUTBOX_K,JSON.stringify(rest))}catch(e){}
   setSync(rest.length?'Sin conexión: '+rest.length+' por enviar':'Sincronizado');
 }
@@ -2049,7 +2065,7 @@ async function write(col,id,data){
   const path=P(col);
   if(mode==='offline'||!navigator.onLine){encolar(path,id,data);guardarCache();return}
   try{await db.collection(path).doc(id).set(data);setSync('Guardado')}
-  catch(e){encolar(path,id,data)}
+  catch(e){encolar(path,id,data);if(navigator.onLine)reportarError('sincronizacion','No se pudo guardar '+col+' (con conexión): '+(e&&e.code||'sin código'))}
 }
 async function remove(col,id){
   delete S[col][id];
@@ -2060,7 +2076,7 @@ let subs=[];
 function resetData(){Object.assign(S,{registro:{},sesiones:{},ajustes:{},chat:[],tests:{},salud:{},fms:{}})}
 function subscribe(){
   subs.forEach(u=>{try{u()}catch(e){}});subs=[];resetData();
-  const onErr=e=>setSync('Error de conexión: '+(e.code||''));
+  const onErr=e=>{setSync('Error de conexión: '+(e.code||''));if(navigator.onLine)reportarError('sincronizacion','Error de conexión al leer datos: '+(e.code||'sin código'))};
   const quien=UI.atleta;const ok=()=>quien===UI.atleta;
   ['registro','sesiones','ajustes'].forEach(col=>{
     subs.push(db.collection(P(col)).onSnapshot(snap=>{if(!ok())return;const m={};snap.docs.forEach(d=>m[d.id]=d.data());S[col]=m;refresh()},onErr));
