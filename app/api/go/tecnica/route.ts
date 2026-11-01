@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { goMiembro } from "@/lib/go-auth";
+import { errorServidor } from "@/lib/go-errores";
 
 // Revisión de técnica de cualquier ejercicio de Sakros Go a partir de cuadros
 // extraídos de un video casero. El navegador saca los cuadros (no se sube el video)
@@ -98,6 +99,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Demasiadas consultas seguidas. Inténtalo en un minuto.", code: "rate_limited" }, { status: 429 });
     }
     console.error("Sakros Go técnica:", e);
+    await errorServidor("Revisión de técnica", e, m);
     return NextResponse.json({ error: "No se pudo analizar el video. Inténtalo de nuevo." }, { status: 502 });
   }
 }

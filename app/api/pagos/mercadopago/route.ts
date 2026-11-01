@@ -10,6 +10,7 @@ import { sendPaymentReceivedEmail } from "@/lib/booking-emails";
 import { Resend } from "resend";
 import { calendarNotificationsEnabled, emailFrom } from "@/lib/email";
 import { siteConfig } from "@/lib/site-config";
+import { errorServidor } from "@/lib/go-errores";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -32,6 +33,7 @@ export async function POST(request: NextRequest) {
     } catch (e) {
       if (String(e).includes("Mercado Pago 404")) return NextResponse.json({ ok: true, ignored: "no encontrado" });
       console.error("Mercado Pago, suscripción Sakros Go:", e);
+      await errorServidor("Webhook Mercado Pago (suscripción)", e);
       return NextResponse.json({ error: "No se pudo consultar la suscripción." }, { status: 500 });
     }
     return NextResponse.json({ ok: true });

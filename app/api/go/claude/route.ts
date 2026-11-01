@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { goMiembro } from "@/lib/go-auth";
 import { accesoActivo } from "@/lib/go-suscripcion";
+import { errorServidor } from "@/lib/go-errores";
 
 // Coach de Sakros Go. La página arma la conversación y ejecuta sus propias
 // herramientas (ajustar la prescripción); aquí solo se valida la sesión, se
@@ -78,9 +79,11 @@ export async function POST(request: NextRequest) {
     }
     if (e instanceof Anthropic.APIError) {
       console.error("Sakros Go Claude:", e.status, e.message);
+      await errorServidor("Coach IA", e, m);
       return NextResponse.json({ error: "No se pudo completar la respuesta." }, { status: 502 });
     }
     console.error("Sakros Go Claude:", e);
+    await errorServidor("Coach IA", e, m);
     return NextResponse.json({ error: "No se pudo completar la respuesta." }, { status: 500 });
   }
 }
