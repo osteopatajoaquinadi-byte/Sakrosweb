@@ -125,6 +125,16 @@
     var esc = { l: elip(0.055, 0.9, 1.25, 0.3, escM), r: elip(0.055, 0.9, 1.25, 0.3, escM) };
     esc.l.rotation.z = -0.25; esc.r.rotation.z = 0.25; chestG.add(esc.l); chestG.add(esc.r);
     var pisoM = new T.MeshBasicMaterial({ color: ROJO, transparent: true, opacity: 0.9, depthTest: false }); var piso = elip(0.06, 1.2, 0.35, 1, pisoM); piso.renderOrder = 10; piso.castShadow = false; piso.position.y = -0.1; piso.visible = !!dyn.suelo; root.add(piso);
+    // logo SAKROS Go en la polera
+    (function () {
+      var c = document.createElement('canvas'); c.width = 256; c.height = 80; var x = c.getContext('2d');
+      x.font = '700 50px "Barlow Condensed", "Arial Narrow", Arial, sans-serif'; x.textBaseline = 'middle';
+      var w1 = x.measureText('SAKROS ').width, w2 = x.measureText('Go').width, x0 = (256 - w1 - w2) / 2;
+      x.fillStyle = '#16202a'; x.fillText('SAKROS ', x0, 42); x.fillStyle = '#c9402a'; x.fillText('Go', x0 + w1, 42);
+      var tx = new T.CanvasTexture(c); tx.encoding = T.sRGBEncoding; tx.anisotropy = 4;
+      var logo = new T.Mesh(new T.PlaneGeometry(0.2, 0.0625), new T.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false }));
+      logo.position.set(0, 0.15, 0.121); logo.rotation.x = -0.12; chestG.add(logo);
+    })();
     var neckG = new T.Group(); neckG.position.y = 0.28; chestG.add(neckG);
     var neck = M(new T.CylinderGeometry(0.045, 0.055, 0.09, 14)); neck.position.y = 0.03; neckG.add(neck);
     var head = elip(0.1, 0.9, 1.12, 1.02); head.position.set(0, 0.15, 0.01); neckG.add(head);
