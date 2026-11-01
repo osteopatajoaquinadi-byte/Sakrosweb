@@ -90,8 +90,8 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px soli
 .media.tall img{object-fit:contain}
 .media.mq{background:#e3e8ed;overflow:hidden;touch-action:pan-y}.media.mq .mq-cv{display:block;width:100%;height:100%}
 .mq-marca{position:absolute;top:8px;left:10px;font:700 .8rem/1 'Barlow Condensed',Arial Narrow,sans-serif;letter-spacing:.08em;color:#16202a;opacity:.8;pointer-events:none}.mq-marca b{color:#c9402a}
-.mq-cue{position:absolute;left:8px;right:8px;top:30px;background:rgba(255,255,255,.88);color:#16202a;font-size:.82rem;font-weight:600;line-height:1.3;padding:5px 9px;border-radius:8px;pointer-events:none}.mq-cue:empty{display:none}
-.ssmedia .mq-cue{font-size:.66rem;top:24px;padding:3px 6px}.ssmedia .mq .tag{display:none}.ssmedia .mq-marca{font-size:.66rem}
+.mq-cue{position:absolute;left:8px;right:8px;bottom:36px;background:rgba(255,255,255,.8);color:#16202a;font-size:.78rem;font-weight:600;line-height:1.25;padding:4px 8px;border-radius:8px;pointer-events:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.mq-cue:empty{display:none}
+.ssmedia .mq-cue{font-size:.62rem;bottom:6px;left:5px;right:5px;padding:2px 5px}.ssmedia .mq .tag{display:none}.ssmedia .mq-marca{font-size:.66rem}
 .media .tag{position:absolute;left:8px;bottom:8px;max-width:calc(100% - 16px);text-align:left;background:rgba(10,16,22,.72);color:#fff;font-size:.72rem;padding:2px 8px;border-radius:999px}
 .media .dots{position:absolute;right:8px;top:10px;display:flex;gap:4px}
 .media .dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55)}
@@ -774,7 +774,7 @@ const EXC={
   'Abdomen firme al 50–70 %. Tira del codo atrás y exhala.',
   'El tronco no rota.'],
   clave:'Bisagra y antirrotación a la vez.'},
- kcarrera:{n:'Paseo de pesos con cambios (granjero → maleta)',img:[['granjero-1','Paseo con carga']],pasos:[
+ kcarrera:{n:'Paseo de pesos con cambios (granjero → maleta)',video:'paseo-maleta',img:[['granjero-1','Paseo con carga']],pasos:[
   'Camina con una carga en cada mano (granjero). A mitad del recorrido, deja una y sigue con una sola (maleta).',
   'Abdomen firme al 70 %. Erguido, sin inclinarte.',
   'Respira durante todo el recorrido.'],
@@ -1138,11 +1138,11 @@ Object.assign(EX,{
   'Tira llevando los codos atrás y junta las escápulas. Aguanta la pausa indicada.',
   'Vuelve en 2 s.',
   'Puntos de control: hombros lejos de las orejas, tronco quieto.'],clave:CTRL},
- xcarry:{n:'Paseo con carga',niv:['carga liviana','carga media','carga pesada'],img:[['granjero-1','Paseo con carga']],pasos:[
+ xcarry:{n:'Paseo con carga',video:'paseo-maleta',niv:['carga liviana','carga media','carga pesada'],img:[['granjero-1','Paseo con carga']],pasos:[
   'Maleta: una carga en una mano. Granjero: una en cada mano.',
   'Camina erguido con pasos cortos y abdomen activo, respirando.',
   'Puntos de control: el tronco no se inclina hacia la carga, hombros nivelados.'],clave:CTRL},
- xlanz:{n:'Lanzamiento con balón medicinal',niv:['balón de 1–2 kg','balón de 3 kg','balón de 4 kg'],img:[['lanzpecho-0','Balón en el pecho'],['lanzpecho-1','Empuje explosivo']],pasos:[
+ xlanz:{n:'Lanzamiento con balón medicinal',video:'pase-pecho',niv:['balón de 1–2 kg','balón de 3 kg','balón de 4 kg'],img:[['lanzpecho-0','Balón en el pecho'],['lanzpecho-1','Empuje explosivo']],pasos:[
   'Pase de pecho o lanzamiento rotacional contra la pared, según la semana.',
   'Activación del abdomen y exhala fuerte al lanzar. Recibe amortiguando.',
   'Puntos de control: la fuerza sale de piernas y tronco firme; la zona lumbar no se arquea ni se tuerce.'],clave:CTRL},
