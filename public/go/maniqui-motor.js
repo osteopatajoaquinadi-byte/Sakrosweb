@@ -8,7 +8,7 @@
   var ROJO = 0xc9402a;
   var BASE = { pel: [0, 0.97, 0], pr: [0, 0, 0], sp: [0, 0, 0], ch: [0, 0, 0], hd: [0, 0, 0],
     la: [0, 0, 6], ra: [0, 0, -6], le: -8, re: -8, lf: [0.12, FOOT, 0.02], rf: [-0.12, FOOT, 0.02],
-    lfy: 8, rfy: -8, lfp: 0, rfp: 0, lfr: 0, rfr: 0, pup: 0, cue: '' };
+    lfy: 8, rfy: -8, lfp: 0, rfp: 0, lfr: 0, rfr: 0, pup: 0, lsc: [0, 0], rsc: [0, 0], rs: 0, ab: 0, pf: 0, cue: '' };
 
   // ---------- línea de tiempo: [duración, pose parcial] → canales numéricos con interpolación cúbica monótona ----------
   function prepara(K) {
@@ -18,20 +18,31 @@
     var prev = {}; for (var c in BASE) prev[c] = BASE[c];
     // la primera pose define los valores por defecto de los campos opcionales que aparecen después
     K.forEach(function (k) { for (var j in k[1]) if (prev[j] === undefined) prev[j] = k[1][j]; });
-    K.forEach(function (k) { var p = {}; for (var j in keys) p[j] = k[1][j] !== undefined ? k[1][j] : prev[j]; if (k[1].cue === undefined) p.cue = ''; prev = p; P.push(p); });
+    K.forEach(function (k) { var p = {}; for (var j in keys) p[j] = k[1][j] !== undefined ? k[1][j] : prev[j]; if (k[1].cue === undefined) p.cue = ''; p.vivo = !!k[1].vivo; prev = p; P.push(p); });
+    // si una mano pasa de estar fija en el mundo (lh) a seguir al tórax (lhc), se mezcla suave entre ambas referencias
+    ['l', 'r'].forEach(function (sd) {
+      var hayW = K.some(function (k) { return k[1][sd + 'h']; }), hayC = K.some(function (k) { return k[1][sd + 'hc']; });
+      if (!hayW || !hayC) return;
+      var m = K[0][1][sd + 'hc'] && !K[0][1][sd + 'h'] ? 1 : 0;
+      for (var i0 = 0; i0 < K.length; i0++) { if (K[i0][1][sd + 'hc'] && !K[i0][1][sd + 'h']) { m = 1; break; } if (K[i0][1][sd + 'h']) { m = 0; break; } }
+      K.forEach(function (k, i) { var q = k[1]; if (q[sd + 'hc'] && !q[sd + 'h']) m = 1; else if (q[sd + 'h'] && !q[sd + 'hc']) m = 0; P[i][sd + 'mc'] = m; });
+      keys[sd + 'mc'] = 1;
+    });
     var num = [], paso = [];
     for (var n in keys) { var v = P[0][n]; if (typeof v === 'number' || (Array.isArray(v) && typeof v[0] === 'number')) num.push(n); else paso.push(n); }
     var ch = num.map(function (n) {
       var arr = Array.isArray(P[0][n]), L = arr ? P[0][n].length : 1, cs = [];
       for (var d = 0; d < L; d++) {
         var y = P.map(function (p) { return arr ? p[n][d] : p[n]; }), m = [];
+        var mR = [];
         for (var i = 0; i < y.length; i++) {
-          if (i === 0 || i === y.length - 1) { m.push(0); continue; }
+          if (i === 0 || i === y.length - 1) { m.push(0); mR.push(0); continue; }
           var d0 = (y[i] - y[i - 1]) / Math.max(1e-6, T[i] - T[i - 1]), d1 = (y[i + 1] - y[i]) / Math.max(1e-6, T[i + 1] - T[i]);
           var h0 = Math.max(1e-6, T[i] - T[i - 1]), h1 = Math.max(1e-6, T[i + 1] - T[i]);
-          m.push(d0 * d1 <= 0 ? 0 : 3 * (h0 + h1) / ((2 * h1 + h0) / d0 + (h1 + 2 * h0) / d1));
+          if (P[i].vivo) { m.push(d0); mR.push(d1); continue; }
+          var mm = d0 * d1 <= 0 ? 0 : 3 * (h0 + h1) / ((2 * h1 + h0) / d0 + (h1 + 2 * h0) / d1); m.push(mm); mR.push(mm);
         }
-        cs.push({ y: y, m: m });
+        cs.push({ y: y, m: m, mR: mR });
       }
       return { n: n, arr: arr, cs: cs };
     });
@@ -44,7 +55,7 @@
     var u2 = u * u, u3 = u2 * u, h00 = 2 * u3 - 3 * u2 + 1, h10 = u3 - 2 * u2 + u, h01 = -2 * u3 + 3 * u2, h11 = u3 - u2;
     var p = {};
     L.ch.forEach(function (c) {
-      var v = c.cs.map(function (s) { return h00 * s.y[i] + h10 * h * s.m[i] + h01 * s.y[i + 1] + h11 * h * s.m[i + 1]; });
+      var v = c.cs.map(function (s) { return h00 * s.y[i] + h10 * h * s.mR[i] + h01 * s.y[i + 1] + h11 * h * s.m[i + 1]; });
       p[c.n] = c.arr ? v : v[0];
     });
     var a = L.P[i], b = L.P[i + 1];
@@ -110,6 +121,10 @@
     var abd = elip(0.12, 1.05, 1.1, 0.78); abd.position.y = 0.12; spine.add(abd);
     var chestG = new T.Group(); chestG.position.y = 0.23; spine.add(chestG);
     var rib = elip(0.165, 1.12, 1.05, 0.72); rib.position.y = 0.11; chestG.add(rib);
+    var escM = new T.MeshStandardMaterial({ color: 0xd9a08f, roughness: 0.5 });
+    var esc = { l: elip(0.055, 0.9, 1.25, 0.3, escM), r: elip(0.055, 0.9, 1.25, 0.3, escM) };
+    esc.l.rotation.z = -0.25; esc.r.rotation.z = 0.25; chestG.add(esc.l); chestG.add(esc.r);
+    var pisoM = new T.MeshBasicMaterial({ color: ROJO, transparent: true, opacity: 0.9, depthTest: false }); var piso = elip(0.06, 1.2, 0.35, 1, pisoM); piso.renderOrder = 10; piso.castShadow = false; piso.position.y = -0.1; piso.visible = !!dyn.suelo; root.add(piso);
     var neckG = new T.Group(); neckG.position.y = 0.28; chestG.add(neckG);
     var neck = M(new T.CylinderGeometry(0.045, 0.055, 0.09, 14)); neck.position.y = 0.03; neckG.add(neck);
     var head = elip(0.1, 0.9, 1.12, 1.02); head.position.set(0, 0.15, 0.01); neckG.add(head);
@@ -176,6 +191,9 @@
     var dbg = null; if (dyn.dbg) { dbg = new T.Group(); var hd2 = M(new T.CylinderGeometry(0.016, 0.016, 0.16, 10), steel); dbg.add(hd2); [-1, 1].forEach(function (k) { var w = M(new T.CylinderGeometry(0.06, 0.06, 0.06, 8), fmat); w.position.y = k * 0.11; dbg.add(w); }); scene.add(dbg); }
     var bola = null; if (dyn.balon) { bola = M(new T.SphereGeometry(dyn.balon === 'chico' ? 0.11 : 0.13, 22, 16), ballM); scene.add(bola); }
     var cajaM = null; if (dyn.caja) { cajaM = caja(0.36, 0.24, 0.28, wood); scene.add(cajaM); }
+    var rueda = null; if (dyn.rueda) { rueda = new T.Group(); var rr = M(new T.CylinderGeometry(0.1, 0.1, 0.06, 28), fmat); rr.rotation.z = Math.PI / 2; rueda.add(rr);
+      var ej2 = M(new T.CylinderGeometry(0.012, 0.012, 0.42, 10), steel); ej2.rotation.z = Math.PI / 2; rueda.add(ej2); [-1, 1].forEach(function (k) { var mg = M(new T.CylinderGeometry(0.018, 0.018, 0.1, 10), pad); mg.rotation.z = Math.PI / 2; mg.position.x = k * 0.15; rueda.add(mg); }); scene.add(rueda); }
+    var kbw = null; if (dyn.kbw) { kbw = new T.Group(); var kb1 = M(new T.SphereGeometry(0.085, 20, 14), fmat); kb1.position.y = 0.16; kbw.add(kb1); var kb2 = M(new T.TorusGeometry(0.05, 0.013, 8, 20), fmat); kb2.position.y = 0.05; kbw.add(kb2); kbw.position.set(dyn.kbw[0], dyn.kbw[1], dyn.kbw[2]); kbw.rotation.z = Math.PI; kbw.position.y += 0.25; scene.add(kbw); }
     var rodillo = null; if (dyn.rodillo) { rodillo = M(new T.CylinderGeometry(0.075, 0.075, 0.45, 20), bandM); rodillo.rotation.z = Math.PI / 2; scene.add(rodillo); }
     var cojin = null; if (dyn.cojin) { cojin = elip(0.07, 1.1, 0.8, 1, ballM); scene.add(cojin); }
     var lmBar = null; if (dyn.lm) { lmBar = new T.Group(); var lb = M(new T.CylinderGeometry(0.016, 0.016, 1, 10), steel); lb.position.y = 0.5; lmBar.add(lb); var lp = M(new T.CylinderGeometry(0.17, 0.17, 0.05, 24), fmat); lp.position.y = 0.8; lmBar.add(lp); scene.add(lmBar); }
@@ -184,7 +202,7 @@
     function visibles(pe) {
       var d = pe.dyn || {};
       propsG.forEach(function (g) { g.visible = g.userData.parte === pe; });
-      [[bar, 'barra'], [palo, 'palo'], [kb, 'kb'], [dbg, 'dbg'], [bola, 'balon'], [cajaM, 'caja'], [rodillo, 'rodillo'], [cojin, 'cojin'], [lmBar, 'lm']].forEach(function (x) { if (x[0]) x[0].visible = !!d[x[1]]; });
+      [[bar, 'barra'], [palo, 'palo'], [kb, 'kb'], [dbg, 'dbg'], [bola, 'balon'], [cajaM, 'caja'], [rodillo, 'rodillo'], [rueda, 'rueda'], [kbw, 'kbw'], [cojin, 'cojin'], [lmBar, 'lm'], [piso, 'suelo']].forEach(function (x) { if (x[0]) x[0].visible = !!d[x[1]]; });
       dbs.forEach(function (c) { c.visible = !!d.db; });
     }
 
@@ -212,7 +230,7 @@
     function brazoIK(k, p, s) {
       var arm = A[k], w = p[k + 'h'], c = p[k + 'hc'], hw = p[k + 'hw'];
       if (!w && !c) { E(arm.sh, p[k + 'a'], 'ZXY'); arm.el.rotation.set(p[k + 'e'] * D, 0, 0); arm.hand.quaternion.set(0, 0, 0, 1); return; }
-      var tg = w ? V(w) : chestW(c), pl = p[k + 'ep'];
+      var mc = p[k + 'mc'], tg = w && c && mc !== undefined ? V(w).lerp(chestW(c), mc) : w ? V(w) : chestW(c), pl = p[k + 'ep'];
       var pole = pl ? V(pl) : chestG.localToWorld(new T.Vector3(0.25 * s, -0.35, -1)).sub(chestG.getWorldPosition(new T.Vector3()));
       if (hw) { var hq = Q(hw); tg.add(new T.Vector3(0, HO, 0).applyQuaternion(hq)); cadena(arm.sh, arm.el, UA, FA, tg, pole); arm.hand.quaternion.copy(local(arm.hand, hq)); }
       else { cadena(arm.sh, arm.el, UA, FA + HO, tg, pole); arm.hand.quaternion.set(0, 0, 0, 1); }
@@ -236,6 +254,17 @@
     function cilindro(m, a, b) { var d = b.clone().sub(a), l = d.length(); m.position.copy(a).add(b).multiplyScalar(0.5); m.scale.set(1, Math.max(0.001, l), 1); m.quaternion.setFromUnitVectors(UP, d.normalize()); }
     function aplicar(p) {
       root.position.set(p.pel[0], p.pel[1], p.pel[2]); E(root, p.pr); E(spine, p.sp); E(chestG, p.ch); E(neckG, p.hd);
+      // escápulas: [elevación, protracción] de -1 a 1 (negativo = abajo / juntas)
+      ['l', 'r'].forEach(function (k) {
+        var s = k === 'l' ? 1 : -1, e = p[k + 'sc'] || [0, 0], el = e[0], pro = e[1];
+        A[k].sh.position.set(s * (0.2 + 0.012 * pro), 0.22 + 0.035 * el, 0.045 * pro);
+        esc[k].position.set(s * (0.095 + 0.04 * pro), 0.14 + 0.035 * el, -0.112 + 0.02 * Math.max(0, pro));
+        esc[k].rotation.y = s * 0.35 * Math.max(0, pro);
+      });
+      // respiración: rs = costillas que se expanden a los lados, ab = abdomen (positivo se infla, negativo se mete)
+      rib.scale.set(1.12 * (1 + 0.07 * p.rs), 1.05 * (1 + 0.02 * p.rs), 0.72 * (1 + 0.05 * p.rs));
+      abd.scale.set(1.05 * (1 + 0.04 * p.ab), 1.1, 0.78 * (1 + 0.16 * p.ab));
+      piso.position.y = -0.1 + 0.035 * p.pf; piso.scale.set(1.2 * (1 - 0.25 * p.pf), 0.35, 1);
       root.updateMatrixWorld(true); falla = 0;
       brazoIK('l', p, 1); brazoIK('r', p, -1);
       var yaw = (p.pr[1] || 0) * D;
@@ -253,6 +282,7 @@
       if (bola) { var bw = p.bw ? V(p.bw) : mh.clone(), bh = p.bh === undefined ? 1 : p.bh, off = chestG.localToWorld(new T.Vector3(0, 0, 1)).sub(chestG.getWorldPosition(v1)).multiplyScalar(0.1);
         bola.position.copy(bw.lerp(mh.clone().add(off), bh)); }
       if (cajaM) { var cw = p.cw ? V(p.cw) : mh.clone(), cb = p.cb === undefined ? 1 : p.cb; cajaM.position.copy(cw.lerp(mh.clone().add(new T.Vector3(0, -0.04, 0)), cb)); cajaM.rotation.y = (p.cy || 0) * D; }
+      if (rueda && p.rw) rueda.position.copy(V(p.rw));
       if (rodillo && p.rw) { rodillo.position.copy(V(p.rw)); rodillo.rotation.set(0, (p.ry || 0) * D, Math.PI / 2); }
       if (cojin) cojin.position.copy(punto('lk').add(punto('rk')).multiplyScalar(0.5));
       if (lmBar) { var pv = V(dyn.lm), le2 = dyn.lmh ? punto(dyn.lmh) : mh; lmBar.position.copy(pv); lmBar.quaternion.setFromUnitVectors(UP, le2.clone().sub(pv).normalize()); lmBar.scale.y = le2.distanceTo(pv) + 0.1; lmBar.children[1].scale.y = 1 / lmBar.scale.y; }

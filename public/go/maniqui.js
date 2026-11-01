@@ -13,7 +13,7 @@
     if (p.pel) q.pel = nx(p.pel);
     ['pr', 'sp', 'ch', 'hd'].forEach(function (k2) { if (p[k2]) q[k2] = neg(p[k2]); });
     sw('la', 'ra', neg); sw('le', 're'); sw('lf', 'rf', nx); sw('lfy', 'rfy', function (v) { return -v; }); sw('lfp', 'rfp'); sw('lfr', 'rfr', function (v) { return -v; });
-    sw('lh', 'rh', nx); sw('lhc', 'rhc', nx); sw('lep', 'rep', nx); sw('lhw', 'rhw', neg); sw('lkp', 'rkp', nx);
+    sw('lsc', 'rsc'); sw('lh', 'rh', nx); sw('lhc', 'rhc', nx); sw('lep', 'rep', nx); sw('lhw', 'rhw', neg); sw('lkp', 'rkp', nx);
     ['bw', 'cw', 'rw'].forEach(function (k2) { if (p[k2]) q[k2] = nx(p[k2]); });
     ['ry', 'cy'].forEach(function (k2) { if (p[k2] !== undefined) q[k2] = -p[k2]; });
     return q;
@@ -29,7 +29,7 @@
   // Sentadilla goblet a cajón: 3 s bajando, toca el cajón 1 s sin soltarse, 1 s subiendo.
   (function () {
     var up = { pel: [0, 0.955, 0], lf: [0.18, F, 0.02], rf: [-0.18, F, 0.02], lfy: 15, rfy: -15, pr: [0, 0, 0], sp: [0, 0, 0], ch: [0, 0, 0], hd: [0, 0, 0],
-      lhc: [0.05, 0.08, 0.2], rhc: [-0.05, 0.08, 0.2], lep: [0.3, -1, 0.2], rep: [-0.3, -1, 0.2], cue: 'Pies al ancho de los hombros, puntas un poco afuera · pesa pegada al pecho' };
+      lhc: [0.1, 0.1, 0.19], rhc: [-0.1, 0.1, 0.19], lep: [0.5, -1, 0.15], rep: [-0.5, -1, 0.15], cue: 'Pies al ancho de los hombros, puntas un poco afuera · pesa pegada al pecho' };
     var dn = o(up, { pel: [0, 0.52, -0.2], pr: [34, 0, 0], sp: [-4, 0, 0], ch: [-6, 0, 0], hd: [-22, 0, 0], cue: 'Toca el cajón 1 s sin soltarte · talones apoyados, espalda neutra' });
     EJ.kgoblet = { cam: 35, dyn: { kb: 'g' }, props: [{ t: 'caja', p: [0, -0.42], s: [0.45, 0.42, 0.4] }],
       k: [[0, up], [0.8, o(up, { cue: 'Baja en 3 s: cadera atrás y abajo, rodillas sobre la punta de los pies' })], [3, dn], [1, o(dn, { cue: 'Sube empujando el piso y exhala' })], [1, up]] };
@@ -51,7 +51,7 @@
 (function () {
   var M = window.MQ, F = M.F, o = M.o;
   // de pie, todo definido (primera pose de cada ejercicio)
-  M.de = function (x) { return o({ pel: [0, 0.955, 0], pr: [0, 0, 0], sp: [0, 0, 0], ch: [0, 0, 0], hd: [0, 0, 0], lf: [0.12, F, 0.02], rf: [-0.12, F, 0.02], lfy: 8, rfy: -8, lfp: 0, rfp: 0, lfr: 0, rfr: 0, pup: 0 }, x || {}); };
+  M.de = function (x) { return o({ pel: [0, 0.955, 0], pr: [0, 0, 0], sp: [0, 0, 0], ch: [0, 0, 0], hd: [0, 0, 0], lf: [0.12, F, 0.02], rf: [-0.12, F, 0.02], lfy: 8, rfy: -8, lfp: 0, rfp: 0, lfr: 0, rfr: 0, pup: 0, lsc: [0, 0], rsc: [0, 0], rs: 0, ab: 0, pf: 0 }, x || {}); };
   M.cad = { lhc: [0.2, -0.29, 0.06], rhc: [-0.2, -0.29, 0.06], lep: [1, -0.3, -0.6], rep: [-1, -0.3, -0.6] };   // manos en la cintura
   M.lado = { lhc: [0.22, -0.36, 0.02], rhc: [-0.22, -0.36, 0.02] };                                              // brazos a los lados (con mancuernas)
   M.pecho = { lhc: [0.07, 0.1, 0.18], rhc: [-0.07, 0.1, 0.18], lep: [0.4, -1, 0], rep: [-0.4, -1, 0] };            // manos al pecho (pesa o balón)
@@ -114,7 +114,7 @@
   (function () {
     var ba = { lh: [0.07, 0.38, 0.1], rh: [-0.07, 0.38, 0.1], lep: [0.5, 0, -1], rep: [-0.5, 0, -1] };
     var sq = de(o(ba, { pel: [0, 0.66, -0.16], pr: [40, 0, 0], sp: [6, 0, 0], hd: [-25, 0, 0], lf: [0.2, F, 0.02], rf: [-0.2, F, 0.02], lfy: 15, rfy: -15, bh: 1, bw: [0, 0.3, 0.1], cue: 'Media sentadilla, balón entre las piernas' }));
-    var sq2 = o(sq, { cue: 'Abdomen firme y suelo pélvico activo' });
+    var sq2 = o(sq, { vivo: 1, cue: 'Abdomen firme y suelo pélvico activo' });
     var ext = o(sq, { pel: [0, 1.0, 0.02], pr: [-4, 0, 0], sp: [-4, 0, 0], hd: [10, 0, 0], lf: [0.2, 0.14, 0.02], rf: [-0.2, 0.14, 0.02], lfp: 45, rfp: 45,
       lh: [0.08, 1.98, 0.2], rh: [-0.08, 1.98, 0.2], bh: 1, bw: [0, 2.05, 0.25], cue: 'Extiende piernas y cadera explosivo y lanza hacia arriba · exhala fuerte' });
     var vuela = o(ext, { pel: [0, 0.955, 0.02], pr: [0, 0, 0], hd: [20, 0, 0], lf: [0.2, F, 0.02], rf: [-0.2, F, 0.02], lfp: 0, rfp: 0, lh: [0.2, 1.75, 0.3], rh: [-0.2, 1.75, 0.3], bh: 0, bw: [0, 2.85, 0.55], cue: 'Déjalo caer delante' });
@@ -184,8 +184,8 @@
   // Remo con barra en bisagra
   (function () {
     var p = 58, pel = pelDe([0, 1.1, 0.12], p); pel[1] -= 0.02;
-    var ab = de(o(pies, { pel: pel, pr: [p, 0, 0], hd: [-30, 0, 0], lh: [0.25, 0.52, 0.16], rh: [-0.25, 0.52, 0.16], lep: [0.5, 1, -0.6], rep: [-0.5, 1, -0.6], cue: 'Bisagra con la columna neutra · agarre al ancho de los hombros' }));
-    var ar = o(ab, { lh: [0.25, 0.8, -0.02], rh: [-0.25, 0.8, -0.02], cue: 'Tira de la barra al abdomen llevando los codos atrás · exhala' });
+    var ab = de(o(pies, { pel: pel, pr: [p, 0, 0], hd: [-30, 0, 0], lh: [0.25, 0.52, 0.16], rh: [-0.25, 0.52, 0.16], lep: [0.5, 1, -0.6], rep: [-0.5, 1, -0.6], lsc: [0, 0.6], rsc: [0, 0.6], cue: 'Bisagra con la columna neutra · agarre al ancho de los hombros' }));
+    var ar = o(ab, { lh: [0.25, 0.8, -0.02], rh: [-0.25, 0.8, -0.02], lsc: [-0.3, -1], rsc: [-0.3, -1], cue: 'Tira de la barra al abdomen llevando los codos atrás · exhala' });
     EJ.kremobarra = { cam: 75, dyn: { barra: 'h' }, k: [[0, ab], [0.5, ab], [0.8, ar], [0.4, o(ar, { cue: 'El tronco no se levanta para ayudar' })], [1.4, o(ab, { cue: 'Baja controlado' })]] };
   })();
   // Extensión de espalda a 45°, isométrica
@@ -194,7 +194,7 @@
     var brazos = { lhc: [-0.07, 0.08, 0.17], rhc: [0.07, 0.04, 0.17], lep: [1, -0.5, 0], rep: [-1, -0.5, 0] };
     var neu = de(o(brazos, { pel: pel, pr: [45, 0, 0], hd: [0, 0, 0], lf: [0.12, an[1], an[2]], rf: [-0.12, an[1], an[2]], lfy: 0, rfy: 0, lfp: 45, rfp: 45, pup: -1, cue: 'Cuerpo alineado: aguanta 5 s · nunca en hiperextensión' }));
     var ab = o(neu, { pel: [0, pel[1] - 0.05, pel[2] + 0.04], pr: [110, 0, 0], hd: [-10, 0, 0], cue: 'Baja controlado con la espalda neutra' });
-    EJ.kextension = { cam: 80, ty: 0.75, props: [{ t: 'caja', m: 'pad', p: [0, -0.08], y: 0.5, s: [0.42, 0.12, 0.62], rx: 45 }, { t: 'caja', p: [0, -0.62], s: [0.4, 0.2, 0.2], m: 'pad' }],
+    EJ.kextension = { cam: 80, ty: 0.75, props: [{ t: 'caja', m: 'pad', p: [0, -0.217], y: 0.511, s: [0.42, 0.6, 0.12], rx: 45 }, { t: 'caja', p: [0, -0.3], s: [0.06, 0.55, 0.06], m: 'pad' }, { t: 'caja', p: [0, -0.66], s: [0.4, 0.22, 0.16], m: 'pad' }],
       k: [[0, ab], [0.4, ab], [1.4, o(neu, { cue: 'Abdomen firme: sube solo hasta alinear el cuerpo' })], [5, neu], [1.4, ab]] };
   })();
   // Cargada de potencia desde colgado
@@ -215,7 +215,7 @@
     var up = de(o(pies, rack, { pel: [0, 0.955, 0], cue: 'Barra sobre los hombros, codos un poco adelantados' }));
     var dip = o(up, { pel: [0, 0.84, 0.0], lh: [g, 1.37, 0.15], rh: [-g, 1.37, 0.15], cue: 'Flexiona las rodillas 10–15 cm en vertical, tronco recto' });
     var drive = o(up, { pel: [0, 1.0, 0], lf: [0.12, 0.13, 0.02], rf: [-0.12, 0.13, 0.02], lfp: 40, rfp: 40, lh: [g, 1.85, 0.08], rh: [-g, 1.85, 0.08], lep: [1, 0, 0.2], rep: [-1, 0, 0.2], cue: 'Sin pausa, extiende las piernas y empuja con el impulso' });
-    var lock = o(up, { lh: [g, 2.07, -0.01], rh: [-g, 2.07, -0.01], lep: [1, 0, 0], rep: [-1, 0, 0], hd: [6, 0, 0], ch: [-3, 0, 0], cue: 'Bloquea los codos arriba: la cabeza pasa entre los brazos' });
+    var lock = o(up, { lh: [g, 2.07, -0.01], rh: [-g, 2.07, -0.01], lep: [1, 0, 0], rep: [-1, 0, 0], hd: [6, 0, 0], ch: [-3, 0, 0], lsc: [0.7, 0], rsc: [0.7, 0], cue: 'Bloquea los codos arriba: la cabeza pasa entre los brazos' });
     var amort = o(dip, { cue: 'Baja la barra a los hombros amortiguando con las rodillas' });
     EJ.pushpress = { cam: 55, ty: 0.95, rad: 4.6, dyn: { barra: 'h' }, k: [[0, up], [0.5, up], [0.6, dip], [0.25, drive], [0.25, lock], [0.8, lock], [0.7, amort], [0.6, up]] };
   })();
@@ -234,7 +234,7 @@
   // Press de hombros con mancuernas, sentado
   (function () {
     var sit = de({ pel: [0, 0.55, -0.12], pr: [-4, 0, 0], lf: [0.2, F, 0.38], rf: [-0.2, F, 0.38], lfy: 10, rfy: -10, lh: [0.3, 1.12, -0.04], rh: [-0.3, 1.12, -0.04], lep: [1, -0.6, 0.2], rep: [-1, -0.6, 0.2], cue: 'Sentado con la espalda apoyada, mancuernas a la altura de los hombros' });
-    var up = o(sit, { lh: [0.17, 1.6, -0.06], rh: [-0.17, 1.6, -0.06], cue: 'Empuja arriba hasta casi extender · exhala' });
+    var up = o(sit, { lh: [0.17, 1.6, -0.06], rh: [-0.17, 1.6, -0.06], lsc: [0.6, 0], rsc: [0.6, 0], cue: 'Empuja arriba hasta casi extender · exhala' });
     EJ.gpress = { cam: 35, ty: 0.85, dyn: { db: '2', dbo: 'x' }, props: [{ t: 'banco', p: [0, -0.12], s: [0.42, 0.45, 0.42] }, { t: 'caja', m: 'pad', p: [0, -0.37], s: [0.38, 1.05, 0.06], y: 0 }],
       k: [[0, sit], [0.5, sit], [1, up], [0.3, up], [1.6, o(sit, { cue: 'Baja controlado hasta la altura de las orejas' })]] };
   })();
@@ -248,8 +248,8 @@
   (function () {
     var anc = [0, 2.15, 0.75];
     var kn = de({ pel: [0, 0.57, -0.04], lf: [0.12, F, -0.46], rf: [-0.12, F, -0.46], lfy: 0, rfy: 0, lfp: 160, rfp: 160, lkp: [0, -0.3, 1], rkp: [0, -0.3, 1],
-      lh: [0.16, 1.62, 0.38], rh: [-0.16, 1.62, 0.38], lep: [1, -0.3, 0], rep: [-1, -0.3, 0], cue: 'De rodillas, banda anclada arriba y adelante' });
-    var ti = o(kn, { lh: [0.24, 1.14, 0.2], rh: [-0.24, 1.14, 0.2], lep: [0.6, -1, -0.4], rep: [-0.6, -1, -0.4], cue: 'Codos abajo y atrás hasta el pecho · exhala, sin arquear la zona lumbar' });
+      lh: [0.16, 1.62, 0.38], rh: [-0.16, 1.62, 0.38], lep: [1, -0.3, 0], rep: [-1, -0.3, 0], lsc: [0.7, 0.2], rsc: [0.7, 0.2], cue: 'De rodillas, banda anclada arriba y adelante' });
+    var ti = o(kn, { lh: [0.24, 1.14, 0.2], rh: [-0.24, 1.14, 0.2], lep: [0.6, -1, -0.4], rep: [-0.6, -1, -0.4], lsc: [-0.6, -0.7], rsc: [-0.6, -0.7], cue: 'Codos abajo y atrás hasta el pecho, escápulas abajo · exhala, sin arquear' });
     EJ.kjalon = { cam: 60, ty: 0.85, dyn: { banda: [['lh', anc], ['rh', anc]] }, props: [{ t: 'ancla', p: [anc[0], anc[2]], y: anc[1] }],
       k: [[0, kn], [0.5, o(kn, { cue: 'Abdomen firme al 30–50 %' })], [0.9, ti], [0.4, ti], [1.4, o(kn, { cue: 'Vuelve controlado' })]] };
   })();
@@ -273,23 +273,23 @@
   // ---- Flexiones ----
   function flexSuelo(rod, cueA) {
     var base = rod ? -0.25 : -0.72, top = rod ? desdeRod(base, 0.58) : desdePies(base, 0.58), bot = rod ? desdeRod(base, 0.2) : desdePies(base, 0.22), hz = top.sh[2] + 0.04;
-    var ma = o(plano, { lh: [0.24, 0.025, hz], rh: [-0.24, 0.025, hz], lep: [0.7, 0, -1], rep: [-0.7, 0, -1] });
-    var arr = de(o(rod ? rodillas(base) : pies(base), ma, { pel: top.pel, pr: [top.p, 0, 0], hd: [-6, 0, 0], cue: cueA }));
-    var ab = o(arr, { pel: bot.pel, pr: [bot.p, 0, 0], cue: 'Baja en 3 s, codos a 45° del cuerpo · escápulas se juntan' });
+    var ma = o(plano, { lh: [0.22, 0.025, hz], rh: [-0.22, 0.025, hz], lep: [0.55, 0.15, -1], rep: [-0.55, 0.15, -1] });
+    var arr = de(o(rod ? rodillas(base) : pies(base), ma, { pel: top.pel, pr: [top.p, 0, 0], hd: [-6, 0, 0], lsc: [0, 0.5], rsc: [0, 0.5], cue: cueA }));
+    var ab = o(arr, { pel: bot.pel, pr: [bot.p, 0, 0], lsc: [0, -0.9], rsc: [0, -0.9], cue: 'Baja en 3 s, codos a 45° del cuerpo · escápulas se juntan' });
     return { cam: 70, el: 14, ty: 0.4, rad: 5.1, k: [[0, arr], [0.4, arr], [3, ab], [0.2, ab], [1, o(arr, { cue: 'Empuja y exhala · cuerpo recto, sin hundir la zona lumbar' })], [0.3, arr]] };
   }
   function flexApoyo(alto, zA) {   // manos en un banco/cajón (alto) o en la pared (alto = 0)
     if (!alto) {
       var w = 1.0, an = [0, F, -0.12], s0 = add(an, U(22), 1.41), s1 = add(an, U(32), 1.41);
-      var mw = { lh: [0.25, 1.38, w - 0.01], rh: [-0.25, 1.38, w - 0.01], lhw: [0, 0, 180], rhw: [0, 0, 180], lep: [0.8, -0.6, -0.3], rep: [-0.8, -0.6, -0.3] };
+      var mw = { lh: [0.25, 1.38, w - 0.01], rh: [-0.25, 1.38, w - 0.01], lhw: [0, 0, 180], rhw: [0, 0, 180], lep: [0.6, -0.93, -0.37], rep: [-0.6, -0.93, -0.37], lsc: [0, 0.5], rsc: [0, 0.5] };
       var a = de(o(mw, { pel: add(an, U(22), 0.9), pr: [22, 0, 0], lf: [0.12, F, -0.12], rf: [-0.12, F, -0.12], lfy: 0, rfy: 0, cue: 'Manos en la pared algo más anchas que los hombros, cuerpo recto' }));
-      var b = o(a, { pel: add(an, U(32), 0.9), pr: [32, 0, 0], cue: 'Baja el pecho a la pared en 3 s, codos a 45°' });
+      var b = o(a, { pel: add(an, U(32), 0.9), pr: [32, 0, 0], lsc: [0, -0.9], rsc: [0, -0.9], cue: 'Baja el pecho a la pared en 3 s, codos a 45° · escápulas se juntan' });
       return { cam: 115, props: [{ t: 'pared', z: w }], k: [[0, a], [0.4, a], [3, b], [0.2, b], [1, o(a, { cue: 'Empuja y exhala' })], [0.3, a]] };
     }
     var anz = -0.62, t = desdePies(anz, alto + 0.6), bt = desdePies(anz, alto + 0.17), hz = t.sh[2] + 0.02;
-    var ma = o(plano, { lh: [0.24, alto + 0.025, hz], rh: [-0.24, alto + 0.025, hz], lep: [0.7, 0, -1], rep: [-0.7, 0, -1] });
-    var ar = de(o(pies(anz), ma, { pel: t.pel, pr: [t.p, 0, 0], hd: [-4, 0, 0], cue: 'Manos en el borde, cuerpo recto de los talones a la cabeza' }));
-    var ab = o(ar, { pel: bt.pel, pr: [bt.p, 0, 0], cue: 'Baja el pecho al borde · la cadera no se queda atrás' });
+    var ma = o(plano, { lh: [0.22, alto + 0.025, hz], rh: [-0.22, alto + 0.025, hz], lep: [0.55, 0.15, -1], rep: [-0.55, 0.15, -1] });
+    var ar = de(o(pies(anz), ma, { pel: t.pel, pr: [t.p, 0, 0], hd: [-4, 0, 0], lsc: [0, 0.5], rsc: [0, 0.5], cue: 'Manos en el borde, cuerpo recto de los talones a la cabeza' }));
+    var ab = o(ar, { pel: bt.pel, pr: [bt.p, 0, 0], lsc: [0, -0.9], rsc: [0, -0.9], cue: 'Baja el pecho al borde · la cadera no se queda atrás' });
     return { cam: 70, ty: 0.55, props: [{ t: 'caja', p: [0, hz + 0.08], s: [0.7, alto, 0.32], m: zA ? 'pad' : undefined }], k: [[0, ar], [0.4, ar], [2.5, ab], [0.2, ab], [1, o(ar, { cue: 'Empuja hasta extender los brazos · exhala' })], [0.3, ar]] };
   }
   EJ.gflex = flexApoyo(0.45, 1);
@@ -332,11 +332,11 @@
     piern.rf = [piern.rf[0] - 0.02, piern.rf[1], piern.rf[2]];
     var arm = { rh: [sr[0], 0.025, sr[2] + 0.3], rhw: [-90, 0, 0], rep: [0, -1, 0], lhc: [0.24, -0.3, 0.04], lep: [0.2, 1, -0.6] };
     var arriba = de(o(piern, arm, { pel: pel, pr: [0, 0, th], hd: [0, 0, -8], cue: rod ? 'De costado, antebrazo bajo el hombro y rodillas flexionadas' : 'De costado, antebrazo bajo el hombro, piernas extendidas' }));
-    var abajo = o(arriba, { pel: add(pel, [0, -1, 0], rod ? 0.15 : 0.2), pr: [0, 0, th + (rod ? 12 : 10)], sp: [0, 0, -6], ch: [0, 0, -4], cue: 'Abdomen firme: sube la cadera hasta alinear el cuerpo' });
+    var abajo = o(arriba, { pel: add(pel, [0, -1, 0], rod ? 0.2 : 0.26), pr: [0, 0, th + (rod ? 18 : 15)], sp: [0, 0, -10], ch: [0, 0, -6], cue: 'Abdomen firme: sube la cadera hasta alinear el cuerpo' });
     var K = [[0, abajo], [0.6, abajo], [1, arriba], [hold || 3, o(arriba, { cue: 'Aguanta respirando · cadera alineada' })]];
     if (abd) { var lv = o(arriba, { lf: [anc[0] + 0.05, 0.62, 0.02], cue: 'Sube y baja la pierna de arriba sin que la cadera caiga' }); K = [[0, arriba], [0.8, arriba], [0.9, lv], [0.9, arriba], [0.9, lv], [0.9, arriba]]; }
     else K.push([1.2, abajo]);
-    return { cam: 8, el: 14, ty: 0.45, tx: -0.15, rad: 5.1, k: K };
+    return { cam: 32, el: 26, ty: 0.4, tx: -0.1, rad: 5.1, k: K };
   }
   EJ.klateral = lateral(false); EJ.klateralr = lateral(true); EJ.klateralabd = lateral(false, true); EJ.frs2 = lateral(true, false, 2);
   // ---- Cuatro apoyos ----
@@ -406,9 +406,10 @@
   })();
   // Rollout con rueda, rango corto
   (function () {
-    var kz = 0, ini = de(o(rodillas(kz), plano, { pel: [0, 0.57, 0.0], pr: [62, 0, 0], hd: [-25, 0, 0], lh: [0.12, 0.17, 0.5], rh: [-0.12, 0.17, 0.5], lhw: [-30, 0, 0], rhw: [-30, 0, 0], lep: [0.3, 0, -1], rep: [-0.3, 0, -1], rw: [0, 0.09, 0.5], cue: 'De rodillas, rueda bajo los hombros' }));
-    var l = desdeRod(kz, 0.42), fu = o(ini, { pel: l.pel, pr: [l.p, 0, 0], hd: [-10, 0, 0], lh: [0.12, 0.17, l.sh[2] + 0.35], rh: [-0.12, 0.17, l.sh[2] + 0.35], rw: [0, 0.09, l.sh[2] + 0.35], cue: 'Rueda adelante solo hasta donde la zona lumbar se mantiene neutra' });
-    EJ.krollout = { cam: 75, ty: 0.45, rad: 5.1, dyn: { rodillo: 1 }, k: [[0, ini], [0.6, o(ini, { cue: 'Abdomen firme al 70 %' })], [1.6, fu], [0.4, fu], [1.3, o(ini, { cue: 'Exhala al volver' })], [0.3, ini]] };
+    var kz = 0, ini = de(o(rodillas(kz), plano, { pel: [0, 0.57, 0.0], pr: [62, 0, 0], hd: [-25, 0, 0], lh: [0.12, 0.17, 0.5], rh: [-0.12, 0.17, 0.5], lep: [0.3, 0, -1], rep: [-0.3, 0, -1], rw: [0, 0.1, 0.5], lsc: [0, 0.4], rsc: [0, 0.4], cue: 'De rodillas, rueda bajo los hombros' }));
+    ini.lh = [0.15, 0.1, 0.5]; ini.rh = [-0.15, 0.1, 0.5]; delete ini.lhw; delete ini.rhw;
+    var l = desdeRod(kz, 0.56), fu = o(ini, { pel: l.pel, pr: [l.p, 0, 0], hd: [-10, 0, 0], lh: [0.15, 0.1, l.sh[2] + 0.3], rh: [-0.15, 0.1, l.sh[2] + 0.3], rw: [0, 0.1, l.sh[2] + 0.3], cue: 'Rueda adelante solo hasta donde la zona lumbar se mantiene neutra' });
+    EJ.krollout = { cam: 75, ty: 0.45, rad: 5.1, dyn: { rueda: 1 }, k: [[0, ini], [0.6, o(ini, { cue: 'Abdomen firme al 70 %' })], [1.6, fu], [0.4, fu], [1.3, o(ini, { cue: 'Exhala al volver' })], [0.3, ini]] };
   })();
   // ---- Boca arriba ----
   var sup = de({ pel: [0, 0.13, 0], pr: [-90, 0, 0], hd: [0, 0, 0], lf: [0.12, 0.1, 0.9], rf: [-0.12, 0.1, 0.9], lfp: -90, rfp: -90, lfy: 0, rfy: 0, lkp: [0, 1, 0], rkp: [0, 1, 0], la: [0, 0, 8], ra: [0, 0, -8], le: 0, re: 0 });
@@ -424,7 +425,7 @@
   (function () {
     var b = o(sup, { lh: [0.08, 0.03, -0.14], rh: [-0.08, 0.03, -0.14], lep: [1, -0.3, 0.2], rep: [-1, -0.3, 0.2], lhw: [90, 0, 0], rhw: [90, 0, 0], lf: [0.15, F, 0.42], lfp: 0, lfy: 0, lkp: [0.1, 1, 0.3], cue: 'Boca arriba, una rodilla flexionada · manos bajo la zona lumbar' });
     var up = o(b, { ch: [14, 0, 0], hd: [4, 0, 0], cue: 'Eleva solo cabeza y hombros unos centímetros · aguanta respirando corto' });
-    var K = [[0, b], [0.8, o(b, { cue: 'Inhala, activa el suelo pélvico y el abdomen al 30 %' })], [1, up], [3, o(up, { cue: 'La zona lumbar no se aplana, el mentón no se pega al pecho' })], [1, b], [0.5, b]];
+    var K = [[0, b], [0.8, o(b, { cue: 'Inhala, activa el suelo pélvico y el abdomen al 30 %' })], [1, up], [0.75, o(up, { rs: 0.4, cue: 'Respira corto: la zona lumbar no se aplana' })], [0.75, o(up, { rs: 0, cue: 'Respira corto: la zona lumbar no se aplana' })], [0.75, o(up, { rs: 0.4, cue: 'El mentón no se pega al pecho' })], [0.75, o(up, { rs: 0, cue: 'El mentón no se pega al pecho' })], [1, b], [0.5, b]];
     EJ.kcurlup = { cam: 70, el: 20, ty: 0.25, rad: 5.1, k: K };
   })();
   EJ.gcorea = M.une([EJ._deadbug, planchaAnt(true)]);
@@ -438,8 +439,8 @@
   // Remo con mancuerna con apoyo (mano y rodilla izquierdas en el banco)
   function remoBanco() {
     var b = de({ pel: [0.12, 0.87, -0.22], pr: [84, 0, 0], hd: [-10, 0, 0], lf: [0.22, 0.52, -0.72], lfp: 160, lfy: 0, lkp: [0, -1, 0.2], rf: [-0.24, F, -0.12], rfy: -10, rkp: [0, 0, 1],
-      lh: [0.3, 0.475, 0.32], lhw: [-90, 0, 0], lep: [1, 0, -1], rh: [-0.1, 0.36, 0.3], rep: [-0.2, 1, -1], cue: 'Mano y rodilla del mismo lado en el banco, espalda neutra' });
-    var t = o(b, { rh: [-0.12, 0.74, 0.08], cue: 'Tira llevando el codo atrás, cerca del cuerpo · exhala' });
+      lh: [0.3, 0.475, 0.32], lhw: [-90, 0, 0], lep: [1, 0, -1], rh: [-0.1, 0.36, 0.3], rep: [-0.2, 1, -1], lsc: [0, 0.3], rsc: [0, 0.7], cue: 'Mano y rodilla del mismo lado en el banco, espalda neutra' });
+    var t = o(b, { rh: [-0.12, 0.74, 0.08], rsc: [-0.3, -1], cue: 'Tira llevando el codo atrás y la escápula hacia la columna · exhala' });
     return { cam: -70, el: 16, ty: 0.6, rad: 4.4, dyn: { db: 'r' }, props: [{ t: 'banco', p: [0.27, -0.2], s: [0.36, 0.45, 1.25] }],
       k: [[0, b], [0.5, o(b, { cue: 'Abdomen firme al 30–50 %' })], [0.9, t], [0.4, o(t, { cue: 'Sin rotar el tronco' })], [1.4, o(b, { cue: 'Baja controlado' })]] };
   }
@@ -447,8 +448,8 @@
   // Remo con banda de pie
   function remoBanda() {
     var anc = [0, 1.22, 1.15];
-    var b = de(o(pies, { pel: [0, 0.93, -0.02], pr: [4, 0, 0], lh: [0.15, 1.2, 0.56], rh: [-0.15, 1.2, 0.56], lep: [0.5, -1, -0.3], rep: [-0.5, -1, -0.3], cue: 'Banda anclada a la altura del pecho, rodillas un poco flexionadas' }));
-    var t = o(b, { lh: [0.22, 1.12, 0.06], rh: [-0.22, 1.12, 0.06], lep: [0.3, -0.4, -1], rep: [-0.3, -0.4, -1], cue: 'Codos atrás, cerca del cuerpo, y junta las escápulas · exhala' });
+    var b = de(o(pies, { pel: [0, 0.93, -0.02], pr: [4, 0, 0], lh: [0.15, 1.2, 0.56], rh: [-0.15, 1.2, 0.56], lep: [0.5, -1, -0.3], rep: [-0.5, -1, -0.3], lsc: [0, 0.6], rsc: [0, 0.6], cue: 'Banda anclada a la altura del pecho, rodillas un poco flexionadas' }));
+    var t = o(b, { lh: [0.22, 1.12, 0.06], rh: [-0.22, 1.12, 0.06], lep: [0.3, -0.4, -1], rep: [-0.3, -0.4, -1], lsc: [-0.3, -1], rsc: [-0.3, -1], cue: 'Codos atrás, cerca del cuerpo, y junta las escápulas · exhala' });
     return { cam: 60, dyn: { banda: [['lh', anc], ['rh', anc]] }, props: [{ t: 'ancla', p: [0, anc[2]], y: anc[1] }],
       k: [[0, b], [0.5, b], [0.9, t], [0.6, o(t, { cue: 'Hombros lejos de las orejas, tronco quieto' })], [2, o(b, { cue: 'Vuelve en 2 s sin que la banda te arrastre' })]] };
   }
@@ -456,8 +457,8 @@
   // Face pull
   (function () {
     var anc = [0, 1.62, 1.15];
-    var b = de(o(pies, { pel: [0, 0.94, 0], lh: [0.07, 1.58, 0.55], rh: [-0.07, 1.58, 0.55], lep: [1, 0, -0.2], rep: [-1, 0, -0.2], cue: 'Banda a la altura de la cara · abdomen firme al 30 %' }));
-    var t = o(b, { lh: [0.3, 1.66, 0.1], rh: [-0.3, 1.66, 0.1], lep: [1, 0.1, -0.6], rep: [-1, 0.1, -0.6], cue: 'Tira hacia la cara separando las manos · pulgares hacia atrás' });
+    var b = de(o(pies, { pel: [0, 0.94, 0], lh: [0.07, 1.58, 0.55], rh: [-0.07, 1.58, 0.55], lep: [1, 0, -0.2], rep: [-1, 0, -0.2], lsc: [0, 0.6], rsc: [0, 0.6], cue: 'Banda a la altura de la cara · abdomen firme al 30 %' }));
+    var t = o(b, { lh: [0.3, 1.66, 0.1], rh: [-0.3, 1.66, 0.1], lep: [1, 0.1, -0.6], rep: [-1, 0.1, -0.6], lsc: [-0.3, -1], rsc: [-0.3, -1], cue: 'Tira hacia la cara separando las manos · pulgares hacia atrás' });
     EJ.kfacepull = { cam: 50, ty: 1.0, dyn: { banda: [['lh', anc], ['rh', anc]] }, props: [{ t: 'ancla', p: [0, anc[2]], y: anc[1] }],
       k: [[0, b], [0.5, b], [0.9, t], [0.6, o(t, { cue: 'Escápulas atrás y abajo · exhala' })], [1.4, o(b, { cue: 'Vuelve controlado' })]] };
   })();
@@ -465,8 +466,8 @@
   function chop(rod) {
     var anc = [1.0, 2.05, 0.25], y0 = rod ? -0.38 : 0;
     var arr = de({ pel: [0, 0.93 + y0, 0], pr: [0, 22, 0], ch: [0, 10, 0], hd: [0, 6, 0], lf: [0.17, F, 0.02], rf: [-0.17, F, 0.02], lfy: -14, rfy: -30,
-      lh: [0.5, 1.65 + y0, 0.32], rh: [0.44, 1.6 + y0, 0.3], lep: [0.3, -1, -0.5], rep: [-0.5, -1, -0.2], cue: 'De lado a la banda, brazos casi estirados' });
-    var ab = o(arr, { pr: [6, -18, 0], ch: [6, -16, 0], hd: [0, -10, 0], lfy: 26, rfy: 10, lh: [-0.26, 0.95 + y0, 0.38], rh: [-0.32, 0.92 + y0, 0.34], cue: 'Lleva la banda en diagonal a la cadera contraria, girando desde cadera y pies · exhala' });
+      lh: [0.47, 1.63 + y0, 0.33], rh: [0.43, 1.6 + y0, 0.32], lep: [0.5, -1, -0.4], rep: [-0.4, -1, -0.4], cue: 'De lado a la banda, brazos casi estirados' });
+    var ab = o(arr, { pr: [6, -18, 0], ch: [6, -16, 0], hd: [0, -10, 0], lfy: 26, rfy: 10, lh: [-0.27, 0.96 + y0, 0.4], rh: [-0.31, 0.93 + y0, 0.38], lep: [0.6, -1, -0.2], rep: [-0.6, -1, -0.4], cue: 'Lleva la banda en diagonal a la cadera contraria, girando desde cadera y pies · exhala' });
     return { cam: 15, ty: 0.9, dyn: { banda: [['mh', anc]] }, props: [{ t: 'ancla', p: [anc[0], anc[2]], y: anc[1] }],
       k: [[0, arr], [0.6, o(arr, { cue: 'Abdomen firme al 50–70 %' })], [0.9, ab], [0.3, ab], [1.4, o(arr, { cue: 'Vuelve controlado, el tronco firme' })]] };
   }
@@ -488,10 +489,10 @@
     var re0 = de(o(pies, { pel: [0, 0.955, 0], lhc: [0.2, -0.29, 0.06], lep: [1, -0.3, -0.6], rh: [-0.49, 1.48, 0.31], rep: [-1, -0.05, -1], bv: 1, cue: 'Rotación externa: codo a la altura del hombro, banda adelante' }));
     var re1 = o(re0, { rh: [-0.49, 1.79, 0.02], rep: [-1, -1, -0.1], cue: 'Gira el antebrazo hacia arriba · baja lento en 3 s' });
     var p = 45, pel = M.pelDe([0, 1.18, 0.3], p);
-    var h = o(re0, { pel: pel, pr: [p, 0, 0], hd: [-20, 0, 0], lhc: [0.2, -0.2, 0.42], rhc: [-0.2, -0.2, 0.42], lh: undefined, rh: undefined, lep: [1, -0.4, -1], rep: [-1, -0.4, -1], bv: 0, cue: 'Y-T-W en bisagra: pulgares arriba, escápulas atrás y abajo' });
+    var h = o(re0, { pel: pel, pr: [p, 0, 0], hd: [-20, 0, 0], lhc: [0.2, -0.2, 0.42], rhc: [-0.2, -0.2, 0.42], lh: undefined, rh: undefined, lep: [1, -0.4, -1], rep: [-1, -0.4, -1], lsc: [0, 0.5], rsc: [0, 0.5], bv: 0, cue: 'Y-T-W en bisagra: pulgares arriba, escápulas atrás y abajo' });
     delete h.lh; delete h.rh;
-    var Y = o(h, { lhc: [0.5, 0.74, 0.05], rhc: [-0.5, 0.74, 0.05], lep: [1, -1, 0], rep: [-1, -1, 0], cue: 'Y: brazos arriba en diagonal' }), Tt = o(h, { lhc: [0.8, 0.22, 0.02], rhc: [-0.8, 0.22, 0.02], lep: [0, -1, -1], rep: [0, -1, -1], cue: 'T: brazos a los lados' });
-    var W = o(h, { lhc: [0.42, 0.26, -0.08], rhc: [-0.42, 0.26, -0.08], lep: [1, -0.6, -1], rep: [-1, -0.6, -1], cue: 'W: codos atrás y abajo' });
+    var Y = o(h, { lhc: [0.5, 0.74, 0.05], rhc: [-0.5, 0.74, 0.05], lep: [1, -1, 0], rep: [-1, -1, 0], lsc: [-0.2, -1], rsc: [-0.2, -1], cue: 'Y: brazos arriba en diagonal' }), Tt = o(h, { lhc: [0.8, 0.22, 0.02], rhc: [-0.8, 0.22, 0.02], lep: [0, -1, -1], rep: [0, -1, -1], lsc: [-0.4, -1], rsc: [-0.4, -1], cue: 'T: brazos a los lados' });
+    var W = o(h, { lhc: [0.42, 0.26, -0.08], rhc: [-0.42, 0.26, -0.08], lep: [1, -0.6, -1], rep: [-1, -0.6, -1], lsc: [-0.6, -1], rsc: [-0.6, -1], cue: 'W: codos atrás y abajo' });
     EJ._rext = { cam: 30, ty: 1.0, dyn: { banda: [['rh', anc]] }, props: [{ t: 'ancla', p: [anc[0], anc[2]], y: anc[1] }], k: [[0, re0], [0.5, re0], [0.9, re1], [0.3, re1], [3, re0]] };
     EJ._ytw = { cam: 60, k: [[0, h], [0.5, h], [1, Y], [0.6, Y], [1, h], [1, Tt], [0.6, Tt], [1, h], [1, W], [0.6, W], [1, h]] };
     EJ.vhombro = M.une([EJ._rext, EJ._ytw], { cam: 40 });
@@ -529,8 +530,8 @@
   var wz = -0.42;
   var sent = de({ pel: [0, 0.14, wz + 0.16], lf: [-0.14, 0.07, 0.36], rf: [0.14, 0.07, 0.3], lfy: -40, rfy: 40, lkp: [1, 0.6, 0.3], rkp: [-1, 0.6, 0.3], lfr: 0, rfr: 0, pup: 0 });
   (function () {
-    var w = o(sent, { lh: [0.44, 0.88, wz + 0.04], rh: [-0.44, 0.88, wz + 0.04], lhw: [0, 0, 0], rhw: [0, 0, 0], lep: [0.8, -0.6, -1], rep: [-0.8, -0.6, -1], cue: 'Espalda contra la pared, brazos en W apoyados' });
-    var a = o(w, { lh: [0.24, 1.22, wz + 0.04], rh: [-0.24, 1.22, wz + 0.04], lep: [1, -0.2, -1], rep: [-1, -0.2, -1], cue: 'Desliza arriba sin despegar codos, muñecas ni la zona lumbar' });
+    var w = o(sent, { lh: [0.44, 0.88, wz + 0.04], rh: [-0.44, 0.88, wz + 0.04], lhw: [0, 0, 0], rhw: [0, 0, 0], lep: [0.8, -0.6, -1], rep: [-0.8, -0.6, -1], lsc: [-0.4, -0.7], rsc: [-0.4, -0.7], cue: 'Espalda contra la pared, brazos en W apoyados' });
+    var a = o(w, { lh: [0.24, 1.22, wz + 0.04], rh: [-0.24, 1.22, wz + 0.04], lep: [1, -0.2, -1], rep: [-1, -0.2, -1], lsc: [0.5, 0], rsc: [0.5, 0], cue: 'Desliza arriba sin despegar codos, muñecas ni la zona lumbar' });
     EJ.fsm1 = { cam: 30, el: 14, ty: 0.55, rad: 3.8, props: [{ t: 'pared', z: wz }], k: [[0, w], [0.5, w], [1.6, a], [0.4, a], [1.6, o(w, { cue: 'Y vuelve' })]] };
     var pl = o(sent, { rh: [-0.14, 1.12, wz + 0.05], lh: [0.12, 0.3, wz + 0.05], rep: [-1, 0.5, 0.3], lep: [1, -0.3, 0.3], cue: 'Palo por detrás de la espalda, una mano arriba y otra abajo' });
     var t = o(pl, { rh: [-0.12, 1.24, wz + 0.05], lh: [0.12, 0.2, wz + 0.05], cue: 'Tira con la mano de abajo para subir el brazo de arriba · aguanta 2 s' });
@@ -648,7 +649,7 @@
     var w = -2.0;
     var b = de({ pel: [0, 0.9, 0], lf: [0.2, F, 0.02], rf: [-0.2, F, 0.02], lfy: 0, rfy: 0, lh: [0.18, 0.95, 0.3], rh: [-0.06, 0.95, 0.35], lep: [1, -0.5, -0.4], rep: [-0.3, -1, -0.4], bh: 1, bw: [0.06, 0.95, 0.4], cue: 'De lado a la pared, balón a la altura de la cadera' });
     var c = o(b, { pel: [0.05, 0.86, 0], pr: [8, 30, 0], ch: [0, 20, 0], lfy: -10, rfy: -30, lh: [0.42, 0.9, 0.0], rh: [0.3, 0.92, 0.12], cue: 'Carga la cadera de atrás · abdomen firme y suelo pélvico activo' });
-    var t = o(b, { pel: [-0.06, 0.92, 0], pr: [6, -55, 0], ch: [0, -20, 0], hd: [0, -15, 0], lfy: 60, rfy: 10, lf: [0.2, 0.12, 0.02], lfp: 40, lh: [-0.45, 1.1, 0.5], rh: [-0.55, 1.05, 0.4], bh: 0, bw: [-0.6, 1.1, 0.5], cue: 'Lanza girando la cadera y el pie de atrás · exhala fuerte' });
+    var t = o(b, { pel: [-0.06, 0.92, 0], pr: [6, -55, 0], ch: [0, -20, 0], hd: [0, -15, 0], lfy: 60, rfy: 10, lf: [0.2, 0.12, 0.02], lfp: 40, lh: [-0.32, 1.1, 0.45], rh: [-0.4, 1.06, 0.36], bh: 0, bw: [-0.6, 1.1, 0.5], cue: 'Lanza girando la cadera y el pie de atrás · exhala fuerte' });
     var vu = o(t, { bw: [w + 0.15, 1.15, 0.6], cue: 'Pelvis y tronco giran juntos' });
     var vu2 = o(vu, { pel: [0, 0.9, 0], pr: [0, -30, 0], ch: [0, 0, 0], lf: [0.2, F, 0.02], lfp: 0, lh: [-0.2, 1.0, 0.45], rh: [-0.32, 1.0, 0.4], bw: [-1.0, 1.0, 0.55], cue: 'Recibe el rebote' });
     EJ.klanzrotp = { cam: 5, rad: 5.2, tx: -0.6, props: [{ t: 'pared', x: w }], dyn: { balon: 1 }, k: [[0, b], [0.5, b], [0.8, c], [0.25, t], [0.35, vu], [0.4, vu2], [0.3, o(vu2, { bh: 1, bw: [-0.4, 1.0, 0.5] })], [0.6, b]] };
@@ -658,7 +659,7 @@
     var y0 = silla ? 0.45 : 0, caja = [0, y0 + 0.12, 0.38], mesa = [0.9, 0.86, 0.05];
     var b = de({ pel: [0, 0.955, 0], lf: [0.15, F, 0.02], rf: [-0.15, F, 0.02], lhc: [0.22, -0.3, 0.08], rhc: [-0.22, -0.3, 0.08], lep: [0.3, -0.3, -1], rep: [-0.3, -0.3, -1], cb: 0, cw: caja, cy: 0, cue: 'La caja delante de los pies' });
     delete b.lhc; delete b.rhc; b.lh = [0.2, 0.86, 0.1]; b.rh = [-0.2, 0.86, 0.1];
-    var p = silla ? 40 : 55, ab = o(b, { pel: M.pelDe([0, silla ? 1.25 : 1.0, 0.18], p), pr: [p, 0, 0], hd: [-20, 0, 0], lh: [0.2, y0 + 0.16, 0.38], rh: [-0.2, y0 + 0.16, 0.38], lep: [1, 0, -0.4], rep: [-1, 0, -0.4], cue: 'Bisagra de cadera y rodillas, espalda neutra' });
+    var p = silla ? 45 : 62, ab = o(b, { pel: M.pelDe([0, silla ? 1.15 : 0.86, 0.2], p), pr: [p, 0, 0], hd: [-20, 0, 0], lh: [0.2, y0 + 0.16, 0.38], rh: [-0.2, y0 + 0.16, 0.38], lep: [1, 0, -0.4], rep: [-1, 0, -0.4], cue: 'Bisagra de cadera y rodillas, espalda neutra' });
     ab.pel[1] -= 0.06;
     var toma = o(ab, { cb: 1, cue: 'Activa el abdomen y exhala al levantar' });
     var arr = o(b, { lh: [0.19, 1.05, 0.28], rh: [-0.19, 1.05, 0.28], lep: [1, -0.5, -0.3], rep: [-1, -0.5, -0.3], cb: 1, cue: 'Caja cerca del cuerpo' });
@@ -681,13 +682,13 @@
   (function () {
     var bz = 0.62, bh = 0.55, bf = { lf: [0.15, F, 0.02], rf: [-0.15, F, 0.02], lfy: 8, rfy: -8, lfp: 0, rfp: 0 };
     var de0 = de(o(bf, brazosFrente, { pel: [0, 0.955, 0], cue: 'Frente al cajón, a un paso' }));
-    var cm = o(de0, brazosAtras, { pel: [0, 0.72, -0.12], pr: [35, 0, 0], hd: [-20, 0, 0], cue: 'Contramovimiento rápido: cadera y brazos atrás' });
+    var cm = o(de0, brazosAtras, { vivo: 1, pel: [0, 0.72, -0.12], pr: [35, 0, 0], hd: [-20, 0, 0], cue: 'Contramovimiento rápido: cadera y brazos atrás' });
     var desp = o(de0, brazosArriba, { pel: [0, 1.02, 0.08], pr: [6, 0, 0], hd: [0, 0, 0], lf: [0.15, 0.16, 0.06], rf: [-0.15, 0.16, 0.06], lfp: 50, rfp: 50, cue: 'Lanza los brazos arriba y salta' });
     var vu = o(desp, { pel: [0, 1.38, 0.38], pr: [20, 0, 0], lf: [0.15, 0.78, 0.45], rf: [-0.15, 0.78, 0.45], lfp: 10, rfp: 10, pup: 1, cue: 'Lanza los brazos arriba y salta' });
     var at = o(de0, brazosFrente, { pel: [0, bh + 0.74, bz - 0.1], pr: [30, 0, 0], hd: [-15, 0, 0], lf: [0.15, bh + F, bz], rf: [-0.15, bh + F, bz], pup: 0, cue: 'Cae con los dos pies a la vez, en silencio · rodillas alineadas' });
     var arr = o(at, { pel: [0, bh + 0.955, bz], pr: [0, 0, 0], hd: [0, 0, 0], cue: 'Ponte de pie' });
     var b1 = o(arr, { pel: [0.02, bh + 0.92, bz - 0.15], rf: [-0.15, 0.3, bz - 0.4], rfp: 10, cue: 'Baja caminando y descansa 20 s' });
-    var b2 = o(b1, { pel: [0.03, 0.97, bz - 0.36], lf: [0.15, bh + F, bz], rf: [-0.15, F, -0.25], rfp: 0, cue: 'Baja caminando y descansa 20 s' });
+    var b2 = o(b1, { pel: [0.03, 0.9, bz - 0.36], lf: [0.15, bh + F, bz], rf: [-0.15, F, 0.02], rfp: 0, cue: 'Baja caminando y descansa 20 s' });
     var b3 = o(b2, { pel: [0, 0.955, -0.1], lf: [0.15, F, 0.02], rf: [-0.15, F, -0.1], cue: 'Baja caminando y descansa 20 s' });
     EJ.cajon = { cam: 70, rad: 5, ty: 0.9, tz: 0.3, props: [{ t: 'caja', p: [0, bz + 0.05], s: [0.55, bh, 0.45] }],
       k: [[0, de0], [0.6, de0], [0.4, cm], [0.18, desp], [0.18, vu], [0.2, at], [0.6, at], [0.6, arr], [0.4, arr], [0.5, b1], [0.5, b2], [0.5, b3], [0.6, o(de0, { pel: [0, 0.955, 0] })]] };
@@ -698,7 +699,7 @@
       lhc: [0.24, -0.1, 0.35 * (s > 0 ? -0.2 : 1)], rhc: [-0.24, -0.1, 0.35 * (s > 0 ? 1 : -0.2)], lep: [0.3, -1, -0.5], rep: [-0.3, -1, -0.5], cue: 'Cae sobre el antepié, cadera atrás, rodilla alineada · aguanta 2 s' }); };
     var L = aterr(1), R = aterr(-1);
     var vuelo = function (s) { return o(s > 0 ? R : L, { pel: [0, 1.05, -0.02], pr: [12, 0, 0], lf: [0.25, 0.35, -0.05], rf: [-0.25, 0.35, -0.05], lfp: 30, rfp: 30, cue: 'Salta de lado lo más lejos que puedas' }); };
-    var empR = o(R, { pel: [-(x - 0.12), 0.82, -0.08], cue: 'Salta de lado lo más lejos que puedas' }), empL = o(L, { pel: [x - 0.12, 0.82, -0.08], cue: 'Salta de lado lo más lejos que puedas' });
+    var empR = o(R, { vivo: 1, pel: [-(x - 0.12), 0.82, -0.08], cue: 'Salta de lado lo más lejos que puedas' }), empL = o(L, { vivo: 1, pel: [x - 0.12, 0.82, -0.08], cue: 'Salta de lado lo más lejos que puedas' });
     EJ.skater = { cam: 10, rad: 5, k: [[0, R], [2, R], [0.25, empR], [0.3, vuelo(1)], [0.25, L], [2, L], [0.25, empL], [0.3, vuelo(-1)], [0.25, R]] };
   })();
   // Salto de ataque: aproximación de 3 pasos (izquierda-derecha-izquierda)
@@ -707,7 +708,7 @@
     var p0 = de(o(brazosFrente, { pel: [0, 0.94, z0], pr: [8, 0, 0], lf: [0.12, F, z0], rf: [-0.12, F, z0], cue: c }));
     var s1 = o(p0, { pel: [0, 0.94, z0 + 0.3], pr: [14, 0, 0], lf: [0.12, F, z0 + 0.5], rf: [-0.12, 0.14, z0 + 0.05], rfp: 30, cue: c });
     var s2 = o(s1, brazosAtras, { pel: [0, 0.82, z0 + 1.15], pr: [22, 0, 0], lf: [0.12, 0.2, z0 + 0.75], lfp: 40, rf: [-0.12, F, z0 + 1.4], rfp: -15, cue: 'Penúltimo paso largo y rápido, brazos atrás' });
-    var s3 = o(s2, brazosAtras, { pel: [0, 0.7, z0 + 1.5], pr: [32, 0, 0], hd: [-15, 0, 0], lf: [0.17, F, z0 + 1.62], rf: [-0.15, F, z0 + 1.48], lfp: 0, rfp: 0, lfy: -10, cue: 'Junta los pies, baja la cadera y lanza los brazos arriba' });
+    var s3 = o(s2, brazosAtras, { vivo: 1, pel: [0, 0.7, z0 + 1.5], pr: [32, 0, 0], hd: [-15, 0, 0], lf: [0.17, F, z0 + 1.62], rf: [-0.15, F, z0 + 1.48], lfp: 0, rfp: 0, lfy: -10, cue: 'Junta los pies, baja la cadera y lanza los brazos arriba' });
     var up = o(s3, brazosArriba, { pel: [0, 1.05, z0 + 1.62], pr: [4, 0, 0], hd: [5, 0, 0], lf: [0.15, 0.18, z0 + 1.66], rf: [-0.15, 0.18, z0 + 1.6], lfp: 55, rfp: 55, lfy: 0, cue: 'Despega a dos pies con todo' });
     var air = o(up, { pel: [0, 1.55, z0 + 1.75], pr: [-4, 0, 0], ch: [-8, 15, 0], lf: [0.14, 0.72, z0 + 1.6], rf: [-0.14, 0.72, z0 + 1.6], lfp: 40, rfp: 40, lhc: [0.3, 0.6, 0.45], rhc: [-0.26, 0.62, -0.2], rep: [-0.6, -0.2, -0.6], cue: 'Arriba: brazo de ataque atrás y codo alto' });
     var hit = o(air, { pel: [0, 1.52, z0 + 1.8], ch: [12, -15, 0], lhc: [0.24, -0.1, 0.3], rhc: [-0.12, 0.85, 0.3], rep: [-0.6, -0.2, -1], cue: 'Remata' });
@@ -723,7 +724,7 @@
       var c0 = base(0, 'De frente a la red, manos a la altura de los hombros'), x = dx;
       var p1 = o(c0, { pel: [x * 0.45, 0.88, 0], lf: dx > 0 ? [0.17 + x * 0.55, 0.12, 0.02] : c0.lf, rf: dx < 0 ? [-0.17 + x * 0.55, 0.12, 0.02] : c0.rf, cue: 'Desplázate 1–2 pasos laterales' });
       var p2 = base(x, 'Desplázate 1–2 pasos laterales');
-      var cg = o(p2, { pel: [x, 0.72, -0.06], pr: [24, 0, 0], cue: 'Carga y salta a dos pies' });
+      var cg = o(p2, { vivo: 1, pel: [x, 0.72, -0.06], pr: [24, 0, 0], cue: 'Carga y salta a dos pies' });
       var up = o(p2, { pel: [x, 1.32, 0.04], pr: [-2, diag ? -dx * 12 : 0, 0], ch: [0, diag ? -dx * 14 : 0, 0], lf: [x + 0.15, 0.36, 0.0], rf: [x - 0.15, 0.36, 0.0], lfp: 45, rfp: 45,
         lhc: [0.17, 0.82, 0.33], rhc: [-0.17, 0.82, 0.33], lep: [0.6, -1, -0.3], rep: [-0.6, -1, -0.3], cue: diag ? 'Diagonal: gira las manos hacia el centro de la cancha' : 'Calle: sube con las manos cerrando la línea' });
       var cae = o(cg, { pel: [x, 0.76, -0.04], cue: 'Cae en el mismo lugar, estable 1 s · sin irte adelante' });
@@ -738,9 +739,9 @@
     var b = de({ pel: [0, 0.76, -0.08], pr: [26, 0, 0], hd: [-12, 0, 0], lf: [0.32, F, 0.04], rf: [-0.32, F, 0.04], lfy: 8, rfy: -8, lhc: [0.24, -0.15, 0.3], rhc: [-0.24, -0.15, 0.3], lep: [0.3, -1, -0.5], rep: [-0.3, -1, -0.5], cue: 'Base atlética, peso en el borde interno del pie' });
     var gira = o(b, { pel: [0.16, 0.8, -0.06], pr: [24, 40, 0], ch: [0, -20, 0], lfy: 30, cue: 'Empuja con la pierna de adentro y cruza la rodilla de afuera por delante' });
     var cruza = o(gira, { pel: [0.36, 0.84, -0.02], pr: [30, 70, 0], ch: [0, -15, 0], rf: [0.2, 0.32, 0.22], rfp: -10, rfy: -20, rkp: [1, 0, 0.2], lhc: [0.22, -0.2, -0.25], rhc: [-0.22, 0.05, 0.4], cue: '«Como si rompieras un vidrio» · hombros y brazos contrarrotan' });
-    var ap = o(cruza, { pel: [0.62, 0.84, 0.0], pr: [28, 85, 0], ch: [0, 0, 0], rf: [0.78, F, 0.02], rfp: 0, rfy: -85, lf: [0.4, 0.14, 0.05], lfp: 40, lfy: -80, lhc: [0.22, 0.0, 0.35], rhc: [-0.22, -0.2, -0.2], cue: 'Sal con una aceleración corta de 3–5 m' });
-    var a2 = o(ap, { pel: [1.05, 0.88, 0.0], pr: [22, 88, 0], lf: [1.25, F, 0.12], lfp: 0, lfy: -88, rf: [0.85, 0.16, -0.05], rfp: 40, lhc: [0.22, -0.2, -0.2], rhc: [-0.22, 0.0, 0.35], cue: 'Sal con una aceleración corta de 3–5 m' });
-    var a3 = o(a2, { pel: [1.5, 0.9, 0.0], rf: [1.72, F, -0.1], rfp: 0, lf: [1.3, 0.16, 0.1], lfp: 40, lhc: [0.22, 0.0, 0.35], rhc: [-0.22, -0.2, -0.2], cue: 'Cada repetición al 100 %' });
+    var ap = o(cruza, { pel: [0.62, 0.8, 0.0], pr: [42, 85, 0], ch: [0, 0, 0], rf: [0.78, F, 0.02], rfp: 0, rfy: -85, lf: [0.4, 0.14, 0.05], lfp: 40, lfy: -80, lhc: [0.22, 0.0, 0.35], rhc: [-0.22, -0.2, -0.2], cue: 'Sal con una aceleración corta de 3–5 m' });
+    var a2 = o(ap, { pel: [1.08, 0.83, 0.0], pr: [38, 88, 0], lf: [1.25, F, 0.12], lfp: 0, lfy: -88, rf: [0.85, 0.16, -0.05], rfp: 40, lhc: [0.22, -0.2, -0.2], rhc: [-0.22, 0.0, 0.35], cue: 'Sal con una aceleración corta de 3–5 m' });
+    var a3 = o(a2, { pel: [1.55, 0.86, 0.0], pr: [33, 88, 0], rf: [1.72, F, -0.1], rfp: 0, lf: [1.3, 0.16, 0.1], lfp: 40, lhc: [0.22, 0.0, 0.35], rhc: [-0.22, -0.2, -0.2], cue: 'Cada repetición al 100 %' });
     var K = [[0, b], [0.8, b], [0.18, gira], [0.16, cruza], [0.16, ap], [0.18, a2], [0.18, a3], [0.8, a3]];
     var K2 = M.esp(K).map(function (k, i) { return [i ? k[0] : 0.001, k[1]]; });
     EJ.mdcross = { cam: 0, rad: 6, follow: true, k: K.concat([[0.001, b], [0.5, b]]).concat(K2).concat([[0.001, b], [0.5, b]]) };
@@ -755,22 +756,22 @@
   function ida(a, b, t, n) { var K = [[0, a]]; for (var i = 0; i < (n || 2); i++) K.push([t, b], [t, a]); return K; }
   var X = {};   // piezas
   // -- rodillo --
-  var sentado = de({ pel: [0, 0.27, 0], pr: [-28, 0, 0], hd: [10, 0, 0], lh: [0.24, 0.025, -0.38], rh: [-0.24, 0.025, -0.38], lep: [0.3, 0, -1], rep: [-0.3, 0, -1], lf: [0.1, 0.2, 0.86], rf: [-0.1, 0.2, 0.86], lfp: -60, rfp: -60, lfy: 0, rfy: 0, lkp: [0, 1, 0], rkp: [0, 1, 0], rw: [0, 0.075, 0.62], ry: 0 });
-  X.gemelos = { cam: 75, el: 18, ty: 0.3, rad: 4.4, dyn: { rodillo: 1 }, k: ida(o(sentado, { cue: 'Rodillo en gemelos: rueda lento del tendón de Aquiles a la corva' }), o(sentado, { pel: [0, 0.27, -0.2], lh: [0.24, 0.025, -0.58], rh: [-0.24, 0.025, -0.58], lf: [0.1, 0.22, 0.66], rf: [-0.1, 0.22, 0.66], cue: 'Cruza la otra pierna encima para dar más presión' }), 1.4) };
-  X.isquios = { cam: 75, el: 18, ty: 0.3, rad: 4.4, dyn: { rodillo: 1 }, k: ida(o(sentado, { pel: [0, 0.27, -0.05], rw: [0, 0.075, 0.3], lf: [0.1, 0.13, 0.8], rf: [-0.1, 0.13, 0.8], cue: 'Rodillo en isquiotibiales: de la rodilla a la cadera' }), o(sentado, { pel: [0, 0.27, 0.12], rw: [0, 0.075, 0.3], lh: [0.24, 0.025, -0.21], rh: [-0.24, 0.025, -0.21], lf: [0.1, 0.13, 0.97], rf: [-0.1, 0.13, 0.97], cue: 'En la zona poplítea, presión suave y sostenida' }), 1.4) };
+  var sentado = de({ pel: [0, 0.27, 0], pr: [-45, 0, 0], hd: [25, 0, 0], lh: [0.24, 0.025, -0.42], rh: [-0.24, 0.025, -0.42], lep: [0.3, 0, -1], rep: [-0.3, 0, -1], lf: [0.1, 0.2, 0.86], rf: [-0.1, 0.2, 0.86], lfp: -60, rfp: -60, lfy: 0, rfy: 0, lkp: [0, 1, 0], rkp: [0, 1, 0], rw: [0, 0.075, 0.62], ry: 0 });
+  X.gemelos = { cam: 75, el: 18, ty: 0.3, rad: 4.4, dyn: { rodillo: 1 }, k: ida(o(sentado, { cue: 'Rodillo en gemelos: rueda lento del tendón de Aquiles a la corva' }), o(sentado, { pel: [0, 0.27, -0.2], lh: [0.24, 0.025, -0.62], rh: [-0.24, 0.025, -0.62], lf: [0.1, 0.22, 0.66], rf: [-0.1, 0.22, 0.66], cue: 'Cruza la otra pierna encima para dar más presión' }), 1.4) };
+  X.isquios = { cam: 75, el: 18, ty: 0.3, rad: 4.4, dyn: { rodillo: 1 }, k: ida(o(sentado, { pel: [0, 0.27, -0.05], rw: [0, 0.075, 0.3], lf: [0.1, 0.13, 0.8], rf: [-0.1, 0.13, 0.8], cue: 'Rodillo en isquiotibiales: de la rodilla a la cadera' }), o(sentado, { pel: [0, 0.27, 0.12], rw: [0, 0.075, 0.3], lh: [0.24, 0.025, -0.3], rh: [-0.24, 0.025, -0.3], lf: [0.1, 0.13, 0.97], rf: [-0.1, 0.13, 0.97], cue: 'En la zona poplítea, presión suave y sostenida' }), 1.4) };
   var pron = de(o(plano, { pel: [0, 0.27, 0], pr: [84, 0, 0], hd: [-5, 0, 0], lh: [0.2, 0.025, 0.86], rh: [-0.2, 0.025, 0.86], lep: [0.1, -1, 0], rep: [-0.1, -1, 0], lf: [0.12, 0.13, -0.82], rf: [-0.12, 0.13, -0.82], lfp: 120, rfp: 120, lfy: 0, rfy: 0, lkp: [0, -1, 0], rkp: [0, -1, 0], rw: [0, 0.075, -0.3] }));
   X.cuads = { cam: 75, el: 18, ty: 0.3, rad: 4.6, dyn: { rodillo: 1 }, k: ida(o(pron, { cue: 'Rodillo en cuádriceps: boca abajo, apoyado en los antebrazos' }), o(pron, { pel: [0, 0.27, 0.22], lf: [0.12, 0.13, -0.6], rf: [-0.12, 0.13, -0.6], rw: [0, 0.075, -0.3], cue: 'De la rodilla a la cadera, lento' }), 1.4) };
   var esp = de({ pel: [0, 0.3, 0.12], pr: [-104, 0, 0], hd: [12, 0, 0], lhc: [0.1, 0.47, -0.06], rhc: [-0.1, 0.47, -0.06], lep: [1, 0.2, 0], rep: [-1, 0.2, 0], lf: [0.17, F, 0.6], rf: [-0.17, F, 0.6], lfy: 0, rfy: 0, lkp: [0, 1, 0.3], rkp: [0, 1, 0.3], rw: [0, 0.075, -0.3] });
   X.espalda = { cam: 75, el: 18, ty: 0.3, rad: 4.4, dyn: { rodillo: 1 }, k: ida(o(esp, { cue: 'Rodillo bajo la espalda alta, manos detrás de la cabeza' }), o(esp, { pel: [0, 0.3, 0.0], ch: [-14, 0, 0], hd: [-6, 0, 0], cue: 'Extiéndete sobre él en 3–4 alturas' }), 1.5) };
-  X.gluteo = { cam: 40, el: 18, ty: 0.35, rad: 4.4, dyn: { balon: 'chico' }, k: ida(de({ pel: [0, 0.32, 0], pr: [-22, 0, 0], hd: [10, 0, 0], lh: [0.26, 0.025, -0.35], rh: [-0.26, 0.025, -0.35], lep: [0.3, 0, -1], rep: [-0.3, 0, -1], lf: [-0.04, 0.38, 0.36], lfp: 0, lfy: -70, lkp: [1, 0.4, 0.2], rf: [-0.16, F, 0.45], rfy: 0, rkp: [0, 1, 0.4], bh: 0, bw: [0.1, 0.11, -0.04], cue: 'Pelotita en glúteo: cruza el tobillo sobre la rodilla' }),
-    de({ pel: [-0.03, 0.32, 0.06], pr: [-22, 0, 4], hd: [10, 0, 0], lh: [0.26, 0.025, -0.35], rh: [-0.26, 0.025, -0.35], lep: [0.3, 0, -1], rep: [-0.3, 0, -1], lf: [-0.04, 0.38, 0.36], lfp: 0, lfy: -70, lkp: [1, 0.4, 0.2], rf: [-0.16, F, 0.45], rfy: 0, rkp: [0, 1, 0.4], bh: 0, bw: [0.1, 0.11, -0.04], cue: 'Llega a los rotadores profundos, 30–45 s por lado' }), 1.5) };
+  X.gluteo = { cam: 40, el: 18, ty: 0.35, rad: 4.4, dyn: { balon: 'chico' }, k: ida(de({ pel: [0, 0.32, 0], pr: [-50, 0, 0], hd: [28, 0, 0], lh: [0.26, 0.025, -0.42], rh: [-0.26, 0.025, -0.42], lep: [0.3, 0, -1], rep: [-0.3, 0, -1], lf: [0.0, 0.42, 0.3], lfp: 0, lfy: -70, lkp: [1, 0.5, 0.2], rf: [-0.16, F, 0.45], rfy: 0, rkp: [0, 1, 0.4], bh: 0, bw: [0.1, 0.11, -0.04], cue: 'Pelotita en glúteo: cruza el tobillo sobre la rodilla' }),
+    de({ pel: [-0.03, 0.32, 0.06], pr: [-50, 0, 4], hd: [28, 0, 0], lh: [0.26, 0.025, -0.42], rh: [-0.26, 0.025, -0.42], lep: [0.3, 0, -1], rep: [-0.3, 0, -1], lf: [0.0, 0.42, 0.3], lfp: 0, lfy: -70, lkp: [1, 0.5, 0.2], rf: [-0.16, F, 0.45], rfy: 0, rkp: [0, 1, 0.4], bh: 0, bw: [0.1, 0.11, -0.04], cue: 'Llega a los rotadores profundos, 30–45 s por lado' }), 1.5) };
   var boca = de(o({ pel: [0, 0.12, 0], pr: [90, 0, 0], hd: [10, 0, 0], lf: [0.13, 0.06, -0.85], rf: [-0.13, 0.06, -0.85], lfp: 160, rfp: 160, lfy: 0, rfy: 0, lkp: [0, -1, 0], rkp: [0, -1, 0] }, { lh: [0.08, 0.06, 0.78], rh: [-0.08, 0.06, 0.78], lep: [1, 0, 0.2], rep: [-1, 0, 0.2], lhw: [-90, 0, -30], rhw: [-90, 0, 30] }));
-  X.psoas = { cam: 70, el: 22, ty: 0.25, rad: 4.4, k: ida(o(boca, { cue: 'Kettlebell invertida en psoas: boca abajo, asa en el abdomen' }), o(boca, { pel: [0, 0.13, 0], cue: 'Respira lento: deja que el peso entre al exhalar' }), 2) };
-  X.cocodrilo = { cam: 70, el: 22, ty: 0.25, rad: 4.4, k: ida(o(boca, { cue: 'Boca abajo, frente sobre las manos' }), o(boca, { pel: [0, 0.135, -0.005], sp: [-2, 0, 0], cue: 'Inhala a la espalda baja y a los costados · exhala lento 6–8 s' }), 2.5) };
+  X.psoas = { cam: 70, el: 22, ty: 0.25, rad: 4.4, dyn: { kbw: [-0.06, 0, 0.17] }, k: ida(o(boca, { pel: [0, 0.27, 0], hd: [5, 0, 0], ab: 0.6, rs: 0.6, cue: 'Kettlebell invertida: asa en el abdomen, entre el ombligo y la cadera · inhala' }), o(boca, { pel: [0, 0.24, 0], hd: [5, 0, 0], ab: -0.3, rs: 0, cue: 'Exhala lento y deja que el peso entre · 60 s por lado' }), 2.5) };
+  X.cocodrilo = { cam: 70, el: 30, ty: 0.25, rad: 4.4, k: [[0, o(boca, { cue: 'Boca abajo, frente sobre las manos' })], [4, o(boca, { pel: [0, 0.14, -0.005], sp: [-3, 0, 0], rs: 1, ab: 0.4, cue: 'Inhala por la nariz: la zona lumbar sube y los costados se abren' })], [7, o(boca, { rs: 0, ab: 0, cue: 'Exhala lento y largo, 6–8 s' })]] };
   X.pie = { cam: 40, ty: 0.6, dyn: { balon: 'chico' }, k: ida(de({ lhc: [0.2, -0.29, 0.06], rhc: [-0.2, -0.29, 0.06], lep: [1, -0.3, -0.6], rep: [-1, -0.3, -0.6], pel: [-0.05, 0.94, 0], lf: [0.12, 0.17, 0.05], lfp: 0, bh: 0, bw: [0.12, 0.06, 0.12], cue: 'Pelota bajo la planta del pie, 30 s por pie' }), de({ lhc: [0.2, -0.29, 0.06], rhc: [-0.2, -0.29, 0.06], lep: [1, -0.3, -0.6], rep: [-1, -0.3, -0.6], pel: [-0.05, 0.94, 0], lf: [0.12, 0.17, -0.07], lfp: 0, bh: 0, bw: [0.12, 0.06, 0.12], cue: 'Rueda lento del talón a los dedos' }), 1.2) };
   // -- respiración 90/90 con pies en la pared --
   var r90 = o(sup, { lf: [0.12, 0.6, 0.5], rf: [-0.12, 0.6, 0.5], lfp: -90, rfp: -90, lkp: [0, 1, 0], rkp: [0, 1, 0], lhc: [0.17, 0.04, 0.13], rhc: [-0.17, 0.04, 0.13], lep: [1, 0.3, 0], rep: [-1, 0.3, 0] });
-  X.resp90 = { cam: 115, el: 18, ty: 0.3, rad: 4.4, props: [{ t: 'pared', z: 0.6 }], k: [[0, o(r90, { cue: 'Boca arriba, pies en la pared, cadera y rodillas a 90°' })], [4, o(r90, { ch: [-3, 0, 0], cue: 'Inhala 4 s por la nariz, costillas hacia los lados' })], [6, o(r90, { cue: 'Exhala 6–8 s: cierra y eleva el piso pélvico' })]] };
+  X.resp90 = { cam: 115, el: 24, ty: 0.3, rad: 4.4, dyn: { suelo: 1 }, props: [{ t: 'pared', z: 0.6 }], k: [[0, o(r90, { cue: 'Boca arriba, pies en la pared, cadera y rodillas a 90°' })], [4, o(r90, { rs: 1, ab: 0.5, pf: -0.3, cue: 'Inhala 4 s por la nariz: costillas hacia los lados' })], [6, o(r90, { rs: 0, ab: -0.4, pf: 1, cue: 'Exhala 6–8 s: cierra y eleva el piso pélvico' })], [1, o(r90, { pf: 0, cue: 'Exhala 6–8 s: cierra y eleva el piso pélvico' })]] };
   // -- cuatro apoyos --
   X.gato = { cam: 90, el: 16, ty: 0.42, rad: 4.4, k: ida(o(cuatro, { pel: [0, 0.62, -0.32], pr: [72, 0, 0], sp: [10, 0, 0], ch: [8, 0, 0], hd: [24, 0, 0], cue: 'Gato: redondea la espalda despacio' }), o(cuatro, { pel: [0, 0.58, -0.32], pr: [100, 0, 0], sp: [-8, 0, 0], ch: [-6, 0, 0], hd: [-26, 0, 0], cue: 'Camello: extiende la espalda sin forzar' }), 1.6) };
   X.torac = { cam: 30, el: 22, ty: 0.42, rad: 4.4, k: ida(o(cuatro, { lhc: [0.08, 0.46, -0.08], lhw: [0, 0, 0], lep: [1, 0, -0.3], ch: [0, -25, 0], hd: [0, -15, 0], cue: 'Rotación torácica en 4 apoyos: mano detrás de la cabeza' }), o(cuatro, { lhc: [0.08, 0.46, -0.08], lhw: [0, 0, 0], lep: [1, 0.6, -0.3], ch: [0, 45, 0], hd: [0, 30, 0], cue: 'Abre el codo al techo siguiéndolo con la mirada' }), 1.3) };
@@ -799,7 +800,9 @@
   X.isquio = { cam: 75, props: [{ t: 'caja', p: [0, 0.58], s: [0.4, 0.3, 0.3] }], k: ida(de(o(cad, { pel: [0, 0.95, -0.04], lf: [0.12, 0.38, 0.6], lfp: -45, lkp: [0, 1, 0.2], cue: 'Isquiotibiales: talón en el escalón, pierna estirada' })), de(o(cad, { pel: M.pelDe([0, 1.32, 0.18], 35), pr: [35, 0, 0], lf: [0.12, 0.38, 0.6], lfp: -45, lkp: [0, 1, 0.2], cue: 'Cadera atrás con la espalda recta · 30 s por lado' })), 2) };
   X.pecho = { cam: 20, props: [{ t: 'pared', x: 0.62 }], k: ida(de({ lh: [0.6, 1.45, 0.05], lhw: [0, 0, -90], lep: [0, -1, 0], rhc: [-0.2, -0.29, 0.06], rep: [-1, -0.3, -0.6], pel: [0.05, 0.955, 0], cue: 'Pecho en la pared: brazo apoyado' }), de({ lh: [0.6, 1.45, 0.05], lhw: [0, 0, -90], lep: [0, -1, 0], rhc: [-0.2, -0.29, 0.06], rep: [-1, -0.3, -0.6], pel: [0.05, 0.955, 0.03], pr: [0, -25, 0], lfy: -15, rfy: -35, cue: 'Gira el cuerpo hacia el lado contrario · 30 s por lado' }), 2) };
   X.tobillo = { cam: 115, props: [{ t: 'pared', z: 0.55 }], k: ida(de({ pel: [0, 0.92, -0.06], lf: [0.11, F, 0.3], rf: [-0.11, F, -0.3], lh: [0.2, 1.3, 0.54], rh: [-0.2, 1.3, 0.54], lhw: [0, 0, 180], rhw: [0, 0, 180], lep: [0.5, -1, -0.3], rep: [-0.5, -1, -0.3], cue: 'Movilidad de tobillo: rodilla a la pared' }), de({ pel: [0, 0.86, 0.06], lf: [0.11, F, 0.3], rf: [-0.11, F, -0.3], lh: [0.2, 1.3, 0.54], rh: [-0.2, 1.3, 0.54], lhw: [0, 0, 180], rhw: [0, 0, 180], lep: [0.5, -1, -0.3], rep: [-0.5, -1, -0.3], cue: 'La rodilla toca la pared sin levantar el talón · ×10 por lado' }), 1) };
-  X.respPie = { cam: 30, k: [[0, de(o(M.pecho, { lhc: [0.16, 0.04, 0.14], rhc: [-0.16, 0.04, 0.14], cue: 'Respiración lenta' }))], [4, de(o(M.pecho, { lhc: [0.17, 0.04, 0.15], rhc: [-0.17, 0.04, 0.15], ch: [-3, 0, 0], cue: 'Inhala 4 s' }))], [6, de(o(M.pecho, { lhc: [0.16, 0.04, 0.14], rhc: [-0.16, 0.04, 0.14], cue: 'Exhala 6 s' }))]] };
+  X.respPie = { cam: 30, k: [[0, de(o(M.pecho, { lhc: [0.17, 0.04, 0.13], rhc: [-0.17, 0.04, 0.13], cue: 'Respiración lenta, manos en las costillas' }))], [4, de(o(M.pecho, { lhc: [0.19, 0.04, 0.14], rhc: [-0.19, 0.04, 0.14], rs: 1, ab: 0.4, cue: 'Inhala 4 s: las costillas se abren hacia los lados' }))], [6, de(o(M.pecho, { lhc: [0.17, 0.04, 0.13], rhc: [-0.17, 0.04, 0.13], cue: 'Exhala 6 s' }))]] };
+  X.suelo = { cam: 30, el: 18, dyn: { suelo: 1 }, k: [[0, de(o(M.cad, { cue: 'De pie: activa el suelo pélvico' }))], [1.5, de(o(M.cad, { pf: 1, ab: -0.3, cue: 'Cierra y eleva el piso pélvico, sin aguantar el aire' }))], [2, de(o(M.cad, { pf: 1, ab: -0.3, cue: 'Respira normal mientras lo mantienes' }))], [1.5, de(o(M.cad, { cue: 'Suelta del todo' }))], [1, de(o(M.cad, {}))]] };
+  X.hollow = { cam: 70, el: 24, ty: 0.25, rad: 4.2, dyn: { suelo: 1 }, k: [[0, o(sup, { lf: [0.15, F, 0.42], rf: [-0.15, F, 0.42], lfp: 0, rfp: 0, lfy: 0, rfy: 0, lkp: [0, 1, 0.3], rkp: [0, 1, 0.3], lhc: [0.12, -0.15, 0.13], rhc: [-0.12, -0.15, 0.13], lep: [1, 0.3, 0], rep: [-1, 0.3, 0], cue: 'Abdomen profundo: boca arriba, rodillas flexionadas' })], [1.5, o(sup, { lf: [0.15, F, 0.42], rf: [-0.15, F, 0.42], lfp: 0, rfp: 0, lfy: 0, rfy: 0, lkp: [0, 1, 0.3], rkp: [0, 1, 0.3], lhc: [0.12, -0.15, 0.1], rhc: [-0.12, -0.15, 0.1], lep: [1, 0.3, 0], rep: [-1, 0.3, 0], ab: -1, pf: 0.6, cue: 'Lleva suave el ombligo hacia dentro sin mover la pelvis · 5 s' })], [5, o(sup, { lf: [0.15, F, 0.42], rf: [-0.15, F, 0.42], lfp: 0, rfp: 0, lfy: 0, rfy: 0, lkp: [0, 1, 0.3], rkp: [0, 1, 0.3], lhc: [0.12, -0.15, 0.1], rhc: [-0.12, -0.15, 0.1], lep: [1, 0.3, 0], rep: [-1, 0.3, 0], ab: -1, pf: 0.6, cue: 'Respira normal mientras lo mantienes' })], [1.5, o(sup, { lf: [0.15, F, 0.42], rf: [-0.15, F, 0.42], lfp: 0, rfp: 0, lfy: 0, rfy: 0, lkp: [0, 1, 0.3], rkp: [0, 1, 0.3], lhc: [0.12, -0.15, 0.13], rhc: [-0.12, -0.15, 0.13], lep: [1, 0.3, 0], rep: [-1, 0.3, 0], cue: 'Suelta y repite ×5' })]] };
   X.ab90 = { cam: 40, el: 20, ty: 0.35, k: ida(de({ pel: [0, 0.13, 0], lf: [-0.08, 0.08, 0.5], rf: [-0.62, 0.08, -0.25], lfy: -70, rfy: -100, lkp: [1, 0.5, 0.3], rkp: [-0.3, 0.6, 0.8], lhc: [0.1, 0.05, 0.3], rhc: [-0.1, 0.05, 0.3], lep: [1, -0.5, 0], rep: [-1, -0.5, 0], pr: [4, -15, 0], cue: '90/90 de cadera: tronco erguido' }), de({ pel: [0, 0.13, 0], rf: [0.08, 0.08, 0.5], lf: [0.62, 0.08, -0.25], rfy: 70, lfy: 100, rkp: [-1, 0.5, 0.3], lkp: [0.3, 0.6, 0.8], lhc: [0.1, 0.05, 0.3], rhc: [-0.1, 0.05, 0.3], lep: [1, -0.5, 0], rep: [-1, -0.5, 0], pr: [4, 15, 0], cue: 'Gira las piernas de un lado al otro' }), 1.6) };
   // -- saltos y carrera suaves --
   X.skip = { cam: 50, k: [[0, de({ cue: 'Skipping suave' })]].concat(M.rep([[0.22, de({ pel: [0, 1.0, 0], lf: [0.12, 0.45, 0.35], lfp: -10, lkp: [0, 0, 1], rf: [-0.12, 0.14, 0.0], rfp: 40, la: [35, 0, 8], ra: [-45, 0, -8], le: -80, re: -80, cue: 'Skipping suave 2×20 s' })], [0.22, de({ pel: [0, 0.95, 0], la: [0, 0, 8], ra: [0, 0, -8], le: -80, re: -80, cue: 'Skipping suave 2×20 s' })], [0.22, de({ pel: [0, 1.0, 0], rf: [-0.12, 0.45, 0.35], rfp: -10, rkp: [0, 0, 1], lf: [0.12, 0.14, 0.0], lfp: 40, la: [-45, 0, 8], ra: [35, 0, -8], le: -80, re: -80, cue: 'Skipping suave 2×20 s' })], [0.22, de({ pel: [0, 0.95, 0], la: [0, 0, 8], ra: [0, 0, -8], le: -80, re: -80, cue: 'Skipping suave 2×20 s' })]], 3)) };
@@ -820,7 +823,8 @@
   X.paredMarcha = (function () { var an = [0, 0.2, -0.32], u = [0, Math.cos(45 * D), Math.sin(45 * D)], pel = [0, an[1] + 0.9 * u[1], an[2] + 0.9 * u[2]];
     var b = de({ pel: pel, pr: [45, 0, 0], hd: [-5, 0, 0], lf: [0.12, 0.2, -0.32], rf: [-0.12, 0.2, -0.32], lfp: 60, rfp: 60, lfy: 0, rfy: 0, lh: [0.22, 1.32, 0.86], rh: [-0.22, 1.32, 0.86], lhw: [0, 0, 180], rhw: [0, 0, 180], lep: [0.6, -1, -0.3], rep: [-0.6, -1, -0.3], cue: 'Pared: inclínate unos 45° con las manos en la pared' });
     var up = o(b, { lf: [0.12, 0.62, 0.15], lfp: -10, lkp: [0, 0, 1], cue: 'Marching: rodilla arriba y aguanta 2 s' });
-    return { cam: 115, props: [{ t: 'pared', z: 0.88 }], k: [[0, b], [0.5, b], [0.5, up], [2, up], [0.5, b], [0.5, M.espejo(up)], [2, M.espejo(up)], [0.5, b]] }; })();
+    var sw1 = o(up, { vivo: 1, cue: 'Switches: cambia de pierna explosivo ×3' }), sw2 = o(M.espejo(up), { vivo: 1, cue: 'Switches: cambia de pierna explosivo ×3' });
+    return { cam: 115, props: [{ t: 'pared', z: 0.88 }], k: [[0, b], [0.5, b], [0.5, up], [2, up], [0.5, b], [0.5, M.espejo(up)], [2, M.espejo(up)], [0.5, b], [0.4, up], [0.6, up], [0.2, sw2], [0.2, sw1], [0.2, sw2], [0.6, sw2], [0.5, b]] }; })();
   X.flexPared = (function () { var w = 1.0, an = [0, F, -0.12], U = function (p) { return [0, Math.cos(p * D), Math.sin(p * D)]; };
     var a = de({ lh: [0.25, 1.38, w - 0.01], rh: [-0.25, 1.38, w - 0.01], lhw: [0, 0, 180], rhw: [0, 0, 180], lep: [0.8, -0.6, -0.3], rep: [-0.8, -0.6, -0.3], pel: [0, F + 0.9 * U(22)[1], -0.12 + 0.9 * U(22)[2]], pr: [22, 0, 0], lf: [0.12, F, -0.12], rf: [-0.12, F, -0.12], lfy: 0, rfy: 0, cue: 'Flexión en la pared ×8' });
     var b = o(a, { pel: [0, F + 0.9 * U(32)[1], -0.12 + 0.9 * U(32)[2]], pr: [32, 0, 0], cue: 'Cuerpo recto, codos a 45°' });
@@ -915,9 +919,9 @@
   })();
   // Rotaciones de cadera con el pie sobre un cajón alto
   (function () {
-    var b = de({ pel: [-0.04, 0.955, -0.02], lf: [0.12, 0.58, 0.45], lfp: 0, lfy: 0, lkp: [0, 0.3, 1], rf: [-0.12, F, 0.0], lh: [0.1, 0.98, 0.42], rh: [0.14, 0.98, 0.42], lep: [0.5, -1, -0.3], rep: [-0.5, -1, -0.3], cue: 'Pie sobre un cajón alto, cadera y rodilla a 90°, manos en la rodilla' });
-    var i = o(b, { lkp: [-0.8, 0.3, 1], lh: [0.0, 0.98, 0.42], rh: [0.04, 0.98, 0.42], lfr: 10, cue: 'Gira la rodilla hacia dentro desde la cadera' });
-    var e = o(b, { lkp: [1, 0.3, 0.6], lh: [0.24, 0.96, 0.4], rh: [0.28, 0.96, 0.4], lfr: -10, cue: 'Y hacia fuera, sin mover la pelvis ni el pie de apoyo' });
+    var b = de({ pel: [-0.04, 0.955, -0.02], lf: [0.12, 0.58, 0.45], lfp: 0, lfy: 0, lkp: [0, 0.3, 1], rf: [-0.12, F, 0.0], lh: [0.08, 0.95, 0.3], rh: [0.15, 0.95, 0.3], lep: [0.5, -1, -0.3], rep: [-0.5, -1, -0.3], cue: 'Pie sobre un cajón alto, cadera y rodilla a 90°, manos en la rodilla' });
+    var i = o(b, { lkp: [-0.8, 0.3, 1], lh: [0.01, 0.95, 0.3], rh: [0.07, 0.95, 0.3], lfr: 10, cue: 'Gira la rodilla hacia dentro desde la cadera' });
+    var e = o(b, { lkp: [1, 0.3, 0.6], lh: [0.15, 0.95, 0.28], rh: [0.22, 0.95, 0.28], lfr: -10, cue: 'Y hacia fuera, sin mover la pelvis ni el pie de apoyo' });
     EJ.fhs1 = { cam: 25, props: [{ t: 'caja', p: [0.12, 0.5], s: [0.4, 0.5, 0.4] }], k: [[0, b], [0.5, b], [0.9, i], [0.9, e], [0.9, i], [0.9, e], [0.8, b]] };
   })();
 })();
@@ -943,4 +947,135 @@
     k.push([st * 0.4, at(x2, x2 + W, x2 - W, 0, 0, 0, 0, c2)]); }
   k.push([st, at(-0.6, -0.6 + W, -0.6 - W, 0, 0, 0, 0, c1)]);
   EJ.mdcut = { cam: 0, rad: 4.6, k: k };
+})();
+
+/* ---------- Partes que faltaban y versiones corregidas ---------- */
+(function () {
+  var M = window.MQ, F = M.F, o = M.o, EJ = window.MQ_EJ, de = M.de, X = M.X, D = Math.PI / 180, une = M.une;
+  var plano = { lhw: [-90, 0, 0], rhw: [-90, 0, 0] };
+  function ida(a, b, t, n) { var K = [[0, a]]; for (var i = 0; i < (n || 2); i++) K.push([t, b], [t, a]); return K; }
+  function rod(kz) { return { lf: [0.12, F, kz - 0.44], rf: [-0.12, F, kz - 0.44], lfp: 160, rfp: 160, lfy: 0, rfy: 0, lkp: [0, -1, 0.15], rkp: [0, -1, 0.15], pup: 0 }; }
+  // -- Tejido blando del tren superior --
+  X.trapecio = { cam: 30, ty: 1.0, props: [{ t: 'barra', y: 1.4, p: [0, 0] }], k: ida(
+    de({ pel: [0.12, 0.9, 0], lf: [0.3, F, 0.02], rf: [-0.06, F, 0.02], lh: [0.35, 1.4, 0], rh: [-0.45, 1.4, 0], lep: [1, -1, 0], rep: [-1, -1, 0], hd: [0, 0, 8], cue: 'Rack en trapecio superior: apoya el trapecio bajo la barra' }),
+    de({ pel: [0.12, 0.85, 0], lf: [0.3, F, 0.02], rf: [-0.06, F, 0.02], lh: [0.35, 1.4, 0], rh: [-0.45, 1.4, 0], lep: [1, -1, 0], rep: [-1, -1, 0], hd: [0, 0, 22], cue: 'Flexiona las rodillas para dar presión e inclina la cabeza al lado contrario' }), 2) };
+  X.dorsal = { cam: 20, ty: 1.0, props: [{ t: 'caja', p: [-0.42, 0], s: [0.07, 2.1, 0.07], m: 'pad' }], k: ida(
+    de({ pel: [-0.12, 0.93, 0], pr: [0, 0, -8], lf: [0.12, F, 0.02], rf: [-0.1, F, 0.02], rh: [-0.3, 1.92, 0.02], rep: [-0.6, 0, 1], lhc: [0.2, -0.29, 0.06], lep: [1, -0.3, -0.6], cue: 'Dorsal: de costado contra el parante, bajo la axila, brazo arriba' }),
+    de({ pel: [-0.12, 0.88, 0], pr: [0, 0, -10], lf: [0.12, F, 0.02], rf: [-0.1, F, 0.02], rh: [-0.3, 1.85, 0.02], rep: [-0.6, 0, 1], lhc: [0.2, -0.29, 0.06], lep: [1, -0.3, -0.6], cue: 'Sube y baja lento con las piernas · 30–45 s por lado' }), 2) };
+  X.infra = { cam: 35, ty: 1.0, dyn: { balon: 'chico' }, props: [{ t: 'pared', z: -0.27 }], k: ida(
+    de({ pel: [0, 0.94, -0.06], lf: [0.12, F, 0.2], rf: [-0.12, F, 0.2], rh: [-0.49, 1.79, -0.02], rep: [-1, -1, -0.1], lhc: [0.2, -0.29, 0.06], lep: [1, -0.3, -0.6], bh: 0, bw: [-0.13, 1.3, -0.19], cue: 'Pelotita contra la pared, sobre la escápula (infraespinoso)' }),
+    de({ pel: [0, 0.94, -0.06], lf: [0.12, F, 0.2], rf: [-0.12, F, 0.2], rh: [-0.49, 1.2, 0.2], rep: [-1, 0, -0.6], lhc: [0.2, -0.29, 0.06], lep: [1, -0.3, -0.6], bh: 0, bw: [-0.13, 1.3, -0.19], cue: 'Mueve el brazo en rotación interna y externa · 30–45 s' }), 1.3) };
+  X.gemeloPelota = { cam: 70, el: 18, ty: 0.3, rad: 4.4, dyn: { balon: 'chico' }, k: ida(
+    de({ pel: [0, 0.27, 0], pr: [-45, 0, 0], hd: [25, 0, 0], lh: [0.24, 0.025, -0.42], rh: [-0.24, 0.025, -0.42], lep: [0.3, 0, -1], rep: [-0.3, 0, -1], lf: [0.1, 0.24, 0.84], rf: [-0.14, F, 0.5], lfp: -60, rfp: 0, lfy: 0, rfy: 0, lkp: [0, 1, 0], rkp: [0, 1, 0.3], bh: 0, bw: [0.1, 0.11, 0.62], cue: 'Pelotita en gemelos: sentado, la pantorrilla sobre la pelotita' }),
+    de({ pel: [0, 0.27, -0.12], pr: [-45, 0, 0], hd: [25, 0, 0], lh: [0.24, 0.025, -0.54], rh: [-0.24, 0.025, -0.54], lep: [0.3, 0, -1], rep: [-0.3, 0, -1], lf: [0.1, 0.24, 0.72], rf: [-0.14, F, 0.4], lfp: -60, rfp: 0, lfy: 0, rfy: 0, lkp: [0, 1, 0], rkp: [0, 1, 0.3], bh: 0, bw: [0.1, 0.11, 0.62], cue: '30–45 s por pierna' }), 1.4) };
+  EJ.tejidoB = une([X.trapecio, X.dorsal, X.infra, X.gemeloPelota, X.gluteo, X.psoas]);
+  // -- Push-up plus (flexión de escápula) en plancha alta --
+  (function () {
+    var s = M.desdePies(-0.75, 0.58), hz = s.sh[2] + 0.02;
+    var b = de(o(plano, { lf: [0.11, 0.2, -0.75], rf: [-0.11, 0.2, -0.75], lfp: 75, rfp: 75, lfy: 0, rfy: 0, pup: -1, pel: s.pel, pr: [s.p, 0, 0], hd: [-6, 0, 0], lh: [0.22, 0.025, hz], rh: [-0.22, 0.025, hz], lep: [0.55, 0.15, -1], rep: [-0.55, 0.15, -1], lsc: [0, -0.8], rsc: [0, -0.8], cue: 'Push-up plus: plancha alta, brazos estirados' }));
+    var u = o(b, { pel: [s.pel[0], s.pel[1] + 0.03, s.pel[2]], lsc: [0, 1], rsc: [0, 1], cue: 'Empuja el suelo al final: las escápulas se separan · ×10' });
+    X.plus = { cam: 60, el: 26, ty: 0.4, rad: 4.4, k: [[0, b], [0.5, b], [0.8, u], [0.6, u], [0.8, o(b, { cue: 'Junta las escápulas sin doblar los codos' })], [0.4, b]] };
+    EJ.vhombro = une([EJ._rext, EJ._ytw, X.plus]);
+  })();
+  // -- Bajar al suelo y levantarse --
+  (function () {
+    var up = de(o(M.cad, { cue: 'Bajar al suelo: usa los apoyos que necesites' }));
+    var med = de({ pel: [0, 0.6, -0.08], lf: [0.13, F, 0.38], rf: [-0.13, F, -0.5], rfp: 160, lfy: 4, rfy: 0, rkp: [0, -1, 0.2], lh: [0.18, 0.62, 0.36], rh: [0.06, 0.62, 0.38], lep: [1, -0.5, -0.3], rep: [-0.6, -1, -0.3], cue: 'Rodilla al suelo, mano en la rodilla de adelante' });
+    var dos = de(o(rod(0), { pel: [0, 0.57, -0.02], lhc: [0.2, -0.29, 0.06], rhc: [-0.2, -0.29, 0.06], lep: [1, -0.3, -0.6], rep: [-1, -0.3, -0.6], cue: 'Las dos rodillas abajo, tronco erguido' }));
+    var cu = o(M.cuatro, { cue: 'Manos al suelo: ya estás abajo' });
+    var K = [[0, up], [0.6, up], [1.2, med], [0.8, dos], [1, cu], [1.2, o(cu, { cue: 'Ahora sube por el mismo camino' })], [1, o(dos, { cue: 'Ahora sube por el mismo camino' })], [0.8, o(med, { cue: 'Empuja con la pierna de adelante, sin impulso' })], [1.2, o(up, { cue: 'Cada semana intenta usar un apoyo menos' })], [0.6, up]];
+    X.suelo2 = { cam: 60, el: 16, k: K };
+    EJ.xmequi = une([X.equil, X.tandem, X.suelo2]);
+  })();
+  // -- Brazos en Y y T con banda --
+  (function () {
+    var t0 = de({ lh: [0.14, 1.35, 0.56], rh: [-0.14, 1.35, 0.56], lep: [1, -0.3, 0], rep: [-1, -0.3, 0], lsc: [0, 0.5], rsc: [0, 0.5], cue: 'T con banda: brazos al frente a la altura del pecho' });
+    var t1 = o(t0, { lh: [0.66, 1.4, 0.12], rh: [-0.66, 1.4, 0.12], lsc: [-0.3, -1], rsc: [-0.3, -1], cue: 'Separa las manos hasta formar una T · escápulas atrás y abajo' });
+    var y0 = de({ lh: [0.12, 1.85, 0.4], rh: [-0.12, 1.85, 0.4], lep: [1, -0.6, 0], rep: [-1, -0.6, 0], lsc: [0.4, 0.3], rsc: [0.4, 0.3], cue: 'Y con banda: brazos arriba y adelante' });
+    var y1 = o(y0, { lh: [0.42, 1.96, 0.12], rh: [-0.42, 1.96, 0.12], lsc: [0.2, -0.8], rsc: [0.2, -0.8], cue: 'Abre en Y sin arquear la zona lumbar' });
+    X.ytBanda = { cam: 25, ty: 1.0, rad: 4.4, dyn: { banda: [['lh', 'rh']] }, k: [[0, t0], [0.4, t0], [0.8, t1], [0.4, t1], [0.8, t0], [0.8, y0], [0.8, y1], [0.4, y1], [0.8, y0], [0.6, t0]] };
+    EJ.factPS = une([X.tobillo, X.torac, X.resp90, X.flexPared, EJ.gremob, X.ytBanda]);
+  })();
+  // -- Zancadas caminando --
+  (function () {
+    var K = [], z = -0.9, c = 'Zancadas caminando ×6 por lado · tronco erguido';
+    var st = de(o(M.cad, { pel: [0, 0.955, z], lf: [0.11, F, z], rf: [-0.11, F, z], cue: c })); K.push([0, st], [0.4, st]);
+    var lado = 1;
+    for (var i = 0; i < 4; i++) {
+      var fr = lado > 0 ? 'lf' : 'rf', bk = lado > 0 ? 'rf' : 'lf', fx = lado * 0.11, bx = -lado * 0.11, nz = z + 0.62;
+      var pa = {}; pa[fr] = [fx, 0.14, z + 0.3]; pa[bk] = [bx, F, z];
+      K.push([0.35, de(o(M.cad, pa, { pel: [0, 0.93, z + 0.2], cue: c }))]);
+      var ab = {}; ab[fr] = [fx, F, nz]; ab[bk] = [bx, 0.13, z - 0.02]; ab[bk[0] + 'fp'] = 60;
+      K.push([0.35, de(o(M.cad, ab, { pel: [0, 0.82, z + 0.3], cue: c }))]);
+      K.push([0.5, de(o(M.cad, ab, { pel: [0, 0.54, z + 0.3], cue: 'Rodilla de atrás cerca del suelo, la de adelante sobre el pie' }))]);
+      var sb = {}; sb[fr] = [fx, F, nz]; sb[bk] = [bx, 0.18, nz - 0.15];
+      K.push([0.5, de(o(M.cad, sb, { pel: [0, 0.93, nz - 0.08], cue: 'Sube y trae la pierna de atrás adelante' }))]);
+      var j = {}; j[fr] = [fx, F, nz]; j[bk] = [bx, F, nz];
+      K.push([0.3, de(o(M.cad, j, { pel: [0, 0.955, nz], cue: c }))]);
+      z = nz; lado = -lado;
+    }
+    K.push([0.6, K[K.length - 1][1]]);
+    X.zancadas = { cam: 65, followz: true, rad: 4.8, k: K };
+    EJ.factPR = une([X.tobillo, X.torac, X.resp90, X.skip, X.zancadas, X.saltitos]);
+  })();
+  // -- Trote real (con fase de vuelo) para los intervalos --
+  (function () {
+    var K = [], z = -1.2, L = 0.62, lado = 1, n = 6;
+    function brazos(f) { return { lhc: [0.2, -0.1, 0.1 + 0.22 * f], rhc: [-0.2, -0.1, 0.1 - 0.22 * f], lep: [0.3, -1, -0.8], rep: [-0.3, -1, -0.8] }; }
+    function pose(dir, apoyo, za, zf, vuelo, f, cue) {
+      var c = de(o(brazos(f * dir), { pr: [8, dir > 0 ? 0 : 180, 0], cue: cue })), sa = apoyo === 'l' ? 1 : -1;
+      var A = apoyo + 'f', S = (apoyo === 'l' ? 'r' : 'l') + 'f';
+      if (!vuelo) { c.pel = [0, 0.91, za + dir * 0.03]; c[A] = [dir * sa * 0.1, F, za]; c[S] = [-dir * sa * 0.1, 0.4, za - dir * 0.32]; c[S[0] + 'fp'] = 70; c[A[0] + 'fp'] = 0; }
+      else { c.pel = [0, 0.99, zf]; c[A] = [dir * sa * 0.1, 0.2, zf - dir * 0.4]; c[A[0] + 'fp'] = 55; c[S] = [-dir * sa * 0.1, 0.32, zf + dir * 0.32]; c[S[0] + 'fp'] = -5; }
+      return c;
+    }
+    var cue = 'Trote suave: intervalo de ritmo más alto 1 min, suave 1–2 min';
+    function tramo(dir, z0) {
+      var zz = z0, lad = 'l', T = [];
+      for (var i = 0; i < n; i++) { T.push([0.17, pose(dir, lad, zz, 0, false, lad === 'l' ? 1 : -1, cue)]); T.push([0.17, pose(dir, lad, 0, zz + dir * L / 2, true, lad === 'l' ? 0.3 : -0.3, cue)]); zz += dir * L; lad = lad === 'l' ? 'r' : 'l'; }
+      return { k: T, z: zz };
+    }
+    var a = tramo(1, z); var p0 = de({ pel: [0, 0.95, z], lf: [0.11, F, z], rf: [-0.11, F, z], cue: cue }); K = [[0, p0], [0.3, p0]].concat(a.k);
+    var giro = de({ pel: [0, 0.94, a.z], pr: [4, 90, 0], lf: [0, F, a.z - 0.11], rf: [0, F, a.z + 0.11], lfy: 0, rfy: 0, cue: 'Gira y vuelve' });
+    K.push([0.3, giro]);
+    var b = tramo(-1, a.z); K = K.concat(b.k);
+    K.push([0.3, de({ pel: [0, 0.94, b.z], pr: [4, -90, 0], lf: [0, F, b.z + 0.11], rf: [0, F, b.z - 0.11], lfy: 0, rfy: 0, cue: cue })], [0.3, p0]);
+    EJ.ginterv = { cam: 55, followz: true, el: 12, rad: 5, k: K };
+  })();
+  // -- Drop jump (semanas 5–7) --
+  (function () {
+    var bz = -0.5, bh = 0.35;
+    var top = de({ pel: [0, bh + 0.955, bz], lf: [0.15, bh + F, bz], rf: [-0.15, bh + F, bz], lhc: [0.2, -0.1, 0.35], rhc: [-0.2, -0.1, 0.35], lep: [0.3, -1, -0.3], rep: [-0.3, -1, -0.3], cue: 'Drop jump: de pie sobre un cajón de 30–40 cm' });
+    var paso = o(top, { pel: [0, bh + 0.92, bz + 0.18], lf: [0.15, bh + 0.15, bz + 0.3], lfp: -10, cue: 'Da un paso al frente, sin saltar' });
+    var cae = o(top, { pel: [0, 0.95, bz + 0.55], lf: [0.15, 0.2, bz + 0.62], rf: [-0.15, 0.2, bz + 0.62], lfp: 30, rfp: 30, cue: 'Cae con los dos pies' });
+    var cont = o(top, { vivo: 1, pel: [0, 0.8, bz + 0.6], pr: [18, 0, 0], hd: [-10, 0, 0], lf: [0.15, F, bz + 0.68], rf: [-0.15, F, bz + 0.68], lfp: 0, rfp: 0, lhc: [0.24, -0.25, -0.25], rhc: [-0.24, -0.25, -0.25], lep: [0.3, 0.5, 1], rep: [-0.3, 0.5, 1], cue: 'Rebota lo más rápido posible: el suelo quema' });
+    var vu = o(cont, { vivo: 0, pel: [0, 1.32, bz + 0.68], pr: [2, 0, 0], hd: [0, 0, 0], lf: [0.15, 0.4, bz + 0.68], rf: [-0.15, 0.4, bz + 0.68], lfp: 50, rfp: 50, lhc: [0.18, 0.75, 0.25], rhc: [-0.18, 0.75, 0.25], lep: [0.3, -0.5, -1], rep: [-0.3, -0.5, -1], cue: 'Contacto corto: si te hundes o golpeas con los talones, baja el cajón' });
+    var at = o(cont, { vivo: 0, pel: [0, 0.78, bz + 0.62], pr: [26, 0, 0], lhc: [0.2, -0.05, 0.4], rhc: [-0.2, -0.05, 0.4], lep: [0.3, -1, -0.3], rep: [-0.3, -1, -0.3], cue: 'Aterriza estable, rodillas sobre los pies' });
+    var de2 = o(at, { pel: [0, 0.955, bz + 0.68], pr: [0, 0, 0], hd: [0, 0, 0], cue: 'Vuelve a subir al cajón' });
+    X.drop = { cam: 70, rad: 5, ty: 0.9, props: [{ t: 'caja', p: [0, bz], s: [0.55, bh, 0.45] }], k: [[0, top], [0.6, top], [0.4, paso], [0.25, cae], [0.07, cont], [0.3, vu], [0.3, o(cont, { vivo: 0, cue: 'Aterriza estable, rodillas sobre los pies' })], [0.5, at], [0.6, de2], [0.6, de2]] };
+    EJ.cajon = une([EJ.cajon, X.drop]);
+  })();
+  // -- Caída lateral sobre la misma pierna, por encima de un cono --
+  (function () {
+    var a = de(o(M.cad, { pel: [-0.3, 0.95, 0], lf: [-0.2, F, 0.02], rf: [-0.4, 0.28, -0.05], rfp: 20, cue: 'Caída lateral: sobre una pierna, al lado del cono' }));
+    var c = o(a, { vivo: 1, pel: [-0.32, 0.8, -0.06], pr: [22, 0, 0], cue: 'Salta de lado por encima del cono' });
+    var v = o(a, { pel: [0.0, 1.12, 0], pr: [8, 0, 0], lf: [0.05, 0.32, 0.02], lfp: 30, rf: [-0.15, 0.42, -0.05], cue: 'Salta de lado por encima del cono' });
+    var at = o(a, { pel: [0.3, 0.76, -0.1], pr: [28, 0, -4], hd: [-12, 0, 0], lf: [0.4, F, 0.02], rf: [0.2, 0.3, -0.12], cue: 'Cae en la misma pierna y frena en 2 s: cadera atrás, rodilla sobre el pie' });
+    var est = o(at, { pel: [0.3, 0.9, -0.04], pr: [10, 0, -2], cue: 'Tronco quieto · 4 por lado' });
+    X.lateralCono = { cam: 10, rad: 5, props: [{ t: 'cono', p: [0, 0.02] }], k: [[0, a], [0.6, a], [0.3, c], [0.22, v], [0.22, at], [2, at], [0.8, est], [0.001, a], [0.5, a]] };
+    EJ.skater = une([EJ.skater, X.lateralCono]);
+  })();
+  // -- composiciones con respiración y suelo pélvico visibles --
+  EJ.kprep = une([X.resp90, X.hollow, X.gato, X.ab90, X.puente]);
+  EJ.xmsuelo = une([X.resp90, X.suelo, X.respPie]);
+  EJ.regen = une([X.resp90, X.flexor]);
+  EJ.xcalma = une([X.cocodrilo]);
+  EJ.gestira = une([X.flexor, X.isquio, X.pecho, X.respPie]);
+  EJ.tejidoA = une([X.gemelos, X.isquios, X.cuads, X.gluteo, X.psoas]);
+  EJ.factPI = une([X.tobillo, X.torac, X.resp90, X.sentLibre, X.bisagra, X.puente]);
+  EJ.factPC = une([X.tobillo, X.torac, X.resp90, X.sentLibre, X.flexPared, EJ.gremob, EJ.kbirddog]);
+  EJ.pilarA = une([EJ.kplanchar, EJ.klateralr, X.puente, X.pallof]);
+  EJ.pilarB = une([EJ.kplanchar, EJ.klateralr, X.puente, X.pallof, X.paredMarcha]);
+  EJ.frodPI = une([X.cuads, X.gemelos, X.gluteo]);
+  EJ.frodPC = une([X.espalda, X.gluteo, X.cuads, X.gemelos]);
 })();
