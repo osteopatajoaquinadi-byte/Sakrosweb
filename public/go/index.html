@@ -1471,24 +1471,40 @@ const FMSMEM={};// cuadros en memoria (base64) de esta visita: test-lado -> [b64
 const FMSURL={};// rutas -> URL firmada
 const FMSBUSY={};
 function b64De(blob){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob)})}
+/* Saca n cuadros del video en el teléfono. En iPhone (Safari) el video tiene que estar en la página y
+   haberse reproducido un instante para entregar cuadros: por eso se agrega oculto, se reproduce y se pausa. */
 async function framesDe(file,n=10,maxW=640){
   const url=URL.createObjectURL(file),v=document.createElement('video');
-  v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='auto';v.src=url;
+  v.muted=true;v.defaultMuted=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');v.setAttribute('muted','');v.preload='auto';
+  v.style.cssText='position:fixed;left:0;top:0;width:4px;height:4px;opacity:0.01;pointer-events:none;z-index:-1';
+  document.body.appendChild(v);
+  const espera=(ev,ms)=>new Promise((res,rej)=>{
+    let fin=false;const ok=()=>{if(fin)return;fin=true;clearTimeout(t);v.removeEventListener(ev,ok);v.removeEventListener('error',mal);res()};
+    const mal=()=>{if(fin)return;fin=true;clearTimeout(t);v.removeEventListener(ev,ok);v.removeEventListener('error',mal);rej(new Error('formato:'+(v.error?v.error.code:'?')))};
+    const t=setTimeout(()=>{if(fin)return;fin=true;v.removeEventListener(ev,ok);v.removeEventListener('error',mal);rej(new Error('tiempo:'+ev))},ms);
+    v.addEventListener(ev,ok);v.addEventListener('error',mal)});
   try{
-    await new Promise((res,rej)=>{v.onloadeddata=res;v.onerror=()=>rej(new Error('formato'));setTimeout(()=>rej(new Error('tiempo')),20000)});
-    try{await v.play();v.pause()}catch(e){}
-    const dur=v.duration;if(!isFinite(dur)||dur<=0)throw new Error('formato');if(dur>90)throw new Error('largo');
-    const w=Math.min(maxW,v.videoWidth||maxW),hh=Math.round(w*(v.videoHeight||maxW)/(v.videoWidth||maxW));
+    const meta=espera('loadedmetadata',20000);v.src=url;v.load();await meta;
+    try{await v.play()}catch(e){}
+    v.pause();
+    if(v.readyState<2||!v.videoWidth)await espera('loadeddata',10000).catch(()=>{});
+    const dur=v.duration;if(!isFinite(dur)||dur<=0)throw new Error('formato:duracion');if(dur>90)throw new Error('largo');
+    if(!v.videoWidth)throw new Error('formato:sin-imagen');
+    const w=Math.min(maxW,v.videoWidth),hh=Math.round(w*v.videoHeight/v.videoWidth);
     const c=document.createElement('canvas');c.width=w;c.height=hh;const g=c.getContext('2d');const out=[];
     for(let i=0;i<n;i++){
       const t=Math.min(dur-0.05,dur*(0.04+0.92*i/(n-1)));
-      await new Promise(res=>{const done=()=>{v.removeEventListener('seeked',done);res()};v.addEventListener('seeked',done);v.currentTime=t;setTimeout(done,4000)});
+      await new Promise(res=>{let fin=false;const done=()=>{if(fin)return;fin=true;v.removeEventListener('seeked',done);res()};v.addEventListener('seeked',done);v.currentTime=t;setTimeout(done,4000)});
+      // espera a que el cuadro esté pintado (en Safari, justo después de "seeked" a veces llega en negro)
+      await new Promise(res=>{let fin=false;const ok=()=>{if(!fin){fin=true;res()}};if(v.requestVideoFrameCallback)v.requestVideoFrameCallback(ok);setTimeout(ok,120)});
       g.drawImage(v,0,0,w,hh);
-      out.push(await new Promise(res=>c.toBlob(res,'image/jpeg',0.72)));
+      out.push(await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('formato:cuadro')),'image/jpeg',0.72)));
     }
     return out;
-  }finally{URL.revokeObjectURL(url)}
+  }finally{try{v.pause();v.removeAttribute('src');v.load()}catch(e){}v.remove();URL.revokeObjectURL(url)}
 }
+// Deja registro de por qué no se pudo leer un video (tipo, tamaño y etapa), sin datos personales.
+function registrarVideo(donde,e,file){if(e&&e.message==='largo')return;reportarError('error',donde+': '+String(e&&e.message||e),'archivo '+(file&&file.type||'?')+' · '+Math.round((file&&file.size||0)/1e6)+' MB')}
 async function subirVideo(id,l,file){
   const k=id+'-'+l;FMSBUSY[k]='Sacando los cuadros del video…';render();
   try{
@@ -1505,7 +1521,7 @@ async function subirVideo(id,l,file){
     const t=fmsT(id),r=(FF().r||{})[id]||{};
     if(t.lados.every(x=>(r.dolor||{})[x]==='si'||((r.frames||{})[x]||[]).length))await analizarFms(id);else render();
   }catch(e){
-    FMSBUSY[k]=null;delete FMSBUSY[k];
+    FMSBUSY[k]=null;delete FMSBUSY[k];registrarVideo('Video de evaluación',e,file);
     const msg=e.message==='largo'?'El video dura más de 90 s: graba solo las 3 repeticiones.':e.message==='subida'?'No se pudo subir. Revisa la conexión y vuelve a intentarlo.':'No se pudo leer el video. Prueba grabarlo de nuevo con la cámara del teléfono.';
     UI.fmsErr={...(UI.fmsErr||{}),[k]:msg};render();
   }
@@ -1525,7 +1541,7 @@ async function subirTec(s,d,it,V,file){
     const j=await res.json().catch(()=>({}));if(!res.ok)throw {msg:j.error||'No se pudo analizar el video.'};
     const cur={...(S.registro[k]||{semana:semReg(s),dia:d,ej:it.id}),tec:{frames:paths,ia:j,t:Date.now()},t:Date.now()};
     S.registro[k]=cur;await write('registro',k,cur);delete TECBUSY[k];render();
-  }catch(e){delete TECBUSY[k];TECERR[k]=e.msg||(e.message==='largo'?'El video dura más de 90 s: graba solo una serie.':e.message==='subida'?'No se pudo subir. Revisa la conexión.':'No se pudo leer el video. Grábalo de nuevo con la cámara del teléfono.');render()}
+  }catch(e){delete TECBUSY[k];registrarVideo('Video de técnica',e,file);TECERR[k]=e.msg||(e.message==='largo'?'El video dura más de 90 s: graba solo una serie.':e.message==='subida'?'No se pudo subir. Revisa la conexión.':'No se pudo leer el video. Grábalo de nuevo con la cámara del teléfono.');render()}
 }
 function tecBox(s,d,it,V){
   if(!EX[it.id]||esPrep())return null;
