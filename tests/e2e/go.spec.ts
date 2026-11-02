@@ -174,6 +174,25 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("cada prueba de movilidad y control muestra su video de ejemplo", async ({ page, request }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend" })] });
+    await page.goto("/go");
+    await page.getByRole("tab", { name: "Tests" }).click();
+    await page.getByRole("button", { name: /Hacer mi evaluación/ }).first().click();
+    const ejemplos = page.locator("details.fmsej");
+    await expect(ejemplos).toHaveCount(7);
+    const fuentes = await page.locator("details.fmsej video").evaluateAll((vs) => vs.map((v) => v.getAttribute("src") || ""));
+    for (const src of fuentes) {
+      expect((await request.get(src)).status(), src).toBe(200);
+      expect((await request.get(src.replace(".mp4", ".jpg"))).status()).toBe(200);
+    }
+    await page.locator("details:has(> details.fmsej) > summary").first().click();
+    await ejemplos.first().locator("summary").click();
+    await expect(ejemplos.first().locator("video")).toBeVisible();
+    expect(errores).toEqual([]);
+  });
+
   test("la ruta de errores rechaza envíos vacíos o inválidos", async ({ request }) => {
     expect((await request.post("/api/go/errores", { data: "" })).status()).toBe(400);
     expect((await request.post("/api/go/errores", { data: { mensaje: "" } })).status()).toBe(400);
