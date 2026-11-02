@@ -193,6 +193,21 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("subir el video de una prueba saca los cuadros, los sube y pide el análisis", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const fake = await montarGo(page, { docs: [atleta("u1", { programa: "rend" })] });
+    await page.goto("/go");
+    await page.getByRole("tab", { name: "Tests" }).click();
+    await page.getByRole("button", { name: /Hacer mi evaluación/ }).first().click();
+    await page.locator("details:has(> details.fmsej) > summary").first().click();
+    await page.locator("#fv-ds-u").setInputFiles("tests/e2e/fixtures/prueba.webm");
+    await expect.poll(() => fake.subidas.length, { timeout: 30_000 }).toBe(10);
+    await expect.poll(() => fake.fms.length, { timeout: 15_000 }).toBe(1);
+    await expect(page.getByText("Prueba simulada.")).toBeVisible();
+    expect(fake.errores).toEqual([]);
+    expect(errores).toEqual([]);
+  });
+
   test("la ruta de errores rechaza envíos vacíos o inválidos", async ({ request }) => {
     expect((await request.post("/api/go/errores", { data: "" })).status()).toBe(400);
     expect((await request.post("/api/go/errores", { data: { mensaje: "" } })).status()).toBe(400);

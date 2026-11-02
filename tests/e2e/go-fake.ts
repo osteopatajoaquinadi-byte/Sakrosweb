@@ -23,6 +23,8 @@ export type Fake = {
   errores: Record<string, unknown>[];
   coachLlamadas: unknown[];
   logins: string[];
+  subidas: string[];
+  fms: unknown[];
   doc(path: string, id: string): Record<string, unknown> | undefined;
 };
 
@@ -60,6 +62,8 @@ export async function montarGo(page: Page, o: Opciones = {}): Promise<Fake> {
     errores: [],
     coachLlamadas: [],
     logins: [],
+    subidas: [],
+    fms: [],
     doc: (path, id) => docs.get(path + "|" + id)?.data,
   };
 
@@ -119,6 +123,16 @@ export async function montarGo(page: Page, o: Opciones = {}): Promise<Fake> {
   // Videos de ejemplo: no se necesitan para las pruebas.
   await page.route("**/go/media/**", (r) => r.fulfill({ status: 204, body: "" }));
 
+  // Almacenamiento de los cuadros del video de evaluación y su análisis.
+  await page.route(/\/__sb\/storage\/v1\/object\//, (r) => {
+    const u = new URL(r.request().url());
+    if (r.request().method() === "POST" || r.request().method() === "PUT") fake.subidas.push(u.pathname);
+    return r.fulfill({ json: { Key: u.pathname, Id: "x" } });
+  });
+  await page.route("**/api/go/fms", (r) => {
+    fake.fms.push(JSON.parse(r.request().postData() || "{}"));
+    return r.fulfill({ json: { lados: { u: { puntaje: 2, obs: "Prueba simulada." } } } });
+  });
   // Tiempo real: se acepta la conexión y no se envía nada.
   await page.routeWebSocket(/\/__sb\/realtime\//, () => {});
 
