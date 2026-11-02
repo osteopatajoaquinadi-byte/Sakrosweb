@@ -92,7 +92,7 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px soli
 .mq-marca{position:absolute;top:8px;left:10px;font:700 .8rem/1 'Barlow Condensed',Arial Narrow,sans-serif;letter-spacing:.08em;color:#16202a;opacity:.8;pointer-events:none}.mq-marca b{color:#c9402a}
 .mq-cue{position:absolute;left:8px;right:8px;bottom:36px;background:rgba(255,255,255,.8);color:#16202a;font-size:.78rem;font-weight:600;line-height:1.25;padding:4px 8px;border-radius:8px;pointer-events:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.mq-cue:empty{display:none}
 .ssmedia .mq-cue{font-size:.62rem;bottom:6px;left:5px;right:5px;padding:2px 5px}.ssmedia .mq .tag{display:none}.ssmedia .mq-marca{font-size:.66rem}
-.fmsej{margin:8px 0 10px}.fmsej summary{cursor:pointer;font-weight:600;color:var(--accent,#c9402a)}.fmsejv{margin-top:8px;max-width:340px;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#000}.fmsejv video{width:100%;height:100%;object-fit:cover;display:block}
+.fmsgrid{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:12px;align-items:start;margin:6px 0 10px}.fmsejv{position:relative;aspect-ratio:3/4;border-radius:12px;overflow:hidden;background:#000;cursor:pointer}.fmsejv video{width:100%;height:100%;object-fit:cover;display:block}.fmstxt{min-width:0;font-size:.82rem;line-height:1.3}.fmsgrid .fmstxt li{margin:0 0 3px;padding:0}.fmstxt .note{margin:0 0 6px;font-size:.82rem}.fmstxt ol{margin:0;padding-left:1.15em}.fmstxt li{margin-bottom:4px}@media (min-width:640px){.fmsgrid{grid-template-columns:260px minmax(0,1fr);gap:18px}.fmstxt{font-size:.95rem}.fmstxt .note{font-size:.9rem}}
 .media .tag{position:absolute;left:8px;bottom:8px;max-width:calc(100% - 16px);text-align:left;background:rgba(10,16,22,.72);color:#fff;font-size:.72rem;padding:2px 8px;border-radius:999px}
 .media .dots{position:absolute;right:8px;top:10px;display:flex;gap:4px}
 .media .dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55)}
@@ -1606,12 +1606,13 @@ function cardFms(){
       h('a',{class:'linkbtn',href:'/reserva',target:'_blank',rel:'noopener'},'Prefiero evaluarme presencial en Sakros')));
 }
 /* Video de ejemplo del kinesiólogo para cada prueba (se carga solo al abrirlo). */
-function ejemploFms(t){
+function ejemploFms(t,card){
   const src='/go/media/fms-'+t.id;
-  const v=h('video',{src:src+'.mp4',poster:src+'.jpg',muted:true,loop:true,playsinline:true,'webkit-playsinline':true,controls:true,preload:'none','aria-label':'Ejemplo: '+t.n});v.muted=true;
-  const d=h('details',{class:'fmsej'},h('summary',{},'Ver ejemplo'),h('div',{class:'fmsejv'},v),h('p',{class:'note',text:'Así se hace la prueba. Grábate desde el mismo ángulo.'}));
-  d.addEventListener('toggle',()=>{if(d.open)v.play().catch(()=>{});else v.pause()});
-  return d;
+  const v=h('video',{src:src+'.mp4',poster:src+'.jpg',muted:true,loop:true,playsinline:true,'webkit-playsinline':true,preload:'none','aria-label':'Ejemplo: '+t.n});v.muted=true;
+  const box=h('div',{class:'fmsejv',title:'Toca para pausar',onclick:()=>{v.paused?v.play().catch(()=>{}):v.pause()}},v,h('span',{class:'tag',text:'Ejemplo'}));
+  // se reproduce solo con la prueba abierta
+  const sync=()=>{if(card.open)v.play().catch(()=>{});else v.pause()};card.addEventListener('toggle',sync);if(card.open)setTimeout(sync,0);
+  return box;
 }
 function renderFms(m){
   const F=FF(),coach=!modoCli(),tot=fmsTotal();
@@ -1649,9 +1650,10 @@ function cardPrueba(t,coach){
   const card=h('details',{class:'card fms'});if(UI.fmsOpen===t.id)card.open=true;
   card.addEventListener('toggle',()=>{if(card.open)UI.fmsOpen=t.id});
   card.append(h('summary',{},h('span',{text:t.n}),chipScore(R.score)));
-  card.append(h('p',{class:'note'},h('strong',{text:'Material: '}),t.mat),h('p',{class:'note'},h('strong',{text:'Cámara: '}),t.cam+' Buena luz y ropa ajustada.'),
-    h('ol',{},t.pasos.map(p=>h('li',{text:p}))));
-  card.append(ejemploFms(t));
+  // Video a la izquierda y descripción a la derecha, para ver todo sin desplazarse.
+  card.append(h('div',{class:'fmsgrid'},ejemploFms(t,card),h('div',{class:'fmstxt'},
+    h('p',{class:'note'},h('strong',{text:'Material: '}),t.mat),h('p',{class:'note'},h('strong',{text:'Cámara: '}),t.cam+' Buena luz y ropa ajustada.'),
+    h('ol',{},t.pasos.map(p=>h('li',{text:p}))))));
   if(t.med){const m0=r.med||{};const inp=(k,lbl)=>{const e=h('input',{id:'fm-'+k,inputmode:'decimal',placeholder:'cm'});e.value=m0[k]??'';e.addEventListener('change',()=>patchR('sm',x=>{x.med={...(x.med||{}),[k]:e.value.trim()}}));return h('label',{class:'f',for:'fm-'+k},lbl,e)};
     card.append(h('div',{class:'row'},inp('mano','Largo de la mano'),inp('d','Puños, derecha arriba'),inp('i','Puños, izquierda arriba')))}
   t.lados.forEach(l=>{
