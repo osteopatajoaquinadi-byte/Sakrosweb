@@ -180,15 +180,14 @@ test.describe("Sakros Go", () => {
     await page.goto("/go");
     await page.getByRole("tab", { name: "Tests" }).click();
     await page.getByRole("button", { name: /Hacer mi evaluación/ }).first().click();
-    const ejemplos = page.locator("details.fmsej");
+    const ejemplos = page.locator(".fmsejv");
     await expect(ejemplos).toHaveCount(7);
-    const fuentes = await page.locator("details.fmsej video").evaluateAll((vs) => vs.map((v) => v.getAttribute("src") || ""));
+    const fuentes = await page.locator(".fmsejv video").evaluateAll((vs) => vs.map((v) => v.getAttribute("src") || ""));
     for (const src of fuentes) {
       expect((await request.get(src)).status(), src).toBe(200);
       expect((await request.get(src.replace(".mp4", ".jpg"))).status()).toBe(200);
     }
-    await page.locator("details:has(> details.fmsej) > summary").first().click();
-    await ejemplos.first().locator("summary").click();
+    await page.locator("details:has(.fmsejv) > summary").first().click();
     await expect(ejemplos.first().locator("video")).toBeVisible();
     expect(errores).toEqual([]);
   });
@@ -199,7 +198,7 @@ test.describe("Sakros Go", () => {
     await page.goto("/go");
     await page.getByRole("tab", { name: "Tests" }).click();
     await page.getByRole("button", { name: /Hacer mi evaluación/ }).first().click();
-    await page.locator("details:has(> details.fmsej) > summary").first().click();
+    await page.locator("details:has(.fmsejv) > summary").first().click();
     await page.locator("#fv-ds-u").setInputFiles("tests/e2e/fixtures/prueba.webm");
     await expect.poll(() => fake.subidas.length, { timeout: 30_000 }).toBe(10);
     await expect.poll(() => fake.fms.length, { timeout: 15_000 }).toBe(1);
