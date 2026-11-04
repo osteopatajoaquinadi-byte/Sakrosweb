@@ -25,6 +25,7 @@ export type Fake = {
   logins: string[];
   subidas: string[];
   fms: unknown[];
+  avisos: { tipo: string; detalle?: string }[];
   doc(path: string, id: string): Record<string, unknown> | undefined;
 };
 
@@ -64,6 +65,7 @@ export async function montarGo(page: Page, o: Opciones = {}): Promise<Fake> {
     logins: [],
     subidas: [],
     fms: [],
+    avisos: [],
     doc: (path, id) => docs.get(path + "|" + id)?.data,
   };
 
@@ -128,6 +130,10 @@ export async function montarGo(page: Page, o: Opciones = {}): Promise<Fake> {
     const u = new URL(r.request().url());
     if (r.request().method() === "POST" || r.request().method() === "PUT") fake.subidas.push(u.pathname);
     return r.fulfill({ json: { Key: u.pathname, Id: "x" } });
+  });
+  await page.route("**/api/go/aviso", (r) => {
+    fake.avisos.push(JSON.parse(r.request().postData() || "{}"));
+    return r.fulfill({ json: { ok: true } });
   });
   await page.route("**/api/go/fms", (r) => {
     fake.fms.push(JSON.parse(r.request().postData() || "{}"));
