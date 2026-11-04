@@ -15,6 +15,8 @@ const MODEL = process.env.GO_MODEL || process.env.ANTHROPIC_MODEL || "claude-opu
 // Análisis por día y por persona (un análisis = una prueba con sus lados).
 const LIMITE = { coach: 300, cliente: 25 };
 const MAX_CUADROS = 12;
+// Pruebas con dos lados: un solo video (primero el derecho, después el izquierdo).
+const MAX_CUADROS_AMBOS = 24;
 const MAX_CUADRO_B64 = 400_000;
 
 type Prueba = { n: string; lados: Record<string, string>; criterios: string };
@@ -98,7 +100,7 @@ export async function POST(request: NextRequest) {
   if (raw.length > 4_000_000) {
     return NextResponse.json({ error: "Los cuadros pesan demasiado." }, { status: 413 });
   }
-  let body: { test?: unknown; sexo?: unknown; lados?: unknown; medidas?: unknown };
+  let body: { test?: unknown; sexo?: unknown; lados?: unknown; medidas?: unknown; solo?: unknown };
   try {
     body = JSON.parse(raw);
   } catch {
@@ -108,11 +110,18 @@ export async function POST(request: NextRequest) {
   const P = PRUEBAS[test];
   if (!P) return NextResponse.json({ error: "Prueba desconocida." }, { status: 400 });
   const lados = (body.lados && typeof body.lados === "object" ? body.lados : {}) as Record<string, unknown>;
-  const recibidos = Object.keys(P.lados).filter((l) => Array.isArray(lados[l]) && (lados[l] as unknown[]).length > 0);
+  const bilateral = "d" in P.lados && "i" in P.lados;
+  // «a» = un solo video con los dos lados; «solo» dice qué lados trae (los que no duelen).
+  const ambos = bilateral && Array.isArray(lados.a) && (lados.a as unknown[]).length > 0;
+  const solo = Array.isArray(body.solo) ? (body.solo as unknown[]).filter((l): l is string => l === "d" || l === "i") : [];
+  const recibidos = ambos
+    ? (solo.length ? ["d", "i"].filter((l) => solo.includes(l)) : ["d", "i"])
+    : Object.keys(P.lados).filter((l) => Array.isArray(lados[l]) && (lados[l] as unknown[]).length > 0);
   if (!recibidos.length) return NextResponse.json({ error: "Faltan los videos." }, { status: 400 });
-  for (const l of recibidos) {
+  const grupos = ambos ? [["a", MAX_CUADROS_AMBOS] as const] : recibidos.map((l) => [l, MAX_CUADROS] as const);
+  for (const [l, max] of grupos) {
     const fr = lados[l] as unknown[];
-    if (fr.length > MAX_CUADROS || fr.some((x) => typeof x !== "string" || x.length > MAX_CUADRO_B64 || !/^[A-Za-z0-9+/=]+$/.test(x))) {
+    if (fr.length > max || fr.some((x) => typeof x !== "string" || x.length > MAX_CUADRO_B64 || !/^[A-Za-z0-9+/=]+$/.test(x))) {
       return NextResponse.json({ error: "Cuadros inválidos." }, { status: 400 });
     }
   }
@@ -136,7 +145,7 @@ export async function POST(request: NextRequest) {
       type: "text",
       text:
         `Eres kinesiólogo certificado en FMS (Functional Movement Screen) y revisas el video de un cliente de Sakros Go. ` +
-        `Recibes cuadros extraídos en orden temporal de un video casero con 3 repeticiones. Prueba: ${P.n}. Sexo: ${sexo}.${medidas}\n` +
+        `Recibes cuadros extraídos en orden temporal de un video casero con 3 repeticiones por lado. Prueba: ${P.n}. Sexo: ${sexo}.${medidas}\n` +
         `Criterios de puntaje:\n${P.criterios}\n` +
         `El puntaje 0 (dolor) no lo pones tú: la persona lo informa aparte. ` +
         `Puntúa cada lado con la mejor repetición que se vea. Sé conservador: si no se ve claro que cumple el criterio del 3, pon 2. ` +
@@ -145,7 +154,17 @@ export async function POST(request: NextRequest) {
         `Responde solo con este JSON: {"lados":{${recibidos.map((l) => `"${l}":{"puntaje":1|2|3|null,"obs":"qué viste, en 1 o 2 frases"}`).join(",")}},"confianza":"alta"|"media"|"baja","resumen":"1 frase","regrabar":"" }`,
     },
   ];
-  for (const l of recibidos) {
+  if (ambos) {
+    const orden =
+      recibidos.length === 2
+        ? `Un solo video con los dos lados: primero el lado «d» (${P.lados.d}), después el lado «i» (${P.lados.i}). Ubica en qué cuadro cambia de lado y puntúa cada lado por separado.`
+        : `Un solo video con un solo lado, el «${recibidos[0]}»: ${P.lados[recibidos[0]]} (el otro lado tuvo dolor y no se grabó).`;
+    content.push({ type: "text", text: `${orden} Cuadros en orden temporal:` });
+    for (const b64 of lados.a as string[]) {
+      content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: b64 } });
+    }
+  }
+  for (const l of ambos ? [] : recibidos) {
     content.push({ type: "text", text: `Lado «${l}»: ${P.lados[l]} Cuadros en orden temporal:` });
     for (const b64 of lados[l] as string[]) {
       content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: b64 } });

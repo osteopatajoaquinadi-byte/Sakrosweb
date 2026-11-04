@@ -209,6 +209,20 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("un cliente parte en Hoy y ve cuántas pruebas de la evaluación le faltan", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const fms = { r: { ds: { rev: { u: 2 } }, hs: { rev: { d: 2, i: 2 } }, il: { rev: { d: 3, i: 2 } } } };
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend" }), { path: "a/u1/tests", id: "fms", data: fms }] });
+    await page.goto("/go");
+    await expect(page.getByRole("tab", { name: "Hoy" })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("heading", { name: "Termina tu evaluación de movimiento" })).toBeVisible();
+    await expect(page.getByText("3 de 7 pruebas")).toBeVisible();
+    await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "3");
+    await page.getByRole("button", { name: "Seguir mi evaluación" }).click();
+    await expect(page.getByText("3 de 7 pruebas").first()).toBeVisible();
+    expect(errores).toEqual([]);
+  });
+
   test("subir el video de una prueba saca los cuadros, los sube y pide el análisis", async ({ page }) => {
     const errores = vigilarErrores(page);
     const fake = await montarGo(page, { docs: [atleta("u1", { programa: "rend" })] });
@@ -220,6 +234,26 @@ test.describe("Sakros Go", () => {
     await expect.poll(() => fake.subidas.length, { timeout: 30_000 }).toBe(10);
     await expect.poll(() => fake.fms.length, { timeout: 15_000 }).toBe(1);
     await expect(page.getByText("Prueba simulada.")).toBeVisible();
+    expect(fake.errores).toEqual([]);
+    expect(errores).toEqual([]);
+  });
+
+  test("en una prueba con dos lados se sube un solo video y el Coach puntúa cada lado", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const fake = await montarGo(page, { docs: [atleta("u1", { programa: "rend" })] });
+    await page.goto("/go");
+    await page.getByRole("tab", { name: "Tests" }).click();
+    await page.getByRole("button", { name: /Hacer mi evaluación/ }).first().click();
+    await page.locator("details:has(.fmsejv) > summary", { hasText: "Paso de valla" }).click();
+    await expect(page.locator("#fv-hs-d")).toHaveCount(0);
+    await page.locator("#fv-hs-a").setInputFiles("tests/e2e/fixtures/prueba.webm");
+    await expect.poll(() => fake.subidas.length, { timeout: 40_000 }).toBe(20);
+    await expect.poll(() => fake.fms.length, { timeout: 15_000 }).toBe(1);
+    const body = fake.fms[0] as { test: string; lados: Record<string, string[]>; solo: string[] };
+    expect(body.test).toBe("hs");
+    expect(Object.keys(body.lados)).toEqual(["a"]);
+    expect(body.lados.a).toHaveLength(20);
+    expect(body.solo).toEqual(["d", "i"]);
     expect(fake.errores).toEqual([]);
     expect(errores).toEqual([]);
   });
