@@ -124,6 +124,7 @@ td input{min-width:80px;padding:6px 8px}
 .cell{height:30px;border-radius:6px;background:var(--sunk);display:grid;place-items:center;font-size:.72rem;font-weight:700;color:var(--muted);cursor:pointer;border:0;font-family:inherit}
 .cell.part{background:var(--accent-soft);color:var(--accent)}
 .cell.full{background:var(--ok);color:var(--surface)}
+.fmsav{display:grid;gap:6px}.fmsavt{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.92rem}.fmsavt span{color:var(--muted)}.fmsbar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}.fmsbar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}.fmsav .note{margin:0}
 .pasotit{font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#667);margin:14px 2px -4px}.compl>summary{display:grid;gap:4px;cursor:pointer}.compl>summary::-webkit-details-marker{display:none}.compl .ctit{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700}.compl[open] .ctit+.note{display:none}.compl>summary .note{font-weight:400}.comp{display:grid;gap:12px;margin-top:4px}.comp>.card{border-style:dashed}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:10px;min-width:0}
 .card h2{font-family:var(--display);font-size:1.35rem;margin:0}
@@ -1390,6 +1391,15 @@ function fmsRes(id){const t=fmsT(id),L={};t.lados.forEach(l=>L[l]=ladoScore(id,l
 function fmsTotal(){let s=0;for(const t of FMSL){const r=fmsRes(t.id);if(r.score==null)return null;s+=r.score}return s}
 const fmsListo=()=>fmsTotal()!=null;
 const fmsAlguno=()=>FMSL.some(t=>fmsRes(t.id).score!=null);
+const fmsHechas=()=>FMSL.filter(t=>fmsRes(t.id).score!=null).length;
+// Barra de avance «3 de 7 pruebas»: ayuda a terminar la evaluación en vez de dejarla a la mitad.
+function avanceFms(){
+  const n=fmsHechas(),N=FMSL.length,falta=FMSL.filter(t=>fmsRes(t.id).score==null).map(t=>t.n);
+  return h('div',{class:'fmsav'},
+    h('div',{class:'fmsavt'},h('strong',{text:n+' de '+N+' pruebas'}),h('span',{text:n===N?'¡Completa!':'Te '+(N-n===1?'falta 1':'faltan '+(N-n))})),
+    h('div',{class:'fmsbar',role:'progressbar','aria-valuemin':0,'aria-valuemax':N,'aria-valuenow':n,'aria-label':'Pruebas completadas'},h('i',{style:'width:'+Math.round(n/N*100)+'%'})),
+    n&&n<N?h('p',{class:'note',text:'Pendientes: '+falta.join(', ')+'.'}):null);
+}
 const fmsDolor=()=>FMSL.filter(t=>fmsRes(t.id).dolor).map(t=>t.n);
 // Saltarse el Entrenamiento Base: solo con el FMS completo, 14 o más de 21 y ninguna prueba con dolor.
 const FMS_SALTO=14;
@@ -1602,8 +1612,9 @@ function cardFms(){
   const tot=fmsTotal(),F=FF(),al=fmsAlguno(),dol=fmsDolor();
   return h('section',{class:'card'},h('h2',{text:'Evaluación de movilidad y control'+(tot!=null?' · '+tot+' de 21':'')}),
     h('p',{class:'note',text:!al?'Tu evaluación principal y la que te recomendamos hacer primero. 7 pruebas de movimiento grabadas con tu teléfono (3 repeticiones cada una), unos 15 minutos. El Coach revisa los videos, te da tu puntaje y arma tu preparación según lo que más necesitas.':tot==null?'En curso: completa las pruebas que faltan.':(F.revisado?'Revisada por tu kinesiólogo.':'Resultado preliminar del Coach. Tu kinesiólogo puede revisarlo.')}),
+    al&&tot==null?avanceFms():null,
     dol.length?h('p',{class:'dxline',text:'Con dolor en: '+dol.join(', ')+'. El dolor no se corrige con ejercicio: coméntalo con tu kinesiólogo.'}):null,
-    h('div',{class:'row'},h('button',{class:al?'btn':'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},al?'Ver mi evaluación':'Hacer mi evaluación'),
+    h('div',{class:'row'},h('button',{class:tot!=null?'btn':'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},tot!=null?'Ver mi evaluación':al?'Seguir mi evaluación':'Hacer mi evaluación'),
       h('a',{class:'linkbtn',href:'/reserva',target:'_blank',rel:'noopener'},'Prefiero evaluarme presencial en Sakros')));
 }
 /* Video de ejemplo del kinesiólogo para cada prueba (se carga solo al abrirlo). */
@@ -1620,6 +1631,7 @@ function renderFms(m){
   m.append(h('div',{class:'row'},h('button',{class:'linkbtn',onclick:()=>{UI.tab=modoCli()&&esPrep()?'hoy':'tests';saveUI();render();scrollTo(0,0)}},'← Volver')));
   m.append(h('section',{class:'card hero'},h('span',{class:'wholbl',text:'Evaluación de movilidad y control por video'}),
     h('h2',{text:tot!=null?'Tu evaluación de movilidad y control: '+tot+' de 21':'Tu evaluación de movimiento'}),
+    tot==null&&fmsAlguno()?avanceFms():null,
     h('p',{text:'Son 7 pruebas que muestran cómo te mueves. Grabas cada una con tu teléfono (3 repeticiones; las de un lado, un video por lado) y el Coach compara tu movimiento con el patrón óptimo.'}),
     h('ol',{class:'medir'},['Responde las 3 preguntas de dolor.','Graba cada prueba siguiendo las instrucciones y sube el video.','El Coach revisa el video y te da el puntaje (de 1 a 3 por prueba).','Tu preparación se arma sola con los correctivos que más necesitas.'].map(x=>h('li',{text:x}))),
     h('p',{class:'note',text:'Es menos precisa que una evaluación presencial, pero mucho más que una autoevaluación. Los videos no se guardan: solo algunos cuadros, en tu carpeta privada.'}),
@@ -1630,7 +1642,7 @@ function renderFms(m){
   m.append(h('section',{class:'card'},h('h2',{text:'1. Preguntas de dolor'}),h('p',{class:'note',text:'Haz cada movimiento una vez. Si duele, esa prueba vale 0 y conviene que lo vea tu kinesiólogo.'}),
     ...CLEARL.map(x=>h('div',{class:'fmsclear'},h('p',{},h('strong',{text:x.n+': '}),x.txt),...x.lados.map(l=>yn(x.id+(l==='u'?'':'_'+l),l==='u'?'¿Duele?':'¿Duele el '+(l==='d'?'derecho':'izquierdo')+'?'))))));
   // Pruebas
-  m.append(h('h2',{class:'sec',text:'2. Las 7 pruebas'}));
+  m.append(h('h2',{class:'sec',text:'2. Las 7 pruebas'}),h('section',{class:'card'},avanceFms()));
   FMSL.forEach(t=>m.append(cardPrueba(t,coach)));
   // Resultado
   const res=h('section',{class:'card'},h('h2',{text:'3. Tu resultado'}));
@@ -2007,7 +2019,7 @@ function escalar(str,id){
 let MODO='coach',MODO_FIJO=false;try{MODO_FIJO=location.hash==='#cliente';MODO=MODO_FIJO?'cliente':(localStorage.getItem('exos8-modo')||'coach')}catch(e){}
 const modoCli=()=>MODO==='cliente';
 function setModo(v){MODO=v;try{localStorage.setItem('exos8-modo',v)}catch(e){}UI.tab=v==='cliente'?'hoy':'tests';saveUI();render();scrollTo(0,0)}
-UI.tab=modoCli()?'hoy':'tests';
+UI.tab=modoCli()?'hoy':'tests';UI.tabIni=true;// pestaña por defecto, aún no elegida por la persona
 UI.orig={};UI.frames=UI.frames||{};
 const saveUI=()=>{try{localStorage.setItem('exos8-ui',JSON.stringify({tab:UI.tab,sem:UI.sem,dia:UI.dia,atleta:UI.atleta}))}catch(e){}};
 let db=null, mode='cargando', dirty=false;
@@ -2152,7 +2164,7 @@ function cacheLocal(){try{const c=JSON.parse(localStorage.getItem(CACHE_K)||'nul
 function abrirSinConexion(c){
   mode='offline';YO=c.YO;ROL=c.ROL;ACC=c.ACC;CFG=c.CFG||{};ATL=c.ATL||{};atlListo=true;UI.atleta=c.atleta||UI.atleta;
   Object.assign(S,c.S||{});
-  if(ROL==='cliente'){MODO='cliente';MODO_FIJO=true;UI.atleta=YO.atleta;if(!['hoy','progreso','tests','coach','sesion','play','onb'].includes(UI.tab))UI.tab='hoy'}
+  if(ROL==='cliente'){MODO='cliente';MODO_FIJO=true;UI.atleta=YO.atleta;if(UI.tabIni&&UI.tab==='tests')UI.tab='hoy';UI.tabIni=false;if(!['hoy','progreso','tests','coach','sesion','play','onb'].includes(UI.tab))UI.tab='hoy'}
   db={collection:path=>({doc:id=>({set:async data=>encolar(path,id,data),delete:async()=>{},onSnapshot:()=>()=>{}}),onSnapshot:()=>()=>{}})};
   const q=outbox().length;setSync('Sin conexión'+(q?': '+q+' cambio'+(q>1?'s':'')+' por enviar':' · se sincroniza al volver'));render();
 }
@@ -3432,6 +3444,7 @@ function cardPartida(){
   const al=fmsAlguno();
   return h('section',{class:'card partida'},h('span',{class:'chip',text:'Tu punto de partida'}),h('h2',{text:al?'Termina tu evaluación de movimiento':'Haz tu evaluación de movimiento'}),
     h('p',{text:'Es lo único que necesitas para empezar: 7 pruebas cortas que grabas con tu teléfono, unos 15 minutos. El Coach revisa los videos y agrega a tu entrenamiento correctivos para los patrones que más lo necesitan.'}),
+    al?avanceFms():null,
     h('p',{class:'note',text:'Los demás tests (fuerza, saltos y campo) son opcionales. Están en la pestaña Tests, en «Tests complementarios».'}),
     h('div',{class:'row'},h('button',{class:'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},al?'Seguir mi evaluación':'Hacer mi evaluación'),
       h('button',{class:'linkbtn',onclick:()=>{try{localStorage.setItem('go-partida-'+UI.atleta,new Date().toDateString())}catch(e){}render()}},'Más tarde')));
@@ -3796,7 +3809,7 @@ async function salir(){try{localStorage.removeItem(CACHE_K);localStorage.removeI
   if((error||!me)&&cacheLocal()&&(!navigator.onLine||/fetch|network/i.test(String(error&&error.message)))){abrirSinConexion(cacheLocal());return}
   if(error||!me){pantallaLogin('No se pudo abrir tu cuenta. Vuelve a intentarlo.');return}
   ROL=me.rol;YO=me;
-  if(ROL==='cliente'){MODO='cliente';MODO_FIJO=true;UI.atleta=me.atleta;UI.tab=['hoy','progreso','tests','coach','sesion','play','onb','fms'].includes(UI.tab)?UI.tab:'hoy'}
+  if(ROL==='cliente'){MODO='cliente';MODO_FIJO=true;UI.atleta=me.atleta;if(UI.tabIni&&UI.tab==='tests')UI.tab='hoy';UI.tabIni=false;UI.tab=['hoy','progreso','tests','coach','sesion','play','onb','fms'].includes(UI.tab)?UI.tab:'hoy'}
   const cr=$('.credit');if(cr&&!$('#salir-link'))cr.append(' · ',h('button',{class:'linkbtn',id:'salir-link',onclick:salir},'Cerrar sesión ('+me.email+')'));
   await cargarAcceso();
   if(qs.get('sub')){history.replaceState(null,'',location.pathname);if(ROL==='cliente'){UI.tab='hoy';if(!(ACC&&ACC.activo)){setTimeout(async()=>{await cargarAcceso();render()},4000)}}}
