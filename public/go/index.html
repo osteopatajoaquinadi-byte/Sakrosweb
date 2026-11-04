@@ -126,6 +126,7 @@ td input{min-width:80px;padding:6px 8px}
 .cell.full{background:var(--ok);color:var(--surface)}
 .fmsav{display:grid;gap:6px}.fmsavt{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.92rem}.fmsavt span{color:var(--muted)}.fmsbar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}.fmsbar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}.fmsav .note{margin:0}
 .directo{display:grid;gap:4px;border-top:1px dashed var(--line);padding-top:10px}.directo .btn{justify-self:start}
+.triaje{display:grid;gap:10px;border:1px dashed var(--line);border-radius:12px;padding:12px}.triaje p{margin:0}.card.alerta{border:2px solid var(--warn,#b7791f)}div.alerta{display:grid;gap:6px;padding:10px 12px;border-radius:10px;border:2px solid var(--warn,#b7791f)}div.alerta p{margin:0}
 .pasotit{font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#667);margin:14px 2px -4px}.compl>summary{display:grid;gap:4px;cursor:pointer}.compl>summary::-webkit-details-marker{display:none}.compl .ctit{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700}.compl[open] .ctit+.note{display:none}.compl>summary .note{font-weight:400}.comp{display:grid;gap:12px;margin-top:4px}.comp>.card{border-style:dashed}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:10px;min-width:0}
 .card h2{font-family:var(--display);font-size:1.35rem;margin:0}
@@ -1444,6 +1445,7 @@ function fmsPrioridad(zona){return FMSH.filter(id=>ZTEST[zona].includes(id)).map
 function nivCorr(id){const v=(atl().corr||{})[id];if(v>=1&&v<=4)return v;const r=fmsRes(id);if(r.score===3&&!r.asym)return 4;return r.score===1?1:2}
 // «Quiero ir directo al entrenamiento»: sin evaluación, movilidad general que rota los 7 patrones (no dirigida).
 const fmsGen=()=>!!atl().fmsNo&&!fmsListo();
+const sesHecha=()=>Object.values(S.sesiones||{}).some(v=>v&&v.fecha);// al menos una sesión terminada
 const corrGen=(i,n)=>Array.from({length:n},(_,k)=>FMSH[(i+k)%FMSH.length]).map(id=>'f'+id+nivCorr(id));
 async function irDirecto(v=true){await saveAtleta(UI.atleta,{...atl(),fmsNo:v,t:Date.now()});render()}
 function corrDe(zona,n){
@@ -1461,7 +1463,7 @@ function prepRows(z,s){
 const zonaDia=(d,s)=>{const x=srcDia(d,s);return x==='A'?'PI':x==='B'?'PS':'PC'};
 function conCorr(r,d,s){// Entrenamiento: un correctivo del FMS después de la preparación del programa
   let c;
-  if(fmsGen())c=corrGen((s-1)*DIAS().length+Math.max(0,DIAS().indexOf(d)),1);
+  if(!fmsListo())c=corrGen((s-1)*DIAS().length+Math.max(0,DIAS().indexOf(d)),1);// sin evaluación: movilidad general
   else{if(!fmsListo())return r;c=corrDe(zonaDia(d,s),1)}
   if(!c.length)return r;
   let i=-1;r.forEach((it,j)=>{if(String(it.b).startsWith('1'))i=j});
@@ -1483,9 +1485,12 @@ function ctrlCorr(s,d,it){
 /* Guardado del FMS */
 async function saveFms(cur){
   cur={...cur,t:Date.now()};S.fms=cur;
+  if(modoCli()&&!cur.avisado&&fmsTotal()!=null){cur.avisado=Date.now();avisarCoach('fms')}
   if(!db){localSave();render();return true}
   try{await db.collection(P('tests')).doc('fms').set(cur);setSync('Guardado');return true}catch(e){setSync('No se pudo guardar la evaluación de movilidad y control');return false}
 }
+// Avisa por correo al entrenador (evaluación lista para revisar o señales de alarma). Nunca bloquea la app.
+async function avisarCoach(tipo,detalle){try{if(!SB)return;await fetch('/api/go/aviso',{method:'POST',headers:await authHeaders(),body:JSON.stringify({tipo,detalle:detalle||''})})}catch(e){}}
 const patchR=(id,fn)=>{const F=FF(),r={...((F.r||{})[id]||{})};fn(r);return saveFms({...F,r:{...(F.r||{}),[id]:r},revisado:null})};
 const FMSMEM={};// cuadros en memoria (base64) de esta visita: test-lado -> [b64]
 const FMSURL={};// rutas -> URL firmada
@@ -1626,7 +1631,7 @@ function cardFms(){
   const tot=fmsTotal(),F=FF(),al=fmsAlguno(),dol=fmsDolor();
   return h('section',{class:'card'},h('h2',{text:'Evaluación de movilidad y control'+(tot!=null?' · '+tot+' de 21':'')}),
     fmsGen()?h('p',{class:'dxline',text:'Elegiste ir directo al entrenamiento: tu preparación trabaja la movilidad general de todo el cuerpo. Cuando quieras, haz la evaluación y pasa a correctivos dirigidos a lo que más necesitas.'}):null,
-    h('p',{class:'note',text:!al?'Tu evaluación principal y la que te recomendamos hacer primero. 7 pruebas de movimiento grabadas con tu teléfono (3 repeticiones cada una), unos 15 minutos. El Coach revisa los videos, te da tu puntaje y arma tu preparación según lo que más necesitas.':tot==null?'En curso: completa las pruebas que faltan.':(F.revisado?'Revisada por tu kinesiólogo.':'Resultado preliminar del Coach. Tu kinesiólogo puede revisarlo.')}),
+    h('p',{class:'note',text:!al?'Tu evaluación principal. 7 pruebas de movimiento grabadas con tu teléfono, unos 15 minutos. El Coach te da un puntaje al instante, Joaquín Adi (kinesiólogo) la revisa en 48 horas y tu preparación se arma según lo que más necesitas.':tot==null?'En curso: completa las pruebas que faltan. Cuando esté completa, Joaquín la revisa en 48 horas.':(F.revisado?'Revisada por Joaquín Adi, kinesiólogo.':'Resultado preliminar del Coach. Joaquín la revisa en las próximas 48 horas y te avisamos si cambia algo.')}),
     al&&tot==null?avanceFms():null,
     dol.length?h('p',{class:'dxline',text:'Con dolor en: '+dol.join(', ')+'. El dolor no se corrige con ejercicio: coméntalo con tu kinesiólogo.'}):null,
     h('div',{class:'row'},h('button',{class:tot!=null?'btn':'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},tot!=null?'Ver mi evaluación':al?'Seguir mi evaluación':'Hacer mi evaluación'),
@@ -1664,7 +1669,7 @@ function renderFms(m){
   const res=h('section',{class:'card'},h('h2',{text:'3. Tu resultado'}));
   if(tot==null)res.append(h('p',{class:'note',text:'Aparece cuando estén las 7 pruebas.'}));
   else{
-    res.append(h('p',{class:'big',text:tot+' de 21'}),h('p',{class:'note',text:F.revisado?'Revisado por tu kinesiólogo.':'Preliminar del Coach.'}));
+    res.append(h('p',{class:'big',text:tot+' de 21'}),h('p',{class:'note',text:F.revisado?'Revisado por Joaquín Adi, kinesiólogo.':'Preliminar del Coach. Joaquín la revisa en las próximas 48 horas.'}));
     const asy=FMSL.filter(t=>fmsRes(t.id).asym).map(t=>t.n),pr=fmsPrioridad('PC').slice(0,3).map(x=>fmsT(x.id).n),dol=fmsDolor();
     if(dol.length)res.append(h('p',{class:'dxline',text:'Dolor en: '+dol.join(', ')+'. Esas pruebas no se corrigen con ejercicio: agenda una evaluación con tu kinesiólogo.'}));
     if(asy.length)res.append(h('p',{text:'Diferencia entre lados en: '+asy.join(', ')+'. Se trabaja primero el lado más débil.'}));
@@ -2063,7 +2068,7 @@ const sexoTxt=x=>x==='M'?'femenino':x==='H'?'masculino':x==='N'?'prefiere no dec
 const pres0=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const p=escalar(PP(it)[s-1],it.id);const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
 /* Chequeo antes de entrenar: si salió bajo, la sesión de hoy va suave (una serie menos en cada ejercicio). */
 const chkDe=(s,d)=>{try{return ((S.sesiones||{})[sesKey(s,d)]||{}).chk||null}catch(e){return null}};
-const suave=(s,d)=>{const c=chkDe(s,d);return !!(c&&c.ajuste==='suave'&&!c.normal)};
+const suave=(s,d)=>{const c=chkDe(s,d);if(alertaOn()&&!(c&&c.normal))return true;return !!(c&&c.ajuste==='suave'&&!c.normal)};
 function suavizar(p){const m=/^(\d+)×/.exec(p);if(!m||+m[1]<2)return p;return (+m[1]-1)+p.slice(m[1].length)+' · suave'}
 const pres=(s,d,it)=>{const p=pres0(s,d,it);return !esPrep()&&suave(s,d)&&!S.ajustes[key(s,d,it.id)]?suavizar(p):p};
 const CHKQ=[['sueno','¿Cómo dormiste anoche?','Muy mal','Muy bien',false],['energia','¿Cuánta energía tienes?','Nada','Mucha',false],
@@ -3274,6 +3279,9 @@ function contexto(){
   {const ci=Object.entries(T).filter(([k,v])=>/^(c|iso)_/.test(k)&&String(v??'').trim()).map(([k,v])=>k+'='+v);if(ci.length)tl.push('Campo e isometría (c_ = campo, iso_ = dinamómetro; _i/_d = izq./der.; _0/_4/_8 = semana): '+ci.join(', '))}
   if(tl.length){L.push('','TESTS:',...tl)}
   L.push('',fmsContexto());
+  {const x=a.alerta,t=a.triaje;if(x&&!x.ok)L.push('ALERTA DE SEGURIDAD: al entrar marcó '+(x.motivos||[]).join(', ')+'. Su plan va suave (nivel inicial, una serie menos) hasta que confirme que lo evaluó un profesional. Recomiéndale evaluarse (en Sakros: sakros.cl/reserva) antes de subir cargas, saltos o impactos; si describe dolor que empeora, hormigueo o pérdida de fuerza, deriva sin rodeos.');
+   else if(x&&x.ok)L.push('Al entrar marcó señales de alarma ('+(x.motivos||[]).join(', ')+') y después confirmó que lo evaluó un profesional.');
+   if(t)L.push('Molestias al entrar: '+(t.les||[]).join(', ')+' · desde: '+({agudo:'menos de 6 semanas',sub:'6 semanas a 3 meses',cron:'más de 3 meses'}[t.desde]||'—')+' · dolor '+(t.dolor??'—')+'/10.')}
   const dl=dxActivos();
   if(dl.length){L.push('','DIAGNÓSTICOS ACTIVOS: '+dl.join(' · '));
     const seen=new Set();allRows().forEach(([d,it])=>{const id=ALIAS[it.id]||it.id;if(seen.has(id))return;seen.add(id);reglasEj(it.id).forEach(r=>L.push(`${it.id} (${EX[it.id].n}): ${LVL[r.lvl]} [${r.dx}] ${r.txt}`))});}
@@ -3419,9 +3427,18 @@ function renderOnb(m){
   }else if(O.paso===3){
     const L=[['ninguna','Ninguna'],['espalda','Dolor de espalda o hernia lumbar'],['escapes','Escapes de orina al hacer esfuerzo'],['rodilla','Rodilla'],['hombro','Hombro'],['tobillo','Tobillo'],['otra','Otra']];
     const tog=k=>{if(k==='ninguna')O.les=O.les.includes('ninguna')?[]:['ninguna'];else{O.les=O.les.filter(x=>x!=='ninguna');O.les=O.les.includes(k)?O.les.filter(x=>x!==k):[...O.les,k]}render()};
+    const T=O.tri=O.tri||{flags:[]},conLes=O.les.some(x=>x!=='ninguna');
+    const grupo=(lbl,ops,k)=>h('div',{class:'freq',role:'group','aria-label':lbl},h('span',{class:'wholbl',text:lbl}),ops.map(([v,t])=>h('button',{class:'opt','aria-pressed':T[k]===v,onclick:()=>{T[k]=v;render()}},t)));
+    const FL=[['cirugia','Me operaron hace menos de 6 meses'],['hormigueo','Hormigueo, adormecimiento o pérdida de fuerza'],['noche','Dolor que me despierta en la noche'],['golpe','Golpe o caída reciente con hinchazón']];
+    const tri=conLes?h('div',{class:'triaje'},h('p',{},h('strong',{text:'Cuéntanos un poco más, para cuidarte:'})),
+      grupo('¿Desde cuándo?',[['agudo','Menos de 6 semanas'],['sub','6 semanas a 3 meses'],['cron','Más de 3 meses']],'desde'),
+      grupo('¿Cuánto te duele hoy? (0 = nada, 10 = máximo)',[0,1,2,3,4,5,6,7,8,9,10].map(n=>[n,String(n)]),'dolor'),
+      h('span',{class:'wholbl',text:'Marca si te pasa algo de esto'}),
+      h('div',{class:'opts'},FL.map(([k,t])=>h('button',{class:'opt','aria-pressed':T.flags.includes(k),onclick:()=>{T.flags=T.flags.includes(k)?T.flags.filter(x=>x!==k):[...T.flags,k];render()}},t)))):null;
+    const listo=O.les.length&&(!conLes||(T.desde&&T.dolor!=null));
     card.append(paso(3,'¿Tienes alguna lesión o molestia?'),h('p',{class:'note',text:'Puedes marcar varias. El plan se adapta a lo que elijas.'}),
-      h('div',{class:'opts'},L.map(([k,t])=>h('button',{class:'opt','aria-pressed':O.les.includes(k),onclick:()=>tog(k)},t))),
-      h('div',{class:'row'},h('button',{class:'btn primary big',disabled:!O.les.length,onclick:()=>{O.paso=4;render()}},'Ver mi plan'),h('button',{class:'linkbtn',onclick:()=>{O.paso=2;render()}},'← Volver')));
+      h('div',{class:'opts'},L.map(([k,t])=>h('button',{class:'opt','aria-pressed':O.les.includes(k),onclick:()=>tog(k)},t))),tri,
+      h('div',{class:'row'},h('button',{class:'btn primary big',disabled:!listo,onclick:()=>{O.paso=4;render()}},'Ver mi plan'),h('button',{class:'linkbtn',onclick:()=>{O.paso=2;render()}},'← Volver')));
   }else{
     let prog=O.obj;const les=O.les.filter(x=>x!=='ninguna');
     const sugCore=prog!=='core'&&prog!=='prep'&&prog!=='base'&&les.some(x=>x==='escapes'||x==='espalda');
@@ -3437,6 +3454,10 @@ function renderOnb(m){
       h('h2',{text:PROG[prog].split(' (')[0]}),h('p',{text:PDESC[prog]}),
       h('p',{class:'note',text:O.dias+(O.dias===1?' día':' días')+' por semana'+(adapt.length?' · adaptado a: '+adapt.join(', '):'')}));
     card.append(h('div',{class:'onbhead'},h('span',{class:'chip ok',text:'Listo'}),h('h2',{text:'Este es tu plan'})),res);
+    const al=les.length?alarmaDe(O.tri):null;
+    if(al)card.append(h('div',{class:'alerta'},h('p',{},h('strong',{text:'Partimos con un plan suave. '}),'Por lo que nos contaste ('+al.join(', ')+'), tu plan empieza en el nivel inicial, con una serie menos en cada ejercicio, hasta que te evalúe un profesional.'),
+      h('p',{},'Te recomendamos evaluarte antes de cargar. ',h('a',{href:'/reserva',target:'_blank',rel:'noopener'},'Agenda una evaluación en Sakros'),' o con tu kinesiólogo.')));
+    else if(prog!=='prep')card.append(h('p',{class:'note',text:'Empiezas con una primera sesión con movilidad general. Después te pediremos tu evaluación de movimiento para personalizar tu plan.'}));
     if(sugCore)card.append(h('p',{class:'dxline'},'Por lo que marcaste, te conviene empezar por ',h('strong',{text:PROG.core.split(' (')[0]}),'. ',h('button',{class:'linkbtn',onclick:()=>{guardar();O.obj='core';render()}},'Cambiar a ese plan')));
     const tc=h('input',{type:'checkbox',id:'onb-tc'}),tc2=h('input',{type:'checkbox',id:'onb-salud'});
     card.append(h('div',{class:'row'},h('label',{class:'f',for:'onb-nom'},'Nombre',nom),h('label',{class:'f',for:'onb-edad'},'Edad',ed)),h('label',{class:'f',for:'onb-sexo'},'Sexo',sx),
@@ -3450,10 +3471,12 @@ function renderOnb(m){
         const edad=parseInt(ed.value,10);
         const cond=prog==='core'?(les.includes('espalda')&&les.includes('escapes')?'ambas':les.includes('escapes')?'iue':les.includes('espalda')?'hernia':'otra'):a.condicion;
         const mods=[];if(prog==='core'||les.includes('escapes')||les.includes('espalda'))mods.push('suelo');if(prog==='rend')mods.push('aterrizar');if(prog==='base'||prog==='global'||edad>=60)mods.push('equilibrio');
-        const data={...a,nombre,sexo:sx.value,edad:edad>=5&&edad<=100?edad:(a.edad||''),programa:prog,siguiente:prog==='base'?'global':(a.siguiente||''),modulos:mods.length?mods.slice(0,2):['equilibrio'],nivel:a.nivel||((prog==='base'||prog==='global'||edad>=60)?1:2),frecuencia:O.dias,sesiones:a.sesiones||O.dias,condicion:cond||'',objetivo:a.objetivo||({base:'Empezar a moverme',rend:'Rendir más en mi deporte',core:'Fortalecer espalda, abdomen y suelo pélvico',global:'Empezar a entrenar o mantenerme',prep:'Prepararme para entrenar sin lesionarme'})[prog],
+        const ala=les.length?alarmaDe(O.tri):null;
+        const data={...a,triaje:les.length?{...O.tri,les,t:Date.now()}:null,alerta:ala?{motivos:ala,t:Date.now(),ok:false}:(a.alerta||null),nombre,sexo:sx.value,edad:edad>=5&&edad<=100?edad:(a.edad||''),programa:prog,siguiente:prog==='base'?'global':(a.siguiente||''),modulos:mods.length?mods.slice(0,2):['equilibrio'],nivel:ala?1:(a.nivel||((prog==='base'||prog==='global'||edad>=60)?1:2)),frecuencia:O.dias,sesiones:a.sesiones||O.dias,condicion:cond||'',objetivo:a.objetivo||({base:'Empezar a moverme',rend:'Rendir más en mi deporte',core:'Fortalecer espalda, abdomen y suelo pélvico',global:'Empezar a entrenar o mantenerme',prep:'Prepararme para entrenar sin lesionarme'})[prog],
           saltarBase:false,saltoBase:a.saltoBase||null,notas:[a.notas,les.includes('otra')?'Marcó otra molestia en la bienvenida: revisar.':''].filter(Boolean).join(' '),onb:Date.now(),terminos:terminosOk(),t:Date.now()};
         e.target.disabled=true;const ok=await saveAtleta(UI.atleta,data);e.target.disabled=false;
         if(!ok){err.textContent='No se pudo guardar. Revisa la conexión y vuelve a intentarlo.';return}
+        if(ala)avisarCoach('alerta',ala.join(', ')+' · zonas: '+les.join(', ')+' · dolor hoy '+O.tri.dolor+'/10');
         const dxm={rodilla:'rodilla',hombro:'hombro',tobillo:'tobillo'};if(prog!=='core')dxm.espalda='lumbar';
         const patch={};les.forEach(k=>{const id=dxm[k];if(id&&DX[id]&&!(S.salud||{})[id]?.on)patch[id]={on:true,fase:DX[id].fases[0][0]}});
         const irFms=false;
@@ -3471,18 +3494,30 @@ addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;if(UI.ta
 addEventListener('appinstalled',()=>{try{localStorage.setItem('go-instalada','1')}catch(e){}instEvt=null;render()});
 // Solo campo, fuerza e isometría: los tests propios de Base, Activo y Core (x_, g_, k_) no cuentan aquí.
 const testsIniciados=()=>Object.entries(S.tests||{}).some(([k,v])=>/_0$/.test(k)&&!/^[xgk]_/.test(k)&&String(v??'').trim()!=='');
+// Filtro de seguridad: señales de que conviene una evaluación profesional antes de cargar.
+function alarmaDe(T){if(!T)return null;const m=[];if(T.desde==='agudo')m.push('lesión de menos de 6 semanas');if(T.dolor>=7)m.push('dolor de '+T.dolor+' de 10');
+  const F={cirugia:'cirugía reciente',hormigueo:'hormigueo o pérdida de fuerza',noche:'dolor nocturno',golpe:'golpe reciente con hinchazón'};(T.flags||[]).forEach(k=>F[k]&&m.push(F[k]));return m.length?m:null}
+const alertaOn=()=>{const x=atl().alerta;return !!(x&&!x.ok)};
+function cardAlerta(){
+  if(!alertaOn())return null;const x=atl().alerta;
+  return h('section',{class:'card alerta'},h('span',{class:'chip',text:'Plan suave'}),h('h2',{text:'Antes de cargar, evalúate con un profesional'}),
+    h('p',{text:'Nos contaste: '+(x.motivos||[]).join(', ')+'. Mientras tanto tu plan va suave: nivel inicial y una serie menos en cada ejercicio. Si algo duele más durante la sesión, para.'}),
+    h('div',{class:'row'},h('a',{class:'btn primary',href:'/reserva',target:'_blank',rel:'noopener'},'Agendar evaluación en Sakros'),
+      h('button',{class:'linkbtn',onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),alerta:{...x,ok:Date.now()},t:Date.now()});render()}},'Ya me evaluó un profesional')));
+}
 function cardPartida(){
   if(esPrep()||fmsListo()||atl().fmsNo)return null;
+  const al0=fmsAlguno();if(!al0&&!sesHecha())return null;// primero una sesión genérica; después, la evaluación
   let oc=false;try{oc=localStorage.getItem('go-partida-'+UI.atleta)===new Date().toDateString()}catch(e){}if(oc)return null;
   const al=fmsAlguno();
   return h('section',{class:'card partida'},h('span',{class:'chip',text:'Tu punto de partida'}),h('h2',{text:al?'Termina tu evaluación de movimiento':'Haz tu evaluación de movimiento'}),
-    h('p',{text:'Es lo único que necesitas para empezar: 7 pruebas cortas que grabas con tu teléfono, unos 15 minutos. El Coach revisa los videos y agrega a tu entrenamiento correctivos para los patrones que más lo necesitan.'}),
+    h('p',{text:'Ya hiciste tu primera sesión. Ahora personaliza tu entrenamiento: 7 pruebas cortas que grabas con tu teléfono, unos 15 minutos. Joaquín revisa tu evaluación en 48 horas y tu preparación pasa de movilidad general a correctivos para lo que más necesitas.'}),
     al?avanceFms():null,
     h('p',{class:'note',text:'Los demás tests (fuerza, saltos y campo) son opcionales. Están en la pestaña Tests, en «Tests complementarios».'}),
     h('div',{class:'row'},h('button',{class:'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},al?'Seguir mi evaluación':'Hacer mi evaluación'),
       h('button',{class:'linkbtn',onclick:()=>{try{localStorage.setItem('go-partida-'+UI.atleta,new Date().toDateString())}catch(e){}render()}},'Más tarde')),
     al?null:h('div',{class:'directo'},h('button',{class:'btn',onclick:()=>irDirecto()},'Quiero ir directo al entrenamiento'),
-      h('p',{class:'note',text:'Sin evaluación, tu preparación incluye movilidad general para todo el cuerpo, en vez de correctivos dirigidos. Puedes evaluarte cuando quieras.'})));
+      h('p',{class:'note',text:'Sigues con movilidad general para todo el cuerpo, en vez de correctivos dirigidos. Puedes evaluarte cuando quieras.'})));
 }
 function cardInstalar(){
   const inst=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
@@ -3507,6 +3542,7 @@ function cardInstalar(){
 function renderHoy(m){
   if(esPrep())return renderHoyPrep(m);
   {const ci=cardInstalar();if(ci)m.append(ci)}
+  {const ca=cardAlerta();if(ca)m.append(ca)}
   {const cp=cardPartida();if(cp)m.append(cp)}
   {const sb=cardSugBase();if(sb)m.append(sb)}
   const a=atl(),N=nextSes(),{s,d}=N,r=rows(d,s);

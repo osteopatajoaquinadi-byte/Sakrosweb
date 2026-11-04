@@ -194,7 +194,7 @@ test.describe("Sakros Go", () => {
 
   test("en Tests, la evaluación de movimiento va primero y el resto queda en complementarios plegados", async ({ page }) => {
     const errores = vigilarErrores(page);
-    await montarGo(page, { docs: [atleta("u1", { programa: "rend" })] });
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend" }), { path: "a/u1/sesiones", id: "1A", data: { semana: 1, dia: "A", fecha: "01/11" } }] });
     await page.goto("/go");
     await page.getByRole("tab", { name: "Hoy" }).click();
     await expect(page.getByRole("heading", { name: "Haz tu evaluación de movimiento" })).toBeVisible();
@@ -258,18 +258,51 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
-  test("quien elige ir directo al entrenamiento recibe movilidad general en cada sesión", async ({ page }) => {
+  test("quien elige ir directo al entrenamiento sigue sin evaluación y lo ve en Tests", async ({ page }) => {
     const errores = vigilarErrores(page);
-    const fake = await montarGo(page, { docs: [atleta("u1", { programa: "rend" })] });
+    const fake = await montarGo(page, { docs: [atleta("u1", { programa: "rend" }), { path: "a/u1/sesiones", id: "1A", data: { semana: 1, dia: "A", fecha: "01/11" } }] });
     await page.goto("/go");
-    await expect(page.getByText(/ejercicios/).first()).toBeVisible();
-    const antes = Number((await page.getByText(/\d+ ejercicios/).first().textContent())!.match(/(\d+) ejercicios/)![1]);
     await page.getByRole("button", { name: "Quiero ir directo al entrenamiento" }).click();
     await expect.poll(() => fake.doc("atletas", "u1")?.fmsNo).toBe(true);
     await expect(page.getByRole("heading", { name: "Haz tu evaluación de movimiento" })).toBeHidden();
-    await expect(page.getByText(`${antes + 1} ejercicios`).first()).toBeVisible();
     await page.getByRole("tab", { name: "Tests" }).click();
     await expect(page.getByText(/Elegiste ir directo al entrenamiento/)).toBeVisible();
+    expect(errores).toEqual([]);
+  });
+
+  test("sin evaluación, la primera sesión es genérica y la evaluación se pide después", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend" })] });
+    await page.goto("/go");
+    await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Haz tu evaluación de movimiento" })).toHaveCount(0);
+    expect(errores).toEqual([]);
+  });
+
+  test("quien marca señales de alarma al entrar parte con plan suave y se avisa al entrenador", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const fake = await montarGo(page, { docs: [atleta("u1", { onb: null, programa: null, sexo: null })] });
+    await page.goto("/go");
+    await page.getByRole("button", { name: /Rendir más en mi deporte/ }).click();
+    await page.getByRole("button", { name: /^2 días/ }).click();
+    await page.getByRole("button", { name: "Rodilla" }).click();
+    await expect(page.getByRole("button", { name: "Ver mi plan" })).toBeDisabled();
+    await page.getByRole("button", { name: "Menos de 6 semanas" }).click();
+    await page.getByRole("group", { name: /Cuánto te duele/ }).getByRole("button", { name: "8", exact: true }).click();
+    await page.getByRole("button", { name: "Ver mi plan" }).click();
+    await expect(page.getByText(/Partimos con un plan suave/)).toBeVisible();
+    await page.locator("#onb-nom").fill("Ana");
+    await page.locator("#onb-sexo").selectOption("M");
+    await page.locator("#onb-tc").check();
+    await page.locator("#onb-salud").check();
+    await page.getByRole("button", { name: "Crear mi plan" }).click();
+    await expect(page.getByRole("heading", { name: "Antes de cargar, evalúate con un profesional" })).toBeVisible();
+    const a = fake.doc("atletas", "u1") as { alerta?: { motivos: string[]; ok: boolean }; nivel?: number };
+    expect(a.alerta?.motivos).toEqual(["lesión de menos de 6 semanas", "dolor de 8 de 10"]);
+    expect(a.nivel).toBe(1);
+    await expect.poll(() => fake.avisos.map((x) => x.tipo)).toEqual(["alerta"]);
+    await page.getByRole("button", { name: "Ya me evaluó un profesional" }).click();
+    await expect(page.getByRole("heading", { name: "Antes de cargar, evalúate con un profesional" })).toBeHidden();
     expect(errores).toEqual([]);
   });
 
