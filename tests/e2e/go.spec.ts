@@ -258,6 +258,21 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("quien elige ir directo al entrenamiento recibe movilidad general en cada sesión", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const fake = await montarGo(page, { docs: [atleta("u1", { programa: "rend" })] });
+    await page.goto("/go");
+    await expect(page.getByText(/ejercicios/).first()).toBeVisible();
+    const antes = Number((await page.getByText(/\d+ ejercicios/).first().textContent())!.match(/(\d+) ejercicios/)![1]);
+    await page.getByRole("button", { name: "Quiero ir directo al entrenamiento" }).click();
+    await expect.poll(() => fake.doc("atletas", "u1")?.fmsNo).toBe(true);
+    await expect(page.getByRole("heading", { name: "Haz tu evaluación de movimiento" })).toBeHidden();
+    await expect(page.getByText(`${antes + 1} ejercicios`).first()).toBeVisible();
+    await page.getByRole("tab", { name: "Tests" }).click();
+    await expect(page.getByText(/Elegiste ir directo al entrenamiento/)).toBeVisible();
+    expect(errores).toEqual([]);
+  });
+
   test("la ruta de errores rechaza envíos vacíos o inválidos", async ({ request }) => {
     expect((await request.post("/api/go/errores", { data: "" })).status()).toBe(400);
     expect((await request.post("/api/go/errores", { data: { mensaje: "" } })).status()).toBe(400);
