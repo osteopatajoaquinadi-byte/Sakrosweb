@@ -125,6 +125,7 @@ td input{min-width:80px;padding:6px 8px}
 .cell.part{background:var(--accent-soft);color:var(--accent)}
 .cell.full{background:var(--ok);color:var(--surface)}
 .fmsav{display:grid;gap:6px}.fmsavt{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.92rem}.fmsavt span{color:var(--muted)}.fmsbar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}.fmsbar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}.fmsav .note{margin:0}
+.directo{display:grid;gap:4px;border-top:1px dashed var(--line);padding-top:10px}.directo .btn{justify-self:start}
 .pasotit{font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#667);margin:14px 2px -4px}.compl>summary{display:grid;gap:4px;cursor:pointer}.compl>summary::-webkit-details-marker{display:none}.compl .ctit{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700}.compl[open] .ctit+.note{display:none}.compl>summary .note{font-weight:400}.comp{display:grid;gap:12px;margin-top:4px}.comp>.card{border-style:dashed}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:10px;min-width:0}
 .card h2{font-family:var(--display);font-size:1.35rem;margin:0}
@@ -1441,7 +1442,12 @@ function cardSaltoBase(){
 }
 function fmsPrioridad(zona){return FMSH.filter(id=>ZTEST[zona].includes(id)).map(id=>({id,...fmsRes(id)})).filter(r=>r.score!=null&&r.score>0&&(r.score<3||r.asym))}
 function nivCorr(id){const v=(atl().corr||{})[id];if(v>=1&&v<=4)return v;const r=fmsRes(id);if(r.score===3&&!r.asym)return 4;return r.score===1?1:2}
+// «Quiero ir directo al entrenamiento»: sin evaluación, movilidad general que rota los 7 patrones (no dirigida).
+const fmsGen=()=>!!atl().fmsNo&&!fmsListo();
+const corrGen=(i,n)=>Array.from({length:n},(_,k)=>FMSH[(i+k)%FMSH.length]).map(id=>'f'+id+nivCorr(id));
+async function irDirecto(v=true){await saveAtleta(UI.atleta,{...atl(),fmsNo:v,t:Date.now()});render()}
 function corrDe(zona,n){
+  if(fmsGen())return corrGen((prepN()-1)*n,n);
   const c=fmsPrioridad(zona).map(r=>r.id);// primero lo que más necesita; después, mantención
   const resto=fmsAlguno()?FMSH.filter(id=>ZTEST[zona].includes(id)&&!fmsRes(id).dolor):ZDEF[zona];
   return [...new Set([...c,...resto])].slice(0,n).map(id=>'f'+id+nivCorr(id));
@@ -1454,7 +1460,10 @@ function prepRows(z,s){
 }
 const zonaDia=(d,s)=>{const x=srcDia(d,s);return x==='A'?'PI':x==='B'?'PS':'PC'};
 function conCorr(r,d,s){// Entrenamiento: un correctivo del FMS después de la preparación del programa
-  if(!fmsListo())return r;const c=corrDe(zonaDia(d,s),1);if(!c.length)return r;
+  let c;
+  if(fmsGen())c=corrGen((s-1)*DIAS().length+Math.max(0,DIAS().indexOf(d)),1);
+  else{if(!fmsListo())return r;c=corrDe(zonaDia(d,s),1)}
+  if(!c.length)return r;
   let i=-1;r.forEach((it,j)=>{if(String(it.b).startsWith('1'))i=j});
   const out=r.slice();out.splice(i+1,0,{id:c[0],b:'1z',tm:3,p:prepFill(s,corrPres(c[0]))});return out;
 }
@@ -1616,11 +1625,13 @@ function chipScore(v){return h('span',{class:'sem '+(v==null?'n':v>=3?'v':v===2?
 function cardFms(){
   const tot=fmsTotal(),F=FF(),al=fmsAlguno(),dol=fmsDolor();
   return h('section',{class:'card'},h('h2',{text:'Evaluación de movilidad y control'+(tot!=null?' · '+tot+' de 21':'')}),
+    fmsGen()?h('p',{class:'dxline',text:'Elegiste ir directo al entrenamiento: tu preparación trabaja la movilidad general de todo el cuerpo. Cuando quieras, haz la evaluación y pasa a correctivos dirigidos a lo que más necesitas.'}):null,
     h('p',{class:'note',text:!al?'Tu evaluación principal y la que te recomendamos hacer primero. 7 pruebas de movimiento grabadas con tu teléfono (3 repeticiones cada una), unos 15 minutos. El Coach revisa los videos, te da tu puntaje y arma tu preparación según lo que más necesitas.':tot==null?'En curso: completa las pruebas que faltan.':(F.revisado?'Revisada por tu kinesiólogo.':'Resultado preliminar del Coach. Tu kinesiólogo puede revisarlo.')}),
     al&&tot==null?avanceFms():null,
     dol.length?h('p',{class:'dxline',text:'Con dolor en: '+dol.join(', ')+'. El dolor no se corrige con ejercicio: coméntalo con tu kinesiólogo.'}):null,
     h('div',{class:'row'},h('button',{class:tot!=null?'btn':'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},tot!=null?'Ver mi evaluación':al?'Seguir mi evaluación':'Hacer mi evaluación'),
-      h('a',{class:'linkbtn',href:'/reserva',target:'_blank',rel:'noopener'},'Prefiero evaluarme presencial en Sakros')));
+      h('a',{class:'linkbtn',href:'/reserva',target:'_blank',rel:'noopener'},'Prefiero evaluarme presencial en Sakros')),
+    !al&&modoCli()&&!atl().fmsNo?h('button',{class:'linkbtn',onclick:()=>irDirecto()},'Quiero ir directo al entrenamiento (movilidad general)'):null);
 }
 /* Video de ejemplo del kinesiólogo para cada prueba (se carga solo al abrirlo). */
 function ejemploFms(t,card){
@@ -1749,6 +1760,7 @@ function renderProgresoPrep(m){
 }
 function selProg(){return h('div',{class:'freq',role:'group','aria-label':'Programa'},h('span',{class:'wholbl',text:'Programa'}),[['prep',PROGC.prep],['base',PROGC.base],['rend',PROGC.rend],['core',PROGC.core],['global',PROGC.global]].map(([p,l])=>h('button',{class:'opt','aria-pressed':prog()===p,onclick:async()=>{if(prog()===p)return;await saveAtleta(UI.atleta,{...atl(),programa:p,t:Date.now()});UI.orig={};render()}},l)))}
 function fmsContexto(){
+  if(fmsGen())return 'FMS: la persona eligió no evaluarse e ir directo al entrenamiento. Sus correctivos son de movilidad general: rotan los 7 patrones del FMS (uno por sesión de entrenamiento, dos por preparación), no dirigidos a un déficit. Oriéntala con criterios generales de movilidad; si cuenta una molestia o un movimiento que le cuesta, sugiérele la evaluación por video, sin insistir.';
   if(!fmsAlguno())return 'FMS: no hecho todavía (opcional, por video desde la pestaña Tests).';
   const F=FF(),L=['FMS'+(F.revisado?' (revisado por el kinesiólogo)':' (preliminar del Coach por video)')+': total '+(fmsTotal()??'incompleto')+'/21.'];
   FMSL.forEach(t=>{const R=fmsRes(t.id);L.push('- '+t.n+': '+scoreTxt(R.score)+(t.lados.length>1?' (der. '+scoreTxt(R.L.d)+', izq. '+scoreTxt(R.L.i)+')':'')+(R.dolor?' · CON DOLOR':'')+' · correctivo en el paso '+nivCorr(t.id)+' de 4')});
@@ -3460,7 +3472,7 @@ addEventListener('appinstalled',()=>{try{localStorage.setItem('go-instalada','1'
 // Solo campo, fuerza e isometría: los tests propios de Base, Activo y Core (x_, g_, k_) no cuentan aquí.
 const testsIniciados=()=>Object.entries(S.tests||{}).some(([k,v])=>/_0$/.test(k)&&!/^[xgk]_/.test(k)&&String(v??'').trim()!=='');
 function cardPartida(){
-  if(esPrep()||fmsListo())return null;
+  if(esPrep()||fmsListo()||atl().fmsNo)return null;
   let oc=false;try{oc=localStorage.getItem('go-partida-'+UI.atleta)===new Date().toDateString()}catch(e){}if(oc)return null;
   const al=fmsAlguno();
   return h('section',{class:'card partida'},h('span',{class:'chip',text:'Tu punto de partida'}),h('h2',{text:al?'Termina tu evaluación de movimiento':'Haz tu evaluación de movimiento'}),
@@ -3468,7 +3480,9 @@ function cardPartida(){
     al?avanceFms():null,
     h('p',{class:'note',text:'Los demás tests (fuerza, saltos y campo) son opcionales. Están en la pestaña Tests, en «Tests complementarios».'}),
     h('div',{class:'row'},h('button',{class:'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},al?'Seguir mi evaluación':'Hacer mi evaluación'),
-      h('button',{class:'linkbtn',onclick:()=>{try{localStorage.setItem('go-partida-'+UI.atleta,new Date().toDateString())}catch(e){}render()}},'Más tarde')));
+      h('button',{class:'linkbtn',onclick:()=>{try{localStorage.setItem('go-partida-'+UI.atleta,new Date().toDateString())}catch(e){}render()}},'Más tarde')),
+    al?null:h('div',{class:'directo'},h('button',{class:'btn',onclick:()=>irDirecto()},'Quiero ir directo al entrenamiento'),
+      h('p',{class:'note',text:'Sin evaluación, tu preparación incluye movilidad general para todo el cuerpo, en vez de correctivos dirigidos. Puedes evaluarte cuando quieras.'})));
 }
 function cardInstalar(){
   const inst=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
