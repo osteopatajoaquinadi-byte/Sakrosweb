@@ -192,6 +192,23 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("en Tests, la evaluación de movimiento va primero y el resto queda en complementarios plegados", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend" })] });
+    await page.goto("/go");
+    await page.getByRole("tab", { name: "Hoy" }).click();
+    await expect(page.getByRole("heading", { name: "Haz tu evaluación de movimiento" })).toBeVisible();
+    await page.getByRole("tab", { name: "Tests" }).click();
+    const comp = page.locator("#tests-comp");
+    await expect(comp).not.toHaveAttribute("open", "");
+    await expect(page.getByRole("heading", { name: "Tests de campo" })).toBeHidden();
+    const yFms = (await page.getByRole("button", { name: /Hacer mi evaluación/ }).boundingBox())!.y;
+    expect(yFms).toBeLessThan((await comp.boundingBox())!.y);
+    await page.locator("#tests-comp > summary").click();
+    await expect(page.getByRole("heading", { name: "Tests de campo" })).toBeVisible();
+    expect(errores).toEqual([]);
+  });
+
   test("subir el video de una prueba saca los cuadros, los sube y pide el análisis", async ({ page }) => {
     const errores = vigilarErrores(page);
     const fake = await montarGo(page, { docs: [atleta("u1", { programa: "rend" })] });

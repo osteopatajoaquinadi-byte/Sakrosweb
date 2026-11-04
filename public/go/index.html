@@ -124,6 +124,7 @@ td input{min-width:80px;padding:6px 8px}
 .cell{height:30px;border-radius:6px;background:var(--sunk);display:grid;place-items:center;font-size:.72rem;font-weight:700;color:var(--muted);cursor:pointer;border:0;font-family:inherit}
 .cell.part{background:var(--accent-soft);color:var(--accent)}
 .cell.full{background:var(--ok);color:var(--surface)}
+.pasotit{font-weight:700;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#667);margin:14px 2px -4px}.compl>summary{display:grid;gap:4px;cursor:pointer}.compl>summary::-webkit-details-marker{display:none}.compl .ctit{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700}.compl[open] .ctit+.note{display:none}.compl>summary .note{font-weight:400}.comp{display:grid;gap:12px;margin-top:4px}.comp>.card{border-style:dashed}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:10px;min-width:0}
 .card h2{font-family:var(--display);font-size:1.35rem;margin:0}
 .chat{display:grid;gap:10px}
@@ -1600,7 +1601,7 @@ function chipScore(v){return h('span',{class:'sem '+(v==null?'n':v>=3?'v':v===2?
 function cardFms(){
   const tot=fmsTotal(),F=FF(),al=fmsAlguno(),dol=fmsDolor();
   return h('section',{class:'card'},h('h2',{text:'Evaluación de movilidad y control'+(tot!=null?' · '+tot+' de 21':'')}),
-    h('p',{class:'note',text:!al?'Opcional. 7 pruebas de movimiento grabadas con tu teléfono (3 repeticiones cada una). El Coach revisa los videos, te da tu puntaje y arma tu preparación según lo que más necesitas.':tot==null?'En curso: completa las pruebas que faltan.':(F.revisado?'Revisada por tu kinesiólogo.':'Resultado preliminar del Coach. Tu kinesiólogo puede revisarlo.')}),
+    h('p',{class:'note',text:!al?'Tu evaluación principal y la que te recomendamos hacer primero. 7 pruebas de movimiento grabadas con tu teléfono (3 repeticiones cada una), unos 15 minutos. El Coach revisa los videos, te da tu puntaje y arma tu preparación según lo que más necesitas.':tot==null?'En curso: completa las pruebas que faltan.':(F.revisado?'Revisada por tu kinesiólogo.':'Resultado preliminar del Coach. Tu kinesiólogo puede revisarlo.')}),
     dol.length?h('p',{class:'dxline',text:'Con dolor en: '+dol.join(', ')+'. El dolor no se corrige con ejercicio: coméntalo con tu kinesiólogo.'}):null,
     h('div',{class:'row'},h('button',{class:al?'btn':'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},al?'Ver mi evaluación':'Hacer mi evaluación'),
       h('a',{class:'linkbtn',href:'/reserva',target:'_blank',rel:'noopener'},'Prefiero evaluarme presencial en Sakros')));
@@ -2496,21 +2497,24 @@ function renderTestsRend(m){
   m.append(h(modoCli()?'details':'section',{class:'card'},modoCli()?h('summary',{},'Cómo medirlos'):h('h2',{text:'Cómo medirlos'}),h('ul',{class:'medir'},medV.map(([a,b])=>h('li',{},h('strong',{text:a+': '}),b)))));
   function inp(id,v,on,ph){const e=h('input',{id,placeholder:ph||'','aria-label':id});e.value=v??'';e.addEventListener('input',()=>on(e.value));return e}
 }
-// Vista cliente: 1) fuerza, agilidad y campo (+ isometría opcional), 2) FMS. Los tests propios de Activo, Base y Core quedan abajo.
+// Vista cliente: 1) evaluación de movilidad y control (FMS), la principal. 2) Tests complementarios, opcionales y plegados.
 function renderTestsCli(m){
   const T=S.tests||{};
   const upd=(f,v)=>{const cur={...(S.tests||{}),[f]:v,t:Date.now()};S.tests=cur;debounce('tests',()=>write('tests','datos',cur))};
   const rend=!(esCore()||esBase()||esGlob()),basico=esBase()||esGlob();
-  m.append(h('section',{class:'card'},h('h2',{text:'Tu punto de partida'}),
-    h('p',{class:'note',text:(esBase()?'1. Tests de campo.':basico?'1. Tests de campo y de fuerza (pesos máximos).':'1. Tests de campo y de fuerza (pesos máximos), con fuerza isométrica si tienes dinamómetro.')+' 2. Movilidad y control. Con tus resultados ajustamos tu entrenamiento: los pesos de partida según tu fuerza, ejercicios extra para los desbalances entre piernas y grupos musculares, y correctivos según tu calidad de movimiento. Repítelos en la semana 4 y al final del bloque para ver tu progreso.'}),
-    h('p',{class:'note',text:'No es necesario hacerlos todos: haz los que puedas. Mientras más tests completes, más específico, dirigido y personalizado se vuelve tu entrenamiento. Puedes sumar los que faltan cuando quieras.'}),
-    rend?null:h('p',{class:'note',text:esBase()?'Los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.':basico?'Los pesos máximos y los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.':'Los pesos máximos y los desbalances que detecten los tests de campo e isometría se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.'})));
-  renderCampo(m,T,upd,!!balance(),true,basico);
-  if(!esBase())renderTestsRend(m);
-  if(!basico)renderIso(m,T,upd,true);
-  if(!rend){const box=h('div');(esCore()?renderTestsCore:esGlob()?renderTestsGlob:renderTestsBase)(box);
-    m.append(h('details',{class:'card'},h('summary',{},esBase()?'Tests del Entrenamiento Base (definen tu nivel de partida)':'Tests de tu programa'),box))}
-  m.append(cardFms());
+  m.append(h('p',{class:'pasotit',text:'1. Evaluación principal'}),cardFms());
+  const box=h('div',{class:'comp'});
+  box.append(h('p',{class:'note',text:'No son necesarios para entrenar. Agregan especificidad a tu planificación: '+(esBase()?'':'los de fuerza definen tus pesos de partida, ')+'los de campo'+(basico?'':' e isometría')+' suman trabajo para tus desbalances entre piernas y grupos musculares. Haz los que puedas, cuando quieras, y repítelos en la semana 4 y al final del bloque para ver tu progreso.'}));
+  if(!rend)box.append(h('p',{class:'note',text:esBase()?'Los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.':'Los pesos máximos y los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.'}));
+  renderCampo(box,T,upd,!!balance(),true,basico);
+  if(!esBase())renderTestsRend(box);
+  if(!basico)renderIso(box,T,upd,true);
+  if(!rend){const pb=h('div');(esCore()?renderTestsCore:esGlob()?renderTestsGlob:renderTestsBase)(pb);
+    box.append(h('details',{class:'card'},h('summary',{},esBase()?'Tests del Entrenamiento Base (definen tu nivel de partida)':'Tests de tu programa'),pb))}
+  const n=testsIniciados();
+  const det=h('details',{class:'card compl',id:'tests-comp'},h('summary',{},h('span',{class:'ctit'},h('span',{text:'Tests complementarios'}),h('span',{class:'sem '+(n?'v':'n'),text:n?'En curso':'Opcionales'})),h('span',{class:'note',text:'No son necesarios, pero agregan especificidad a tu planificación. Toca para verlos.'})),box);
+  if(UI.compOpen)det.open=true;det.addEventListener('toggle',()=>{UI.compOpen=det.open});
+  m.append(h('p',{class:'pasotit',text:'2. Si quieres más precisión'}),det);
 }
 function renderTestsGlob(m){
   const T=S.tests||{};
@@ -3423,20 +3427,13 @@ addEventListener('appinstalled',()=>{try{localStorage.setItem('go-instalada','1'
 // Solo campo, fuerza e isometría: los tests propios de Base, Activo y Core (x_, g_, k_) no cuentan aquí.
 const testsIniciados=()=>Object.entries(S.tests||{}).some(([k,v])=>/_0$/.test(k)&&!/^[xgk]_/.test(k)&&String(v??'').trim()!=='');
 function cardPartida(){
-  if(esPrep())return null;
-  const t=testsIniciados(),f=fmsListo();if(t&&f)return null;
+  if(esPrep()||fmsListo())return null;
   let oc=false;try{oc=localStorage.getItem('go-partida-'+UI.atleta)===new Date().toDateString()}catch(e){}if(oc)return null;
-  const est=ok=>h('span',{class:'sem '+(ok?'v':'a'),text:ok?'Hecho':'Pendiente'});
-  const ir=tab=>()=>{UI.tab=tab;saveUI();render();scrollTo(0,0)};
-  return h('section',{class:'card partida'},h('span',{class:'chip',text:'Tu punto de partida'}),h('h2',{text:'Realiza tus tests'}),
-    h('p',{text:'Antes de entrenar, mide cómo partes. Con tus resultados ajustamos tu entrenamiento y, al final del bloque, los repites para ver tu progreso.'}),
-    h('p',{class:'note',text:'No es necesario hacerlos todos. Haz los que puedas: mientras más tests completes, más específico y personalizado se vuelve tu entrenamiento.'}),
-    h('div',{class:'balrow'},h('span',{},h('strong',{text:esBase()?'1. Tests de campo':'1. Campo y fuerza'})),est(t)),
-    h('p',{class:'note',text:esBase()?'Tests de campo (puente a una pierna, Copenhague y plancha lateral).':esGlob()?'Tests de campo (puente a una pierna, Copenhague y plancha lateral) y pesos máximos (sentadillas y peso muerto).':'Tests de campo (puente a una pierna, Copenhague, plancha lateral, salto a una pierna), pesos máximos (sentadillas y peso muerto) y saltos. Fuerza isométrica si tienes dinamómetro.'}),
-    h('div',{class:'balrow'},h('span',{},h('strong',{text:'2. Movilidad y control'})),est(f)),
-    h('p',{class:'note',text:'7 pruebas en video que revisa el Coach IA.'}),
-    h('p',{class:'note',text:'Tus resultados modifican tu entrenamiento: '+(esBase()?'':'los tests de fuerza definen tus pesos de partida, ')+'los de campo'+(esBase()||esGlob()?'':' e isometría')+' suman trabajo para tus desbalances y la evaluación de movilidad y control agrega correctivos para los patrones que más lo necesitan.'}),
-    h('div',{class:'row'},h('button',{class:'btn primary',onclick:ir('tests')},t||fmsAlguno()?'Seguir con mis tests':'Hacer mis tests'),
+  const al=fmsAlguno();
+  return h('section',{class:'card partida'},h('span',{class:'chip',text:'Tu punto de partida'}),h('h2',{text:al?'Termina tu evaluación de movimiento':'Haz tu evaluación de movimiento'}),
+    h('p',{text:'Es lo único que necesitas para empezar: 7 pruebas cortas que grabas con tu teléfono, unos 15 minutos. El Coach revisa los videos y agrega a tu entrenamiento correctivos para los patrones que más lo necesitan.'}),
+    h('p',{class:'note',text:'Los demás tests (fuerza, saltos y campo) son opcionales. Están en la pestaña Tests, en «Tests complementarios».'}),
+    h('div',{class:'row'},h('button',{class:'btn primary',onclick:()=>{UI.tab='fms';saveUI();render();scrollTo(0,0)}},al?'Seguir mi evaluación':'Hacer mi evaluación'),
       h('button',{class:'linkbtn',onclick:()=>{try{localStorage.setItem('go-partida-'+UI.atleta,new Date().toDateString())}catch(e){}render()}},'Más tarde')));
 }
 function cardInstalar(){
