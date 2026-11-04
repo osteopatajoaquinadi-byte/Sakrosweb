@@ -1303,27 +1303,27 @@ const FMSL=[
  {id:'hs',n:'Paso de valla',lados:['d','i'],lt:{d:'Pierna derecha pasa',i:'Pierna izquierda pasa'},mat:'Un palo, y un elástico o cuerda entre dos sillas a la altura de la parte de abajo de tu rodilla.',cam:'De frente, a 2–3 m, con todo el cuerpo en el cuadro.',pasos:[
   'Pies juntos, con las puntas justo bajo la valla. Palo sobre los hombros, detrás del cuello.',
   'Sube una pierna por encima de la valla, toca el suelo con el talón al otro lado y vuelve, sin tocar la valla. La pierna de apoyo queda estirada.',
-  '3 repeticiones con cada pierna: un video por pierna.']},
+  'Un solo video, sin cortar: 3 repeticiones pasando la pierna derecha y después 3 con la izquierda.']},
  {id:'il',n:'Estocada en línea',lados:['d','i'],lt:{d:'Pierna derecha adelante',i:'Pierna izquierda adelante'},mat:'Un palo y una línea en el suelo (cinta o la junta de las baldosas). Mide tu tibia: del suelo a la parte de abajo de la rodilla.',cam:'De lado, a 2–3 m, con todo el cuerpo en el cuadro.',pasos:[
   'Pon la punta del pie de atrás y el talón del pie de adelante sobre la línea, separados el largo de tu tibia.',
   'Palo vertical en la espalda, tocando la cabeza, la espalda alta y el sacro. La mano del lado contrario a la pierna de adelante va arriba (detrás del cuello) y la otra abajo (en la zona lumbar).',
-  'Baja la rodilla de atrás hasta tocar el suelo (o una toalla) detrás del talón de adelante y sube. 3 repeticiones por lado: un video por lado.']},
+  'Baja la rodilla de atrás hasta tocar el suelo (o una toalla) detrás del talón de adelante y sube. Un solo video, sin cortar: 3 repeticiones con la pierna derecha adelante, cambia de pierna y de mano, y 3 con la izquierda.']},
  {id:'sm',n:'Movilidad de hombro',lados:['d','i'],lt:{d:'Mano derecha arriba',i:'Mano izquierda arriba'},mat:'Una cinta métrica y alguien que te mida.',cam:'De espalda, a 1,5–2 m, desde la cabeza hasta la cadera.',pasos:[
   'Mide tu mano: del pliegue de la muñeca a la punta del dedo medio.',
   'De pie, puños cerrados con el pulgar adentro. En un solo movimiento lleva un puño por arriba detrás del cuello y el otro por abajo detrás de la espalda, buscando juntarlos.',
-  'No acerques las manos después de llegar. Que te midan la distancia entre los puños. 3 intentos por lado: un video por lado y anota el mejor.'],med:true},
+  'No acerques las manos después de llegar. Que te midan la distancia entre los puños. Un solo video, sin cortar: 3 intentos con la mano derecha arriba y después 3 con la izquierda. Anota el mejor de cada lado.'],med:true},
  {id:'aslr',n:'Elevación de pierna extendida',lados:['d','i'],lt:{d:'Sube la pierna derecha',i:'Sube la pierna izquierda'},mat:'Una colchoneta.',cam:'De lado, a la altura del suelo, a 2 m, con todo el cuerpo en el cuadro.',pasos:[
   'Boca arriba, piernas estiradas y brazos al costado con las palmas hacia arriba.',
   'Sube una pierna estirada, con la punta del pie hacia ti, lo más alto que puedas. La otra pierna queda apoyada y estirada.',
-  '3 repeticiones por pierna: un video por pierna.']},
+  'Un solo video, sin cortar: 3 repeticiones con la pierna derecha y después 3 con la izquierda.']},
  {id:'tspu',n:'Flexión de estabilidad de tronco',lados:['u'],lt:{u:'3 intentos'},mat:'Una colchoneta.',cam:'De lado, a la altura del suelo, a 2 m.',pasos:[
   'Boca abajo, manos al ancho de los hombros. Hombres: pulgares a la altura de la frente. Mujeres: pulgares a la altura del mentón.',
   'Piernas juntas y estiradas, puntas de los pies apoyadas. Sube el cuerpo entero en bloque, como una tabla, sin que la zona lumbar se quede atrás.',
   'Si no te sale, en el mismo video repite con las manos más abajo (hombres: a la altura del mentón; mujeres: de la clavícula). 3 intentos.']},
- {id:'rs',n:'Estabilidad en rotación',lados:['d','i'],lt:{d:'Lado derecho',i:'Lado izquierdo'},mat:'Una colchoneta.',cam:'De lado, a la altura del suelo, a 2 m, del lado que se mueve.',pasos:[
+ {id:'rs',n:'Estabilidad en rotación',lados:['d','i'],lt:{d:'Lado derecho',i:'Lado izquierdo'},mat:'Una colchoneta.',cam:'De lado, a la altura del suelo, a 2 m.',pasos:[
   'En cuatro apoyos, manos bajo los hombros y rodillas bajo las caderas.',
   'Extiende al mismo tiempo el brazo y la pierna del mismo lado y después junta el codo con la rodilla bajo el cuerpo. 3 repeticiones.',
-  'Si no te sale, en el mismo video hazlo con el brazo y la pierna contrarios (en diagonal), también 3 veces. Un video por lado.']}];
+  'Si no te sale, hazlo con el brazo y la pierna contrarios (en diagonal), también 3 veces.','Un solo video, sin cortar: primero el lado derecho; después date vuelta para que el lado izquierdo quede hacia la cámara y repite.']}];
 const fmsT=id=>FMSL.find(t=>t.id===id);
 const CLEARL=[
  {id:'hombro',lados:['d','i'],n:'Descarte de hombro',txt:'Pon la palma de la mano en el hombro contrario y sube el codo lo más alto que puedas, sin despegar la mano.',afecta:'sm'},
@@ -1516,10 +1516,11 @@ async function framesDe(file,n=10,maxW=640){
 }
 // Deja registro de por qué no se pudo leer un video (tipo, tamaño y etapa), sin datos personales.
 function registrarVideo(donde,e,file){if(e&&e.message==='largo')return;reportarError('error',donde+': '+String(e&&e.message||e),'archivo '+(file&&file.type||'?')+' · '+Math.round((file&&file.size||0)/1e6)+' MB')}
+const dosLados=t=>t.lados.length===2;// pruebas con lado derecho e izquierdo: un solo video («a», ambos lados)
 async function subirVideo(id,l,file){
   const k=id+'-'+l;FMSBUSY[k]='Sacando los cuadros del video…';render();
   try{
-    const blobs=await framesDe(file);
+    const blobs=l==='a'?await framesDe(file,20,512):await framesDe(file);
     FMSMEM[k]=await Promise.all(blobs.map(b64De));
     let paths=[];
     if(SB){
@@ -1527,13 +1528,15 @@ async function subirVideo(id,l,file){
       const ts=Date.now(),base=UI.atleta+'/'+id+'-'+l+'-'+ts;
       for(let i=0;i<blobs.length;i++){const p=base+'-'+i+'.jpg';const{error}=await SB.storage.from('go-fms').upload(p,blobs[i],{contentType:'image/jpeg',upsert:true});if(error)throw new Error('subida');paths.push(p);FMSURL[p]=URL.createObjectURL(blobs[i])}
     }else{paths=blobs.map((b,i)=>{const p='local/'+k+'-'+i;FMSURL[p]=URL.createObjectURL(b);return p})}
-    await patchR(id,r=>{r.frames={...(r.frames||{}),[l]:paths};const ia=r.ia;if(ia&&ia.lados){r.ia={...ia,lados:{...ia.lados}};delete r.ia.lados[l]}});
+    const t=fmsT(id),quita=l==='a'?t.lados:[l];
+    await patchR(id,r=>{r.frames={...(r.frames||{}),[l]:paths};if(l==='a')quita.forEach(x=>delete r.frames[x]);const ia=r.ia;if(ia&&ia.lados){r.ia={...ia,lados:{...ia.lados}};quita.forEach(x=>delete r.ia.lados[x])}});
+    quita.forEach(x=>delete FMSMEM[id+'-'+x]);
     delete FMSBUSY[k];
-    const t=fmsT(id),r=(FF().r||{})[id]||{};
-    if(t.lados.every(x=>(r.dolor||{})[x]==='si'||((r.frames||{})[x]||[]).length))await analizarFms(id);else render();
+    const r=(FF().r||{})[id]||{};
+    if(l==='a'||t.lados.every(x=>(r.dolor||{})[x]==='si'||((r.frames||{})[x]||[]).length))await analizarFms(id);else render();
   }catch(e){
     FMSBUSY[k]=null;delete FMSBUSY[k];registrarVideo('Video de evaluación',e,file);
-    const msg=e.message==='largo'?'El video dura más de 90 s: graba solo las 3 repeticiones.':e.message==='subida'?'No se pudo subir. Revisa la conexión y vuelve a intentarlo.':'No se pudo leer el video. Prueba grabarlo de nuevo con la cámara del teléfono.';
+    const msg=e.message==='largo'?(l==='a'?'El video dura más de 90 s: graba solo las 3 repeticiones de cada lado.':'El video dura más de 90 s: graba solo las 3 repeticiones.'):e.message==='subida'?'No se pudo subir. Revisa la conexión y vuelve a intentarlo.':'No se pudo leer el video. Prueba grabarlo de nuevo con la cámara del teléfono.';
     UI.fmsErr={...(UI.fmsErr||{}),[k]:msg};render();
   }
 }
@@ -1589,10 +1592,12 @@ async function analizarFms(id){
   const t=fmsT(id),r=(FF().r||{})[id]||{};
   FMSBUSY[id]='El Coach está revisando tu video…';render();
   try{
-    const lados={};for(const l of t.lados){if((r.dolor||{})[l]==='si')continue;const f=await cuadrosB64(id,l);if(f.length)lados[l]=f}
+    const lados={},sin=t.lados.filter(l=>(r.dolor||{})[l]!=='si');let solo=null;
+    if(dosLados(t)&&((r.frames||{}).a||[]).length){if(sin.length){const f=await cuadrosB64(id,'a');if(f.length){lados.a=f;solo=sin}}}
+    else for(const l of sin){const f=await cuadrosB64(id,l);if(f.length)lados[l]=f}
     if(!Object.keys(lados).length){delete FMSBUSY[id];render();return}
     if(!SB)throw {msg:'El análisis necesita conexión con Sakros.'};
-    const body={test:id,sexo:atl().sexo||'',lados};if(id==='sm')body.medidas=Object.fromEntries(Object.entries(r.med||{}).map(([k,v])=>[k,parseFloat(String(v).replace(',','.'))]));
+    const body={test:id,sexo:atl().sexo||'',lados};if(solo)body.solo=solo;if(id==='sm')body.medidas=Object.fromEntries(Object.entries(r.med||{}).map(([k,v])=>[k,parseFloat(String(v).replace(',','.'))]));
     const res=await fetch('/api/go/fms',{method:'POST',headers:await authHeaders(),body:JSON.stringify(body)});
     const j=await res.json().catch(()=>({}));
     if(!res.ok)throw {msg:j.error||'No se pudo analizar el video.'};
@@ -1632,7 +1637,7 @@ function renderFms(m){
   m.append(h('section',{class:'card hero'},h('span',{class:'wholbl',text:'Evaluación de movilidad y control por video'}),
     h('h2',{text:tot!=null?'Tu evaluación de movilidad y control: '+tot+' de 21':'Tu evaluación de movimiento'}),
     tot==null&&fmsAlguno()?avanceFms():null,
-    h('p',{text:'Son 7 pruebas que muestran cómo te mueves. Grabas cada una con tu teléfono (3 repeticiones; las de un lado, un video por lado) y el Coach compara tu movimiento con el patrón óptimo.'}),
+    h('p',{text:'Son 7 pruebas que muestran cómo te mueves. Grabas cada una con tu teléfono (3 repeticiones; en las que tienen dos lados, un solo video: primero el derecho y después el izquierdo) y el Coach compara tu movimiento con el patrón óptimo.'}),
     h('ol',{class:'medir'},['Responde las 3 preguntas de dolor.','Graba cada prueba siguiendo las instrucciones y sube el video.','El Coach revisa el video y te da el puntaje (de 1 a 3 por prueba).','Tu preparación se arma sola con los correctivos que más necesitas.'].map(x=>h('li',{text:x}))),
     h('p',{class:'note',text:'Es menos precisa que una evaluación presencial, pero mucho más que una autoevaluación. Los videos no se guardan: solo algunos cuadros, en tu carpeta privada.'}),
     h('p',{},h('a',{href:'/reserva',target:'_blank',rel:'noopener'},'Prefiero evaluarme presencial en Sakros'))));
@@ -1674,6 +1679,7 @@ function cardPrueba(t,coach){
     const box=h('div',{class:'fmslado'},h('h3',{text:t.lt[l]}));
     box.append(h('div',{class:'freq',role:'group','aria-label':'Dolor'},h('span',{class:'wholbl',text:'¿Te dolió?'}),[['no','No'],['si','Sí']].map(([v,tx])=>h('button',{class:'opt','aria-pressed':dol===v,onclick:()=>patchR(t.id,x=>{x.dolor={...(x.dolor||{}),[l]:v}})},tx))));
     if(dol==='si')box.append(h('p',{class:'note',text:'Con dolor la prueba vale 0. No hace falta el video: coméntalo con tu kinesiólogo.'}));
+    else if(dosLados(t)&&!paths.length){}
     else{
       const inp=h('input',{type:'file',accept:'video/*',id:'fv-'+k,class:'vh'});inp.addEventListener('change',()=>{const f=inp.files&&inp.files[0];if(f){UI.fmsOpen=t.id;UI.fmsErr={...(UI.fmsErr||{}),[k]:null};subirVideo(t.id,l,f)}});
       box.append(h('div',{class:'row'},h('label',{class:'btn'+(paths.length?'':' primary'),for:'fv-'+k},paths.length?'Cambiar video':'Grabar o subir video'),inp));
@@ -1689,10 +1695,25 @@ function cardPrueba(t,coach){
     box.append(h('p',{class:'note',text:'Puntaje de este lado: '+scoreTxt(sc)}));
     card.append(box);
   });
+  if(dosLados(t)){
+    const k=t.id+'-a',paths=(r.frames||{}).a||[],sin=t.lados.filter(l=>(r.dolor||{})[l]!=='si');
+    if(sin.length){
+      const box=h('div',{class:'fmslado'},h('h3',{text:'Tu video'}),
+        h('p',{class:'note',text:sin.length===2?'Un solo video, sin cortar: primero el lado derecho (3 repeticiones) y después el izquierdo (3 repeticiones).':'Graba solo el lado sin dolor ('+(sin[0]==='d'?'el derecho':'el izquierdo')+'), 3 repeticiones.'}));
+      const inp=h('input',{type:'file',accept:'video/*',id:'fv-'+k,class:'vh'});inp.addEventListener('change',()=>{const f=inp.files&&inp.files[0];if(f){UI.fmsOpen=t.id;UI.fmsErr={...(UI.fmsErr||{}),[k]:null};subirVideo(t.id,'a',f)}});
+      box.append(h('div',{class:'row'},h('label',{class:'btn'+(paths.length?'':' primary'),for:'fv-'+k},paths.length?'Cambiar video':'Grabar o subir video'),inp));
+      if(FMSBUSY[k])box.append(h('p',{class:'note',role:'status',text:FMSBUSY[k]}));
+      if(err[k])box.append(h('p',{class:'note err',role:'alert',text:err[k]}));
+      if(paths.length){const strip=h('div',{class:'fmsstrip'});box.append(strip);
+        const pinta=()=>strip.replaceChildren(...paths.map((p,i)=>FMSURL[p]?h('img',{src:FMSURL[p],alt:'Cuadro '+(i+1),loading:'lazy'}):h('span',{class:'ph'})));
+        pinta();if(paths.some(p=>!FMSURL[p]))urlsFms(paths).then(pinta)}
+      card.append(box);
+    }
+  }
   if(FMSBUSY[t.id])card.append(h('p',{class:'note',role:'status',text:FMSBUSY[t.id]}));
   if(err[t.id])card.append(h('p',{class:'note err',role:'alert',text:err[t.id]}));
   if(r.ia){card.append(h('p',{class:'note',text:'Confianza del análisis: '+r.ia.confianza+'.'+(r.ia.resumen?' '+r.ia.resumen:'')}));if(r.ia.regrabar)card.append(h('p',{class:'dxline',text:'Para regrabar: '+r.ia.regrabar}))}
-  const listo=t.lados.some(l=>((r.frames||{})[l]||[]).length&&(r.dolor||{})[l]!=='si');
+  const listo=t.lados.some(l=>((r.frames||{})[l]||[]).length&&(r.dolor||{})[l]!=='si')||(dosLados(t)&&((r.frames||{}).a||[]).length>0&&t.lados.some(l=>(r.dolor||{})[l]!=='si'));
   if(listo&&!FMSBUSY[t.id])card.append(h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.fmsOpen=t.id;analizarFms(t.id)}},r.ia?'Volver a analizar':'Analizar con el Coach')));
   return card;
 }
