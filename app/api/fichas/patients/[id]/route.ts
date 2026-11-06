@@ -79,6 +79,15 @@ export async function PUT(
   delete update.id;
   delete update.created_by;
   delete update.created_at;
+  // Un campo vacío del formulario llega como "" y la base no acepta "" en una
+  // fecha (fallaba todo el guardado si no había fecha de nacimiento).
+  for (const [k, v] of Object.entries(update)) {
+    if (typeof v === "string") update[k] = v.trim() === "" ? null : v.trim();
+  }
+  if (typeof update.email === "string") update.email = update.email.toLowerCase();
+  if (!update.name && "name" in update) {
+    return NextResponse.json({ error: "El nombre es obligatorio." }, { status: 400 });
+  }
 
   const { data, error } = await getSupabase()
     .from("fichas_patients")
@@ -88,6 +97,7 @@ export async function PUT(
     .single();
 
   if (error) {
+    console.error("Actualizar paciente", id, error.message);
     return NextResponse.json({ error: "Error al actualizar paciente." }, { status: 500 });
   }
 
