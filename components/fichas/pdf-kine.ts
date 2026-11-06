@@ -76,9 +76,9 @@ function getBusinessDays(startDate: string, count: number): string[] {
   return dates;
 }
 
-/** Load the Sakros logo as base64 data URL */
+/** Logo de Sakros para los PDF (700 px; el original de 6883 px dejaba el PDF en 90 MB) */
 async function loadLogo(): Promise<string> {
-  const res = await fetch("/images/logo-sakros.png");
+  const res = await fetch("/images/logo-sakros-pdf.png");
   const blob = await res.blob();
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -90,7 +90,7 @@ async function loadLogo(): Promise<string> {
 /** Shared header: logo + clinic info */
 function drawHeader(doc: jsPDF, logoData: string, y: number): number {
   // Logo — aspect ratio ~2.09:1, draw at 50x24
-  doc.addImage(logoData, "PNG", 14, y, 50, 24);
+  doc.addImage(logoData, "PNG", 14, y, 50, 24, "logo", "FAST");
 
   // Clinic info to the right
   doc.setFontSize(8);
@@ -273,13 +273,13 @@ export async function generateCertificado(
   if (opts.firmaImg && !opts.firmaCargo) {
     // Firma digital (ya trae nombre, RUT y profesión)
     y += 4;
-    doc.addImage(opts.firmaImg, "PNG", 14, y, 62, 47);
+    doc.addImage(opts.firmaImg, "PNG", 14, y, 62, 47, "firma", "FAST");
   } else if (opts.firmaImg) {
     // Firma digital con solo el trazo: va sobre la línea, con nombre y cargo
     const { width, height } = doc.getImageProperties(opts.firmaImg);
     const alto = 28;
     y += 4;
-    doc.addImage(opts.firmaImg, "PNG", 22, y, (alto * width) / height, alto);
+    doc.addImage(opts.firmaImg, "PNG", 22, y, (alto * width) / height, alto, "firma", "FAST");
     y += alto + 1;
     doc.setDrawColor(40, 40, 40);
     doc.line(14, y, 90, y);
