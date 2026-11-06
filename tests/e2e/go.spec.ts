@@ -306,6 +306,18 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("con evaluación, el correctivo de cada sesión rota por los déficits, partiendo por los puntajes de 1", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const r = { ds: { rev: { u: 1 } }, hs: { rev: { d: 2, i: 2 } }, il: { rev: { d: 3, i: 3 } }, sm: { rev: { d: 3, i: 3 } }, aslr: { rev: { d: 3, i: 3 } }, tspu: { rev: { u: 2 } }, rs: { rev: { d: 2, i: 2 } } };
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3 }), { path: "a/u1/tests", id: "fms", data: { r } }] });
+    await page.goto("/go");
+    await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    const ids = (await page.evaluate(`(() => { const out = []; for (let s = 1; s <= 2; s++) for (const d of DIAS()) out.push(...rows(d, s).filter(i => /^f(ds|hs|il|sm|aslr|tspu|rs)[1-4]$/.test(i.id)).map(i => i.id)); return out; })()`)) as string[];
+    expect(ids[0]).toBe("fds1");
+    expect(new Set(ids)).toEqual(new Set(["fds1", "frs2", "ftspu2"]));
+    expect(errores).toEqual([]);
+  });
+
   test("la ruta de errores rechaza envíos vacíos o inválidos", async ({ request }) => {
     expect((await request.post("/api/go/errores", { data: "" })).status()).toBe(400);
     expect((await request.post("/api/go/errores", { data: { mensaje: "" } })).status()).toBe(400);
