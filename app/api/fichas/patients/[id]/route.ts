@@ -101,5 +101,21 @@ export async function PUT(
     return NextResponse.json({ error: "Error al actualizar paciente." }, { status: 500 });
   }
 
+  // Cada reserva guarda su propia copia del correo y el teléfono (los que se
+  // escribieron al agendar). Si cambian en la ficha, se actualizan las citas de
+  // hoy en adelante, que son las que reciben recordatorios y avisos.
+  const contacto: Record<string, string | null> = {};
+  if ("email" in update) contacto.client_email = update.email ?? "";
+  if ("phone" in update) contacto.client_phone = update.phone ?? null;
+  if (Object.keys(contacto).length) {
+    const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(new Date());
+    const { error: e2 } = await getSupabase()
+      .from("bookings")
+      .update(contacto)
+      .eq("fichas_patient_id", id)
+      .gte("booking_date", hoy);
+    if (e2) console.error("Actualizar contacto en reservas", id, e2.message);
+  }
+
   return NextResponse.json({ patient: data });
 }
