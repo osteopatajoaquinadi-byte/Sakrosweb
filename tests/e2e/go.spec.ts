@@ -348,6 +348,27 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("Rendimiento: el RPE se lee en la sesión, la semana 2 progresa y la competencia afina las semanas 3 y 4", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3, cargas: { cargada: 80 }, plan: { afina: 4 } })] });
+    await page.goto("/go");
+    await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    const p = (await page.evaluate(`(() => { const g = (s, d, id) => { const it = rows(d, s).find((i) => i.id === id); return it ? pres(s, d, it) : null };
+      return { sen1: g(1,'A','sentadilla'), sen2: g(1+1,'A','sentadilla'), car1: g(1,'A','cargada'), remo1: g(1,'A','kremomanc'), remo2: g(2,'A','kremomanc'),
+        dom3: g(3,'B','dominadas'), c4: rows('C', 4).map((i) => i.id), afina: afinaTxt(4, 'C') } })()`)) as Record<string, any>;
+    expect(p.sen1).toContain("RPE 7 (quedan 3 en reserva)");
+    expect(p.sen2).toContain("RPE 7–8");
+    expect(p.sen2).not.toBe(p.sen1);
+    expect(p.car1).toContain("80 kg");
+    expect(p.remo2).not.toBe(p.remo1);
+    expect(p.dom3).toBe("3×7");
+    expect(p.c4).not.toContain("sentadilla");
+    expect(p.c4).not.toContain("hipthrust");
+    expect(p.c4[p.c4.length - 1]).toBe("regen");
+    expect(p.afina).toContain("Activación previa a la competencia");
+    expect(errores).toEqual([]);
+  });
+
   test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 800 } });
     const errores = vigilarErrores(page);

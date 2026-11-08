@@ -536,36 +536,37 @@ const EX={
   clave:'Formato: series × repeticiones. 2×7 son dos series de siete 30/30.'}
 };
 EX.movB=EX.movA;
-const RPE_SQ=[7,7.5,8,6,7.5,8,8.5,null];
+const RPE_SQ=[7,'7–8',8,6,8,'8–9',9,null];
+const RESERVA={6:'quedan 4 en reserva',7:'quedan 3 en reserva','7–8':'quedan 2–3 en reserva',8:'quedan 2 en reserva','8–9':'quedan 1–2 en reserva',9:'queda 1 en reserva'};
 const PLAN={
  A:[
   {id:'tejidoA',b:'1a',p:fill('3 min')},
   {id:'movA',b:'1b',p:fill('4 min')},
   {id:'pilarA',b:'1c',p:r8('1 vuelta','1 vuelta'),pM:r8('2 vueltas','1 vuelta')},
   {id:'actA',b:'1d',p:r8('1 serie','1 serie'),pM:r8('2 series','1 serie')},
-  {id:'mdcut',b:'2',p:['Nivel 1 · pared 1×10 s/lado + shuffle continuo con corte 2×3/lado (5 m)','Nivel 1 · pared 1×10 s/lado + shuffle continuo con corte 2×3/lado (5 m)','Nivel 2 · pared 1×10 s/lado + cortes dirigidos 2×4/lado (5–10 m)','Nivel 1 · shuffle con corte 1×3/lado (5 m) · descarga','Nivel 2 · cortes dirigidos 2×4/lado (5–10 m)','Nivel 2 · cortes dirigidos 2×5/lado (5–10 m)','Nivel 3 · secuencia shuffle → corte → aceleración 2×3/lado (5 m)','Nivel 3 · secuencia shuffle → corte → aceleración 1×3/lado (5 m)']},
-  {id:'cajon',b:'2A',p:['Cajón 3×3','Cajón 3×3','Cajón 3×3','Cajón 2×3','Drop jump 3×4','Drop jump 3×4','Drop jump 3×4','Test CMJ y horizontal']},
-  {id:'puenteexp',b:'2B',p:['Suelo 3×6','Suelo 3×6','Suelo 3×8','Suelo 2×6','De pie 3×5','De pie 3×5','De pie 4×5','Suelo 2×6']},
-  {id:'cargada',b:'3',p:['3×3 · 50 kg','3×3 · 52,5 kg','3×3 · 55 kg','2×3 · 45 kg','4×2 · 57,5 kg','4×2 · 60 kg','4×2 · 62,5 kg','3×2 · 50 kg']},
-  {id:'sentadilla',b:'4A',p:['4×5 · 100 kg','4×5 · 105 kg','4×5 · 107,5 kg','3×5 · 90 kg','4×3 · 110 kg +C','4×3 · 115 kg +C','4×3 · 117,5 kg +C','Test 5RM'],rpe:RPE_SQ},
-  {id:'kremomanc',b:'4B',p:r8('3×8/lado','2×8/lado')},
-  {id:'ksplit',b:'5A',p:['3×8/lado','3×8/lado','3×10/lado','2×8/lado','3×6/lado · +peso','3×6/lado · +peso','3×6/lado · +peso','2×6/lado']},
-  {id:'gflex',b:'5B',p:['3×8–10 · pies en el suelo','3×8–10','3×10–12','2×8','3×8 · pies elevados o con lastre','3×8 · pies elevados o con lastre','3×10 · pies elevados o con lastre','2×8']},
-  {id:'kpallofsr',b:'6',p:r8('3×8/lado','2×8/lado')},
+  {id:'mdcut',b:'2',p:['Nivel 1 · pared 1×10 s/lado + shuffle continuo con corte 2×3/lado (5 m)','Nivel 1 · pared 1×10 s/lado + shuffle continuo con corte 3×3/lado (5 m)','Nivel 2 · pared 1×10 s/lado + cortes dirigidos 2×4/lado (5–10 m)','Nivel 1 · shuffle con corte 1×3/lado (5 m) · descarga','Nivel 2 · cortes dirigidos 2×4/lado (5–10 m)','Nivel 2 · cortes dirigidos 2×5/lado (5–10 m)','Nivel 3 · secuencia shuffle → corte → aceleración 2×3/lado (5 m)','Nivel 3 · secuencia shuffle → corte → aceleración 1×3/lado (5 m)']},
+  {id:'cajon',b:'2A',p:['Cajón 3×3','Cajón 4×3','Cajón 4×4','Cajón 2×3','Drop jump 3×4','Drop jump 4×4','Drop jump 4×5','Test CMJ y horizontal']},
+  {id:'puenteexp',b:'2B',p:['Suelo 3×6','Suelo 3×7','Suelo 3×8','Suelo 2×6','De pie 3×5','De pie 4×5','De pie 4×5 · +carga','Suelo 2×6']},
+  {id:'cargada',b:'3',p:['3×3 · 50 kg','4×3 · 52,5 kg','4×3 · 55 kg','2×3 · 45 kg','4×2 · 57,5 kg','5×2 · 60 kg','4×2 · 62,5 kg','3×2 · 50 kg'],rpe:RPE_SQ},
+  {id:'sentadilla',b:'4A',p:['4×5 · 100 kg','4×6 · 102,5 kg','5×5 · 107,5 kg','3×5 · 90 kg','4×3 · 110 kg +C','5×3 · 115 kg +C','4×2 · 120 kg +C','Test 5RM'],rpe:RPE_SQ},
+  {id:'kremomanc',b:'4B',p:['3×8/lado','3×10/lado','3×12/lado','2×8/lado','4×6/lado · +peso','4×6/lado · +peso','4×5/lado · +peso','2×8/lado']},
+  {id:'ksplit',b:'5A',p:['3×8/lado','3×10/lado','4×10/lado','2×8/lado','3×6/lado · +peso','4×6/lado · +peso','3×5/lado · +peso','2×6/lado']},
+  {id:'gflex',b:'5B',p:['3×8–10 · pies en el suelo','3×10–12','4×10–12','2×8','3×8 · pies elevados o con lastre','4×8 · pies elevados o con lastre','4×6 · más lastre','2×8']},
+  {id:'kpallofsr',b:'6',p:['3×8/lado','3×10/lado','3×12/lado','2×8/lado','3×8/lado · banda más fuerte','3×10/lado · banda más fuerte','3×10/lado · 3 s','2×8/lado']},
   {id:'regen',b:'7',p:fill('2 min')}],
  B:[
   {id:'tejidoB',b:'1a',p:fill('3 min')},
   {id:'movB',b:'1b',p:fill('4 min')},
   {id:'pilarB',b:'1c',p:r8('1 vuelta + pared','1 vuelta + pared'),pM:r8('2 vueltas + pared','1 vuelta + pared')},
   {id:'actB',b:'1d',p:r8('1 serie','1 serie'),pM:r8('2 series','1 serie')},
-  {id:'mdcross',b:'3x',p:['Nivel 1 · pared 1×10 s/lado + paso cruzado a la base 2×3/lado','Nivel 1 · pared 1×10 s/lado + paso cruzado a la base 2×3/lado','Nivel 2 · pared 1×10 s/lado + shuffle → paso cruzado → aceleración 2×3/lado (5–10 m)','Nivel 1 · paso cruzado a la base 1×3/lado · descarga','Nivel 2 · shuffle → paso cruzado → aceleración 2×4/lado (5–10 m)','Nivel 2 · shuffle → paso cruzado → aceleración 2×4/lado (10 m)','Nivel 3 · corte → paso cruzado → aceleración 2×3/lado (10–15 m)','Nivel 3 · corte → paso cruzado → aceleración 1×3/lado (10 m)']},
-  {id:'pushpress',b:'4A',p:['3×4 · 50 kg','3×4 · 52,5 kg','3×4 · 55 kg','2×3 · 45 kg','4×3 · 57,5 kg','4×3 · 60 kg','4×3 · 62,5 kg','3×3 · 50 kg']},
-  {id:'skater',b:'4B',p:['Skater 3×4/lado','Skater 3×4/lado','Skater 3×4/lado','Skater 2×4/lado','Caída lateral 3×4/lado','Caída lateral 3×4/lado','Caída lateral 3×4/lado','Skater 2×4/lado']},
-  {id:'frontal',b:'5A',p:['3×4 · 77,5 kg','3×4 · 80 kg','3×4 · 85 kg','2×4 · 70 kg','4×3 · 87,5 kg','4×3 · 90 kg','4×3 · 92,5 kg','Test 5RM'],rpe:RPE_SQ},
-  {id:'dominadas',b:'5B',p:r8('3×6–8','2×6')},
-  {id:'muerto',b:'6A',p:['3×5 · 97,5 kg','3×5 · 100 kg','3×5 · 105 kg','2×5 · 85 kg','3×3 · 107,5 kg','3×3 · 112,5 kg','3×3 · 115 kg','Test 5RM'],rpe:[7,7,7.5,'5–6',7.5,8,8.5,null]},
-  {id:'klanzrot',b:'6B',p:r8('3×5/lado','2×5/lado')},
-  {id:'hipthrust',b:'7',p:['3×6 · 90 kg','3×6 · 95 kg','3×6 · 100 kg','2×6 · 75 kg','3×6 · 100 kg','3×6 · 105 kg','3×6 · 110 kg','2×6 · 80 kg']},
+  {id:'mdcross',b:'3x',p:['Nivel 1 · pared 1×10 s/lado + paso cruzado a la base 2×3/lado','Nivel 1 · pared 1×10 s/lado + paso cruzado a la base 3×3/lado','Nivel 2 · pared 1×10 s/lado + shuffle → paso cruzado → aceleración 2×3/lado (5–10 m)','Nivel 1 · paso cruzado a la base 1×3/lado · descarga','Nivel 2 · shuffle → paso cruzado → aceleración 2×4/lado (5–10 m)','Nivel 2 · shuffle → paso cruzado → aceleración 2×4/lado (10 m)','Nivel 3 · corte → paso cruzado → aceleración 2×3/lado (10–15 m)','Nivel 3 · corte → paso cruzado → aceleración 1×3/lado (10 m)']},
+  {id:'pushpress',b:'4A',p:['3×4 · 50 kg','4×4 · 52,5 kg','4×4 · 55 kg','2×3 · 45 kg','4×3 · 57,5 kg','5×3 · 60 kg','4×3 · 62,5 kg','3×3 · 50 kg'],rpe:RPE_SQ},
+  {id:'skater',b:'4B',p:['Skater 3×4/lado','Skater 3×5/lado','Skater 3×6/lado','Skater 2×4/lado','Caída lateral 3×4/lado','Caída lateral 3×4/lado','Caída lateral 3×4/lado','Skater 2×4/lado']},
+  {id:'frontal',b:'5A',p:['3×4 · 77,5 kg','4×4 · 80 kg','4×4 · 85 kg','2×4 · 70 kg','4×3 · 87,5 kg','5×3 · 90 kg','4×2 · 95 kg','Test 5RM'],rpe:RPE_SQ},
+  {id:'dominadas',b:'5B',p:['3×6','3×7','4×7','2×5','4×5 · +lastre','4×5 · +lastre','4×4 · más lastre','2×5']},
+  {id:'muerto',b:'6A',p:['3×5 · 97,5 kg','4×5 · 100 kg','4×5 · 105 kg','2×5 · 85 kg','4×3 · 107,5 kg','4×3 · 112,5 kg','3×2 · 117,5 kg','Test 5RM'],rpe:RPE_SQ},
+  {id:'klanzrot',b:'6B',p:['3×5/lado','3×6/lado','4×6/lado','2×5/lado','3×5/lado · balón más pesado','4×5/lado · balón más pesado','4×4/lado · máxima velocidad','2×5/lado']},
+  {id:'hipthrust',b:'7',p:['3×6 · 90 kg','4×6 · 95 kg','4×6 · 100 kg','2×6 · 75 kg','4×5 · 105 kg','4×5 · 110 kg','3×4 · 115 kg','2×6 · 80 kg']},
   {id:'regen',b:'8',p:fill('2 min')}]
 };
 
@@ -1949,9 +1950,9 @@ Object.assign(EX,{
   clave:'El vóley playa es intermitente: puntos cortos y explosivos con pausas breves. Este bloque entrena justo eso.'}
 });
 const VOLEY_SUST={salidas:'vsalto',sprint:'vbloqueo',t3030:'vrally'};
-const VOLEY_P={vsalto:['3×4 · pausa 5–10 s','3×4 · pausa 5–10 s','4×4 · pausa 5–10 s','2×3 · descarga','4×3 · pausa 5–10 s','4×4 · pausa 5–10 s','5×3 · pausa 5–10 s','Test: alcance en salto de ataque'],
-  vbloqueo:['3×3/lado · calle y diagonal','3×3/lado · calle y diagonal','3×4/lado · calle y diagonal','2×3/lado · descarga','4×3/lado · calle y diagonal','4×3/lado · calle y diagonal','4×4/lado · calle y diagonal','2×3/lado'],
-  vrally:['2×6','2×6','2×8','1×6 · descarga','3×6','3×8','3×8','Test: 10 rallies'],vhombro:Array(8).fill('1 vuelta')};
+const VOLEY_P={vsalto:['3×4 · pausa 5–10 s','4×4 · pausa 5–10 s','4×5 · pausa 5–10 s','2×3 · descarga','4×3 · pausa 5–10 s','4×4 · pausa 5–10 s','5×3 · pausa 5–10 s','Test: alcance en salto de ataque'],
+  vbloqueo:['3×3/lado · calle y diagonal','3×4/lado · calle y diagonal','4×4/lado · calle y diagonal','2×3/lado · descarga','4×3/lado · calle y diagonal','4×3/lado · calle y diagonal','4×4/lado · calle y diagonal','2×3/lado'],
+  vrally:['2×6','2×8','3×8','1×6 · descarga','3×6','3×8','3×8','Test: 10 rallies'],vhombro:Array(8).fill('1 vuelta')};
 const VOLEY_TM={vsalto:6,vbloqueo:6,vrally:12,vhombro:3};
 function voley(r,d){
   if(!esVoley())return r;
@@ -2034,7 +2035,21 @@ function prepRend(r){
   if(!esRend())return r;
   return r.map(it=>/^tejido[AB]$/.test(it.id)?{...it,p:Array(8).fill('2 min'),tm:2}:/^pilar[AB]$/.test(it.id)?{...it,pM:undefined,tm:3}:/^act[AB]$/.test(it.id)?{...it,pM:undefined,tm:2}:it);
 }
-function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(personal(voley(prepRend(rows0(d,s)),d),d))}
+function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(afinar(personal(voley(prepRend(rows0(d,s)),d),d),d,s))}
+// Semana de competencia (plan.afina = n): la semana anterior mantiene la carga con una serie menos;
+// la de la competencia es descarga y el día C queda solo con la preparación (activación previa al partido).
+const afinaSem=()=>{const n=parseInt((atl().plan||{}).afina,10);return esRend()&&n>=2&&n<=8?n:0};
+const menosSerie=t=>String(t).replace(/^(\D*?)(\d+)×/,(m,a,n)=>+n>=3?a+(n-1)+'×':m);
+function afinar(r,d,s){const n=afinaSem();if(!n)return r;
+  const prep=it=>/^1/.test(it.b)||it.id==='regen';
+  if(s===n-1)return r.map(it=>{if(prep(it))return it;const p=[...PP(it)];p[s-1]=menosSerie(p[s-1]);return {...it,p,pM:undefined}});
+  if(s===n&&d==='C')return r.filter(prep);
+  return r}
+function afinaTxt(s,d){const n=afinaSem();if(!n)return '';
+  if(s===n-1)return 'Semana previa a la competencia: mismo peso que la semana anterior, una serie menos en cada ejercicio. Llegas fuerte y descansado.';
+  if(s===n)return d==='C'?'Activación previa a la competencia: solo la preparación (≈ 12 min), el día antes o la mañana del partido. Sin fuerza ni saltos al máximo.':'Semana de competencia: poco volumen y todo rápido. Si te sientes cargado, haz solo la preparación y los saltos.';
+  if(s===n+1)return 'Después de la competencia empieza la fase de intensidad: menos repeticiones y más carga.';
+  return ''}
 function allRows(){const out=[],seen=new Set();const P0=esBase()?{A:rowsBase('A'),B:rowsBase('B')}:esCore()?PLANC:esGlob()?PLANG:PLAN;Object.keys(P0).forEach(d=>P0[d].forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);out.push([d,it])}}));return out}
 const faseTxt=s=>esPrep()?'Prep':bk()>1?faseBloque(s):(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
 const sesKey=(s,d)=>(bk()>1?'b'+bk()+'.':'')+(esPrep()?'p':esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
@@ -2105,7 +2120,7 @@ const key=(s,d,id)=>(bk()>1?'b'+bk()+'.':'')+`${s}${d}-${id}`;
 // Femenino o sin declarar: la versión con más zona media y aterrizajes (más prevención).
 const PP=it=>((atl().sexo==='M'||atl().sexo==='N')&&it.pM)?it.pM:it.p;
 const sexoTxt=x=>x==='M'?'femenino':x==='H'?'masculino':x==='N'?'prefiere no decirlo':'';
-const pres0=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const p=escalar(PP(it)[s-1],it.id);const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
+const pres0=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const r=it.rpe&&it.rpe[s-1];let p=escalar(PP(it)[s-1],it.id);if(r)p=/carga según RPE/.test(p)?p.replace('carga según RPE','RPE '+r+' ('+RESERVA[r]+')'):/RPE/.test(p)?p:p+' · RPE '+r;const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
 /* Chequeo antes de entrenar: si salió bajo, la sesión de hoy va suave (una serie menos en cada ejercicio). */
 const chkDe=(s,d)=>{try{return ((S.sesiones||{})[sesKey(s,d)]||{}).chk||null}catch(e){return null}};
 const suave=(s,d)=>{const c=chkDe(s,d);if(alertaOn()&&!(c&&c.normal))return true;return !!(c&&c.ajuste==='suave'&&!c.normal)};
@@ -2412,6 +2427,8 @@ function renderSesion(m){
       sec.append(bd);
     }
     if(d==='U'&&!esGlob()&&!esBase())sec.append(h('p',{class:'dxline',text:'Con una sola sesión por semana, suma por tu cuenta 1 o 2 salidas de 30–40 min en zona 2 (60–70 % de la FC máxima): es lo que más sostiene la resistencia.'}));
+    const af=afinaTxt(s,d);if(af)sec.append(h('p',{class:'dxline'},h('strong',{text:'Competencia: '}),af));
+    if(esRend()&&fmsListo()&&s===(afinaSem()?afinaSem()+1:5)&&(d==='A'||d==='U'))sec.append(h('p',{class:'dxline'},h('strong',{text:'Repite el FMS esta semana: '}),'pídele a Joaquín que te vuelva a evaluar (pestaña Tests). Si un puntaje sube, el correctivo sube de nivel solo.'));
     const dl=dxLine();if(dl)sec.append(dl);
     R.append(h('div',{class:'row'},
       field('Fecha','s-fecha',ses.fecha,v=>upd('fecha',v),{ph:'dd/mm'}),
@@ -2488,7 +2505,7 @@ function exCard(s,d,it,sub){
   if(sub){
     const body=h('div',{class:'sub'},
       h('div',{class:'head'},h('span',{class:'blk',text:it.b}),h('h4',{text:V.n})),
-      h('div',{class:'pres'},V.pres,rpe?h('span',{class:'rpe',text:'RPE máx. '+rpe}):null),
+      h('div',{class:'pres'},V.pres,rpe&&!/RPE/.test(V.pres)?h('span',{class:'rpe',text:'RPE máx. '+rpe}):null),
       resumenBox(it.id,V),autoBox,
       aj?h('div',{class:'adj'},h('span',{},h('strong',{text:'Ajustado por el Coach. '}),aj.motivo||'',' Plan original: '+escalar(it.p[s-1],it.id)+'.'),h('button',{class:'btn',onclick:()=>remove('ajustes',k).then(render)},'Volver al plan')):null,
       dxBox(it.id),ctrlBox(s,d,it),
@@ -2504,7 +2521,7 @@ function exCard(s,d,it,sub){
       h('div',{class:'head'},h('span',{class:'blk',text:it.b}),h('h3',{text:V.n})),
       (()=>{if(esCore())return null;const mm=tmin(it,s),sk=supKey(it),par=sk?rows(d,s).find(x=>x.id!==it.id&&supKey(x)===sk):null,ss=!!par,seg=!!it.seg;
         return (mm||ss)?h('p',{class:'note'},mm&&!seg?'≈ '+mm+' min':'',ss?(mm&&!seg?' · ':'')+'Superserie con '+par.b+' ('+EX[par.id].n+'): alterna una serie de cada uno, pausa 90 s.':''):null})(),
-      h('div',{class:'pres'},V.pres,rpe?h('span',{class:'rpe',text:'RPE máx. '+rpe}):null),
+      h('div',{class:'pres'},V.pres,rpe&&!/RPE/.test(V.pres)?h('span',{class:'rpe',text:'RPE máx. '+rpe}):null),
       resumenBox(it.id,V),
       tecBox(s,d,it,V),
       autoBox,
