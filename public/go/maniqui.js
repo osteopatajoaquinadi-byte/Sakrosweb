@@ -572,7 +572,7 @@
     // y las manos la toman por detrás del muslo cuando pasa los 60°.
     var lado = { lh: [0.24, 0.04, 0.05], rh: [-0.24, 0.04, 0.05], lep: [1, 0.2, -0.3], rep: [-1, 0.2, -0.3] };
     function muslo(a, x) { var r = a * D, d = 0.13, p = 0.07; return [x, 0.13 + d * Math.sin(r) - p * Math.cos(r), 0.03 + d * Math.cos(r) + p * Math.sin(r)]; }
-    function sube(a, manos, cue) { var q = o(sup, { rf: pierna(a, -0.12), rfp: -90 + a, rkp: [0, 0, 1], ch: [manos ? 14 : 4, 0, 0], hd: [manos ? 8 : 0, 0, 0], cue: cue });
+    function sube(a, manos, cue) { var q = o(sup, { rf: pierna(a, -0.12), rfp: -90 - a, rkp: [0, 0, 1], ch: [manos ? 14 : 4, 0, 0], hd: [manos ? 8 : 0, 0, 0], cue: cue });
       return o(q, manos ? { lh: muslo(a, -0.03), rh: muslo(a, -0.21), lep: [1, 0.5, 0], rep: [-1, 0.5, 0] } : lado); }
     var b = o(sup, lado, { ch: [4, 0, 0], cue: 'Boca arriba, una pierna estirada en el suelo' });
     var c1 = 'Toma la pierna por detrás del muslo y súbela estirada', c2 = 'Aguanta 2 s · empuja la otra pierna contra el suelo';
@@ -581,16 +581,16 @@
     EJ.faslr1 = { cam: 75, el: 16, ty: 0.3, rad: 4.6, k: [[0, b], [0.5, b]].concat(arco(0, 0, 80, 7, 1.8, conMano, c1), [[2, sube(80, true, c2)]],
       arco(0, 80, 0, 7, 1.6, conMano, 'Baja lento, con la pierna estirada'), [[0.4, b]]) };
     var bb = o(sup, { lh: [0.05, 0.45, -0.2], rh: [-0.2, 0.45, -0.2], lep: [1, -0.4, -0.4], rep: [-1, -0.4, -0.4], cue: 'Boca arriba, banda en el pie de la pierna que sube' });
-    var u2 = o(bb, { rf: pierna(80, -0.12), rfp: -20, rkp: [0, 0, 1], lh: [0.0, 0.6, -0.15], rh: [-0.18, 0.6, -0.15], cue: 'Sube la pierna estirada con ayuda de la banda' });
+    var u2 = o(bb, { rf: pierna(80, -0.12), rfp: -170, rkp: [0, 0, 1], lh: [0.0, 0.6, -0.15], rh: [-0.18, 0.6, -0.15], cue: 'Sube la pierna estirada con ayuda de la banda' });
     var fl = o(u2, { rf: [-0.12, 0.6, 0.35], rkp: [0, 1, 0], cue: 'Arriba, dobla la rodilla y vuelve a estirarla' });
-    var banda = function (a, cue) { var f = a / 80; return o(bb, { rf: pierna(a, -0.12), rfp: -90 + a, rkp: [0, 0, 1], lh: [0.05 - 0.05 * f, 0.45 + 0.15 * f, -0.2 + 0.05 * f], rh: [-0.2 + 0.02 * f, 0.45 + 0.15 * f, -0.2 + 0.05 * f], cue: cue }); };
+    var banda = function (a, cue) { var f = a / 80; return o(bb, { rf: pierna(a, -0.12), rfp: -90 - a, rkp: [0, 0, 1], lh: [0.05 - 0.05 * f, 0.45 + 0.15 * f, -0.2 + 0.05 * f], rh: [-0.2 + 0.02 * f, 0.45 + 0.15 * f, -0.2 + 0.05 * f], cue: cue }); };
     var subeB = function (a0, a1, n, t, cue) { var r = []; for (var i = 1; i <= n; i++) r.push([t / n, banda(a0 + (a1 - a0) * i / n, cue)]); return r; };
     EJ.faslr2 = { cam: 75, el: 16, ty: 0.3, rad: 4.6, dyn: { banda: [['lh', 'rf'], ['rh', 'rf']] }, k: [[0, bb], [0.5, bb]].concat(subeB(0, 80, 6, 1.4, 'Sube la pierna estirada con ayuda de la banda'), [[0.8, fl], [0.8, u2]], subeB(80, 0, 6, 1.8, 'Baja lento, con la pierna estirada')) };
     var h = o(u2, { cue: 'Sostén una pierna arriba con la banda' });
     var lo = o(h, { lf: [0.12, 0.17, 0.9], lfp: -80, cue: 'Baja la otra pierna estirada hasta casi tocar el suelo · zona lumbar pegada' });
-    var hi = o(h, { lf: pierna(70, 0.12), lfp: -20, lkp: [0, 0, 1], cue: 'Y vuelve a subirla' });
+    var hi = o(h, { lf: pierna(70, 0.12), lfp: -160, lkp: [0, 0, 1], cue: 'Y vuelve a subirla' });
     EJ.faslr3 = { cam: 75, el: 16, ty: 0.3, rad: 4.6, dyn: { banda: [['lh', 'rf'], ['rh', 'rf']] }, k: [[0, hi], [0.5, h], [1.6, lo], [0.3, lo], [1.4, hi], [0.3, hi]] };
-    var k4 = o(sup, { rh: [-0.2, 0.74, -0.5], rep: [-1, 0, 0], lhc: [0.24, -0.3, 0.06], lep: [1, 0, 0], lf: [0.15, F, 0.42], lfp: 0, lkp: [0.1, 1, 0.3], rf: pierna(80, -0.12), rfp: -20, rkp: [0, 0, 1], cue: 'Pesa liviana arriba con el brazo estirado · activación suave del abdomen' });
+    var k4 = o(sup, { rh: [-0.2, 0.74, -0.5], rep: [-1, 0, 0], lhc: [0.24, -0.3, 0.06], lep: [1, 0, 0], lf: [0.15, F, 0.42], lfp: 0, lkp: [0.1, 1, 0.3], rf: pierna(80, -0.12), rfp: -170, rkp: [0, 0, 1], cue: 'Pesa liviana arriba con el brazo estirado · activación suave del abdomen' });
     var k4b = o(k4, { rf: [-0.12, 0.18, 0.9], rfp: -80, cue: 'Baja la pierna estirada sin que la zona lumbar se despegue ni la pesa se mueva' });
     EJ.faslr4 = { cam: 75, el: 16, ty: 0.3, rad: 4.6, dyn: { db: 'r', dbo: 'x' }, k: [[0, k4], [0.5, k4], [1.8, k4b], [0.3, k4b], [1.5, o(k4, { cue: 'Y súbela de nuevo' })]] };
   })();
