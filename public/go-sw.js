@@ -1,9 +1,9 @@
 /* Sakros Go: funciona sin conexión.
-   - La app (/go) se pide primero a la red y, si no hay conexión, se usa la última copia.
+   - La app (/go y sus archivos .js) se pide primero a la red y, si no hay conexión, se usa la última copia.
    - Fotos, videos e íconos de /go se guardan la primera vez que se ven.
    - Las fuentes de Google se guardan y se actualizan en segundo plano.
    - Nunca se guarda nada de /api ni de Supabase: esos datos los maneja la app. */
-const VERSION = "sakros-go-v1";
+const VERSION = "sakros-go-v2";
 const SHELL = ["/go", "/go/supabase.js", "/go/manifest.webmanifest", "/go/icon-192.png", "/go/icon-512.png"];
 
 self.addEventListener("install", (e) => {
@@ -30,6 +30,21 @@ self.addEventListener("fetch", (e) => {
   if (req.headers.has("range")) return; // videos por partes: los maneja el navegador
 
   // La app: primero la red, si falla la copia guardada.
+  // El código de la app (/go y sus .js) también va primero a la red: así una actualización se ve
+  // en la primera visita y no recién en la siguiente. Sin conexión se usa la copia guardada.
+  const esCodigo = esGo && url.pathname.endsWith(".js");
+  if (esCodigo) {
+    e.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res.ok) caches.open(VERSION).then((c) => c.put(req, res.clone()));
+          return res;
+        })
+        .catch(() => caches.match(req)),
+    );
+    return;
+  }
+
   if (req.mode === "navigate" || url.pathname === "/go" || url.pathname === "/go/index.html") {
     e.respondWith(
       fetch(req)
