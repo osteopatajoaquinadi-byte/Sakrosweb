@@ -287,7 +287,7 @@ function reportarError(tipo,mensaje,detalle){
 window.addEventListener('error',e=>{if(e.target&&e.target!==window)return;reportarError('error',e.message,(e.error&&e.error.stack)||((e.filename||'')+':'+e.lineno+':'+e.colno))});
 window.addEventListener('unhandledrejection',e=>{const r=e.reason;if(r&&(r.code==='cancelled'||r.name==='AbortError'))return;reportarError('promesa',(r&&r.message)||(r&&r.code)||String(r),r&&r.stack)});
 const VIDEOS_B64={};
-const VIDEOS={'bajada-escalon':'x','deadbug':'x','deadbug-disco':'x','equilibrio-rodilla':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','respiracion-diafragmatica':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-silla':'x','snap-down':'x','swing':'x','zancada-estatica':'x','zancada-rodilla':'x'};const _vurl={};
+const VIDEOS={'bajada-escalon':'x','deadbug':'x','deadbug-disco':'x','equilibrio-rodilla':'x','flexor-cadera':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','respiracion-diafragmatica':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-silla':'x','snap-down':'x','swing':'x','zancada-estatica':'x','zancada-rodilla':'x'};const _vurl={};
 function videoURL(k){return '/go/media/'+k+'.mp4'}
 /* Resumen visible del ejercicio (sin abrir «Cómo se hace»): en los ejercicios compuestos, la lista de lo que
    se hace; en los simples, la clave de ejecución. */
@@ -475,7 +475,7 @@ const EX={
   'Pausa de 2 min activa, al 60–70 % de la FC máx.',
   'Test (semana 8): 2,4 km en pista (6 vueltas a una pista de 400 m) lo más rápido posible.'],
   clave:'Sin FC máx conocida: usa 208 − 0,7 × edad, o la más alta del test de 2,4 km.'},
- regen:{n:'Regeneración',img:[['flexor-0','Flexor de cadera: rodilla en el suelo']],pasos:[
+ regen:{n:'Regeneración',video:'flexor-cadera',img:[['flexor-0','Flexor de cadera: rodilla en el suelo']],pasos:[
   'Respiración 90/90: 1 min boca arriba con los pies en la pared y cadera y rodillas a 90°. Inhala 4 s por la nariz y exhala 6–8 s.',
   'Flexor de cadera: 30 s por lado con una rodilla en el suelo, apretando el glúteo de la pierna de atrás.']},
  salidas:{n:'Salidas desde 3 apoyos',img:[['salida-0','Posición de 3 apoyos'],['salida-1','Salida: empuje y brazos'],['pared-1','Inclinación de la aceleración']],pasos:[
