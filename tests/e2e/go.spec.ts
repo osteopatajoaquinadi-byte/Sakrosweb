@@ -348,6 +348,24 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 800 } });
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3 })] });
+    await page.goto("/go");
+    await page.getByRole("tab", { name: "Hoy" }).click();
+    await page.getByRole("button", { name: /Empezar/ }).first().click();
+    await page.getByRole("button", { name: "Saltar" }).first().click().catch(() => {});
+    for (let i = 0; i < 6; i++) {
+      const nulos = await page.evaluate(() => { const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let n, c = 0; while ((n = w.nextNode())) if (n.textContent!.trim() === "null") c++; return c; });
+      expect(nulos).toBe(0);
+      const alto = await page.evaluate(() => { const m = document.querySelector(".media.play") as HTMLElement | null; return m ? m.getBoundingClientRect().height : 0; });
+      expect(alto).toBeLessThanOrEqual(800 * 0.6);
+      await page.getByRole("button", { name: /Hecho, siguiente/ }).click();
+    }
+    expect(errores).toEqual([]);
+  });
+
   test("la ruta de errores rechaza envíos vacíos o inválidos", async ({ request }) => {
     expect((await request.post("/api/go/errores", { data: "" })).status()).toBe(400);
     expect((await request.post("/api/go/errores", { data: { mensaje: "" } })).status()).toBe(400);

@@ -544,8 +544,8 @@
   var wz = -0.42;
   var sent = de({ pel: [0, 0.14, wz + 0.16], lf: [-0.14, 0.07, 0.36], rf: [0.14, 0.07, 0.3], lfy: -40, rfy: 40, lkp: [1, 0.6, 0.3], rkp: [-1, 0.6, 0.3], lfr: 0, rfr: 0, pup: 0 });
   (function () {
-    var w = o(sent, { lh: [0.44, 0.88, wz + 0.04], rh: [-0.44, 0.88, wz + 0.04], lhw: [0, 0, 0], rhw: [0, 0, 0], lep: [0.8, -0.6, -1], rep: [-0.8, -0.6, -1], lsc: [-0.4, -0.7], rsc: [-0.4, -0.7], cue: 'Espalda contra la pared, brazos en W apoyados' });
-    var a = o(w, { lh: [0.24, 1.22, wz + 0.04], rh: [-0.24, 1.22, wz + 0.04], lep: [1, -0.2, -1], rep: [-1, -0.2, -1], lsc: [0.5, 0], rsc: [0.5, 0], cue: 'Desliza arriba sin despegar codos, muñecas ni la zona lumbar' });
+    var w = o(sent, { lh: [0.44, 0.88, wz + 0.04], rh: [-0.44, 0.88, wz + 0.04], lhw: [0, 0, 0], rhw: [0, 0, 0], lep: [1, -0.7, -0.1], rep: [-1, -0.7, -0.1], lsc: [-0.4, -0.7], rsc: [-0.4, -0.7], cue: 'Espalda contra la pared, brazos en W apoyados' });
+    var a = o(w, { lh: [0.24, 1.22, wz + 0.04], rh: [-0.24, 1.22, wz + 0.04], lep: [1, -0.3, -0.1], rep: [-1, -0.3, -0.1], lsc: [0.5, 0], rsc: [0.5, 0], cue: 'Desliza arriba sin despegar codos, muñecas ni la zona lumbar' });
     EJ.fsm1 = { cam: 30, el: 14, ty: 0.55, rad: 3.8, props: [{ t: 'pared', z: wz }], k: [[0, w], [0.5, w], [1.6, a], [0.4, a], [1.6, o(w, { cue: 'Y vuelve' })]] };
     var pl = o(sent, { rh: [-0.14, 1.12, wz + 0.05], lh: [0.12, 0.3, wz + 0.05], rep: [-1, 0.5, 0.3], lep: [1, -0.3, 0.3], cue: 'Palo por detrás de la espalda, una mano arriba y otra abajo' });
     var t = o(pl, { rh: [-0.12, 1.24, wz + 0.05], lh: [0.12, 0.2, wz + 0.05], cue: 'Tira con la mano de abajo para subir el brazo de arriba · aguanta 2 s' });
@@ -568,14 +568,24 @@
   // ---- Elevación de pierna boca arriba ----
   function pierna(a, x) { var r = a * D; return [x, 0.13 + 0.86 * Math.sin(r), 0.03 + 0.86 * Math.cos(r)]; }
   (function () {
-    var b = o(sup, { lh: [-0.05, 0.3, 0.06], rh: [-0.2, 0.3, 0.06], lep: [1, -0.4, -0.4], rep: [-1, -0.4, -0.4], ch: [6, 0, 0], cue: 'Boca arriba, toma la pierna por detrás del muslo' });
-    b.lh = [-0.05, 0.22, 0.02]; b.rh = [-0.2, 0.22, 0.02];
-    var u = o(b, { rf: pierna(78, -0.12), rfp: -10, rkp: [0, 0, 1], lh: [-0.05, 0.38, 0.1], rh: [-0.2, 0.38, 0.1], cue: 'Súbela estirada lo más que puedas · empuja la otra pierna contra el suelo' });
-    EJ.faslr1 = { cam: 75, el: 16, ty: 0.3, rad: 4.6, k: [[0, b], [0.5, b], [1.4, u], [2, o(u, { cue: 'Aguanta 2 s' })], [1.4, b]] };
+    // Elevación con ayuda de las manos: la pierna sube estirada por un arco (sin doblar la rodilla)
+    // y las manos la toman por detrás del muslo cuando pasa los 60°.
+    var lado = { lh: [0.24, 0.04, 0.05], rh: [-0.24, 0.04, 0.05], lep: [1, 0.2, -0.3], rep: [-1, 0.2, -0.3] };
+    function muslo(a, x) { var r = a * D, d = 0.13, p = 0.07; return [x, 0.13 + d * Math.sin(r) - p * Math.cos(r), 0.03 + d * Math.cos(r) + p * Math.sin(r)]; }
+    function sube(a, manos, cue) { var q = o(sup, { rf: pierna(a, -0.12), rfp: -90 + a, rkp: [0, 0, 1], ch: [manos ? 14 : 4, 0, 0], hd: [manos ? 8 : 0, 0, 0], cue: cue });
+      return o(q, manos ? { lh: muslo(a, -0.03), rh: muslo(a, -0.21), lep: [1, 0.5, 0], rep: [-1, 0.5, 0] } : lado); }
+    var b = o(sup, lado, { ch: [4, 0, 0], cue: 'Boca arriba, una pierna estirada en el suelo' });
+    var c1 = 'Toma la pierna por detrás del muslo y súbela estirada', c2 = 'Aguanta 2 s · empuja la otra pierna contra el suelo';
+    var arco = function (de0, a0, a1, n, t, mano, cue) { var r = []; for (var i = 1; i <= n; i++) { var a = a0 + (a1 - a0) * i / n; r.push([t / n, sube(a, mano(a), cue)]); } return r; };
+    var conMano = function (a) { return a >= 55; };
+    EJ.faslr1 = { cam: 75, el: 16, ty: 0.3, rad: 4.6, k: [[0, b], [0.5, b]].concat(arco(0, 0, 80, 7, 1.8, conMano, c1), [[2, sube(80, true, c2)]],
+      arco(0, 80, 0, 7, 1.6, conMano, 'Baja lento, con la pierna estirada'), [[0.4, b]]) };
     var bb = o(sup, { lh: [0.05, 0.45, -0.2], rh: [-0.2, 0.45, -0.2], lep: [1, -0.4, -0.4], rep: [-1, -0.4, -0.4], cue: 'Boca arriba, banda en el pie de la pierna que sube' });
     var u2 = o(bb, { rf: pierna(80, -0.12), rfp: -20, rkp: [0, 0, 1], lh: [0.0, 0.6, -0.15], rh: [-0.18, 0.6, -0.15], cue: 'Sube la pierna estirada con ayuda de la banda' });
     var fl = o(u2, { rf: [-0.12, 0.6, 0.35], rkp: [0, 1, 0], cue: 'Arriba, dobla la rodilla y vuelve a estirarla' });
-    EJ.faslr2 = { cam: 75, el: 16, ty: 0.3, rad: 4.6, dyn: { banda: [['lh', 'rf'], ['rh', 'rf']] }, k: [[0, bb], [0.5, bb], [1.4, u2], [0.8, fl], [0.8, u2], [1.8, o(bb, { cue: 'Baja lento' })]] };
+    var banda = function (a, cue) { var f = a / 80; return o(bb, { rf: pierna(a, -0.12), rfp: -90 + a, rkp: [0, 0, 1], lh: [0.05 - 0.05 * f, 0.45 + 0.15 * f, -0.2 + 0.05 * f], rh: [-0.2 + 0.02 * f, 0.45 + 0.15 * f, -0.2 + 0.05 * f], cue: cue }); };
+    var subeB = function (a0, a1, n, t, cue) { var r = []; for (var i = 1; i <= n; i++) r.push([t / n, banda(a0 + (a1 - a0) * i / n, cue)]); return r; };
+    EJ.faslr2 = { cam: 75, el: 16, ty: 0.3, rad: 4.6, dyn: { banda: [['lh', 'rf'], ['rh', 'rf']] }, k: [[0, bb], [0.5, bb]].concat(subeB(0, 80, 6, 1.4, 'Sube la pierna estirada con ayuda de la banda'), [[0.8, fl], [0.8, u2]], subeB(80, 0, 6, 1.8, 'Baja lento, con la pierna estirada')) };
     var h = o(u2, { cue: 'Sostén una pierna arriba con la banda' });
     var lo = o(h, { lf: [0.12, 0.17, 0.9], lfp: -80, cue: 'Baja la otra pierna estirada hasta casi tocar el suelo · zona lumbar pegada' });
     var hi = o(h, { lf: pierna(70, 0.12), lfp: -20, lkp: [0, 0, 1], cue: 'Y vuelve a subirla' });
@@ -758,7 +768,7 @@
     var a3 = o(a2, { pel: [1.55, 0.86, 0.0], pr: [33, 88, 0], rf: [1.72, F, -0.1], rfp: 0, lf: [1.3, 0.16, 0.1], lfp: 40, lhc: [0.22, 0.0, 0.35], rhc: [-0.22, -0.2, -0.2], cue: 'Cada repetición al 100 %' });
     var K = [[0, b], [0.8, b], [0.18, gira], [0.16, cruza], [0.16, ap], [0.18, a2], [0.18, a3], [0.8, a3]];
     var K2 = M.esp(K).map(function (k, i) { return [i ? k[0] : 0.001, k[1]]; });
-    EJ.mdcross = { cam: 0, rad: 6, follow: true, k: K.concat([[0.001, b], [0.5, b]]).concat(K2).concat([[0.001, b], [0.5, b]]) };
+    EJ.mdcross = { cam: 0, rad: 5.2, el: 10, follow: true, k: K.concat([[0.001, b], [0.5, b]]).concat(K2).concat([[0.001, b], [0.5, b]]) };
   })();
 })();
 
@@ -960,7 +970,7 @@
     k.push([st * 0.6, at(x2 - 0.13, x2 + W - 0.15, x2 - W - 0.27, 0.13, F, 0, 0, c2)]); x2 -= 0.13;
     k.push([st * 0.4, at(x2, x2 + W, x2 - W, 0, 0, 0, 0, c2)]); }
   k.push([st, at(-0.6, -0.6 + W, -0.6 - W, 0, 0, 0, 0, c1)]);
-  EJ.mdcut = { cam: 0, rad: 4.6, k: k };
+  EJ.mdcut = { cam: 0, rad: 4.8, el: 10, follow: true, k: k };
 })();
 
 /* ---------- Partes que faltaban y versiones corregidas ---------- */
