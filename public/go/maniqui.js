@@ -339,6 +339,20 @@
     return { cam: 32, el: 26, ty: 0.4, tx: -0.1, rad: 5.1, k: K };
   }
   EJ.klateral = lateral(false); EJ.klateralr = lateral(true); EJ.klateralabd = lateral(false, true); EJ.frs2 = lateral(true, false, 2);
+  // Plancha Copenhague (versión corta): de costado sobre el antebrazo derecho, la pierna de arriba apoyada en un banco
+  // y la de abajo colgando hasta el suelo; sube la cadera hasta alinear el cuerpo y aguanta.
+  (function () {
+    var th = 88, u = [-Math.sin(th * D), Math.cos(th * D), 0], lat = [-Math.cos(th * D), -Math.sin(th * D), 0];
+    var pel = [0.12, 0.5, 0], sc = add(pel, u, 0.51), sr = add(sc, lat, 0.2);
+    var banco = 0.44, lf = [1.0, banco + 0.08, 0.02];
+    var arriba = de({ pel: pel, pr: [0, 0, th], sp: [0, 0, 0], ch: [0, 0, 0], hd: [0, 0, -6],
+      lf: lf, rf: [0.7, F, 0.08], lfp: 0, rfp: 0, lfr: 0, rfr: 0, lfy: 0, rfy: 0, pup: 0, lkp: [0, 0, 1], rkp: [0, 0, 1],
+      rh: [sr[0], 0.025, sr[2] + 0.3], rhw: [-90, 0, 0], rep: [0, -1, 0], lhc: [0.24, -0.3, 0.04], lep: [0.2, 1, -0.6],
+      cue: 'Antebrazo bajo el hombro, la rodilla de arriba sobre el banco' });
+    var abajo = o(arriba, { pel: [0.2, 0.3, 0], pr: [0, 0, th + 12], sp: [0, 0, -8], ch: [0, 0, -5], rf: [0.6, F, 0.1], cue: 'Cadera abajo: aprieta la pierna de arriba contra el banco' });
+    EJ.copenhague = { cam: 22, el: 20, ty: 0.32, tx: 0.3, rad: 4.1, props: [{ t: 'banco', p: [0.82, 0], s: [0.55, banco, 0.4] }],
+      k: [[0, abajo], [0.6, abajo], [1, o(arriba, { cue: 'Sube la cadera hasta alinear el cuerpo' })], [3, o(arriba, { cue: 'Aguanta respirando · la cadera no cae' })], [1.2, abajo]] };
+  })();
   // ---- Cuatro apoyos ----
   var cuatro = de(o(plano, { pel: [0, 0.6, -0.32], pr: [88, 0, 0], hd: [-6, 0, 0], lh: [0.2, 0.025, 0.2], rh: [-0.2, 0.025, 0.2], lep: [0.3, 0, -1], rep: [-0.3, 0, -1],
     lf: [0.12, F, -0.82], rf: [-0.12, F, -0.82], lfy: 0, rfy: 0, lfp: 160, rfp: 160, lkp: [0, -1, 0.3], rkp: [0, -1, 0.3], cue: 'Manos bajo los hombros, rodillas bajo las caderas · activa el abdomen profundo' }));
