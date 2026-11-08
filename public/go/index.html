@@ -2006,7 +2006,21 @@ function blq4(r){
   return out;
 }
 const supKey=it=>it&&it.sup||null;
-function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(voley(rows0(d,s),d))}
+// Plan personal del atleta (lo define el entrenador en atl().plan):
+//   sust:  {idOriginal: idNuevo}  · cambia un ejercicio por otro de la biblioteca (sustP: {idNuevo: [8 dosis]})
+//   extra: {A:[{id, p:[8 dosis], b}], B:[...], C:[...], U:[...]} · suma ejercicios a ese día, antes de la regeneración
+//   notas: {id: 'texto'} · indicación que se agrega a la dosis del ejercicio
+function personal(r,d){
+  const P=atl().plan;if(!P||typeof P!=='object')return r;
+  const su=P.sust||{},sp=P.sustP||{};
+  let out=r.map(it=>{const n=su[it.id];return n&&EX[n]?{...it,id:n,p:sp[n]||it.p,pM:sp[n]?undefined:it.pM,orig:it.id}:it});
+  const reg=id=>{if(!EX[id]&&typeof ALT!=='undefined'&&ALT[id])EX[id]={...ALT[id]};return !!EX[id]};// también vale la biblioteca de alternativas
+  Object.values(su).forEach(reg);
+  const ex=((P.extra||{})[d]||[]).filter(e=>reg(e.id)&&Array.isArray(e.p)&&!out.some(x=>x.id===e.id));
+  if(ex.length){const iR=out.findIndex(x=>x.id==='regen');const add=ex.map(e=>({id:e.id,b:e.b||'3x',p:e.p,tm:e.tm||3}));out.splice(iR<0?out.length:iR,0,...add)}
+  return out;
+}
+function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(personal(voley(rows0(d,s),d),d))}
 function allRows(){const out=[],seen=new Set();const P0=esBase()?{A:rowsBase('A'),B:rowsBase('B')}:esCore()?PLANC:esGlob()?PLANG:PLAN;Object.keys(P0).forEach(d=>P0[d].forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);out.push([d,it])}}));return out}
 const faseTxt=s=>esPrep()?'Prep':bk()>1?faseBloque(s):(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
 const sesKey=(s,d)=>(bk()>1?'b'+bk()+'.':'')+(esPrep()?'p':esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
@@ -2082,7 +2096,8 @@ const pres0=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;cons
 const chkDe=(s,d)=>{try{return ((S.sesiones||{})[sesKey(s,d)]||{}).chk||null}catch(e){return null}};
 const suave=(s,d)=>{const c=chkDe(s,d);if(alertaOn()&&!(c&&c.normal))return true;return !!(c&&c.ajuste==='suave'&&!c.normal)};
 function suavizar(p){const m=/^(\d+)×/.exec(p);if(!m||+m[1]<2)return p;return (+m[1]-1)+p.slice(m[1].length)+' · suave'}
-const pres=(s,d,it)=>{const p=pres0(s,d,it);return !esPrep()&&suave(s,d)&&!S.ajustes[key(s,d,it.id)]?suavizar(p):p};
+const notaPlan=it=>{const n=((atl().plan||{}).notas||{})[it.id];return typeof n==='string'&&n?' · '+n:''};
+const pres=(s,d,it)=>{const p=pres0(s,d,it)+(S.ajustes[key(s,d,it.id)]?'':notaPlan(it));return !esPrep()&&suave(s,d)&&!S.ajustes[key(s,d,it.id)]?suavizar(p):p};
 const CHKQ=[['sueno','¿Cómo dormiste anoche?','Muy mal','Muy bien',false],['energia','¿Cuánta energía tienes?','Nada','Mucha',false],
   ['agujetas','¿Cuánto cansancio o dolor muscular tienes?','Nada','Mucho',true],['estres','¿Cuánto estrés tienes hoy?','Nada','Mucho',true],
   ['dolor','¿Tienes dolor o molestia en alguna zona?','Nada','Mucho',true]];

@@ -323,6 +323,29 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("el plan personal del atleta cambia, suma ejercicios y agrega indicaciones a su sesión", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const plan = {
+      sust: { pushpress: "klandmine" },
+      sustP: { klandmine: Array(8).fill("3×6/lado · RPE 7") },
+      extra: { A: [{ id: "copenhague", p: Array(8).fill("2×20 s/lado") }], B: [{ id: "kbirddogc", p: Array(8).fill("3×6/lado · 3 s") }] },
+      notas: { sentadilla: "hasta el paralelo" },
+    };
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3, cargas: { cargada: 75 }, plan })] });
+    await page.goto("/go");
+    await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    const r = (await page.evaluate(`(() => ['A','B'].map(d => rows(d,1).map(i => [i.id, pres(1,d,i)])))()`)) as [string, string][][];
+    const de = (dia: [string, string][], id: string) => dia.find((x) => x[0] === id)?.[1];
+    expect(de(r[0], "copenhague")).toBe("2×20 s/lado");
+    expect(de(r[0], "sentadilla")).toContain("hasta el paralelo");
+    expect(de(r[0], "cargada")).toContain("75 kg");
+    expect(de(r[1], "pushpress")).toBeUndefined();
+    expect(de(r[1], "klandmine")).toBe("3×6/lado · RPE 7");
+    expect(de(r[1], "kbirddogc")).toBe("3×6/lado · 3 s");
+    expect(r[0][r[0].length - 1][0]).toBe("regen");
+    expect(errores).toEqual([]);
+  });
+
   test("la ruta de errores rechaza envíos vacíos o inválidos", async ({ request }) => {
     expect((await request.post("/api/go/errores", { data: "" })).status()).toBe(400);
     expect((await request.post("/api/go/errores", { data: { mensaje: "" } })).status()).toBe(400);
