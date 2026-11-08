@@ -758,7 +758,7 @@
     var a3 = o(a2, { pel: [1.55, 0.86, 0.0], pr: [33, 88, 0], rf: [1.72, F, -0.1], rfp: 0, lf: [1.3, 0.16, 0.1], lfp: 40, lhc: [0.22, 0.0, 0.35], rhc: [-0.22, -0.2, -0.2], cue: 'Cada repetición al 100 %' });
     var K = [[0, b], [0.8, b], [0.18, gira], [0.16, cruza], [0.16, ap], [0.18, a2], [0.18, a3], [0.8, a3]];
     var K2 = M.esp(K).map(function (k, i) { return [i ? k[0] : 0.001, k[1]]; });
-    EJ.mdcross = { cam: 0, rad: 6, follow: true, k: K.concat([[0.001, b], [0.5, b]]).concat(K2).concat([[0.001, b], [0.5, b]]) };
+    EJ.mdcross = { cam: 0, rad: 5.2, el: 10, follow: true, k: K.concat([[0.001, b], [0.5, b]]).concat(K2).concat([[0.001, b], [0.5, b]]) };
   })();
 })();
 
@@ -960,7 +960,7 @@
     k.push([st * 0.6, at(x2 - 0.13, x2 + W - 0.15, x2 - W - 0.27, 0.13, F, 0, 0, c2)]); x2 -= 0.13;
     k.push([st * 0.4, at(x2, x2 + W, x2 - W, 0, 0, 0, 0, c2)]); }
   k.push([st, at(-0.6, -0.6 + W, -0.6 - W, 0, 0, 0, 0, c1)]);
-  EJ.mdcut = { cam: 0, rad: 4.6, k: k };
+  EJ.mdcut = { cam: 0, rad: 4.8, el: 10, follow: true, k: k };
 })();
 
 /* ---------- Partes que faltaban y versiones corregidas ---------- */
