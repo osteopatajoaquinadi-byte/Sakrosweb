@@ -544,8 +544,8 @@
   var wz = -0.42;
   var sent = de({ pel: [0, 0.14, wz + 0.16], lf: [-0.14, 0.07, 0.36], rf: [0.14, 0.07, 0.3], lfy: -40, rfy: 40, lkp: [1, 0.6, 0.3], rkp: [-1, 0.6, 0.3], lfr: 0, rfr: 0, pup: 0 });
   (function () {
-    var w = o(sent, { lh: [0.44, 0.88, wz + 0.04], rh: [-0.44, 0.88, wz + 0.04], lhw: [0, 0, 0], rhw: [0, 0, 0], lep: [0.8, -0.6, -1], rep: [-0.8, -0.6, -1], lsc: [-0.4, -0.7], rsc: [-0.4, -0.7], cue: 'Espalda contra la pared, brazos en W apoyados' });
-    var a = o(w, { lh: [0.24, 1.22, wz + 0.04], rh: [-0.24, 1.22, wz + 0.04], lep: [1, -0.2, -1], rep: [-1, -0.2, -1], lsc: [0.5, 0], rsc: [0.5, 0], cue: 'Desliza arriba sin despegar codos, muñecas ni la zona lumbar' });
+    var w = o(sent, { lh: [0.44, 0.88, wz + 0.04], rh: [-0.44, 0.88, wz + 0.04], lhw: [0, 0, 0], rhw: [0, 0, 0], lep: [1, -0.7, -0.1], rep: [-1, -0.7, -0.1], lsc: [-0.4, -0.7], rsc: [-0.4, -0.7], cue: 'Espalda contra la pared, brazos en W apoyados' });
+    var a = o(w, { lh: [0.24, 1.22, wz + 0.04], rh: [-0.24, 1.22, wz + 0.04], lep: [1, -0.3, -0.1], rep: [-1, -0.3, -0.1], lsc: [0.5, 0], rsc: [0.5, 0], cue: 'Desliza arriba sin despegar codos, muñecas ni la zona lumbar' });
     EJ.fsm1 = { cam: 30, el: 14, ty: 0.55, rad: 3.8, props: [{ t: 'pared', z: wz }], k: [[0, w], [0.5, w], [1.6, a], [0.4, a], [1.6, o(w, { cue: 'Y vuelve' })]] };
     var pl = o(sent, { rh: [-0.14, 1.12, wz + 0.05], lh: [0.12, 0.3, wz + 0.05], rep: [-1, 0.5, 0.3], lep: [1, -0.3, 0.3], cue: 'Palo por detrás de la espalda, una mano arriba y otra abajo' });
     var t = o(pl, { rh: [-0.12, 1.24, wz + 0.05], lh: [0.12, 0.2, wz + 0.05], cue: 'Tira con la mano de abajo para subir el brazo de arriba · aguanta 2 s' });

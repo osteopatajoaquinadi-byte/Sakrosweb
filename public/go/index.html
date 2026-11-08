@@ -203,8 +203,9 @@ details.card>summary{font-weight:700}
 .steps i{flex:1;height:5px;border-radius:3px;background:var(--sunk)}
 .steps i.ok{background:var(--ok)}.steps i.on{background:var(--accent)}
 .playcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:grid}
-.media.play{aspect-ratio:4/3}
-.media.play.tall{aspect-ratio:4/5}
+/* En la sesión, el video o la animación caben en la pantalla: el alto se limita a ~58 % de la ventana. */
+.media.play{aspect-ratio:4/3;width:min(100%,calc(58vh * 4 / 3));margin-inline:auto}
+.media.play.tall{aspect-ratio:4/5;width:min(100%,calc(58vh * 4 / 5));height:auto;min-height:0}
 .media.vidm{cursor:pointer}
 .chkq{flex-wrap:wrap}.chkq .note,.chkq .wholbl{flex-basis:100%}
 .cargab{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;align-items:end;height:150px;margin:8px 0}
@@ -3637,7 +3638,7 @@ function renderPlay(m){
   m.append(h('div',{class:'playtop'},h('button',{class:'btn small',onclick:()=>{UI.tab=UI.prevTab&&UI.prevTab!=='play'?UI.prevTab:(modoCli()?'hoy':'sesion');saveUI();render()}},'Salir'),
     h('span',{class:'note',text:dayName(d)+(esPrep()?'':' · Semana '+s)}),h('span',{id:'play-clock',class:'clock',text:'Tiempo '+fmtT((Date.now()-P.t0)/1000)})),
     h('div',{class:'steps','aria-label':'Paso '+(P.i+1)+' de '+steps.length},steps.map((x,j)=>h('i',{class:j<P.i?'ok':j===P.i?'on':''}))),
-    h('p',{class:'note',text:'Ejercicio '+(P.i+1)+' de '+steps.length}),g.length===2?h('div',{class:'pres sslinea'},h('strong',{text:'Superserie · '}),ssLinea(s,d,g[0],g[1])):null);
+    h('p',{class:'note',text:'Ejercicio '+(P.i+1)+' de '+steps.length}),g.length===2?h('div',{class:'pres sslinea'},h('strong',{text:'Superserie · '}),ssLinea(s,d,g[0],g[1])):'');// append(null) escribiría «null»
   const inputs=[];
   g.forEach(it=>{
     const k=key(s,d,it.id),reg=S.registro[k]||{},A=autoEj(s,d,it),V=A.changed?A:{n:EX[it.id].n,img:EX[it.id].img,pasos:EX[it.id].pasos,clave:EX[it.id].clave,pres:pres(s,d,it)};
