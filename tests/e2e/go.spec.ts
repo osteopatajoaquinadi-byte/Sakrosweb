@@ -306,7 +306,7 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
-  test("con evaluación, la movilidad de la sesión son los correctivos: los de puntaje 1 siempre y los de 2 rotando", async ({ page }) => {
+  test("Rendimiento: la preparación dura máximo 12 min y su movilidad son 2 correctivos del FMS", async ({ page }) => {
     const errores = vigilarErrores(page);
     const r = { ds: { rev: { u: 1 } }, hs: { rev: { d: 2, i: 2 } }, il: { rev: { d: 3, i: 3 } }, sm: { rev: { d: 3, i: 3 } }, aslr: { rev: { d: 3, i: 3 } }, tspu: { rev: { u: 2 } }, rs: { rev: { d: 2, i: 2 } } };
     await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3 }), { path: "a/u1/tests", id: "fms", data: { r } }] });
@@ -317,8 +317,10 @@ test.describe("Sakros Go", () => {
     for (const ids of ses) {
       expect(ids.some((i) => /^mov/.test(i))).toBe(false);
       expect(corr(ids)[0]).toBe("fds1");
-      expect(corr(ids)).toHaveLength(3);
+      expect(corr(ids)).toHaveLength(2);
     }
+    const prep = (await page.evaluate(`(() => DIAS().map(d => rows(d, 1).filter(i => String(i.b).startsWith('1')).reduce((x, i) => x + tmin(i, 1), 0)))()`)) as number[];
+    for (const m of prep) expect(m).toBeLessThanOrEqual(12);
     expect(new Set(ses.flatMap(corr))).toEqual(new Set(["fds1", "frs2", "ftspu2", "fhs2"]));
     expect(errores).toEqual([]);
   });
