@@ -1465,13 +1465,21 @@ const zonaDia=(d,s)=>{const x=srcDia(d,s);return x==='A'?'PI':x==='B'?'PS':'PC'}
 // Con evaluación: la movilidad genérica se reemplaza por los correctivos de la persona:
 // los de puntaje 1 en todas las sesiones y los de puntaje 2 (o asimetría) rotando, hasta 3–4 en total.
 // Sin evaluación: un ejercicio de movilidad general que rota (no dirigido).
+const esRend=()=>prog()==='rend';
 function corrSesion(d,s){
-  if(!fmsListo())return {ids:corrGen((s-1)*DIAS().length+Math.max(0,DIAS().indexOf(d)),1),reemplaza:false};
-  const def=fmsPrioridad('PC'),uno=def.filter(x=>x.score===1).map(x=>x.id).slice(0,3),dos=def.filter(x=>x.score!==1).map(x=>x.id);
-  if(!def.length)return {ids:corrDe(zonaDia(d,s),1),reemplaza:false};
-  const n=dos.length?Math.min(dos.length,Math.max(1,3-uno.length)):0,k=(s-1)*DIAS().length+Math.max(0,DIAS().indexOf(d));
-  const rot=[];for(let j=0;j<n;j++)rot.push(dos[(k*n+j)%dos.length]);
-  return {ids:[...uno,...new Set(rot)].map(id=>'f'+id+nivCorr(id)),reemplaza:true};
+  const k=(s-1)*DIAS().length+Math.max(0,DIAS().indexOf(d)),rend=esRend();
+  if(!fmsListo())return {ids:corrGen(rend?k*2:k,rend?2:1),reemplaza:rend};
+  const def=fmsPrioridad('PC');
+  if(!def.length)return {ids:corrDe(zonaDia(d,s),rend?2:1),reemplaza:rend};
+  const uno=def.filter(x=>x.score===1).map(x=>x.id),dos=def.filter(x=>x.score!==1).map(x=>x.id);
+  // Rendimiento: 2 correctivos por sesión (preparación de 10–12 min). Si hay más de 2 puntajes de 1, rotan entre ellos.
+  // Otros programas: los de puntaje 1 siempre (hasta 3) y los de 2 rotando, hasta 3–4 en total.
+  const tope=rend?2:Math.max(3,Math.min(3,uno.length)+1);
+  const rota=(L,n,off)=>{const r=[];for(let j=0;j<Math.min(n,L.length);j++)r.push(L[(off+j)%L.length]);return r};
+  let ids;
+  if(rend&&uno.length>2)ids=rota(uno,2,k*2);
+  else{const fijos=uno.slice(0,rend?2:3),n=Math.min(dos.length,rend?2-fijos.length:Math.max(1,3-fijos.length));ids=[...fijos,...rota(dos,n,k*Math.max(1,n))]}
+  return {ids:[...new Set(ids)].slice(0,tope).map(id=>'f'+id+nivCorr(id)),reemplaza:true};
 }
 function conCorr(r,d,s){
   const {ids,reemplaza}=corrSesion(d,s);if(!ids.length)return r;
@@ -1777,7 +1785,7 @@ function renderProgresoPrep(m){
 }
 function selProg(){return h('div',{class:'freq',role:'group','aria-label':'Programa'},h('span',{class:'wholbl',text:'Programa'}),[['prep',PROGC.prep],['base',PROGC.base],['rend',PROGC.rend],['core',PROGC.core],['global',PROGC.global]].map(([p,l])=>h('button',{class:'opt','aria-pressed':prog()===p,onclick:async()=>{if(prog()===p)return;await saveAtleta(UI.atleta,{...atl(),programa:p,t:Date.now()});UI.orig={};render()}},l)))}
 function fmsContexto(){
-  if(fmsGen())return 'FMS: la persona eligió no evaluarse e ir directo al entrenamiento. Sus correctivos son de movilidad general: rotan los 7 patrones del FMS (uno por sesión de entrenamiento, dos por preparación), no dirigidos a un déficit. Oriéntala con criterios generales de movilidad; si cuenta una molestia o un movimiento que le cuesta, sugiérele la evaluación por video, sin insistir.';
+  if(fmsGen())return 'FMS: la persona eligió no evaluarse e ir directo al entrenamiento. Sus correctivos son de movilidad general: rotan los 7 patrones del FMS (dos por sesión en Rendimiento, uno en los otros programas y dos por Prep), no dirigidos a un déficit. Oriéntala con criterios generales de movilidad; si cuenta una molestia o un movimiento que le cuesta, sugiérele la evaluación por video, sin insistir.';
   if(!fmsAlguno())return 'FMS: no hecho todavía (opcional, por video desde la pestaña Tests).';
   const F=FF(),L=['FMS'+(F.revisado?' (revisado por el kinesiólogo)':' (preliminar del Coach por video)')+': total '+(fmsTotal()??'incompleto')+'/21.'];
   FMSL.forEach(t=>{const R=fmsRes(t.id);L.push('- '+t.n+': '+scoreTxt(R.score)+(t.lados.length>1?' (der. '+scoreTxt(R.L.d)+', izq. '+scoreTxt(R.L.i)+')':'')+(R.dolor?' · CON DOLOR':'')+' · correctivo en el paso '+nivCorr(t.id)+' de 4')});
@@ -1948,9 +1956,9 @@ function voley(r,d){
   if(!esVoley())return r;
   const out=r.map(it=>{const id=VOLEY_SUST[it.id];if(!id)return it;return {...it,id,p:bk()>1&&id!=='vrally'?it.p:VOLEY_P[id],tm:VOLEY_TM[id]}});
   let i=-1;out.forEach((it,j)=>{if(String(it.b).startsWith('1'))i=j});
-  out.splice(i+1,0,{id:'vhombro',b:'1h',p:VOLEY_P.vhombro,tm:VOLEY_TM.vhombro});
+  if(d==='B'||d==='U'){const iR=out.findIndex(x=>x.id==='regen');out.splice(iR<0?out.length:iR,0,{id:'vhombro',b:'3h',p:VOLEY_P.vhombro,tm:VOLEY_TM.vhombro})}
   // Saltos de vóley en la sesión (antes reemplazaban a las salidas y al sprint, que ya no están por espacio).
-  if(bk()===1&&(d==='B'||d==='U')){const add=[{id:'vsalto',b:'2v',p:VOLEY_P.vsalto,tm:VOLEY_TM.vsalto}];if(d==='B')add.push({id:'vbloqueo',b:'2w',p:VOLEY_P.vbloqueo,tm:VOLEY_TM.vbloqueo});out.splice(i+2,0,...add)}
+  if(bk()===1&&(d==='B'||d==='U')){const add=[{id:'vsalto',b:'2v',p:VOLEY_P.vsalto,tm:VOLEY_TM.vsalto}];if(d==='B')add.push({id:'vbloqueo',b:'2w',p:VOLEY_P.vbloqueo,tm:VOLEY_TM.vbloqueo});out.splice(i+1,0,...add)}
   return out;
 }
 /* Progresión semanal de desplazamiento en arena (shuffles): técnica → frenada → caída y recuperación →
@@ -2020,7 +2028,12 @@ function personal(r,d){
   if(ex.length){const iR=out.findIndex(x=>x.id==='regen');const add=ex.map(e=>({id:e.id,b:e.b||'3x',p:e.p,tm:e.tm||3}));out.splice(iR<0?out.length:iR,0,...add)}
   return out;
 }
-function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(personal(voley(rows0(d,s),d),d))}
+// Rendimiento: la preparación dura 10–12 min (tejido 2 + correctivos 4 + pilar 3 + activación 2).
+function prepRend(r){
+  if(!esRend())return r;
+  return r.map(it=>/^tejido[AB]$/.test(it.id)?{...it,p:Array(8).fill('2 min'),tm:2}:/^pilar[AB]$/.test(it.id)?{...it,pM:undefined,tm:3}:/^act[AB]$/.test(it.id)?{...it,pM:undefined,tm:2}:it);
+}
+function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(personal(voley(prepRend(rows0(d,s)),d),d))}
 function allRows(){const out=[],seen=new Set();const P0=esBase()?{A:rowsBase('A'),B:rowsBase('B')}:esCore()?PLANC:esGlob()?PLANG:PLAN;Object.keys(P0).forEach(d=>P0[d].forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);out.push([d,it])}}));return out}
 const faseTxt=s=>esPrep()?'Prep':bk()>1?faseBloque(s):(esBase()?FASEX:esCore()?FASEC:esGlob()?FASEG:FASE)[s-1];
 const sesKey=(s,d)=>(bk()>1?'b'+bk()+'.':'')+(esPrep()?'p':esBase()?'x':esCore()?'c':esGlob()?'g':'')+s+d;
@@ -3255,7 +3268,7 @@ function autoEj(s,d,it){
 let sample=null, ctl=null, busy=false;
 const RULES_IA='\n\nIDENTIDAD Y SEGURIDAD: eres el Coach IA de Sakros Go, una inteligencia artificial. Los programas y criterios los define Joaquín Adi, kinesiólogo con máster en Functional Training. Si te preguntan, di que eres una IA y no te presentes como Joaquín ni como un profesional de la salud. No diagnostiques ni indiques tratamientos. Ante dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta o se irradia, hormigueo o pérdida de fuerza, indica detener el ejercicio y consultar a un profesional. No pidas datos personales que el plan no necesite (RUT, dirección, datos bancarios). En Sakros no hay trineo de arrastre ni se usa el test Yo-Yo: no los propongas (usa cuesta o sprint lanzado, y el test de 2,4 km).\nMÉTODO (EXOS, por movimientos): cada sesión va de cuerpo completo explosivo a fuerza principal (bilateral), fuerza secundaria (unilateral) y rotación (de estabilidad o de propulsión). En la semana se equilibran empuje y tirón del tren superior (horizontal y vertical), empuje de piernas, cadera dominante y rodilla dominante, y se trabaja en los 3 planos. Si cambias un ejercicio, reemplázalo por otro del mismo tipo de movimiento (por ejemplo, un remo por otro tirón horizontal) para no romper el equilibrio. La velocidad multidireccional (shuffle, corte y paso cruzado) va en 3 niveles: continuo, dirigido y secuencias.\nLENGUAJE: con el cliente no uses las palabras Knack, braceo ni hollowing; di «activa el suelo pélvico», «activa el abdomen» o «abdomen profundo».';
 const RULES=`Eres el entrenador personal del atleta, con el método EXOS. Si sus datos dicen DEPORTE: vóley playa, adapta todo a su deporte (saltos de ataque y bloqueo, desplazamientos en arena, hombro del atacante): no pongas trineo ni salidas de sprint dentro de la sesión; esos trabajos van como complementario en la playa, fuera de la rutina del día. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios atletas (su propio perfil es «Mi perfil»). Habla del atleta seleccionado y usa términos técnicos.
-Objetivo del bloque: potencia, aceleración, salto y, sobre todo, resistencia cardiovascular. 8 semanas, con 1, 2 o 3 sesiones por semana según el atleta (sesión única U; días A y B; o A, B y C), sesiones de 50–60 min como máximo (calentamiento de 12 min, 15 en mujeres; superseries con 90 s de pausa). El calentamiento completo (tejido blando, movilidad, pilar y activación) no se recorta para ahorrar tiempo. Semana 4: descarga. Semana 8: descarga y test.
+Objetivo del bloque: potencia, aceleración, salto y, sobre todo, resistencia cardiovascular. 8 semanas, con 1, 2 o 3 sesiones por semana según el atleta (sesión única U; días A y B; o A, B y C), sesiones de 50–60 min como máximo (preparación de 10–12 min como máximo: tejido blando 2 min, 2 correctivos del FMS de la persona en lugar de movilidad genérica, pilar y activación; en vóley el hombro de atacante va en el bloque de fuerza del día B; superseries con 90 s de pausa). El calentamiento completo (tejido blando, movilidad, pilar y activación) no se recorta para ahorrar tiempo. Semana 4: descarga. Semana 8: descarga y test.
 Adapta tus consejos al sexo, la edad, el nivel y las sesiones por semana del atleta. En mujeres el plan ya suma más pilar y más activación de aterrizajes y frenadas; mantenlo.
 Reglas de ajuste: si la RPE pasa de la marcada, repetir peso; si sobran 2 o más repeticiones, subir 2,5 kg (1 kg o 0,5 kg si la carga es menor de 20 kg). Nunca al fallo. Si falta tiempo, se quitan accesorios, nunca el cardio. Hip thrust: carga orientativa, ajustar a RPE 7–8.
 Cómo responder: breve y concreto, en frases cortas. Usa listas con guiones cuando ayuden. Basa tus consejos en el registro que te paso; si falta un dato, pregúntalo.
