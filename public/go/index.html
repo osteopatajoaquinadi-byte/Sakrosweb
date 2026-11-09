@@ -287,7 +287,7 @@ function reportarError(tipo,mensaje,detalle){
 window.addEventListener('error',e=>{if(e.target&&e.target!==window)return;reportarError('error',e.message,(e.error&&e.error.stack)||((e.filename||'')+':'+e.lineno+':'+e.colno))});
 window.addEventListener('unhandledrejection',e=>{const r=e.reason;if(r&&(r.code==='cancelled'||r.name==='AbortError'))return;reportarError('promesa',(r&&r.message)||(r&&r.code)||String(r),r&&r.stack)});
 const VIDEOS_B64={};
-const VIDEOS={'bajada-escalon':'x','deadbug':'x','deadbug-disco':'x','equilibrio-rodilla':'x','flexor-cadera':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','respiracion-diafragmatica':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-silla':'x','snap-down':'x','swing':'x','zancada-estatica':'x','zancada-rodilla':'x'};const _vurl={};
+const VIDEOS={'activacion-a':'x','apertura-lado':'x','aterrizaje-2':'x','bajada-escalon':'x','birddog':'x','bisagra-palo':'x','circulo-hombro':'x','copenhague':'x','deadbug':'x','deadbug-disco':'x','dominadas':'x','drop-jump':'x','equilibrio-rodilla':'x','faslr1':'x','fds1':'x','fil2':'x','flex-pared':'x','flexiones':'x','flexor-cadera':'x','fsm1':'x','fsm2':'x','ftspu2':'x','goblet-profunda':'x','granjero':'x','hombro-atacante':'x','jalon-banda':'x','landmine-jammer':'x','landmine-press':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','lateral-abduccion':'x','lateral-completa':'x','lateral-corte':'x','lateral-rodillas':'x','mini-band':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','paso-cruzado':'x','peso-muerto':'x','pilar':'x','pmr-mancuernas':'x','press-sentado':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','remo-bisagra':'x','respiracion-diafragmatica':'x','salto-ataque':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-silla':'x','skater':'x','snap-down':'x','split-squat':'x','swing':'x','tejido-a':'x','toque-hombro':'x','zancada-estatica':'x','zancada-lateral':'x','zancada-rodilla':'x'};const _vurl={};
 function videoURL(k){return '/go/media/'+k+'.mp4'}
 /* Resumen visible del ejercicio (sin abrir «Cómo se hace»): en los ejercicios compuestos, la lista de lo que
    se hace; en los simples, la clave de ejecución. */
@@ -356,7 +356,7 @@ const DIA={A:'Desplazamiento lateral, potencia vertical y fuerza',B:'Paso cruzad
 const r8=(a,d)=>[a,a,a,d,a,a,a,d];
 const fill=v=>Array(8).fill(v);
 const EX={
- tejidoA:{n:'Tejido blando: tren inferior',img:[['sakrodillo-3','Rodillo en isquiotibiales y zona poplítea'],['sakrodillo-2','Rodillo en isquiotibiales: una pierna'],['sakrodillo-1','Rodillo en cuádriceps: apoyo en antebrazos']],pasos:[
+ tejidoA:{n:'Tejido blando: tren inferior',video:'tejido-a',img:[['sakrodillo-3','Rodillo en isquiotibiales y zona poplítea'],['sakrodillo-2','Rodillo en isquiotibiales: una pierna'],['sakrodillo-1','Rodillo en cuádriceps: apoyo en antebrazos']],pasos:[
   'Tiempo máximo: 3 min. Elige las 3 zonas que más lo necesiten hoy, 30 s por lado. El resto, en casa o al final de la sesión.',
   'Rodillo en gemelos: 30–45 s por pierna, rodando lento del tendón de Aquiles a la corva. Cruza la otra pierna encima para dar más presión.',
   'Rodillo en isquiotibiales y zona poplítea: 30–45 s por pierna, de la rodilla a la cadera. En la zona poplítea, presión sostenida y suave, sin insistir en el centro del hueco.',
@@ -382,7 +382,7 @@ const EX={
   'Rotación de tronco en caballero: rodilla de atrás en el suelo con los dedos del pie extendidos (mecanismo de Windlass), glúteo activo, espalda recta y todo a 90°. Las dos manos adelante; una se abre hacia atrás rotando el tronco al máximo mientras la otra se mantiene activa adelante. 5 por lado.',
   'Variantes para los mismos patrones (cambia una por sesión): 90/90 de cadera con cambio de lado ×5/lado; estocada «Spiderman» con alcance hacia arriba ×5/lado; libro abierto de costado ×5/lado; tobillo en la pared ×10/lado; gato-camello segmentario ×6.'],
   clave:'Contención abdominal y columna neutra en todo el bloque. Es movilidad activa: si se pierde el glúteo o la posición, acorta el rango.'},
- pilarA:{n:'Preparación del pilar',img:[['plancha-0','Plancha frontal: antebrazos, cuerpo alineado'],['sakplancha-2','Plancha lateral: cadera arriba'],['puente-1','Puente glúteo: cadera arriba'],['pallof-1','Pallof: brazos extendidos, tronco quieto']],pasos:[
+ pilarA:{n:'Preparación del pilar',video:'pilar',img:[['plancha-0','Plancha frontal: antebrazos, cuerpo alineado'],['sakplancha-2','Plancha lateral: cadera arriba'],['puente-1','Puente glúteo: cadera arriba'],['pallof-1','Pallof: brazos extendidos, tronco quieto']],pasos:[
   'Tiempo: 3 min por vuelta.',
   'Circuito sin pausa entre ejercicios: plancha frontal 30 s → plancha lateral 20 s por lado → puente glúteo ×10 (2 s arriba) → Pallof press ×8 por lado.',
   'Vueltas: hombres 1, mujeres 2 (en las semanas de descarga, 1). Si el atleta necesita más control del tronco, suma una vuelta.',
@@ -391,13 +391,13 @@ const EX={
   'Puente glúteo: empuja con los talones hasta alinear rodilla, cadera y hombro, con las costillas abajo.',
   'Pallof press: banda a la altura del pecho; extiende los brazos y aguanta 2 s sin que el tronco gire.'],
   clave:'Calidad antes que tiempo: si se pierde la posición, corta la serie.'},
- pilarB:{n:'Preparación del pilar + pared',img:[['plancha-0','Plancha frontal: antebrazos, cuerpo alineado'],['sakplancha-2','Plancha lateral: cadera arriba'],['puente-1','Puente glúteo: cadera arriba'],['pallof-1','Pallof: brazos extendidos'],['pared-1','Pared: marching']],pasos:[
+ pilarB:{n:'Preparación del pilar + pared',video:'pilar',img:[['plancha-0','Plancha frontal: antebrazos, cuerpo alineado'],['sakplancha-2','Plancha lateral: cadera arriba'],['puente-1','Puente glúteo: cadera arriba'],['pallof-1','Pallof: brazos extendidos'],['pared-1','Pared: marching']],pasos:[
   'Tiempo: 3 min por vuelta, con la pared incluida.',
   'Circuito sin pausa: plancha frontal 30 s → plancha lateral 20 s por lado → puente glúteo ×10 (2 s arriba) → Pallof press ×8 por lado.',
   'Vueltas: hombres 1, mujeres 2 (en las semanas de descarga, 1).',
   'Pared: inclínate unos 45° con las manos en la pared. Marching 2×5 por pierna (2 s arriba) y switches 3×3 explosivos.'],
   clave:'La pared enseña la inclinación de las salidas: cadera adelantada, sin quebrarse.'},
- actA:{n:'Activación: aterrizajes y frenadas',video:'snap-down',img:[['sakcajon-1','Snap-down, inicio: de puntillas y brazos arriba (triple extensión)'],['sakcajon-2','Snap-down: baja de golpe a la posición de aterrizaje y congela 2 s'],['drop-1','Aterrizaje a dos pies: rodillas sobre los pies'],['caida-1','Aterrizaje a una pierna: frena 2 s']],pasos:[
+ actA:{n:'Activación: aterrizajes y frenadas',video:'activacion-a',img:[['sakcajon-1','Snap-down, inicio: de puntillas y brazos arriba (triple extensión)'],['sakcajon-2','Snap-down: baja de golpe a la posición de aterrizaje y congela 2 s'],['drop-1','Aterrizaje a dos pies: rodillas sobre los pies'],['caida-1','Aterrizaje a una pierna: frena 2 s']],pasos:[
   'Mini band lateral ×10 pasos por lado y skips A 2×15 m.',
   'Snap-down: de puntillas con los brazos arriba, baja de golpe a la posición de aterrizaje (cadera atrás, rodillas sobre los pies, brazos atrás) y congela 2 s. ×5.',
   'Aterrizaje a dos pies: pequeño salto vertical y caída silenciosa, aguantando 2 s. ×3.',
@@ -427,7 +427,7 @@ const EX={
   'Marching 2×5/pierna: sube una rodilla con la punta del pie arriba y mantén 2 s.',
   'Switches 3×3: desde esa posición, cambia de pierna de forma explosiva.'],
   clave:'La pared enseña la inclinación de las salidas: cadera adelantada, nada de quebrarse.'},
- cajon:{n:'Salto al cajón / drop jump',img:[['sakcajon-1','Preparación: brazos arriba, de puntillas'],['sakcajon-2','Contramovimiento: cadera y brazos atrás'],['sakcajon-3','Caída suave sobre el cajón'],['drop-0','Drop jump: arriba del cajón'],['drop-1','Drop jump: contacto corto y rebote'],['salto-1','Test CMJ: salto máximo']],pasos:[
+ cajon:{n:'Salto al cajón / drop jump',video:'drop-jump',img:[['sakcajon-1','Preparación: brazos arriba, de puntillas'],['sakcajon-2','Contramovimiento: cadera y brazos atrás'],['sakcajon-3','Caída suave sobre el cajón'],['drop-0','Drop jump: arriba del cajón'],['drop-1','Drop jump: contacto corto y rebote'],['salto-1','Test CMJ: salto máximo']],pasos:[
   'Usa un cajón al que llegues cayendo en un cuarto de sentadilla (50–75 cm).',
   'Contramovimiento rápido, con cadera y brazos atrás. Lanza los brazos arriba y salta.',
   'Cae con los dos pies a la vez, en silencio, con las rodillas alineadas con los pies.',
@@ -497,7 +497,7 @@ const EX={
   'Sin pausa, extiende las piernas y aprovecha el impulso para bloquear los codos arriba.',
   'Mete la cabeza «a través» de los brazos: la barra queda sobre el medio del pie.',
   'Baja la barra a los hombros amortiguando con las rodillas.']},
- skater:{n:'Skater / caída lateral',img:[['skater-0','Skater: impulso lateral'],['skater-1','Skater: caída estable'],['caida-0','Caída lateral: sobre una pierna junto al cono'],['caida-1','Caída lateral: aterriza y frena 2 s']],pasos:[
+ skater:{n:'Skater / caída lateral',video:'skater',img:[['skater-0','Skater: impulso lateral'],['skater-1','Skater: caída estable'],['caida-0','Caída lateral: sobre una pierna junto al cono'],['caida-1','Caída lateral: aterriza y frena 2 s']],pasos:[
   'Desde un pie, salta de lado al otro lo más lejos que puedas.',
   'Cae sobre el antepié con la cadera atrás y la rodilla alineada con el pie.',
   'Aguanta 2 s estable antes del siguiente salto.',
@@ -510,12 +510,12 @@ const EX={
   'Codos altos y tronco lo más vertical posible durante todo el recorrido.',
   'Baja profundo con las rodillas hacia delante y sube empujando los codos hacia arriba. Pausa de 2 min.'],
   clave:'Si caen los codos, se redondea la espalda alta y la barra se va hacia delante.'},
- dominadas:{n:'Dominadas',img:[['dominadas-0','Colgado, escápulas activas'],['dominadas-1','Barbilla sobre la barra']],pasos:[
+ dominadas:{n:'Dominadas',video:'dominadas',img:[['dominadas-0','Colgado, escápulas activas'],['dominadas-1','Barbilla sobre la barra']],pasos:[
   'Agarre prono algo más ancho que los hombros. Cuelga con los brazos extendidos y las escápulas activas.',
   'Tira llevando el pecho hacia la barra hasta pasar la barbilla.',
   'Baja en 2 s hasta extender los brazos.'],
   clave:'Si no llegas a 6, usa banda. Si haces 8 fáciles, añade 5 kg.'},
- muerto:{n:'Peso muerto',img:[['sakmuerto-1','Inicio (perfil): cadera atrás, espalda neutra'],['sakmuerto-2','Inicio (frente): agarre por fuera de las piernas'],['muerto-1','Bloqueo: cadera y rodillas a la vez']],pasos:[
+ muerto:{n:'Peso muerto',video:'peso-muerto',img:[['sakmuerto-1','Inicio (perfil): cadera atrás, espalda neutra'],['sakmuerto-2','Inicio (frente): agarre por fuera de las piernas'],['muerto-1','Bloqueo: cadera y rodillas a la vez']],pasos:[
   'Barra sobre el medio del pie, pies a la anchura de la cadera, agarre justo por fuera de las piernas.',
   'Baja hasta que las tibias toquen la barra: cadera entre rodillas y hombros, pecho arriba.',
   'Activa los dorsales («dobla la barra») y tensa hasta quitar la holgura.',
@@ -581,14 +581,14 @@ PLAN.U=[{..._row('A','tejidoA')},{..._row('A','movA')},{..._row('A','pilarA')},{
   {..._row('B','muerto'),b:'5A'},{..._row('B','dominadas'),b:'5B'},{..._row('A','kpallofsr'),b:'6'},{..._row('A','mdcut'),b:'7'},{..._row('A','regen'),b:'8'}];
 DUR.C=[55,57,60,45,60,63,65,48];DUR.U=[63,66,66,52,66,69,72,60];
 DIA.C='Fuerza unilateral, saltos laterales y velocidad multidireccional';DIA.U='Sesión completa: potencia, fuerza y velocidad multidireccional';
-EX.mdcut={n:'Velocidad multidireccional: desplazamiento lateral y corte',img:[['skater-0','Base baja, peso en el borde interno'],['pared-1','Postura contra la pared']],pasos:[
+EX.mdcut={n:'Velocidad multidireccional: desplazamiento lateral y corte',video:'lateral-corte',img:[['skater-0','Base baja, peso en el borde interno'],['pared-1','Postura contra la pared']],pasos:[
   'Pared (técnica): manos en la pared, cuerpo inclinado y base más ancha que los hombros. Mantén la posición de corte 10 s por lado y luego carga y despega la pierna de afuera ×5.',
   'Shuffle: base baja, pies sin juntarse ni cruzarse, pecho al frente. Empuja el suelo con la pierna de afuera, cargando el borde interno del pie.',
   'Corte: baja el centro de gravedad, inclínate hacia la nueva dirección («ángulo adentro, ángulo afuera») y sal explosivo.',
   'Nivel 1: continuo en 5 m. Nivel 2: cortes dirigidos (a un cono o a la voz de un compañero). Nivel 3: secuencias con una aceleración corta de 3–5 m.',
   'Cada repetición al 100 % y pausa completa: menos de 90 s entre repeticiones y hasta 2 min entre series.'],
   clave:'Quédate «bajo el techo»: la cabeza no sube ni baja. Si la técnica se pierde, la serie termina.'};
-EX.mdcross={n:'Velocidad multidireccional: paso cruzado',img:[['pared-1','Postura contra la pared'],['salida-1','Salida explosiva']],pasos:[
+EX.mdcross={n:'Velocidad multidireccional: paso cruzado',video:'paso-cruzado',img:[['pared-1','Postura contra la pared'],['salida-1','Salida explosiva']],pasos:[
   'Pared (técnica): posición de paso cruzado 10 s por lado y luego carga y despega ×5.',
   'Desde la base, empuja con la pierna de adentro (borde externo del pie) y cruza la rodilla de afuera por delante «como si rompieras un vidrio».',
   'Hombros y brazos contrarrotan para equilibrar la cadera. Sal con una aceleración corta de 3–5 m.',
@@ -646,12 +646,12 @@ const EXC={
   'Tira llevando los codos atrás y las escápulas atrás y abajo. Exhala al tirar.',
   'El tronco se mantiene neutro: no te echas hacia atrás.'],
   clave:'Hombros lejos de las orejas.'},
- klateralr:{n:'Plancha lateral sobre rodillas',img:[['sakplancha-1','Antebrazo y rodillas apoyados'],['sakplancha-2','Cadera arriba, cuerpo alineado']],pasos:[
+ klateralr:{n:'Plancha lateral sobre rodillas',video:'lateral-rodillas',img:[['sakplancha-1','Antebrazo y rodillas apoyados'],['sakplancha-2','Cadera arriba, cuerpo alineado']],pasos:[
   'De costado, antebrazo bajo el hombro y rodillas flexionadas.',
   'Suelo pélvico y abdomen firme al 50 %. Sube la cadera hasta alinear rodillas, cadera y cabeza.',
   'Aguanta el tiempo marcado respirando y baja. Repite y cambia de lado.'],
   clave:'La cadera no cae ni se va hacia atrás.'},
- kbirddog:{n:'Bird dog',img:[],pasos:[
+ kbirddog:{n:'Bird dog',video:'birddog',img:[],pasos:[
   'En cuadrupedia, manos bajo los hombros y rodillas bajo las caderas. Abdomen firme al 30 %.',
   'Extiende un brazo al frente y la pierna contraria atrás, hasta la horizontal. Aguanta el tiempo marcado.',
   'La pelvis no rota: puedes apoyar un vaso de plástico en la zona lumbar como control.',
@@ -682,7 +682,7 @@ const EXC={
   'Abdomen firme al 50 %. Exhala en la extensión de brazo y pierna.',
   'La zona lumbar sigue pegada al suelo.'],
   clave:'Si el abdomen se abomba, baja el peso.'},
- kplanchat:{n:'Plancha completa con toque de hombro',img:[['plancha-1','Plancha completa']],pasos:[
+ kplanchat:{n:'Plancha completa con toque de hombro',video:'toque-hombro',img:[['plancha-1','Plancha completa']],pasos:[
   'Plancha alta (manos bajo los hombros) con los pies algo separados.',
   'Abdomen firme al 50 %. Toca el hombro contrario con una mano, alternando.',
   'La pelvis no rota ni se balancea.'],
@@ -692,7 +692,7 @@ const EXC={
   'Inhala abajo. Activa el suelo pélvico, exhala y sube hasta extender la cadera, con 1 s de pausa arriba.',
   'Mentón metido y costillas abajo: sin hiperextender la zona lumbar.'],
   clave:BR},
- krdl:{n:'Peso muerto rumano con mancuernas',img:[['sakbisagra-2','De pie: carga en la cadera'],['sakbisagra-3','Bisagra hasta pasar las rodillas'],['rdl-0','Versión con barra']],pasos:[
+ krdl:{n:'Peso muerto rumano con mancuernas',video:'pmr-mancuernas',img:[['sakbisagra-2','De pie: carga en la cadera'],['sakbisagra-3','Bisagra hasta pasar las rodillas'],['rdl-0','Versión con barra']],pasos:[
   'De pie con las mancuernas delante de los muslos y rodillas suaves.',
   'Inhala y activa el abdomen al 50 %. Lleva la cadera atrás con la columna neutra, bajando las mancuernas cerca de las piernas.',
   'Baja solo hasta donde mantienes la columna neutra. Activa el suelo pélvico y exhala al subir empujando la cadera al frente.'],
@@ -707,7 +707,7 @@ const EXC={
   'Abdomen firme al 30–50 %. Tira de la mancuerna llevando el codo atrás; exhala al tirar.',
   'Sin rotar el tronco.'],
   clave:'El tronco queda paralelo al banco todo el tiempo.'},
- klateral:{n:'Plancha lateral completa',img:[['sidebridge-0','Antebrazo bajo el hombro'],['sidebridge-1','Cadera arriba, cuerpo alineado']],pasos:[
+ klateral:{n:'Plancha lateral completa',video:'lateral-completa',img:[['sidebridge-0','Antebrazo bajo el hombro'],['sidebridge-1','Cadera arriba, cuerpo alineado']],pasos:[
   'De costado, antebrazo bajo el hombro y piernas extendidas.',
   'Suelo pélvico y abdomen firme al 50 %. Sube la cadera hasta alinear el cuerpo y aguanta respirando.',
   'Cambia de lado.'],
@@ -717,7 +717,7 @@ const EXC={
   'Abdomen firme al 50 %. Da pasos laterales alejándote y volviendo, sin que el tronco ni los brazos giren.',
   'Exhala en cada paso.'],
   clave:'El tronco no gira.'},
- kbirddogc:{n:'Bird dog con banda o tobillera',img:[],pasos:[
+ kbirddogc:{n:'Bird dog con banda o tobillera',video:'birddog',img:[],pasos:[
   'Igual que el bird dog, con una tobillera o una banda que resista la pierna.',
   'Abdomen firme al 30–50 %. Extiende brazo y pierna contrarios y aguanta 3 s.',
   'La pelvis no rota.'],
@@ -732,7 +732,7 @@ const EXC={
   'Activa el suelo pélvico, exhala y sube la cadera empujando con el talón.',
   'Pelvis horizontal. Baja controlado.'],
   clave:'Trabajan glúteo e isquiotibiales.'},
- kjalon:{n:'Jalón con banda o polea',img:[['jalon-0','Brazos arriba'],['jalon-1','Barra al pecho, codos abajo']],pasos:[
+ kjalon:{n:'Jalón con banda o polea',video:'jalon-banda',img:[['jalon-0','Brazos arriba'],['jalon-1','Barra al pecho, codos abajo']],pasos:[
   'Sentado o de rodillas, con la banda o la polea arriba.',
   'Abdomen firme al 30–50 %. Tira llevando los codos hacia abajo y atrás, hasta el pecho. Exhala al tirar.',
   'Sin arquear la zona lumbar.'],
@@ -757,7 +757,7 @@ const EXC={
   'Inhala y activa el abdomen al 70 %. Activa el suelo pélvico y empuja el suelo hasta ponerte de pie, exhalando en el esfuerzo.',
   'Baja con la cadera atrás y la columna neutra.'],
   clave:'Es el levantamiento del día a día: bisagra y abdomen activo.'},
- kgobletp:{n:'Sentadilla goblet profunda',img:[['goblet-0','Mancuerna al pecho'],['goblet-1','Abajo: tronco erguido']],pasos:[
+ kgobletp:{n:'Sentadilla goblet profunda',video:'goblet-profunda',img:[['goblet-0','Mancuerna al pecho'],['goblet-1','Abajo: tronco erguido']],pasos:[
   'Mancuerna o kettlebell al pecho.',
   'Inhala al bajar hasta donde mantienes la columna neutra.',
   'Activa el suelo pélvico y exhala al subir. Abdomen firme al 50–70 %.'],
@@ -767,12 +767,12 @@ const EXC={
   'Abdomen firme al 50 %. Tira del pecho hacia las manos y exhala al subir.',
   'La cadera no cae.'],
   clave:'Cuanto más horizontal el cuerpo, más difícil.'},
- kgranjero:{n:'Paseo de granjero pesado',img:[['granjero-1','Una carga en cada mano']],pasos:[
+ kgranjero:{n:'Paseo de granjero pesado',video:'granjero',img:[['granjero-1','Una carga en cada mano']],pasos:[
   'Una mancuerna o kettlebell pesada en cada mano.',
   'Abdomen firme al 70 %. Camina erguido con las costillas abajo y pasos cortos.',
   'Respira durante todo el recorrido.'],
   clave:'Si aparece escape o peso perineal, baja la carga.'},
- klateralabd:{n:'Plancha lateral con abducción de cadera',img:[['sidebridge-1','Plancha lateral']],pasos:[
+ klateralabd:{n:'Plancha lateral con abducción de cadera',video:'lateral-abduccion',img:[['sidebridge-1','Plancha lateral']],pasos:[
   'En plancha lateral completa.',
   'Abdomen firme al 50–70 %. Sube y baja la pierna de arriba sin que la cadera caiga.',
   'Cambia de lado.'],
@@ -782,7 +782,7 @@ const EXC={
   'Abdomen firme al 50–70 %. Lleva la cuerda en diagonal girando desde la cadera y los pies, no desde la zona lumbar.',
   'Exhala en el esfuerzo y vuelve controlado.'],
   clave:'Rota la cadera, no la columna lumbar.'},
- ksplit:{n:'Split squat con mancuernas',img:[['split-0','Arriba: piernas separadas'],['split-1','Abajo: rodilla trasera cerca del suelo']],pasos:[
+ ksplit:{n:'Split squat con mancuernas',video:'split-squat',img:[['split-0','Arriba: piernas separadas'],['split-1','Abajo: rodilla trasera cerca del suelo']],pasos:[
   'Un pie adelante y otro atrás, con mancuernas a los lados.',
   'Inhala al bajar en vertical. Activa el suelo pélvico y exhala al subir. Abdomen firme al 50–70 %.',
   'La rodilla delantera sigue al pie.'],
@@ -792,7 +792,7 @@ const EXC={
   'Abdomen firme al 50 %. Sube solo hasta alinear el cuerpo (posición neutra) y aguanta 5 s.',
   'Nunca en hiperextensión. Baja controlado.'],
   clave:'Es fuerza de extensores en neutro, no movilidad lumbar.'},
- kremobisagra:{n:'Remo con mancuerna en bisagra, sin apoyo',img:[['remobis-1','Bisagra con la espalda neutra']],pasos:[
+ kremobisagra:{n:'Remo con mancuerna en bisagra, sin apoyo',video:'remo-bisagra',img:[['remobis-1','Bisagra con la espalda neutra']],pasos:[
   'En bisagra de cadera, con la columna neutra y una mancuerna en una mano.',
   'Abdomen firme al 50–70 %. Tira del codo atrás y exhala.',
   'El tronco no rota.'],
@@ -849,7 +849,7 @@ Object.assign(EX,{
   'Inhala y activa el abdomen al 70 % antes de bajar. Baja con el tronco vertical hasta donde mantienes la columna neutra.',
   'Activa el suelo pélvico y exhala al subir, sin soltar el abdomen. Nunca en apnea.'],
   clave:'El tronco vertical carga menos la zona lumbar que la sentadilla posterior.'},
- kmuertobarra:{n:'Peso muerto con barra o trap bar',img:[['sakmuerto-1','Inicio: cadera atrás, espalda neutra'],['sakmuerto-2','Agarre por fuera de las piernas'],['trapbar-0','Versión con trap bar']],pasos:[
+ kmuertobarra:{n:'Peso muerto con barra o trap bar',video:'peso-muerto',img:[['sakmuerto-1','Inicio: cadera atrás, espalda neutra'],['sakmuerto-2','Agarre por fuera de las piernas'],['trapbar-0','Versión con trap bar']],pasos:[
   'Barra sobre el medio del pie (o dentro de la trap bar), espalda neutra y dorsales activos.',
   'Inhala y activa el abdomen al 70 %. Activa el suelo pélvico y empuja el suelo, exhalando en la parte alta, con la barra pegada al cuerpo.',
   'Bloquea cadera y rodillas a la vez, sin echarte atrás. Baja con la cadera atrás y reajusta antes de la siguiente.'],
@@ -859,12 +859,12 @@ Object.assign(EX,{
   'Abdomen firme al 50–70 %. Tira de la barra al abdomen llevando los codos atrás y exhala.',
   'El tronco no se levanta para ayudar.'],
   clave:'Bisagra isométrica y espalda a la vez.'},
- klandmine:{n:'Landmine press a una mano, de pie',img:[['landmine-0','Barra a la altura del hombro'],['landmine-1','Empuje en diagonal']],pasos:[
+ klandmine:{n:'Landmine press a una mano, de pie',video:'landmine-press',img:[['landmine-0','Barra a la altura del hombro'],['landmine-1','Empuje en diagonal']],pasos:[
   'Extremo de la barra a la altura del hombro, de pie, pies a la anchura de la cadera.',
   'Abdomen firme al 50–70 %. Empuja en diagonal exhalando, sin rotar ni arquear la zona lumbar.',
   'Baja controlado. Cambia de lado.'],
   clave:'Antirrotación con empuje.'},
- kjammer:{n:'Landmine jammer (empuje explosivo)',img:[['jammer-0','Media sentadilla, barra al hombro'],['jammer-1','Extensión explosiva de piernas a brazo']],pasos:[
+ kjammer:{n:'Landmine jammer (empuje explosivo)',video:'landmine-jammer',img:[['jammer-0','Media sentadilla, barra al hombro'],['jammer-1','Extensión explosiva de piernas a brazo']],pasos:[
   'Extremo de la barra al hombro, en media sentadilla.',
   'Abdomen firme al 70 % y suelo pélvico activo. Extiende piernas y cadera de forma explosiva y empuja la barra hasta extender el brazo, exhalando fuerte.',
   'Recibe la barra de vuelta al hombro amortiguando con las piernas. Cambia de lado.'],
@@ -951,7 +951,7 @@ Object.assign(EX,{
   'Semanas 5–8: sentadilla goblet, con una mancuerna o kettlebell liviana pegada al pecho. Baja tan profundo como puedas con la espalda recta.',
   'Exhala al subir. Las rodillas siguen la dirección de los pies.'],
   clave:'Si duele la rodilla, usa una silla más alta y baja menos.'},
- gflex:{n:'Flexiones de brazos (progresión)',img:[['flexinc-0','Inclinada: manos en un apoyo alto'],['flexinc-1','Cuerpo recto de los talones a la cabeza'],['flexsuelo-0','En el suelo (semanas 7–8)'],['flexsuelo-1','Pecho cerca del suelo']],pasos:[
+ gflex:{n:'Flexiones de brazos (progresión)',video:'flex-pared',img:[['flexinc-0','Inclinada: manos en un apoyo alto'],['flexinc-1','Cuerpo recto de los talones a la cabeza'],['flexsuelo-0','En el suelo (semanas 7–8)'],['flexsuelo-1','Pecho cerca del suelo']],pasos:[
   'Elige la altura según la semana: pared (1–2), mesa o encimera (3–4), banco o silla firme (5–6), rodillas o suelo (7–8).',
   'Manos algo más anchas que los hombros y el cuerpo recto: abdomen y glúteos apretados.',
   'Baja el pecho hacia el apoyo con los codos a unos 45° del cuerpo y empuja hasta extender los brazos. Exhala al empujar.'],
@@ -966,7 +966,7 @@ Object.assign(EX,{
   'Exhala y sube la cadera empujando con los talones hasta alinear rodilla, cadera y hombro. Aprieta los glúteos arriba.',
   'Baja despacio. En las semanas 7–8, hazlo a una pierna.'],
   clave:'La zona lumbar no se arquea: el trabajo es de glúteo.'},
- gcurl:{n:'Zancada lateral',img:[],pasos:[
+ gcurl:{n:'Zancada lateral',video:'zancada-lateral',img:[],pasos:[
   'De pie con los pies juntos. Da un paso amplio al lado y lleva la cadera atrás sobre esa pierna, con la otra estirada.',
   'La rodilla que se dobla sigue la dirección del pie; el tronco se inclina un poco hacia delante con la espalda recta.',
   'Empuja el suelo para volver al centro. Exhala al volver.',
@@ -992,7 +992,7 @@ Object.assign(EX,{
   'Sube empujando con el pie de arriba, sin impulsarte con el de abajo. Exhala al subir.',
   'Baja despacio. Haz todas las repeticiones con una pierna y cambia.'],
   clave:'La rodilla sigue la dirección del pie. Desde la semana 5, con mancuernas o un escalón más alto.'},
- gpress:{n:'Press de hombros con mancuernas, sentado',img:[['pressh-0','Mancuernas a la altura de los hombros'],['pressh-1','Brazos arriba sin arquear la espalda']],pasos:[
+ gpress:{n:'Press de hombros con mancuernas, sentado',video:'press-sentado',img:[['pressh-0','Mancuernas a la altura de los hombros'],['pressh-1','Brazos arriba sin arquear la espalda']],pasos:[
   'Sentado con la espalda apoyada, una mancuerna en cada mano a la altura de los hombros.',
   'Empuja hacia arriba hasta casi extender los brazos. Exhala al subir.',
   'Baja controlado hasta la altura de las orejas.'],
@@ -1002,7 +1002,7 @@ Object.assign(EX,{
   'Tira de la mancuerna llevando el codo atrás, cerca del cuerpo. Exhala al tirar.',
   'Baja controlado. Haz todas las repeticiones y cambia de lado.'],
   clave:'El tronco no gira.'},
- gbisagra:{n:'Bisagra de cadera → peso muerto rumano con mancuernas',img:[['sakbisagra-2','De pie, peso delante de los muslos'],['sakbisagra-3','Cadera atrás con la espalda recta'],['rdl-0','Versión con barra']],pasos:[
+ gbisagra:{n:'Bisagra de cadera → peso muerto rumano con mancuernas',video:'bisagra-palo',img:[['sakbisagra-2','De pie, peso delante de los muslos'],['sakbisagra-3','Cadera atrás con la espalda recta'],['rdl-0','Versión con barra']],pasos:[
   'Semanas 1–2: con un palo apoyado en la espalda (cabeza, espalda alta y sacro en contacto). Lleva la cadera atrás sin perder el contacto y vuelve.',
   'Desde la semana 3: con mancuernas delante de los muslos. Rodillas suaves, cadera atrás y espalda recta; baja hasta media tibia o hasta donde mantengas la espalda recta.',
   'Sube empujando la cadera al frente y apretando los glúteos. Exhala al subir.'],
@@ -1142,7 +1142,7 @@ Object.assign(EX,{
   'Boca arriba, brazos al techo y caderas y rodillas a 90°. Semanas 1–4: activación suave del abdomen profundo (ombligo adentro y arriba, piso pélvico cerrado). Semanas 5–8: activación suave del abdomen.',
   'Exhala mientras extiendes brazo y pierna contrarios, despacio, y vuelve.',
   'Puntos de control: la zona lumbar no se despega, el abdomen no se abomba, respiras sin aguantar el aire.'],clave:CTRL},
- xbirddog:{n:'Bird dog',niv:['por partes (brazos, luego piernas)','completo','completo con banda'],img:[],pasos:[
+ xbirddog:{n:'Bird dog',video:'birddog',niv:['por partes (brazos, luego piernas)','completo','completo con banda'],img:[],pasos:[
   'En cuatro apoyos, manos bajo los hombros y rodillas bajo las caderas. Semanas 1–4: activación suave del abdomen profundo antes de moverte. Semanas 5–8: activación suave del abdomen.',
   'Exhala y extiende brazo y pierna contrarios hasta la horizontal; aguanta 3 s respirando.',
   'Puntos de control: la pelvis no rota (prueba con un vaso de plástico en la zona lumbar).'],clave:CTRL},
@@ -1153,7 +1153,7 @@ Object.assign(EX,{
  xpallof:{n:'Pallof press',video:'pallof-pie',niv:['de pie, banda suave','semirrodillas','de pie, banda dura'],img:[['pallof-0','Manos en el esternón'],['pallof-1','Brazos extendidos']],pasos:[
   'De lado al anclaje de la banda. Exhala mientras extiendes los brazos al frente y aguanta 2 s.',
   'Puntos de control: el tronco no gira, la pelvis no se mueve.'],clave:CTRL},
- xempuje:{n:'Flexión de brazos',niv:['en la pared','en mesa o banco','de rodillas o en el suelo'],img:[['flexinc-0','Manos en un apoyo alto'],['flexinc-1','Cuerpo recto']],pasos:[
+ xempuje:{n:'Flexión de brazos',video:'flexiones',niv:['en la pared','en mesa o banco','de rodillas o en el suelo'],img:[['flexinc-0','Manos en un apoyo alto'],['flexinc-1','Cuerpo recto']],pasos:[
   'Manos algo más anchas que los hombros, cuerpo recto de los talones a la cabeza.',
   'Baja en 3 s con los codos a unos 45° del cuerpo y empuja exhalando.',
   'Puntos de control: escápulas que se mueven (se juntan al bajar y se separan al subir), sin hundir la zona lumbar.'],clave:CTRL},
@@ -1337,7 +1337,7 @@ const CLEARL=[
 /* Correctivos (progresiones del FMS de Sakros) */
 const CORRN={ds:4,hs:4,il:4,sm:4,aslr:4,tspu:4,rs:4};
 Object.assign(EX,{
- fds1:{n:'Toque de pies con rodillo',img:[],pasos:['De pie con las puntas de los pies sobre un libro o tabla y un rodillo o un cojín entre las rodillas.','Brazos arriba e inhala. Exhala y baja a tocar las puntas de los pies apretando el cojín, con las rodillas estiradas.','Sube desenrollando la columna. Alterna series con las puntas y con los talones elevados.'],clave:'Prepara la flexión de cadera y el control del tronco de la sentadilla profunda.'},
+ fds1:{n:'Toque de pies con rodillo',video:'fds1',img:[],pasos:['De pie con las puntas de los pies sobre un libro o tabla y un rodillo o un cojín entre las rodillas.','Brazos arriba e inhala. Exhala y baja a tocar las puntas de los pies apretando el cojín, con las rodillas estiradas.','Sube desenrollando la columna. Alterna series con las puntas y con los talones elevados.'],clave:'Prepara la flexión de cadera y el control del tronco de la sentadilla profunda.'},
  fds2:{n:'Toque de pies a sentadilla profunda',img:[],pasos:['Pies al ancho de los hombros. Baja a tocar las puntas de los pies con las rodillas estiradas.','Sin soltar los pies, baja la cadera a una sentadilla profunda: los codos empujan las rodillas hacia fuera y el pecho sube.','Desde abajo, sube la cadera sin soltar los pies y vuelve a bajar.'],clave:'Talones siempre en el suelo.'},
  fds3:{n:'Sentadilla con apoyo y brazos arriba',img:[],pasos:['De pie frente a un rodillo vertical o una silla firme, con las manos apoyadas.','Baja a una sentadilla profunda apoyado, con los talones en el suelo.','Abajo, suelta un brazo y llévalo arriba, luego el otro. Sube con los brazos arriba.'],clave:'Busca el tronco recto y las rodillas sobre los pies.'},
  fds4:{n:'Sentadilla profunda con banda en las rodillas',img:[['monster-0','Mini banda sobre las rodillas']],pasos:['Mini banda sobre las rodillas y brazos arriba.','Baja lento a una sentadilla profunda empujando las rodillas contra la banda, con los talones en el suelo.','Sube sin dejar que las rodillas se junten.'],clave:'Es la sentadilla del test: hazla con la misma técnica.'},
@@ -1346,26 +1346,26 @@ Object.assign(EX,{
  fhs3:{n:'Elevación a una pierna con pausa',img:[],pasos:['De pie, palo sobre los hombros.','Sube una rodilla a 90° con la punta del pie hacia arriba y aguanta 3 s sin que la pelvis ni el palo se inclinen.','Baja controlado y cambia de pierna.'],clave:'Pelvis nivelada y pierna de apoyo estirada.'},
  fhs4:{n:'Elevación a una pierna con rotación',img:[],pasos:['Igual que la anterior: sube la rodilla a 90° con el palo sobre los hombros.','Arriba, abre la rodilla hacia el lado y vuelve al centro antes de bajar.'],clave:'El palo y la pelvis no se mueven.'},
  fil1:{n:'Dorsiflexión de tobillo arrodillado',img:[['tobillo-0','Rodilla adelante sin levantar el talón']],pasos:['Arrodillado, con un pie adelante y un palo apoyado en el suelo junto al dedo pequeño de ese pie.','Lleva la rodilla adelante, por fuera del palo, sin levantar el talón. Aguanta 2 s y vuelve.'],clave:'El talón no se despega del suelo.'},
- fil2:{n:'Estocada arrodillada con despegue',img:[['split-1','Rodilla de atrás cerca del suelo']],pasos:['En posición de estocada con la rodilla de atrás en el suelo y el tronco erguido.','Despega la rodilla de atrás unos centímetros y aguanta 2 s sin que el tronco se mueva. Vuelve a apoyarla suave.'],clave:'Pies en línea, como en el test.'},
+ fil2:{n:'Estocada arrodillada con despegue',video:'fil2',img:[['split-1','Rodilla de atrás cerca del suelo']],pasos:['En posición de estocada con la rodilla de atrás en el suelo y el tronco erguido.','Despega la rodilla de atrás unos centímetros y aguanta 2 s sin que el tronco se mueva. Vuelve a apoyarla suave.'],clave:'Pies en línea, como en el test.'},
  fil3:{n:'Rotación de tronco arrodillado',img:[],pasos:['Rodilla de atrás en el suelo, pies en línea y palo sobre los hombros.','Gira el tronco hacia el lado de la pierna de adelante y vuelve, sin mover la pelvis.'],clave:'Gira desde la espalda alta; la pelvis queda mirando al frente.'},
  fil4:{n:'Estocada isométrica con banda',img:[['chop-0','Tirón de banda en diagonal']],pasos:['En estocada, con la rodilla de atrás cerca del suelo y una banda anclada al lado, a la altura del pecho.','Mantén la posición y tira de la banda hacia el pecho, sin que el tronco gire ni se incline.'],clave:'El tronco queda quieto mientras los brazos trabajan.'},
- fsm1:{n:'Brazos contra la pared',img:[],pasos:['Sentado con la espalda contra la pared y las piernas cruzadas. Brazos en «W» contra la pared.','Desliza los brazos hacia arriba sin despegar codos, muñecas ni la zona lumbar de la pared, y vuelve.'],clave:'Exhala al subir; no fuerces si el hombro molesta.'},
- fsm2:{n:'Remo con palo contra la pared',img:[],pasos:['Sentado con la espalda contra la pared. Toma un palo por detrás de la espalda, una mano arriba y la otra abajo, en diagonal.','Con la mano de abajo tira del palo para llevar el brazo de arriba más alto, sin despegar la espalda de la pared. Aguanta 2 s.'],clave:'Hazlo con ambos lados; más series del lado que cuesta más.'},
- fsm3:{n:'Apertura de brazo de lado',img:[],pasos:['De lado, con las rodillas dobladas a 90° apoyadas sobre un cojín y los brazos estirados adelante.','Abre el brazo de arriba hacia el otro lado siguiéndolo con la mirada, sin que las rodillas se despeguen. Exhala al abrir.'],clave:'Gira la espalda alta, no la zona lumbar.'},
- fsm4:{n:'Círculo de hombro con tronco rotado',img:[],pasos:['En la misma posición de lado, con las rodillas apoyadas.','Lleva el brazo de arriba en un círculo grande por encima de la cabeza y por detrás de la espalda, sin despegar las rodillas.'],clave:'Movimiento lento y amplio, respirando.'},
- faslr1:{n:'Elevación de pierna con ayuda de las manos',img:[],pasos:['Boca arriba, una pierna estirada en el suelo.','Toma la otra pierna por detrás del muslo y súbela estirada lo más que puedas. Aguanta 2 s mientras empujas la pierna del suelo contra el suelo.'],clave:'La pierna de abajo no se dobla.'},
+ fsm1:{n:'Brazos contra la pared',video:'fsm1',img:[],pasos:['Sentado con la espalda contra la pared y las piernas cruzadas. Brazos en «W» contra la pared.','Desliza los brazos hacia arriba sin despegar codos, muñecas ni la zona lumbar de la pared, y vuelve.'],clave:'Exhala al subir; no fuerces si el hombro molesta.'},
+ fsm2:{n:'Remo con palo contra la pared',video:'fsm2',img:[],pasos:['Sentado con la espalda contra la pared. Toma un palo por detrás de la espalda, una mano arriba y la otra abajo, en diagonal.','Con la mano de abajo tira del palo para llevar el brazo de arriba más alto, sin despegar la espalda de la pared. Aguanta 2 s.'],clave:'Hazlo con ambos lados; más series del lado que cuesta más.'},
+ fsm3:{n:'Apertura de brazo de lado',video:'apertura-lado',img:[],pasos:['De lado, con las rodillas dobladas a 90° apoyadas sobre un cojín y los brazos estirados adelante.','Abre el brazo de arriba hacia el otro lado siguiéndolo con la mirada, sin que las rodillas se despeguen. Exhala al abrir.'],clave:'Gira la espalda alta, no la zona lumbar.'},
+ fsm4:{n:'Círculo de hombro con tronco rotado',video:'circulo-hombro',img:[],pasos:['En la misma posición de lado, con las rodillas apoyadas.','Lleva el brazo de arriba en un círculo grande por encima de la cabeza y por detrás de la espalda, sin despegar las rodillas.'],clave:'Movimiento lento y amplio, respirando.'},
+ faslr1:{n:'Elevación de pierna con ayuda de las manos',video:'faslr1',img:[],pasos:['Boca arriba, una pierna estirada en el suelo.','Toma la otra pierna por detrás del muslo y súbela estirada lo más que puedas. Aguanta 2 s mientras empujas la pierna del suelo contra el suelo.'],clave:'La pierna de abajo no se dobla.'},
  faslr2:{n:'Elevación de pierna con banda',img:[],pasos:['Boca arriba, con una banda o toalla en el pie de la pierna que sube.','Sube la pierna estirada con ayuda de la banda. Arriba, dobla la rodilla y vuelve a estirarla; baja lento.'],clave:'Gana rango sin que la pelvis se mueva.'},
  faslr3:{n:'Bajada de la pierna contraria',img:[],pasos:['Boca arriba, sostén una pierna arriba con la banda.','Baja la otra pierna estirada hasta casi tocar el suelo y vuelve a subirla, sin que la zona lumbar se despegue.'],clave:'Activación suave del abdomen y respiración continua.'},
  faslr4:{n:'Bajada de pierna con el core activo',img:[],pasos:['Boca arriba, con una pesa liviana sostenida arriba con el brazo estirado. Activación suave del abdomen.','Sube y baja una pierna estirada sin que la zona lumbar se despegue ni la pesa se mueva.'],clave:'Es la elevación del test, ahora con el tronco desafiado.'},
  ftspu1:{n:'Brazos al frente arrodillado',img:[],pasos:['Arrodillado, tronco erguido y una pesa liviana pegada al pecho.','Estira los brazos al frente y vuelve, sin arquear la zona lumbar ni mover la pelvis. Abdomen activo.'],clave:'Costillas abajo, glúteos apretados.'},
- ftspu2:{n:'Caminata de manos con rodillas apoyadas',img:[['plancha-0','Plancha sobre rodillas']],pasos:['En cuatro apoyos, con el abdomen activo.','Camina con las manos adelante hasta una plancha sobre las rodillas y vuelve, sin que la cadera se hunda.'],clave:'El cuerpo se mueve en bloque.'},
+ ftspu2:{n:'Caminata de manos con rodillas apoyadas',video:'ftspu2',img:[['plancha-0','Plancha sobre rodillas']],pasos:['En cuatro apoyos, con el abdomen activo.','Camina con las manos adelante hasta una plancha sobre las rodillas y vuelve, sin que la cadera se hunda.'],clave:'El cuerpo se mueve en bloque.'},
  ftspu3:{n:'Flexión de brazos en cajón',img:[['flexinc-0','Manos en un apoyo alto'],['flexinc-1','Cuerpo recto']],pasos:['Manos en un cajón o banco firme, cuerpo recto de los talones a la cabeza.','Baja el pecho al borde y empuja, sin que la cadera se quede atrás.'],clave:'Sube en bloque, como en el test.'},
  ftspu4:{n:'Bajada lenta de flexión',img:[['flexsuelo-0','Plancha alta'],['flexsuelo-1','Abajo, en bloque']],pasos:['Desde la plancha alta, baja lento en 3–4 s hasta el suelo, en bloque.','Apoya las rodillas para volver arriba y repite.'],clave:'Sin que la zona lumbar se hunda.'},
  frs1:{n:'Plancha alta con rodilla al codo',img:[['plancha-1','Plancha alta']],pasos:['En plancha alta, manos bajo los hombros.','Lleva una rodilla hacia el codo del mismo lado, lento, sin que la cadera rote ni suba. Alterna.'],clave:'La pelvis queda paralela al suelo.'},
- frs2:{n:'Elevación de cadera de lado',img:[['sidebridge-0','Apoyo en antebrazo y rodillas'],['sidebridge-1','Cadera arriba']],pasos:['De lado, apoyado en el antebrazo y con las rodillas dobladas.','Sube la cadera hasta alinear el cuerpo y aguanta 2 s. Baja lento.'],clave:'El hombro queda sobre el codo.'},
+ frs2:{n:'Elevación de cadera de lado',video:'lateral-rodillas',img:[['sidebridge-0','Apoyo en antebrazo y rodillas'],['sidebridge-1','Cadera arriba']],pasos:['De lado, apoyado en el antebrazo y con las rodillas dobladas.','Sube la cadera hasta alinear el cuerpo y aguanta 2 s. Baja lento.'],clave:'El hombro queda sobre el codo.'},
  frs3:{n:'Bird dog con codo a rodilla',img:[],pasos:['En cuatro apoyos, activación suave del abdomen.','Extiende brazo y pierna contrarios hasta la horizontal, aguanta 2 s y junta el codo con la rodilla bajo el cuerpo.'],clave:'Prueba con un vaso en la zona lumbar: no se debe caer.'},
  frs4:{n:'Gateo con rodillas suspendidas',img:[],pasos:['En cuatro apoyos, despega las rodillas 2–3 cm del suelo.','Avanza mano y pie contrarios a la vez, adelante y atrás, sin que la cadera se mueva.'],clave:'Pasos cortos y lentos.'},
- frodPI:{n:'Rodillo: piernas',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en cuádriceps, aductores, pantorrillas y glúteo: unos 30 s por zona, lento.','En un punto sensible, quédate encima 2–3 respiraciones. Molestia tolerable, nunca dolor fuerte.'],clave:'Prepara el tejido de lo que vas a entrenar hoy.'},
+ frodPI:{n:'Rodillo: piernas',video:'tejido-a',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en cuádriceps, aductores, pantorrillas y glúteo: unos 30 s por zona, lento.','En un punto sensible, quédate encima 2–3 respiraciones. Molestia tolerable, nunca dolor fuerte.'],clave:'Prepara el tejido de lo que vas a entrenar hoy.'},
  frodPS:{n:'Rodillo: espalda alta y hombros',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo']],pasos:['Rodillo bajo la espalda alta: extiéndete sobre él en 3–4 alturas, con las manos detrás de la cabeza.','De lado, rodillo bajo la axila para el dorsal. Pelota contra la pared para el pectoral: unos 30 s por zona.'],clave:'Respira lento y suelta el peso sobre el rodillo.'},
  frodPC:{n:'Rodillo: cuerpo completo',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en espalda alta, glúteo, cuádriceps y pantorrillas: unos 20–30 s por zona.','Quédate un poco más donde sientas más tensión.'],clave:'Rápido y amplio: es preparación, no un masaje largo.'},
  frodPR:{n:'Rodillo: pies y piernas',img:[['sakrodillo-1','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Pelota bajo la planta del pie, 30 s por pie.','Rodillo en pantorrillas, cuádriceps y glúteo, unos 30 s por zona.'],clave:'Los pies y las pantorrillas son los que más reciben en la carrera y el salto.'},
@@ -1922,13 +1922,13 @@ function rows0(d,s){if(bk()>1)return conCorr(rowsBloque(alt()?srcDia(d,s):d,bk()
    intervalos tipo rally y prevención de hombro. Las salidas y el arrastre quedan como complementario en la arena. */
 const esVoley=()=>prog()==='rend'&&atl().deporte==='voley';
 Object.assign(EX,{
- vhombro:{n:'Hombro de atacante: manguito y escápula',img:[],pasos:[
+ vhombro:{n:'Hombro de atacante: manguito y escápula',video:'hombro-atacante',img:[],pasos:[
   'Rotación externa con banda a 90° (codo a la altura del hombro): 10 por lado, bajada lenta en 3 s.',
   'Y-T-W en bisagra de cadera: 6 de cada letra, pulgares hacia arriba y escápulas atrás y abajo.',
   'Flexión de escápula (push-up plus) en plancha alta: 10, empujando el suelo al final.',
   'Puntos de control: el cuello relajado y el movimiento sale de la escápula, no de la zona lumbar.'],
   clave:'El hombro del atacante recibe cientos de remates por semana: este bloque prepara el manguito rotador y la escápula para frenar el brazo.'},
- vsalto:{n:'Salto de ataque (aproximación de 3 pasos)',img:[],pasos:[
+ vsalto:{n:'Salto de ataque (aproximación de 3 pasos)',video:'salto-ataque',img:[],pasos:[
   'Aproximación de 3 pasos (diestro: izquierda-derecha-izquierda). El penúltimo paso es largo y rápido, con los brazos atrás.',
   'Junta los pies, baja la cadera y lanza los brazos arriba para despegar a dos pies con todo.',
   'Arriba, brazo de ataque atrás y codo alto, como si fueras a rematar.',
@@ -3192,7 +3192,7 @@ Responde solo con JSON con esta forma: {"generales":["..."],"reglas":[{"ej":"id"
 
 /* ---------- Modo automático ---------- */
 const ALT={
- landmine:{n:'Landmine press a una mano',img:[['landmine-0','Barra a la altura del hombro'],['landmine-1','Empuje en diagonal hasta extender el brazo']],pasos:[
+ landmine:{n:'Landmine press a una mano',video:'landmine-press',img:[['landmine-0','Barra a la altura del hombro'],['landmine-1','Empuje en diagonal hasta extender el brazo']],pasos:[
   'Ancla un extremo de la barra en una esquina o en un landmine. Sujeta el otro extremo a la altura del hombro con una mano.',
   'Flexiona un poco las rodillas y empuja la barra en diagonal, hacia arriba y adelante, hasta extender el brazo. Usa el impulso de piernas.',
   'El brazo sube en el plano escapular y no llega a la vertical: por eso cuida el hombro.',
@@ -3215,7 +3215,7 @@ const ALT={
   'De pie, con el antepié sobre un escalón o en máquina y las rodillas extendidas.',
   'Sube de puntillas lo más alto posible y baja hasta estirar el tobillo. Para el tendón, lento: 3 s arriba y 3 s abajo.',
   'Añade carga con mancuernas, barra o máquina.']},
- bandalateral:{n:'Desplazamiento lateral con mini band',img:[['monster-0','Mini band, media sentadilla'],['monster-1','Paso lateral sin juntar los pies']],pasos:[
+ bandalateral:{n:'Desplazamiento lateral con mini band',video:'mini-band',img:[['monster-0','Mini band, media sentadilla'],['monster-1','Paso lateral sin juntar los pies']],pasos:[
   'Banda en los tobillos o sobre las rodillas, en media sentadilla.',
   'Da pasos laterales cortos sin juntar los pies, con las rodillas empujando hacia fuera.',
   'Tronco quieto, sin balancearte.']},
@@ -3235,11 +3235,11 @@ const ALT={
   'Skip A: rodilla a la altura de la cadera, punta del pie arriba, apoyo bajo la cadera.',
   'Skip B: igual, pero extiende la pierna delante y «araña» el suelo hacia atrás.',
   'Ritmo técnico, no máximo.']},
- aterrizaje:{n:'Aterrizajes a dos pies',img:[['drop-0','Arriba de un cajón bajo'],['drop-1','Caída a dos pies, aguanta 2 s']],pasos:[
+ aterrizaje:{n:'Aterrizajes a dos pies',video:'aterrizaje-2',img:[['drop-0','Arriba de un cajón bajo'],['drop-1','Caída a dos pies, aguanta 2 s']],pasos:[
   'Cajón de 20–30 cm. Da un paso al frente sin saltar.',
   'Cae a dos pies con las rodillas sobre los pies y la cadera atrás.',
   'Aguanta 2 s la caída, sin rebotar.']},
- copenhague:{n:'Plancha Copenhague',img:[],pasos:[
+ copenhague:{n:'Plancha Copenhague',video:'copenhague',img:[],pasos:[
   'De costado, con el antebrazo bajo el hombro y la pierna de arriba apoyada en un banco (rodilla en el banco para la versión corta, tobillo para la larga).',
   'Sube la cadera hasta alinear el cuerpo, apretando la pierna de arriba contra el banco. La de abajo queda colgando o en el suelo.',
   'Aguanta el tiempo marcado sin que la cadera caiga. Empieza con la versión corta.']},
