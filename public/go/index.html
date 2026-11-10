@@ -3599,15 +3599,12 @@ function cardInstalar(){
 /* Hoy */
 function renderHoy(m){
   if(esPrep())return renderHoyPrep(m);
-  {const ci=cardInstalar();if(ci)m.append(ci)}
-  {const ca=cardAlerta();if(ca)m.append(ca)}
-  {const cp=cardPartida();if(cp)m.append(cp)}
-  {const sb=cardSugBase();if(sb)m.append(sb)}
+  // Al entrar, lo primero es la sesión de hoy; el resto de las tarjetas va debajo.
+  const extras=()=>[cardAlerta(),cardPartida(),cardSugBase(),cardInstalar()].filter(Boolean).forEach(c=>m.append(c));
   const a=atl(),N=nextSes(),{s,d}=N,r=rows(d,s);
-  if(N.fin&&!esBase()){m.append(cardFinBloque());const cf=cardMiSuscripcion();if(cf)m.append(cf);return}
+  if(N.fin&&!esBase()){m.append(cardFinBloque());const cf=cardMiSuscripcion();if(cf)m.append(cf);extras();return}
   const pt=progTotal();
-  if(!N.fin&&bloqueada(s)){m.append(cardPaywall());return}
-  if(esBase()&&!N.fin){const sb=cardSaltoBase();if(sb)m.append(sb)}
+  if(!N.fin&&bloqueada(s)){m.append(cardPaywall());extras();return}
   m.append(h('section',{class:'card hero'},
     h('span',{class:'wholbl',text:PROG[prog()].split(' (')[0]+(bk()>1?' · bloque '+bk():'')}),
     h('div',{class:'bar','aria-label':'Avance del programa: '+pt+' %'},h('i',{style:'width:'+pt+'%'})),
@@ -3616,11 +3613,12 @@ function renderHoy(m){
     N.fin?h('p',{text:esBase()?'Haz tus tests de salida para ver cuánto mejoraste y empieza tu programa de entrenamiento.':'Repite los tests para ver cuánto mejoraste y habla con tu entrenador sobre el siguiente bloque.'}):h('p',{class:'hoytit',text:((esBase()?DIAX:esGlob()?DIAG:esCore()?DIAC:DIA)[srcDia(d,s)]||'')+(esBase()?' · módulo '+MOD[(modulos().length>1&&srcDia(d,s)==='B')?modulos()[1]:modulos()[0]].toLowerCase():'')}),
     N.fin?null:h('p',{class:'meta',text:'≈ '+dur(d,s)+' min · '+r.length+' ejercicios'+(N.n?' · '+N.n+' hechos':'')}),
     N.fin&&esBase()?h('div',{class:'row'},h('button',{class:'btn primary big',onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),programa:atl().siguiente||'global',t:Date.now()});UI.sem=1;UI.dia=DIAS()[0];saveUI();render();scrollTo(0,0)}},'Empezar Entrenamiento '+(PROGC[atl().siguiente]||PROGC.global)),h('button',{class:'linkbtn',onclick:()=>{UI.tab='tests';render()}},'Antes, mis tests de salida')):N.fin?h('button',{class:'btn primary big',onclick:()=>{UI.tab='tests';render()}},'Ir a los tests'):h('button',{class:'btn primary big',onclick:()=>iniciarSesion(s,d)},N.n?'Continuar sesión':'Empezar'),
-    N.fin?null:h('details',{},h('summary',{},'Qué vas a hacer hoy'),h('ol',{},r.map(it=>{const A=autoEj(s,d,it);return h('li',{},A.n+' · ',h('span',{class:'note',text:A.pres}))}))),
+    N.fin?null:h('details',{open:true},h('summary',{},'Qué vas a hacer hoy'),h('ol',{},r.map(it=>{const A=autoEj(s,d,it);return h('li',{},A.n+' · ',h('span',{class:'note',text:A.pres}))}))),
     N.fin?null:h('div',{class:'row'},h('button',{class:'linkbtn',onclick:()=>{UI.sem=s;UI.dia=d;UI.tab='sesion';saveUI();render()}},'Ver la sesión completa'),
       DIAS().length>1?h('span',{class:'note'},'Otro día: ',...DIAS().filter(x=>x!==d).map(x=>h('button',{class:'linkbtn',style:'margin-left:8px',onclick:()=>iniciarSesion(s,x)},dayName(x)))):null)));
+  if(esBase()&&!N.fin){const sb=cardSaltoBase();if(sb)m.append(sb)}
+  extras();
   const cs=cardMiSuscripcion();if(cs)m.append(cs);
-  // Los tests y la evaluación de movilidad y control ya están en «Tu punto de partida», arriba.
   {const cv=cardComplVoley(s);if(cv)m.append(cv)}
   {const cr=cardRecordatorios();if(cr)m.append(cr)}
   m.append(h('section',{class:'card'},h('h2',{text:'Coach IA'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
