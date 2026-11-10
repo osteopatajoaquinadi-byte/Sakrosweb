@@ -217,6 +217,12 @@ test.describe("Sakros Go", () => {
     await expect(page.getByRole("tab", { name: "Hoy" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByRole("heading", { name: "Termina tu evaluación de movimiento" })).toBeVisible();
     await expect(page.getByText("3 de 7 pruebas")).toBeVisible();
+    // Lo primero que ve es su sesión de hoy; la evaluación queda debajo.
+    const orden = await page.evaluate(() => [...document.querySelectorAll("main h2")].map((x) => x.textContent || ""));
+    const iSes = orden.findIndex((t) => /Hoy toca/.test(t)), iEval = orden.findIndex((t) => /evaluación de movimiento/.test(t));
+    expect(iSes).toBeGreaterThanOrEqual(0);
+    expect(iSes).toBeLessThan(iEval);
+    await expect(page.getByText("Qué vas a hacer hoy")).toBeVisible();
     await expect(page.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "3");
     await page.getByRole("button", { name: "Seguir mi evaluación" }).click();
     await expect(page.getByText("3 de 7 pruebas").first()).toBeVisible();
