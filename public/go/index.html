@@ -292,8 +292,8 @@ function videoURL(k){return '/go/media/'+k+'.mp4'}
 /* Resumen visible del ejercicio (sin abrir «Cómo se hace»): en los ejercicios compuestos, la lista de lo que
    se hace; en los simples, la clave de ejecución. */
 const RES={
-  tejidoA:['Rodillo en gemelos','isquiotibiales','cuádriceps','pelotita en glúteo','kettlebell en psoas · elige 3, 30 s por lado'],
-  tejidoB:['Rack en trapecio','dorsal ancho','rotadores del hombro','pelotita en gemelos y glúteo','kettlebell en psoas · elige 3, 30 s por lado'],
+  tejidoA:['Rodillo en gemelos','isquiotibiales','cuádriceps','pelotita en glúteo','kettlebell en psoas · elige 2–3 grupos, 45–90 s cada uno'],
+  tejidoB:['Rack en trapecio','dorsal ancho','rotadores del hombro','pelotita en gemelos y glúteo','kettlebell en psoas · elige 2–3 grupos, 45–90 s cada uno'],
   movA:['Aductores en cuatro apoyos','psoas en caballero','rotación','extensión de piernas','rotación de tronco en caballero · 3 por lado'],
   pilarA:['Plancha frontal 30 s','plancha lateral 20 s/lado','puente glúteo ×10','Pallof ×8/lado · sin pausa'],
   pilarB:['Plancha frontal 30 s','plancha lateral 20 s/lado','puente glúteo ×10','Pallof ×8/lado','pared: marching y switches'],
@@ -357,21 +357,21 @@ const r8=(a,d)=>[a,a,a,d,a,a,a,d];
 const fill=v=>Array(8).fill(v);
 const EX={
  tejidoA:{n:'Tejido blando: tren inferior',video:'tejido-a',img:[['sakrodillo-3','Rodillo en isquiotibiales y zona poplítea'],['sakrodillo-2','Rodillo en isquiotibiales: una pierna'],['sakrodillo-1','Rodillo en cuádriceps: apoyo en antebrazos']],pasos:[
-  'Tiempo máximo: 3 min. Elige las 3 zonas que más lo necesiten hoy, 30 s por lado. El resto, en casa o al final de la sesión.',
-  'Rodillo en gemelos: 30–45 s por pierna, rodando lento del tendón de Aquiles a la corva. Cruza la otra pierna encima para dar más presión.',
-  'Rodillo en isquiotibiales y zona poplítea: 30–45 s por pierna, de la rodilla a la cadera. En la zona poplítea, presión sostenida y suave, sin insistir en el centro del hueco.',
-  'Rodillo en cuádriceps: boca abajo, apoyado en los antebrazos, 30–45 s por pierna, de la rodilla a la cadera.',
-  'Pelotita en glúteo: sentado sobre la pelotita, 30–45 s por lado. Cruza el tobillo sobre la rodilla para llegar a los rotadores profundos.',
-  'Kettlebell invertida en psoas: boca abajo, con el asa apoyada en el abdomen entre el ombligo y la espina ilíaca anterosuperior. Respira lento y deja que el peso entre con cada exhalación. 60 s por lado.'],
+  'Elige 2 o 3 grupos musculares, los que más lo necesiten hoy. Mínimo 45 s y máximo 90 s por grupo muscular. El resto, en casa o al final de la sesión.',
+  'Rodillo en gemelos: 45–90 s por pierna, rodando lento del tendón de Aquiles a la corva. Cruza la otra pierna encima para dar más presión.',
+  'Rodillo en isquiotibiales y zona poplítea: 45–90 s por pierna, de la rodilla a la cadera. En la zona poplítea, presión sostenida y suave, sin insistir en el centro del hueco.',
+  'Rodillo en cuádriceps: boca abajo, apoyado en los antebrazos, 45–90 s por pierna, de la rodilla a la cadera.',
+  'Pelotita en glúteo: sentado sobre la pelotita, 45–90 s por lado. Cruza el tobillo sobre la rodilla para llegar a los rotadores profundos.',
+  'Kettlebell invertida en psoas: boca abajo, con el asa apoyada en el abdomen entre el ombligo y la espina ilíaca anterosuperior. Respira lento y deja que el peso entre con cada exhalación. 60–90 s por lado.'],
   clave:'Presión tolerable (hasta 6/10), sin dolor punzante. En el psoas, retira la kettlebell si notas el pulso aórtico bajo el asa o un dolor que se irradia.'},
  tejidoB:{n:'Tejido blando: tren superior y cadera',img:[],pasos:[
-  'Tiempo máximo: 3 min. Elige las 3 zonas que más lo necesiten hoy, 30 s por lado. El resto, en casa o al final de la sesión.',
-  'Rack en trapecio superior: colócate bajo la barra del rack a la altura del hombro, apoya el trapecio superior y flexiona las rodillas para dar presión. 30–45 s por lado, inclinando suave la cabeza hacia el lado contrario.',
-  'Rack o pelotita en dorsal ancho: de costado contra el parante del rack (o con la pelotita contra la pared), bajo la axila y con el brazo arriba. 30–45 s por lado.',
-  'Pelotita en rotadores externos del hombro: contra la pared, sobre la escápula (infraespinoso). Mueve el brazo en rotación interna y externa. 30–45 s por lado.',
-  'Pelotita en gemelos: sentado, con la pantorrilla sobre la pelotita. 30–45 s por pierna.',
-  'Pelotita en glúteo: 30–45 s por lado.',
-  'Kettlebell invertida en psoas: 60 s por lado, igual que en el día A.'],
+  'Elige 2 o 3 grupos musculares, los que más lo necesiten hoy. Mínimo 45 s y máximo 90 s por grupo muscular. El resto, en casa o al final de la sesión.',
+  'Rack en trapecio superior: colócate bajo la barra del rack a la altura del hombro, apoya el trapecio superior y flexiona las rodillas para dar presión. 45–90 s por lado, inclinando suave la cabeza hacia el lado contrario.',
+  'Rack o pelotita en dorsal ancho: de costado contra el parante del rack (o con la pelotita contra la pared), bajo la axila y con el brazo arriba. 45–90 s por lado.',
+  'Pelotita en rotadores externos del hombro: contra la pared, sobre la escápula (infraespinoso). Mueve el brazo en rotación interna y externa. 45–90 s por lado.',
+  'Pelotita en gemelos: sentado, con la pantorrilla sobre la pelotita. 45–90 s por pierna.',
+  'Pelotita en glúteo: 45–90 s por lado.',
+  'Kettlebell invertida en psoas: 60–90 s por lado, igual que en el día A.'],
   clave:'Presión tolerable (hasta 6/10), sin dolor punzante. En el psoas, retira la kettlebell si notas el pulso aórtico o un dolor que se irradia.'},
  movA:{n:'Movilidad: cadera y tronco',video:'movilidad-cadera',img:[['flexor-0','Caballero: glúteo activo, rodilla hacia delante'],['wgs-0','Estocada desde cuatro apoyos'],['wgs-1','Manos abajo, una por dentro de la pierna: rotación']],pasos:[
   'Tiempo máximo: 4 min, sin pausas. En la sesión haz 3 repeticiones de cada paso por lado (aductores ×6). Las variantes van en lugar de un ejercicio, no además.',
@@ -540,7 +540,7 @@ const RPE_SQ=[7,'7–8',8,6,8,'8–9',9,null];
 const RESERVA={6:'quedan 4 en reserva',7:'quedan 3 en reserva','7–8':'quedan 2–3 en reserva',8:'quedan 2 en reserva','8–9':'quedan 1–2 en reserva',9:'queda 1 en reserva'};
 const PLAN={
  A:[
-  {id:'tejidoA',b:'1a',p:fill('3 min')},
+  {id:'tejidoA',b:'1a',p:fill('3–4 min · 2–3 grupos, 45–90 s cada uno')},
   {id:'movA',b:'1b',p:fill('4 min')},
   {id:'pilarA',b:'1c',p:r8('1 vuelta','1 vuelta'),pM:r8('2 vueltas','1 vuelta')},
   {id:'actA',b:'1d',p:r8('1 serie','1 serie'),pM:r8('2 series','1 serie')},
@@ -555,7 +555,7 @@ const PLAN={
   {id:'kpallofsr',b:'6',p:['3×8/lado','3×10/lado','3×12/lado','2×8/lado','3×8/lado · banda más fuerte','3×10/lado · banda más fuerte','3×10/lado · 3 s','2×8/lado']},
   {id:'regen',b:'7',p:fill('2 min')}],
  B:[
-  {id:'tejidoB',b:'1a',p:fill('3 min')},
+  {id:'tejidoB',b:'1a',p:fill('3–4 min · 2–3 grupos, 45–90 s cada uno')},
   {id:'movB',b:'1b',p:fill('4 min')},
   {id:'pilarB',b:'1c',p:r8('1 vuelta + pared','1 vuelta + pared'),pM:r8('2 vueltas + pared','1 vuelta + pared')},
   {id:'actB',b:'1d',p:r8('1 serie','1 serie'),pM:r8('2 series','1 serie')},
@@ -1365,10 +1365,10 @@ Object.assign(EX,{
  frs2:{n:'Elevación de cadera de lado',video:'lateral-rodillas',img:[['sidebridge-0','Apoyo en antebrazo y rodillas'],['sidebridge-1','Cadera arriba']],pasos:['De lado, apoyado en el antebrazo y con las rodillas dobladas.','Sube la cadera hasta alinear el cuerpo y aguanta 2 s. Baja lento.'],clave:'El hombro queda sobre el codo.'},
  frs3:{n:'Bird dog con codo a rodilla',img:[],pasos:['En cuatro apoyos, activación suave del abdomen.','Extiende brazo y pierna contrarios hasta la horizontal, aguanta 2 s y junta el codo con la rodilla bajo el cuerpo.'],clave:'Prueba con un vaso en la zona lumbar: no se debe caer.'},
  frs4:{n:'Gateo con rodillas suspendidas',img:[],pasos:['En cuatro apoyos, despega las rodillas 2–3 cm del suelo.','Avanza mano y pie contrarios a la vez, adelante y atrás, sin que la cadera se mueva.'],clave:'Pasos cortos y lentos.'},
- frodPI:{n:'Rodillo: piernas',video:'tejido-a',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en cuádriceps, aductores, pantorrillas y glúteo: unos 30 s por zona, lento.','En un punto sensible, quédate encima 2–3 respiraciones. Molestia tolerable, nunca dolor fuerte.'],clave:'Prepara el tejido de lo que vas a entrenar hoy.'},
- frodPS:{n:'Rodillo: espalda alta y hombros',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo']],pasos:['Rodillo bajo la espalda alta: extiéndete sobre él en 3–4 alturas, con las manos detrás de la cabeza.','De lado, rodillo bajo la axila para el dorsal. Pelota contra la pared para el pectoral: unos 30 s por zona.'],clave:'Respira lento y suelta el peso sobre el rodillo.'},
- frodPC:{n:'Rodillo: cuerpo completo',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en espalda alta, glúteo, cuádriceps y pantorrillas: unos 20–30 s por zona.','Quédate un poco más donde sientas más tensión.'],clave:'Rápido y amplio: es preparación, no un masaje largo.'},
- frodPR:{n:'Rodillo: pies y piernas',img:[['sakrodillo-1','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Pelota bajo la planta del pie, 30 s por pie.','Rodillo en pantorrillas, cuádriceps y glúteo, unos 30 s por zona.'],clave:'Los pies y las pantorrillas son los que más reciben en la carrera y el salto.'},
+ frodPI:{n:'Rodillo: piernas',video:'tejido-a',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en cuádriceps, aductores, pantorrillas y glúteo: 45–90 s por zona, lento.','En un punto sensible, quédate encima 2–3 respiraciones. Molestia tolerable, nunca dolor fuerte.'],clave:'Prepara el tejido de lo que vas a entrenar hoy.'},
+ frodPS:{n:'Rodillo: espalda alta y hombros',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo']],pasos:['Rodillo bajo la espalda alta: extiéndete sobre él en 3–4 alturas, con las manos detrás de la cabeza.','De lado, rodillo bajo la axila para el dorsal. Pelota contra la pared para el pectoral: 45–90 s por zona.'],clave:'Respira lento y suelta el peso sobre el rodillo.'},
+ frodPC:{n:'Rodillo: cuerpo completo',img:[['sakrodillo-1','Rodillo'],['sakrodillo-2','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Rodillo en espalda alta, glúteo, cuádriceps y pantorrillas: 45–90 s por zona.','Quédate un poco más donde sientas más tensión.'],clave:'Rápido y amplio: es preparación, no un masaje largo.'},
+ frodPR:{n:'Rodillo: pies y piernas',img:[['sakrodillo-1','Rodillo'],['sakrodillo-3','Rodillo']],pasos:['Pelota bajo la planta del pie, 45–90 s por pie.','Rodillo en pantorrillas, cuádriceps y glúteo, 45–90 s por zona.'],clave:'Los pies y las pantorrillas son los que más reciben en la carrera y el salto.'},
  factPI:{n:'Activación: abdomen y patrón de piernas',img:[['goblet-0','Sentadilla'],['puente-1','Puente']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones boca arriba con activación suave del abdomen.','Sentadilla lenta ×8, bisagra de cadera ×8 y puente de glúteo ×8, con el abdomen activo.'],clave:'Ensaya con el cuerpo lo que vas a cargar después.'},
  factPS:{n:'Activación: abdomen y patrón de tren superior',img:[['flexinc-0','Flexión en apoyo alto'],['remo-1','Remo con banda']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con activación suave del abdomen.','Flexión en pared o mesa ×8, remo con banda ×10 y brazos en «Y» y «T» con banda ×8.'],clave:'Hombros lejos de las orejas y costillas abajo.'},
  factPC:{n:'Activación: abdomen y cuerpo completo',img:[['goblet-0','Sentadilla'],['flexinc-0','Flexión en apoyo alto']],pasos:['Siempre: movilidad de tobillo (rodilla a la pared) ×10 por lado y rotación torácica en 4 apoyos ×8 por lado.','5 respiraciones con activación suave del abdomen.','Sentadilla ×8, flexión en apoyo alto ×8, remo con banda ×10 y bird dog ×5 por lado.'],clave:'Ritmo tranquilo, técnica limpia.'},
@@ -2030,10 +2030,10 @@ function personal(r,d){
   if(ex.length){const iR=out.findIndex(x=>x.id==='regen');const add=ex.map(e=>({id:e.id,b:e.b||'3x',p:e.p,tm:e.tm||3}));out.splice(iR<0?out.length:iR,0,...add)}
   return out;
 }
-// Rendimiento: la preparación dura 10–12 min (tejido 2 + correctivos 4 + pilar 3 + activación 2).
+// Rendimiento: la preparación dura 10–12 min (tejido 3 + correctivos 4 + pilar 3 + activación 2).
 function prepRend(r){
   if(!esRend())return r;
-  return r.map(it=>/^tejido[AB]$/.test(it.id)?{...it,p:Array(8).fill('2 min'),tm:2}:/^pilar[AB]$/.test(it.id)?{...it,pM:undefined,tm:3}:/^act[AB]$/.test(it.id)?{...it,pM:undefined,tm:2}:it);
+  return r.map(it=>/^tejido[AB]$/.test(it.id)?{...it,p:Array(8).fill('2–3 min · 2 grupos, 45–90 s cada uno'),tm:3}:/^pilar[AB]$/.test(it.id)?{...it,pM:undefined,tm:3}:/^act[AB]$/.test(it.id)?{...it,pM:undefined,tm:2}:it);
 }
 function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(afinar(personal(voley(prepRend(rows0(d,s)),d),d),d,s))}
 // Semana de competencia (plan.afina = n): la semana anterior mantiene la carga con una serie menos;
