@@ -2594,8 +2594,10 @@ function renderTestsRend(m){
    TESTS.forEach(([id,l])=>{const a0=T[id+'_0'],a8=T[id+'_8'];if(!String(a0??'').trim()||!String(a8??'').trim())return;n++;
      const x=num(a0),y=num(a8),mej=x!=null&&y!=null?(BAJA.includes(id)?y<x:y>x):null;
      ev.append(h('div',{class:'balrow'},h('span',{text:(GEN[id]||l).split(':')[0]}),h('span',{class:'sem '+(mej==null?'a':mej?'v':'r'),text:a0+' → '+a8})))});
-   if(!n)ev.append(h('p',{class:'note',text:'Cuando anotes la semana 0 y la semana 8, aquí verás cuánto mejoraste.'}));if(n||!modoCli())m.append(ev)}
-  if(!modoCli())renderIso(m,T,upd);
+   if(!n)ev.append(h('p',{class:'note',text:'Cuando anotes la semana 0 y la semana 8, aquí verás cuánto mejoraste.'}));
+   // «Tu progreso» va al final de los tests, antes de las tarjetas de «Cómo…».
+   const n0=m.children.length;if(!modoCli())renderIso(m,T,upd);
+   if(n||!modoCli()){const como=[...m.children].slice(n0).find(c=>/^(Cómo|Protocolo)/.test((c.querySelector('summary,h2')||{}).textContent||''));m.insertBefore(ev,como||null)}}
   const med=[
    ['Salto vertical (CMJ)','Manos en la cintura, 3 intentos, anota el mejor. Con app (My Jump) o con cámara lenta: altura (cm) = 122,6 × t², donde t = fotogramas en el aire ÷ 240.'],
    ['Salto horizontal','Desde una línea, 3 intentos. Mide hasta el talón más atrasado.'],
