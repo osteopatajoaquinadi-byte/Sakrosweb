@@ -122,6 +122,8 @@ test.describe("Sakros Go", () => {
     // La evaluación de movilidad y control va justo después del encabezado de los tests.
     const tit = await page.locator("main section h2").allTextContents();
     expect(tit.slice(0, 2)).toEqual(["Tests · Beto", "Evaluación de movilidad y control"]);
+    // «Tu progreso» va al final, justo antes de «Cómo medirlos».
+    expect(tit.indexOf("Tu progreso")).toBe(tit.indexOf("Cómo medirlos") - 1);
     expect(txt).not.toMatch(/Sprint 10|Sprint 20|Agilidad|2,4 km|FC de recuperación|Squeeze/i);
     expect(errores).toEqual([]);
   });
