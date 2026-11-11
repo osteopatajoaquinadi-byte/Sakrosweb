@@ -287,7 +287,7 @@ function reportarError(tipo,mensaje,detalle){
 window.addEventListener('error',e=>{if(e.target&&e.target!==window)return;reportarError('error',e.message,(e.error&&e.error.stack)||((e.filename||'')+':'+e.lineno+':'+e.colno))});
 window.addEventListener('unhandledrejection',e=>{const r=e.reason;if(r&&(r.code==='cancelled'||r.name==='AbortError'))return;reportarError('promesa',(r&&r.message)||(r&&r.code)||String(r),r&&r.stack)});
 const VIDEOS_B64={};
-const VIDEOS={'activacion-a':'x','apertura-lado':'x','aterrizaje-2':'x','aterrizar':'x','bajada-escalon':'x','birddog':'x','bisagra-palo':'x','circulo-hombro':'x','clean':'x','copenhague':'x','deadbug':'x','deadbug-disco':'x','dominadas':'x','drop-jump':'x','equilibrio-rodilla':'x','faslr1':'x','fds1':'x','fil2':'x','flex-pared':'x','flexiones':'x','flexor-cadera':'x','fsm1':'x','fsm2':'x','ftspu2':'x','goblet-profunda':'x','granjero':'x','hombro-atacante':'x','jalon-banda':'x','landmine-jammer':'x','landmine-press':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','lateral-abduccion':'x','lateral-completa':'x','lateral-corte':'x','lateral-rodillas':'x','mini-band':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','paso-cruzado':'x','peso-muerto':'x','pilar':'x','plancha-lateral':'x','pmr-mancuernas':'x','press-sentado':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','push-press':'x','remo-bisagra':'x','respiracion-diafragmatica':'x','salto-ataque':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-posterior':'x','sentadilla-silla':'x','skater':'x','snap-down':'x','split-squat':'x','swing':'x','tejido-a':'x','toque-hombro':'x','zancada-estatica':'x','zancada-lateral':'x','zancada-rodilla':'x'};const _vurl={};
+const VIDEOS={'activacion-a':'x','apertura-lado':'x','aterrizaje-2':'x','aterrizar':'x','bajada-escalon':'x','birddog':'x','bisagra-palo':'x','circulo-hombro':'x','clean':'x','copenhague':'x','deadbug':'x','deadbug-disco':'x','dominadas':'x','drop-jump':'x','equilibrio-rodilla':'x','faslr1':'x','fds1':'x','fil2':'x','flex-pared':'x','flexiones':'x','flexor-cadera':'x','fsm1':'x','fsm2':'x','ftspu2':'x','goblet-profunda':'x','granjero':'x','hombro-atacante':'x','jalon-banda':'x','landmine-jammer':'x','landmine-press':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','lateral-abduccion':'x','lateral-completa':'x','lateral-corte':'x','lateral-rodillas':'x','mini-band':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','paso-cruzado':'x','peso-muerto':'x','pilar':'x','plancha-lateral':'x','pm-una-pierna':'x','pmr-mancuernas':'x','press-sentado':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','push-press':'x','remo-bisagra':'x','respiracion-diafragmatica':'x','salto-ataque':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-posterior':'x','sentadilla-silla':'x','skater':'x','snap-down':'x','split-squat':'x','swing':'x','tejido-a':'x','toque-hombro':'x','zancada-estatica':'x','zancada-lateral':'x','zancada-rodilla':'x'};const _vurl={};
 function videoURL(k){return '/go/media/'+k+'.mp4'}
 /* Resumen visible del ejercicio (sin abrir «Cómo se hace»): en los ejercicios compuestos, la lista de lo que
    se hace; en los simples, la clave de ejecución. */
@@ -1119,7 +1119,7 @@ Object.assign(EX,{
   'Cerca de una pared o una silla. Mira un punto fijo al frente.',
   'Mantén la posición del día respirando normal: el pie «agarra» el suelo sin encoger los dedos.',
   'Puntos de control: pelvis nivelada, rodilla suave, tronco quieto. Si tocas el apoyo, vuelve a empezar el tiempo.'],clave:'Progresión: pies juntos → semitándem → tándem → una pierna → ojos cerrados → con perturbación → con doble tarea.'},
- xrdl1:{n:'Peso muerto rumano a una pierna',niv:['dos pies con palo','una pierna con apoyo de mano','una pierna libre'],img:[['rdl-0','Bisagra con carga']],pasos:[
+ xrdl1:{n:'Peso muerto rumano a una pierna',video:'pm-una-pierna',niv:['dos pies con palo','una pierna con apoyo de mano','una pierna libre'],img:[['rdl-0','Bisagra con carga']],pasos:[
   'De pie sobre una pierna, rodilla suave.',
   'Lleva el tronco adelante y la otra pierna atrás como un sube y baja, con la pelvis paralela al suelo.',
   'Vuelve apretando el glúteo de la pierna de apoyo.',
@@ -1133,7 +1133,7 @@ Object.assign(EX,{
   'De pie delante de un cajón o una silla, apoyado en una pierna.',
   'Baja en 3 s hasta tocar el asiento y sube sin impulso.',
   'Puntos de control: rodilla sobre el pie, pelvis nivelada, tronco quieto, sin dejarte caer al final.'],clave:CTRL},
- xbis1:{n:'Bisagra a una pierna',niv:['con apoyo de mano en la pared','libre','libre con kettlebell liviana'],img:[['rdl-1','De pie, cadera extendida']],pasos:[
+ xbis1:{n:'Bisagra a una pierna',video:'pm-una-pierna',niv:['con apoyo de mano en la pared','libre','libre con kettlebell liviana'],img:[['rdl-1','De pie, cadera extendida']],pasos:[
   'Igual que el peso muerto rumano a una pierna, ahora con más rango y control.',
   'Vuelve arriba y aguanta 2 s sobre una pierna antes de la siguiente.',
   'Puntos de control: pelvis paralela al suelo, espalda neutra.'],clave:CTRL},
