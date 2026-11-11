@@ -510,6 +510,7 @@ const EX={
   'Baja profundo con las rodillas hacia delante y sube empujando los codos hacia arriba. Pausa de 2 min.'],
   clave:'Si caen los codos, se redondea la espalda alta y la barra se va hacia delante.'},
  dominadas:{n:'Dominadas',video:'dominadas',img:[['dominadas-0','Colgado, escápulas activas'],['dominadas-1','Barbilla sobre la barra']],pasos:[
+  'El video muestra 2 niveles: 1, asistida con banda (si todavía no completas las repeticiones con técnica limpia); 2, sin asistencia. Pasa al nivel 2 cuando hagas todas las repeticiones sin banda.',
   'Agarre prono algo más ancho que los hombros. Cuelga con los brazos extendidos y las escápulas activas.',
   'Tira llevando el pecho hacia la barra hasta pasar la barbilla.',
   'Baja en 2 s hasta extender los brazos.'],
@@ -564,7 +565,7 @@ const PLAN={
   {id:'frontal',b:'5A',p:['3×4 · 77,5 kg','4×4 · 80 kg','4×4 · 85 kg','2×4 · 70 kg','4×3 · 87,5 kg','5×3 · 90 kg','4×2 · 95 kg','Test 5RM'],rpe:RPE_SQ},
   {id:'dominadas',b:'5B',p:['3×6','3×7','4×7','2×5','4×5 · +lastre','4×5 · +lastre','4×4 · más lastre','2×5']},
   {id:'muerto',b:'6A',p:['3×5 · 97,5 kg','4×5 · 100 kg','4×5 · 105 kg','2×5 · 85 kg','4×3 · 107,5 kg','4×3 · 112,5 kg','3×2 · 117,5 kg','Test 5RM'],rpe:RPE_SQ},
-  {id:'klanzrot',b:'6B',p:['3×5/lado','3×6/lado','4×6/lado','2×5/lado','3×5/lado · balón más pesado','4×5/lado · balón más pesado','4×4/lado · máxima velocidad','2×5/lado']},
+  {id:'klanzfront',b:'6B',p:['3×5/lado','3×6/lado','4×6/lado','2×5/lado','3×5/lado · balón más pesado','4×5/lado · balón más pesado','4×4/lado · máxima velocidad','2×5/lado']},
   {id:'hipthrust',b:'7',p:['3×6 · 90 kg','4×6 · 95 kg','4×6 · 100 kg','2×6 · 75 kg','4×5 · 105 kg','4×5 · 110 kg','3×4 · 115 kg','2×6 · 80 kg']},
   {id:'regen',b:'8',p:fill('2 min')}]
 };
@@ -724,7 +725,7 @@ const EXC={
   'Abdomen firme al 50 %. Da pasos laterales alejándote y volviendo, sin que el tronco ni los brazos giren.',
   'Exhala en cada paso.'],
   clave:'El tronco no gira.'},
- kbirddogc:{n:'Bird dog con banda o tobillera',video:'birddog',img:[],pasos:[
+ kbirddogc:{n:'Bird dog con banda o tobillera',img:[],pasos:[
   'Igual que el bird dog, con una tobillera o una banda que resista la pierna.',
   'Abdomen firme al 30–50 %. Extiende brazo y pierna contrarios y aguanta 3 s.',
   'La pelvis no rota.'],
@@ -827,7 +828,13 @@ Object.assign(EX,{
   'Inhala, activa el suelo pélvico y el abdomen al 50 %. Empuja el balón explosivo exhalando fuerte («tss»), con el tronco firme.',
   'Recíbelo amortiguando con los brazos y reajusta antes del siguiente.'],
   clave:'La fuerza sale de piernas y tronco firme, sin arquear la zona lumbar.'},
- klanzrot:{n:'Lanzamiento rotacional en semirrodillas',video:'lanz-rotacional',img:[],pasos:[
+ klanzfront:{n:'Lanzamiento frontal en semirrodillas',video:'lanz-rotacional',img:[],pasos:[
+  'En semirrodillas, de frente a una pared (a 2–3 m), con un balón de 2–4 kg a la altura del pecho y los codos abiertos.',
+  'Abdomen firme y glúteo de la pierna de atrás activo. Empuja el balón explosivamente contra la pared, extendiendo los brazos y exhalando fuerte.',
+  'El tronco queda alto y la pelvis quieta: la fuerza sale del tronco firme y de los brazos, sin arquear la zona lumbar. Recibe el balón y repite.',
+  'Cambia la rodilla de apoyo en cada serie («/lado» = repeticiones con cada pierna adelante).'],
+  clave:'Empuje potente con el tronco firme.'},
+ klanzrot:{n:'Lanzamiento rotacional en semirrodillas',img:[],pasos:[
   'En semirrodillas, de lado a una pared (a 1–2 m), con un balón de 2–4 kg a la altura de la cadera de atrás.',
   'Abdomen firme al 50 % y suelo pélvico activo. Gira desde la cadera y el tórax y lanza el balón contra la pared exhalando fuerte.',
   'La zona lumbar no rota: el giro sale de la cadera y la columna torácica. Haz todas las repeticiones y cambia de lado.'],
@@ -1836,7 +1843,7 @@ const BRACEO={fuerza:' · abdomen firme 70 %',volumen:' · abdomen firme 50 %',p
 const BLK={
  rend:{
   A:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['cajon','skater']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['kpallofsr','kchop']],['5','cardio',['mdcut','mdcross']],['6','prep',['regen']]],
-  B:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarB']],['1d','prep',['actB']],['2','pot',['cajon','skater']],['3A','pri',['pushpress']],['3B','acc',['dominadas']],['4','pri',['muerto','hipthrust']],['4B','core',['klanzrot','kchop']],['5','cardio',['mdcross','mdcut']],['6','prep',['regen']]],
+  B:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarB']],['1d','prep',['actB']],['2','pot',['cajon','skater']],['3A','pri',['pushpress']],['3B','acc',['dominadas']],['4','pri',['muerto','hipthrust']],['4B','core',['klanzfront','kchop']],['5','cardio',['mdcross','mdcut']],['6','prep',['regen']]],
   C:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarA']],['1d','prep',['actB']],['2','pot',['skater','cajon']],['3A','pri',['hipthrust','muerto']],['3B','acc',['dominadas']],['4A','pri',['frontal','sentadilla']],['4B','core',['kpallofsr','kchop']],['5','cardio',['mdcut','mdcross']],['6','prep',['regen']]],
   U:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['cajon','puenteexp']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['kpallofsr','kchop']],['5A','pri',['muerto','hipthrust']],['5B','acc',['dominadas']],['6','cardio',['mdcut','mdcross']],['7','prep',['regen']]]},
  core:{
@@ -2148,7 +2155,7 @@ function chkAviso(s,d){
     h('button',{class:'linkbtn',onclick:async()=>{const sk=sesKey(s,d);const cur={...S.sesiones[sk],chk:{...c,normal:!c.normal},t:Date.now()};S.sesiones[sk]=cur;await write('sesiones',sk,cur);render()}},c.normal?'Volver a suave':'Hacerla normal'));
 }
 
-const TM={mdcut:12,mdcross:12,kremomanc:4,ksplit:5,gflex:3,kpallofsr:3,klanzrot:3,tejido:3,mov:4,pilar:3,act:2,cajon:5,puenteexp:3,cargada:7,sentadilla:10,pallof:2,regen:2,salidas:4,sprint:3,pushpress:6,skater:2,frontal:8,dominadas:2,muerto:8,hipthrust:3,zona2:0,intervalos:0,t3030:0};
+const TM={mdcut:12,mdcross:12,kremomanc:4,ksplit:5,gflex:3,kpallofsr:3,klanzrot:3,klanzfront:3,tejido:3,mov:4,pilar:3,act:2,cajon:5,puenteexp:3,cargada:7,sentadilla:10,pallof:2,regen:2,salidas:4,sprint:3,pushpress:6,skater:2,frontal:8,dominadas:2,muerto:8,hipthrust:3,zona2:0,intervalos:0,t3030:0};
 function tmin(it,s){
   if(it.tm!=null)return it.tm;
   if(String(it.id).startsWith('g'))return tminG(it,s);
