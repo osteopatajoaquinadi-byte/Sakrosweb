@@ -1626,7 +1626,8 @@ const scoreTxt=v=>v==null?'—':String(v);
 function chipScore(v){return h('span',{class:'sem '+(v==null?'n':v>=3?'v':v===2?'a':'r'),text:v==null?'pendiente':v===0?'0 · dolor':v+' de 3'})}
 function cardFms(){
   const tot=fmsTotal(),F=FF(),al=fmsAlguno(),dol=fmsDolor();
-  return h('section',{class:'card'},h('h2',{text:'Evaluación de movilidad y control'+(tot!=null?' · '+tot+' de 21':'')}),
+  return h('section',{class:'card fmscard'},h('h2',{text:'Evaluación de movilidad y control'}),
+    tot!=null?h('div',{class:'balrow'},h('span',{text:'Tu resultado'}),h('span',{class:'sem '+(tot>=14?'v':'a'),text:tot+' de 21'})):null,
     fmsGen()?h('p',{class:'dxline',text:'Elegiste ir directo al entrenamiento: tu preparación trabaja la movilidad general de todo el cuerpo. Cuando quieras, haz la evaluación y pasa a correctivos dirigidos a lo que más necesitas.'}):null,
     h('p',{class:'note',text:!al?'Tu evaluación principal. 7 pruebas de movimiento grabadas con tu teléfono, unos 15 minutos. El Coach te da un puntaje al instante, Joaquín Adi (kinesiólogo) la revisa en 48 horas y tu preparación se arma según lo que más necesitas.':tot==null?'En curso: completa las pruebas que faltan. Cuando esté completa, Joaquín la revisa en 48 horas.':(F.revisado?'Revisada por Joaquín Adi, kinesiólogo.':'Resultado preliminar del Coach. Joaquín la revisa en las próximas 48 horas y te avisamos si cambia algo.')}),
     al&&tot==null?avanceFms():null,
@@ -2280,7 +2281,7 @@ function render(){
   const a=atl();
   if(UI.tab==='hoy'){renderHoy(m);return}
   if(!cli&&UI.tab!=='perfil'&&UI.tab!=='nuevo'&&(!a.sexo||(UI.atleta!=='yo'&&(!a.edad||!a.sesiones))))m.append(h('div',{class:'banner'},'Faltan datos del perfil de '+a.nombre+' (sexo'+(UI.atleta!=='yo'?', edad o sesiones por semana':'')+'). ',h('button',{class:'linkbtn',onclick:()=>{UI.tab='perfil';render()}},'Completar perfil')));
-  if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests'){if(cli&&!esPrep())renderTestsCli(m);else{m.append(cardFms());renderTests(m)}}else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
+  if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests'){if(cli&&!esPrep())renderTestsCli(m);else{const n0=m.children.length;renderTests(m);m.insertBefore(cardFms(),m.children[n0+1]||null)}}else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
 }
 function renderWho(){
   const box=$('#who');if(!box)return;
@@ -2576,7 +2577,6 @@ function renderTestsRend(m){
    TESTS.forEach(([id,l])=>{const a0=T[id+'_0'],a8=T[id+'_8'];if(!String(a0??'').trim()||!String(a8??'').trim())return;n++;
      const x=num(a0),y=num(a8),mej=x!=null&&y!=null?(BAJA.includes(id)?y<x:y>x):null;
      ev.append(h('div',{class:'balrow'},h('span',{text:(GEN[id]||l).split(':')[0]}),h('span',{class:'sem '+(mej==null?'a':mej?'v':'r'),text:a0+' → '+a8})))});
-   const tot=fmsTotal();if(tot!=null)ev.append(h('div',{class:'balrow'},h('span',{text:'Movilidad y control'}),h('span',{class:'sem '+(tot>=14?'v':'a'),text:tot+'/21'})));
    if(!n)ev.append(h('p',{class:'note',text:'Cuando anotes la semana 0 y la semana 8, aquí verás cuánto mejoraste.'}));if(n||!modoCli())m.append(ev)}
   if(!modoCli())renderIso(m,T,upd);
   const med=[
@@ -2675,11 +2675,13 @@ function renderIso(m,T,upd,cli){
   const cell=(g,l,mo)=>{const e=h('input',{id:`iso-${g}-${l}-${mo}`,inputmode:'decimal','aria-label':`${g} ${LADO[l]} semana ${mo}`});e.value=T[`iso_${g}_${l}_${mo}`]??'';e.addEventListener('input',()=>upd(`iso_${g}_${l}_${mo}`,e.value));return h('td',{},e)};
   const head=h('tr',{},h('th',{text:'Grupo ('+proto('unidad')+')'}),[0,4,8].flatMap(mo=>[h('th',{text:'S'+mo+' izq.'}),h('th',{text:'S'+mo+' der.'})]));
   const rows=ISO.map(([g,n])=>h('tr',{},h('td',{text:n}),[0,4,8].flatMap(mo=>[cell(g,'i',mo),cell(g,'d',mo)])));
-  m.append(h('section',{class:'card'},h('h2',{text:cli?'Fuerza isométrica (opcional)':'Fuerza isométrica'}),
+  // Fuerza isométrica y su balance van en una misma tarjeta.
+  const isoCard=h('section',{class:'card'},h('h2',{text:cli?'Fuerza isométrica (opcional)':'Fuerza isométrica'}),
     h('p',{class:'note',text:cli?'Con dinamómetro, siempre con el mismo protocolo. Si no tienes uno, sáltala o hazla en Sakros. La semana 4 es el retest: si el desbalance se corrigió, el plan vuelve solo a lo normal.':'Dinamómetro, siempre con el mismo protocolo. La semana 4 es el retest: si el desbalance se corrigió, el plan vuelve solo a lo normal.'}),
-    h('div',{class:'scroll'},h('table',{class:'iso'},h('thead',{},head),h('tbody',{},rows)))));
+    h('div',{class:'scroll'},h('table',{class:'iso'},h('thead',{},head),h('tbody',{},rows))));
+  m.append(isoCard);
   const chip=(lv,txt)=>h('span',{class:'sem '+(lv==='ok'?'v':lv==='amb'?'a':lv?'r':'n'),text:txt});
-  const res=h('section',{class:'card'},h('h2',{text:'Balance'+(B?' · semana '+B.m:'')}));
+  const res=h('div',{},h('h3',{style:'margin:18px 0 6px;padding-top:14px;border-top:1px solid var(--line)',text:'Balance'+(B?' · semana '+B.m:'')}));
   const protoCli=()=>{const pr=['cua','isq','add','abd','general'].map(k=>[k,proto(k)]).filter(([,v])=>v);
     if(pr.length)m.append(h('details',{class:'card'},h('summary',{},'Cómo medir la fuerza isométrica'),h('ul',{class:'medir'},pr.map(([k,v])=>h('li',{},h('strong',{text:({cua:'Cuádriceps',isq:'Isquiotibiales',add:'Aductores',abd:'Abductores',general:'Indicaciones generales'})[k]+': '}),v)))))};
   if(cli&&!B){protoCli();return}
@@ -2695,7 +2697,7 @@ function renderIso(m,T,upd,cli){
     res.append(h('p',{class:'note',text:br.length?((S.salud||{}).auto===false?'Hay desbalances, pero el modo automático está apagado (pestaña Salud): verás las indicaciones sin cambios en el plan.':'El plan ya se ajustó: '+br.map(b=>b.dx).join(' · ')+'. Míralo en la pestaña Sesión.'):'Sin desbalances relevantes: el plan sigue igual.'}));
   }
   res.append(h('p',{class:'note',text:'Referencias: H:Q verde ≥ 0,60, rojo < 0,50. ADD:ABD verde ≥ 0,90, rojo < 0,80; por encima de 1,25, abductores débiles. Asimetría verde < 10 %, rojo > 15 %.'}));
-  m.append(res);
+  isoCard.append(res);
   if(cli){protoCli();return}
   renderCampo(m,T,upd,!!B);
   const pf={};
@@ -2713,17 +2715,19 @@ function renderCampo(m,T,upd,hayIso,cli,sinSalto){
   const fila=(k,n)=>h('tr',{},h('td',{text:n}),[0,4,8].flatMap(mo=>[h('td',{},inp(`${k}_i_${mo}`)),h('td',{},inp(`${k}_d_${mo}`))]));
   const una=(k,n,ph)=>h('tr',{},h('td',{text:n}),[0,4,8].map(mo=>h('td',{colspan:2},inp(`${k}_${mo}`,ph))));
   const head=h('tr',{},h('th',{text:'Test'}),[0,4,8].flatMap(mo=>[h('th',{text:'S'+mo+' izq.'}),h('th',{text:'S'+mo+' der.'})]));
-  m.append(h('section',{class:'card'},h('h2',{text:'Tests de campo'}),
+  // Tests de campo y su resultado van en una misma tarjeta.
+  const campoCard=h('section',{class:'card'},h('h2',{text:'Tests de campo'}),
     h('p',{class:'note',text:hayIso?'Hay medición isométrica: el plan se ajusta con la isometría. Estos tests quedan como registro.':'Sin dinamómetro, estos tests ajustan el plan con la misma lógica. Si después cargas la isometría, manda la isometría.'}),
     h('div',{class:'scroll'},h('table',{class:'iso'},h('thead',{},head),h('tbody',{},
-      fila('puente','Puente a una pierna (reps)'),fila('cop','Copenhague (s)'),fila('lat','Plancha lateral (s)'),sinSalto?null:fila('hop','Single hop (cm)'))))));
+      fila('puente','Puente a una pierna (reps)'),fila('cop','Copenhague (s)'),fila('lat','Plancha lateral (s)'),sinSalto?null:fila('hop','Single hop (cm)')))));
+  m.append(campoCard);
   const como=()=>m.append(h('details',{class:'card'},h('summary',{},'Cómo hacer los tests de campo'),h('ul',{class:'medir'},
     h('li',{},h('strong',{text:'Puente a una pierna: '}),'boca arriba, talón sobre un cajón de unos 60 cm con la rodilla a unos 20°, brazos cruzados y la otra pierna vertical. Sube la cadera hasta la extensión completa y baja hasta rozar el suelo. Cuenta repeticiones hasta que la cadera no llegue arriba o aparezca compensación.'),
     h('li',{},h('strong',{text:'Copenhague: '}),'de costado, antebrazo bajo el hombro y la pierna de arriba sobre un banco (siempre la misma versión: rodilla o tobillo en el banco). Tiempo hasta que la cadera cae.'),
     h('li',{},h('strong',{text:'Plancha lateral: '}),'antebrazo bajo el hombro y piernas extendidas. Tiempo hasta que la cadera cae.'),
     sinSalto?null:h('li',{},h('strong',{text:'Single hop: '}),'salto horizontal a una pierna cayendo con la misma pierna y aguantando 2 s. Mejor de 3 por pierna.'))));
   if(cli){como();if(!C)return}
-  const res=h('section',{class:'card'},h('h2',{text:'Resultado de campo'+(C?' · semana '+C.m:'')}));
+  const res=h('div',{},h('h3',{style:'margin:18px 0 6px;padding-top:14px;border-top:1px solid var(--line)',text:'Resultado'+(C?' · semana '+C.m:'')}));
   if(!C)res.append(h('p',{class:'note',text:'Anota los tests para ver el resultado.'}));
   else{
     const chip=(lv,txt)=>h('span',{class:'sem '+(lv==='ok'?'v':lv==='amb'?'a':'r'),text:txt});
@@ -2733,7 +2737,7 @@ function renderCampo(m,T,upd,hayIso,cli,sinSalto){
     const a=C.v('hop','i'),b=C.v('hop','d');if(a&&b){const lsi=Math.min(a,b)/Math.max(a,b)*100;res.append(row('Single hop: LSI',chip(lsi>=90?'ok':lsi>=85?'amb':'rojo',Math.round(lsi)+' % · débil '+LADO[a<b?'i':'d'])))}
   }
   res.append(h('p',{class:'note',text:'Referencias: puente a una pierna ≥ 20 reps (rojo < 15). Copenhague ≥ 80 % de la plancha lateral (rojo < 60 %). Single hop LSI ≥ 90 % (rojo < 85 %). Asimetría entre piernas > 10 % en cualquier test.'}));
-  m.append(res);
+  campoCard.append(res);
   if(!cli)como();
 }
 async function saveCfg(){
