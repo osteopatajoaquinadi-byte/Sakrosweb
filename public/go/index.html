@@ -2038,7 +2038,65 @@ function tejidoLargo(r,d,s){
   if(r.some(es))return r.map(it=>es(it)?{...it,p,pM:undefined,tm:5}:it);
   return [{id:srcDia(d,s)==='B'?'tejidoB':'tejidoA',b:'1',p,tm:5},...r];
 }
-function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(afinar(personal(voley(tejidoLargo(prepRend(rows0(d,s)),d,s),d),d),d,s))}
+/* Variantes de Rendimiento: el mismo patrón con otro ejercicio para que las semanas no se repitan.
+   Semanas 1 y 3: el ejercicio base; semana 2: una variante. Bloque 2: semanas 5 y 7 con la variante fuerte y la 6 vuelve
+   a la base. Semanas 4 (descarga) y 8 (tests) siempre con el base. Si el plan personal tiene una indicación o sustitución
+   para ese ejercicio, se respeta el ejercicio base.
+   [id, factor de carga sobre el base (null = sin kg, solo series×reps), sufijo] */
+Object.assign(EX,{
+ powerclean:{n:'Power clean (desde el suelo)',video:'clean',img:[['saktiron-1','Tirón: extensión completa']],pasos:[
+  'Barra en el suelo sobre la mitad del pie, agarre un poco más ancho que los hombros, espalda neutra y hombros delante de la barra.',
+  'Primer tirón lento hasta pasar las rodillas, sin que la cadera suba antes que los hombros.',
+  'Segundo tirón explosivo: extiende tobillos, rodillas y cadera, encoge los hombros y tira la barra pegada al cuerpo.',
+  'Recibe en media sentadilla con los codos adelante y ponte de pie. Baja la barra controlada.'],
+  clave:'La barra va pegada al cuerpo y la potencia sale de las piernas, no de los brazos.'},
+ pushjerk:{n:'Push jerk',video:'push-press',img:[['pushpress-1','Impulso: flexión corta de rodillas']],pasos:[
+  'Barra sobre los hombros, codos un poco adelante, pies al ancho de la cadera y abdomen firme.',
+  'Flexión corta de rodillas con el tronco vertical y empuje explosivo de piernas.',
+  'Mientras la barra sube, vuelve a flexionar las rodillas y métete debajo con los brazos bloqueados.',
+  'Ponte de pie con la barra arriba, cabeza entre los brazos, y bájala controlada a los hombros.'],
+  clave:'Te metes debajo de la barra: los brazos bloquean, no empujan hasta el final.'},
+ bulgaram:{n:'Sentadilla búlgara con mancuernas',img:[['split-1','Abajo: rodilla trasera cerca del suelo']],pasos:[
+  'Pie de atrás apoyado en un banco a la altura de la rodilla y una mancuerna en cada mano.',
+  'Baja en vertical hasta que la rodilla de atrás quede cerca del suelo, con el tronco un poco adelante.',
+  'Sube empujando con el pie de adelante, la rodilla alineada con el pie. Haz todas las repeticiones y cambia de lado.'],
+  clave:'La rodilla de adelante sigue la línea del pie; la pelvis no se inclina.'},
+ bancamanc:{n:'Press de banca con mancuernas',img:[],pasos:[
+  'Acostado en un banco con los pies firmes en el suelo y una mancuerna en cada mano a la altura del pecho.',
+  'Empuja hacia arriba hasta extender los brazos, sin chocar las mancuernas.',
+  'Baja controlado, con los codos a unos 45° del cuerpo y las escápulas juntas en el banco.'],
+  clave:'Hombros abajo y atrás todo el recorrido.'},
+ rdlbarra:{n:'Peso muerto rumano con barra',video:'pmr-mancuernas',img:[['rdl-0','Bisagra con barra']],pasos:[
+  'De pie con la barra en las manos, rodillas suaves y espalda neutra.',
+  'Lleva la cadera atrás deslizando la barra por los muslos hasta pasar las rodillas, sin redondear la espalda.',
+  'Sube empujando la cadera adelante y apretando los glúteos.'],
+  clave:'El movimiento es de cadera: las rodillas casi no cambian de ángulo.'}
+});
+const VAR_REND={
+ cargada:{2:['jumpshrug',0.9],5:['powerclean',1],7:['powerclean',1.02]},
+ kremomanc:{2:['kremobarra'],5:['kremobarra'],7:['kremobarra']},
+ ksplit:{2:['bulgaram',null,'/lado'],5:['bulgaram',null,'/lado'],7:['bulgaram',null,'/lado']},
+ gflex:{2:['bancamanc'],5:['bancamanc'],7:['bancamanc']},
+ pushpress:{2:['klandmine',null,'/lado'],5:['pushjerk',1.05],7:['pushjerk',1.05]},
+ muerto:{2:['trapbar',1.05],5:['trapbar',1.05],7:['trapbar',1.05]},
+ klanzfront:{2:['klanzover'],5:['klanzover'],7:['klanzover']},
+ hipthrust:{2:['rdlbarra',0.7],5:['rdlbarra',0.7],7:['rdlbarra',0.7]},
+ kpallofsr:{2:['kchop',null,'/lado'],5:['kchop',null,'/lado'],7:['kchop',null,'/lado']}
+};
+function variar(r,d,s){
+  if(!esRend()||bk()>1)return r;
+  const P=atl().plan||{},fija=id=>((P.notas||{})[id])||((P.sust||{})[id]);
+  return r.map(it=>{const v=(VAR_REND[it.id]||{})[s];if(!v||fija(it.id))return it;
+    const [id,f,suf]=v;if(!EX[id]&&typeof ALT!=='undefined'&&ALT[id])EX[id]={...ALT[id]};if(!EX[id])return it;
+    const p=[...PP(it)];if(f==null){const sr=String(p[s-1]).split(' · ')[0].replace(/\/lado$/,'');p[s-1]=sr+(suf||'')}
+    return {...it,id,p,pM:undefined,rpe:f==null?undefined:it.rpe,kgId:f==null?undefined:it.id,kgF:f==null?undefined:f,varDe:it.id}}).flatMap(it=>{
+    // semanas 5–7: el día C suma un tirón de halterofilia al inicio del bloque de fuerza (la potencia va primero)
+    if(d!=='C'||s<5||s>7||it.id!=='puenteexp')return [it];
+    if(!EX.jumpshrug&&typeof ALT!=='undefined'&&ALT.jumpshrug)EX.jumpshrug={...ALT.jumpshrug};if(!EX.jumpshrug)return [it];
+    const p=['','','','','3×3 · 52,5 kg','3×3 · 55 kg','3×2 · 57,5 kg',''];
+    return [{id:'jumpshrug',b:it.b,p,kgId:'cargada'},it]});
+}
+function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(afinar(variar(personal(voley(tejidoLargo(prepRend(rows0(d,s)),d,s),d),d),d,s),d,s))}
 // Semana de competencia (plan.afina = n): la semana anterior mantiene la carga con una serie menos;
 // la de la competencia es descarga y el día C queda solo con la preparación (activación previa al partido).
 const afinaSem=()=>{const n=parseInt((atl().plan||{}).afina,10);return esRend()&&n>=2&&n<=8?n:0};
@@ -2122,7 +2180,7 @@ const key=(s,d,id)=>(bk()>1?'b'+bk()+'.':'')+`${s}${d}-${id}`;
 // Femenino o sin declarar: la versión con más zona media y aterrizajes (más prevención).
 const PP=it=>((atl().sexo==='M'||atl().sexo==='N')&&it.pM)?it.pM:it.p;
 const sexoTxt=x=>x==='M'?'femenino':x==='H'?'masculino':x==='N'?'prefiere no decirlo':'';
-const pres0=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const r=it.rpe&&it.rpe[s-1];let p=escalar(PP(it)[s-1],it.id);if(r)p=/carga según RPE/.test(p)?p.replace('carga según RPE','RPE '+r+' ('+RESERVA[r]+')'):/RPE/.test(p)?p:p+' · RPE '+r;const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
+const pres0=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const r=it.rpe&&it.rpe[s-1];let p=escalar(PP(it)[s-1],it.kgId||it.id);if(it.kgF)p=p.replace(/(\d+(?:,\d+)?) kg/g,(m,n)=>fmtKg(parseFloat(n.replace(',','.'))*it.kgF)+' kg');if(r)p=/carga según RPE/.test(p)?p.replace('carga según RPE','RPE '+r+' ('+RESERVA[r]+')'):/RPE/.test(p)?p:p+' · RPE '+r;const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
 /* Chequeo antes de entrenar: si salió bajo, la sesión de hoy va suave (una serie menos en cada ejercicio). */
 const chkDe=(s,d)=>{try{return ((S.sesiones||{})[sesKey(s,d)]||{}).chk||null}catch(e){return null}};
 const suave=(s,d)=>{const c=chkDe(s,d);if(alertaOn()&&!(c&&c.normal))return true;return !!(c&&c.ajuste==='suave'&&!c.normal)};
@@ -2154,7 +2212,7 @@ function chkAviso(s,d){
     h('button',{class:'linkbtn',onclick:async()=>{const sk=sesKey(s,d);const cur={...S.sesiones[sk],chk:{...c,normal:!c.normal},t:Date.now()};S.sesiones[sk]=cur;await write('sesiones',sk,cur);render()}},c.normal?'Volver a suave':'Hacerla normal'));
 }
 
-const TM={mdcut:12,mdcross:12,kremomanc:4,ksplit:5,gflex:3,kpallofsr:3,klanzrot:3,klanzfront:3,tejido:3,mov:4,pilar:3,act:2,cajon:5,puenteexp:3,cargada:7,sentadilla:10,pallof:2,regen:2,salidas:4,sprint:3,pushpress:6,skater:2,frontal:8,dominadas:2,muerto:8,hipthrust:3,zona2:0,intervalos:0,t3030:0};
+const TM={mdcut:12,mdcross:12,kremomanc:4,ksplit:5,gflex:3,kpallofsr:3,klanzrot:3,klanzfront:3,tejido:3,mov:4,pilar:3,act:2,cajon:5,puenteexp:3,cargada:7,sentadilla:10,pallof:2,regen:2,salidas:4,sprint:3,pushpress:6,pushjerk:6,powerclean:7,jumpshrug:5,trapbar:8,rdlbarra:5,bulgaram:5,bancamanc:4,kremobarra:4,klanzover:3,kchop:3,klandmine:5,skater:2,frontal:8,dominadas:2,muerto:8,hipthrust:3,zona2:0,intervalos:0,t3030:0};
 function tmin(it,s){
   if(it.tm!=null)return it.tm;
   if(String(it.id).startsWith('g'))return tminG(it,s);
