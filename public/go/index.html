@@ -287,7 +287,7 @@ function reportarError(tipo,mensaje,detalle){
 window.addEventListener('error',e=>{if(e.target&&e.target!==window)return;reportarError('error',e.message,(e.error&&e.error.stack)||((e.filename||'')+':'+e.lineno+':'+e.colno))});
 window.addEventListener('unhandledrejection',e=>{const r=e.reason;if(r&&(r.code==='cancelled'||r.name==='AbortError'))return;reportarError('promesa',(r&&r.message)||(r&&r.code)||String(r),r&&r.stack)});
 const VIDEOS_B64={};
-const VIDEOS={'activacion-a':'x','apertura-lado':'x','aterrizaje-2':'x','aterrizar':'x','bajada-escalon':'x','birddog':'x','bisagra-palo':'x','circulo-hombro':'x','clean':'x','copenhague':'x','deadbug':'x','deadbug-disco':'x','dominadas':'x','drop-jump':'x','equilibrio-rodilla':'x','faslr1':'x','fds1':'x','fil2':'x','flex-pared':'x','flexiones':'x','flexor-cadera':'x','fsm1':'x','fsm2':'x','ftspu2':'x','goblet-profunda':'x','granjero':'x','hombro-atacante':'x','jalon-banda':'x','landmine-jammer':'x','landmine-press':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','lateral-abduccion':'x','lateral-completa':'x','lateral-corte':'x','lateral-rodillas':'x','mini-band':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','paso-cruzado':'x','peso-muerto':'x','pilar':'x','pmr-mancuernas':'x','press-sentado':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','remo-bisagra':'x','respiracion-diafragmatica':'x','salto-ataque':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-posterior':'x','sentadilla-silla':'x','skater':'x','snap-down':'x','split-squat':'x','swing':'x','tejido-a':'x','toque-hombro':'x','zancada-estatica':'x','zancada-lateral':'x','zancada-rodilla':'x'};const _vurl={};
+const VIDEOS={'activacion-a':'x','apertura-lado':'x','aterrizaje-2':'x','aterrizar':'x','bajada-escalon':'x','birddog':'x','bisagra-palo':'x','circulo-hombro':'x','clean':'x','copenhague':'x','deadbug':'x','deadbug-disco':'x','dominadas':'x','drop-jump':'x','equilibrio-rodilla':'x','faslr1':'x','fds1':'x','fil2':'x','flex-pared':'x','flexiones':'x','flexor-cadera':'x','fsm1':'x','fsm2':'x','ftspu2':'x','goblet-profunda':'x','granjero':'x','hombro-atacante':'x','jalon-banda':'x','landmine-jammer':'x','landmine-press':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','lateral-abduccion':'x','lateral-completa':'x','lateral-corte':'x','lateral-rodillas':'x','mini-band':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','paso-cruzado':'x','peso-muerto':'x','pilar':'x','plancha-lateral':'x','pmr-mancuernas':'x','press-sentado':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','remo-bisagra':'x','respiracion-diafragmatica':'x','salto-ataque':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-posterior':'x','sentadilla-silla':'x','skater':'x','snap-down':'x','split-squat':'x','swing':'x','tejido-a':'x','toque-hombro':'x','zancada-estatica':'x','zancada-lateral':'x','zancada-rodilla':'x'};const _vurl={};
 function videoURL(k){return '/go/media/'+k+'.mp4'}
 /* Resumen visible del ejercicio (sin abrir «Cómo se hace»): en los ejercicios compuestos, la lista de lo que
    se hace; en los simples, la clave de ejecución. */
@@ -647,7 +647,8 @@ const EXC={
   'Tira llevando los codos atrás y las escápulas atrás y abajo. Exhala al tirar.',
   'El tronco se mantiene neutro: no te echas hacia atrás.'],
   clave:'Hombros lejos de las orejas.'},
- klateralr:{n:'Plancha lateral sobre rodillas',video:'lateral-rodillas',img:[['sakplancha-1','Antebrazo y rodillas apoyados'],['sakplancha-2','Cadera arriba, cuerpo alineado']],pasos:[
+ klateralr:{n:'Plancha lateral sobre rodillas',video:'plancha-lateral',img:[['sakplancha-1','Antebrazo y rodillas apoyados'],['sakplancha-2','Cadera arriba, cuerpo alineado']],pasos:[
+  'El video muestra las 4 progresiones de la plancha lateral: 1 sobre rodillas, 2 rodilla abajo con la pierna de arriba estirada, 3 completa y 4 completa con abducción. La tuya es la 1. Cuando aguantes el tiempo con buena técnica, prueba la 2.',
   'De costado, antebrazo bajo el hombro y rodillas flexionadas.',
   'Suelo pélvico y abdomen firme al 50 %. Sube la cadera hasta alinear rodillas, cadera y cabeza.',
   'Aguanta el tiempo marcado respirando y baja. Repite y cambia de lado.'],
@@ -708,7 +709,8 @@ const EXC={
   'Abdomen firme al 30–50 %. Tira de la mancuerna llevando el codo atrás; exhala al tirar.',
   'Sin rotar el tronco.'],
   clave:'El tronco queda paralelo al banco todo el tiempo.'},
- klateral:{n:'Plancha lateral completa',video:'lateral-completa',img:[['sidebridge-0','Antebrazo bajo el hombro'],['sidebridge-1','Cadera arriba, cuerpo alineado']],pasos:[
+ klateral:{n:'Plancha lateral completa',video:'plancha-lateral',img:[['sidebridge-0','Antebrazo bajo el hombro'],['sidebridge-1','Cadera arriba, cuerpo alineado']],pasos:[
+  'El video muestra las 4 progresiones de la plancha lateral: 1 sobre rodillas, 2 rodilla abajo con la pierna de arriba estirada, 3 completa y 4 completa con abducción. La tuya es la 3.',
   'De costado, antebrazo bajo el hombro y piernas extendidas.',
   'Suelo pélvico y abdomen firme al 50 %. Sube la cadera hasta alinear el cuerpo y aguanta respirando.',
   'Cambia de lado.'],
@@ -773,7 +775,8 @@ const EXC={
   'Abdomen firme al 70 %. Camina erguido con las costillas abajo y pasos cortos.',
   'Respira durante todo el recorrido.'],
   clave:'Si aparece escape o peso perineal, baja la carga.'},
- klateralabd:{n:'Plancha lateral con abducción de cadera',video:'lateral-abduccion',img:[['sidebridge-1','Plancha lateral']],pasos:[
+ klateralabd:{n:'Plancha lateral con abducción de cadera',video:'plancha-lateral',img:[['sidebridge-1','Plancha lateral']],pasos:[
+  'El video muestra las 4 progresiones de la plancha lateral: 1 sobre rodillas, 2 rodilla abajo con la pierna de arriba estirada, 3 completa y 4 completa con abducción. La tuya es la 4.',
   'En plancha lateral completa.',
   'Abdomen firme al 50–70 %. Sube y baja la pierna de arriba sin que la cadera caiga.',
   'Cambia de lado.'],
