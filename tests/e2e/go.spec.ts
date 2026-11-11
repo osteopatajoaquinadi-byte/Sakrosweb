@@ -331,6 +331,18 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("la prueba gratis de Prep son 3 sesiones y la del entrenamiento es la semana 1", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const acceso = { rol: "cliente", activo: false, terminosV: "2026-11", venta: { activo: false } };
+    await montarGo(page, { docs: [atleta("u1", { programa: "prep" })], acceso });
+    await page.goto("/go");
+    await expect(page.getByText(/Tienes 3 sesiones de prueba/)).toBeVisible();
+    await montarGo(page, { docs: [atleta("u1", { programa: "global" })], acceso });
+    await page.goto("/go");
+    await expect(page.getByText(/Tienes la semana 1 completa/)).toBeVisible();
+    expect(errores).toEqual([]);
+  });
+
   test("con 12 o menos en la evaluación no se propone Fundamentos: se alarga el tejido blando", async ({ page }) => {
     const errores = vigilarErrores(page);
     // 1+2+2+1+2+2+2 = 12 de 21
