@@ -50,7 +50,7 @@ test.describe("Sakros Go", () => {
     ["Rendimiento vóley", { programa: "rend", deporte: "voley" }],
     ["Activo", { programa: "global" }],
     ["Core", { programa: "core", condicion: "hernia" }],
-    ["Base", { programa: "base", nivel: 2 }],
+    ["Fundamentos", { programa: "base", nivel: 2 }],
   ];
   for (const [nombre, datos] of programas) {
     test(`${nombre}: la sesión de hoy se abre con todos sus ejercicios`, async ({ page }) => {
@@ -328,6 +328,21 @@ test.describe("Sakros Go", () => {
     const prep = (await page.evaluate(`(() => DIAS().map(d => rows(d, 1).filter(i => String(i.b).startsWith('1')).reduce((x, i) => x + tmin(i, 1), 0)))()`)) as number[];
     for (const m of prep) expect(m).toBeLessThanOrEqual(12);
     expect(new Set(ses.flatMap(corr))).toEqual(new Set(["fds1", "frs2", "ftspu2", "fhs2"]));
+    expect(errores).toEqual([]);
+  });
+
+  test("con 12 o menos en la evaluación no se propone Fundamentos: se alarga el tejido blando", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    // 1+2+2+1+2+2+2 = 12 de 21
+    const r = { ds: { rev: { u: 1 } }, hs: { rev: { d: 2, i: 2 } }, il: { rev: { d: 2, i: 2 } }, sm: { rev: { d: 1, i: 1 } }, aslr: { rev: { d: 2, i: 2 } }, tspu: { rev: { u: 2 } }, rs: { rev: { d: 2, i: 2 } } };
+    for (const programa of ["global", "rend"]) {
+      await montarGo(page, { docs: [atleta("u1", { programa, frecuencia: 2 }), { path: "a/u1/tests", id: "fms", data: { r } }] });
+      await page.goto("/go");
+      await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+      await expect(page.getByText(/Fundamentos|empezar por el Entrenamiento/)).toHaveCount(0);
+      const prim = (await page.evaluate(`(() => DIAS().map(d => { const t = rows(d, 1).find(i => /^tejido[AB]$/.test(i.id)); return t ? PP(t)[0] : null; }))()`)) as (string | null)[];
+      for (const p of prim) expect(p).toMatch(/3 grupos, 45–90 s/);
+    }
     expect(errores).toEqual([]);
   });
 
