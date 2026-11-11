@@ -472,9 +472,8 @@ const EX={
   'En remo, cinta inclinada, cuesta o bici de aire.',
   'El primer minuto de cada bloque sirve para subir la FC. El resto, en la zona objetivo.',
   'Ritmo duro pero sostenible: no puedes hablar.',
-  'Pausa de 2 min activa, al 60–70 % de la FC máx.',
-  'Test (semana 8): 2,4 km en pista (6 vueltas a una pista de 400 m) lo más rápido posible.'],
-  clave:'Sin FC máx conocida: usa 208 − 0,7 × edad, o la más alta del test de 2,4 km.'},
+  'Pausa de 2 min activa, al 60–70 % de la FC máx.'],
+  clave:'Sin FC máx conocida: usa 208 − 0,7 × edad, o la más alta que hayas visto en un esfuerzo máximo.'},
  regen:{n:'Regeneración',video:'flexor-cadera',img:[['flexor-0','Flexor de cadera: rodilla en el suelo']],pasos:[
   'Respiración 90/90: 1 min boca arriba con los pies en la pared y cadera y rodillas a 90°. Inhala 4 s por la nariz y exhala 6–8 s.',
   'Flexor de cadera: 30 s por lado con una rodilla en el suelo, apretando el glúteo de la pierna de atrás.']},
@@ -2069,8 +2068,7 @@ function senalPrevia(s,d){
 }
 
 const TESTS=[
- ['cmj','Salto vertical CMJ (cm)'],['horizontal','Salto horizontal (cm)'],['s10','Sprint 10 m (s)'],['s20','Sprint 20 m (s)'],
- ['resistencia','Test de 2,4 km (min:s)'],['fcrec','FC de recuperación a 1 min'],
+ ['cmj','Salto vertical CMJ (cm)'],['horizontal','Salto horizontal (cm)'],
  ['posterior','Sentadilla posterior 5RM (kg)','kg'],['frontal','Sentadilla frontal 5RM (kg)','kg'],['muerto3','Peso muerto 5RM (kg)','kg']];
 
 /* ---------- Estado ---------- */
@@ -2565,15 +2563,15 @@ function renderTestsRend(m){
   const T=S.tests||{};
   const upd=(f,v)=>{const cur={...(S.tests||{}),[f]:v,t:Date.now()};S.tests=cur;debounce('tests',()=>write('tests','datos',cur))};
   const yo=UI.atleta==='yo',GEN={posterior:'Sentadilla posterior: kg para 5 reps (5RM)',frontal:'Sentadilla frontal: kg para 5 reps (5RM)',muerto3:'Peso muerto: kg para 5 reps (5RM)'};
-  const solo=modoCli();// cliente: solo fuerza y potencia (sin sprints, Yo-Yo ni FC de recuperación)
-  const GRP=basico?[['Fuerza',['posterior','frontal','muerto3']]]:solo?[['Fuerza y potencia',['posterior','frontal','muerto3','cmj','horizontal']]]:[['Fuerza y potencia',['posterior','frontal','muerto3','cmj','horizontal']],['Agilidad y velocidad',['s10','s20']],['Campo',['resistencia','fcrec']]];
+  const solo=modoCli();
+  const GRP=basico?[['Fuerza',['posterior','frontal','muerto3']]]:solo?[['Fuerza y potencia',['posterior','frontal','muerto3','cmj','horizontal']]]:[['Fuerza y potencia',['posterior','frontal','muerto3','cmj','horizontal']]];
   const fila=([id,lbl0,ph0])=>{const lbl=yo?lbl0:(GEN[id]||lbl0),ph=GEN[id]?'kg':(yo?ph0:'');return h('tr',{},h('td',{text:lbl}),
     h('td',{},inp('t0-'+id,T[id+'_0'],v=>upd(id+'_0',v),ph)),h('td',{},inp('t8-'+id,T[id+'_8'],v=>upd(id+'_8',v))))};
   const rows=GRP.flatMap(([g,ids])=>[h('tr',{class:'grp'},h('th',{colspan:'3',text:g})),...ids.map(id=>fila(TESTS.find(x=>x[0]===id)))]);
   m.append(h('section',{class:'card'},h('h2',{text:'Resultados'}),
     h('div',{class:'scroll'},h('table',{},h('thead',{},h('tr',{},h('th',{text:'Test'}),h('th',{text:'Semana 0'}),h('th',{text:'Semana 8'}))),h('tbody',{},rows)))));
   m.append(h('p',{class:'note',text:'Pesos máximos (5RM): el mayor peso con el que haces 5 repeticiones bien ejecutadas, sin perder técnica. Anota solo los kg. Con ellos se planifican tus pesos de partida de sentadillas y peso muerto (si tu entrenador no los fijó).'}));
-  {const num=v=>{const x=parseFloat(String(v??'').replace(',','.'));return isNaN(x)?null:x},BAJA=['s10','s20'];
+  {const num=v=>{const x=parseFloat(String(v??'').replace(',','.'));return isNaN(x)?null:x},BAJA=[];
    const ev=h('section',{class:'card'},h('h2',{text:'Tu progreso'}));let n=0;
    TESTS.forEach(([id,l])=>{const a0=T[id+'_0'],a8=T[id+'_8'];if(!String(a0??'').trim()||!String(a8??'').trim())return;n++;
      const x=num(a0),y=num(a8),mej=x!=null&&y!=null?(BAJA.includes(id)?y<x:y>x):null;
@@ -2584,9 +2582,6 @@ function renderTestsRend(m){
   const med=[
    ['Salto vertical (CMJ)','Manos en la cintura, 3 intentos, anota el mejor. Con app (My Jump) o con cámara lenta: altura (cm) = 122,6 × t², donde t = fotogramas en el aire ÷ 240.'],
    ['Salto horizontal','Desde una línea, 3 intentos. Mide hasta el talón más atrasado.'],
-   ['Sprint 10 y 20 m','Salida desde 3 apoyos, 2 intentos. Con app (Photo Finish o SprintTimer) o cámara lenta contando fotogramas ÷ 240.'],
-   ['Resistencia','2,4 km en pista de 400 m (6 vueltas), lo más rápido posible. Anota el tiempo.'],
-   ['FC de recuperación','FC al terminar el test de resistencia menos la FC un minuto después. Sin reloj: pulso 15 s × 4.'],
    ['Fuerza (5RM)','Sentadillas y peso muerto: calienta y sube de a poco hasta el mayor peso con el que haces 5 repeticiones bien ejecutadas, sin perder técnica (espalda neutra, rodillas alineadas, misma profundidad). Si la técnica cambia o la 5.ª no sale limpia, anota el último peso que salió bien. Descansa 3 min entre intentos y no pases de 4 o 5 intentos.']];
   const medV=basico?med.filter(([a])=>/Fuerza/.test(a)):solo?med.filter(([a])=>/Salto|Fuerza/.test(a)):med;
   m.append(h(modoCli()?'details':'section',{class:'card'},modoCli()?h('summary',{},'Cómo medirlos'):h('h2',{text:'Cómo medirlos'}),h('ul',{class:'medir'},medV.map(([a,b])=>h('li',{},h('strong',{text:a+': '}),b)))));
@@ -2721,14 +2716,12 @@ function renderCampo(m,T,upd,hayIso,cli,sinSalto){
   m.append(h('section',{class:'card'},h('h2',{text:'Tests de campo'}),
     h('p',{class:'note',text:hayIso?'Hay medición isométrica: el plan se ajusta con la isometría. Estos tests quedan como registro.':'Sin dinamómetro, estos tests ajustan el plan con la misma lógica. Si después cargas la isometría, manda la isometría.'}),
     h('div',{class:'scroll'},h('table',{class:'iso'},h('thead',{},head),h('tbody',{},
-      fila('puente','Puente a una pierna (reps)'),fila('cop','Copenhague (s)'),fila('lat','Plancha lateral (s)'),sinSalto?null:fila('hop','Single hop (cm)'),
-      una('sq','Squeeze 45° (mmHg)'),una('sqdolor','Squeeze: dolor 0–10'))))));
+      fila('puente','Puente a una pierna (reps)'),fila('cop','Copenhague (s)'),fila('lat','Plancha lateral (s)'),sinSalto?null:fila('hop','Single hop (cm)'))))));
   const como=()=>m.append(h('details',{class:'card'},h('summary',{},'Cómo hacer los tests de campo'),h('ul',{class:'medir'},
     h('li',{},h('strong',{text:'Puente a una pierna: '}),'boca arriba, talón sobre un cajón de unos 60 cm con la rodilla a unos 20°, brazos cruzados y la otra pierna vertical. Sube la cadera hasta la extensión completa y baja hasta rozar el suelo. Cuenta repeticiones hasta que la cadera no llegue arriba o aparezca compensación.'),
     h('li',{},h('strong',{text:'Copenhague: '}),'de costado, antebrazo bajo el hombro y la pierna de arriba sobre un banco (siempre la misma versión: rodilla o tobillo en el banco). Tiempo hasta que la cadera cae.'),
     h('li',{},h('strong',{text:'Plancha lateral: '}),'antebrazo bajo el hombro y piernas extendidas. Tiempo hasta que la cadera cae.'),
-    sinSalto?null:h('li',{},h('strong',{text:'Single hop: '}),'salto horizontal a una pierna cayendo con la misma pierna y aguantando 2 s. Mejor de 3 por pierna.'),
-    h('li',{},h('strong',{text:'Squeeze 45°: '}),'boca arriba con caderas a 45° y pies apoyados. Tensiómetro inflado a 20 mmHg entre las rodillas; aprieta al máximo 3 s. Anota el valor más alto y el dolor de 0 a 10.'))));
+    sinSalto?null:h('li',{},h('strong',{text:'Single hop: '}),'salto horizontal a una pierna cayendo con la misma pierna y aguantando 2 s. Mejor de 3 por pierna.'))));
   if(cli){como();if(!C)return}
   const res=h('section',{class:'card'},h('h2',{text:'Resultado de campo'+(C?' · semana '+C.m:'')}));
   if(!C)res.append(h('p',{class:'note',text:'Anota los tests para ver el resultado.'}));
@@ -2738,9 +2731,8 @@ function renderCampo(m,T,upd,hayIso,cli,sinSalto){
     ['i','d'].forEach(l=>{const r=C.v('puente',l);if(r!=null)res.append(row('Puente a una pierna '+LADO[l],chip(r>=20?'ok':r>=15?'amb':'rojo',r+' reps')))});
     ['i','d'].forEach(l=>{const c=C.v('cop',l),p=C.v('lat',l);if(c&&p){const x=c/p;res.append(row('Copenhague / plancha lateral '+LADO[l],chip(x>=0.8?'ok':x>=0.6?'amb':'rojo',fmt2(x))))}});
     const a=C.v('hop','i'),b=C.v('hop','d');if(a&&b){const lsi=Math.min(a,b)/Math.max(a,b)*100;res.append(row('Single hop: LSI',chip(lsi>=90?'ok':lsi>=85?'amb':'rojo',Math.round(lsi)+' % · débil '+LADO[a<b?'i':'d'])))}
-    if(C.sq)res.append(row('Squeeze 45°',chip(C.sqd>=3?'amb':'ok',C.sq+' mmHg'+(isNaN(C.sqd)?'':' · dolor '+C.sqd+'/10'))));
   }
-  res.append(h('p',{class:'note',text:'Referencias: puente a una pierna ≥ 20 reps (rojo < 15). Copenhague ≥ 80 % de la plancha lateral (rojo < 60 %). Single hop LSI ≥ 90 % (rojo < 85 %). Asimetría entre piernas > 10 % en cualquier test. Squeeze con dolor ≥ 3/10 cuenta como aductores en ámbar.'}));
+  res.append(h('p',{class:'note',text:'Referencias: puente a una pierna ≥ 20 reps (rojo < 15). Copenhague ≥ 80 % de la plancha lateral (rojo < 60 %). Single hop LSI ≥ 90 % (rojo < 85 %). Asimetría entre piernas > 10 % en cualquier test.'}));
   m.append(res);
   if(!cli)como();
 }
@@ -3039,10 +3031,10 @@ const fmt2=x=>x.toFixed(2).replace('.',',');
 function campo(){
   const T=S.tests||{};
   const ks=['puente','cop','lat','hop'];
-  const m=[8,4,0].find(m=>ks.some(k=>numv(T[`c_${k}_i_${m}`])||numv(T[`c_${k}_d_${m}`]))||numv(T['c_sq_'+m])||numv(T['c_sqdolor_'+m]));
+  const m=[8,4,0].find(m=>ks.some(k=>numv(T[`c_${k}_i_${m}`])||numv(T[`c_${k}_d_${m}`])));
   if(m==null)return null;
   const v=(k,l)=>numv(T[`c_${k}_${l}_${m}`]);
-  return {m,v,sq:numv(T['c_sq_'+m]),sqd:parseFloat(String(T['c_sqdolor_'+m]??'').replace(',','.'))};
+  return {m,v};
 }
 function getFlags(){
   const B=balance();
@@ -3063,8 +3055,7 @@ function getFlags(){
   const pb=['i','d'].filter(l=>{const r=C.v('puente',l);return r!=null&&r<20});
   if(pb.length)f.hq={l:pb,rojo:pb.some(l=>C.v('puente',l)<15),lab:'puente de isquios '+pb.map(l=>LADO[l]+' '+C.v('puente',l)+' reps').join(', ')};
   const cl=['i','d'].map(l=>{const c=C.v('cop',l),p=C.v('lat',l);return c&&p?[l,c/p]:null}).filter(x=>x&&x[1]<0.8);
-  const sqDolor=C.sqd>=3;
-  if(cl.length||sqDolor)f.aa={rojo:cl.some(x=>x[1]<0.6),lab:[cl.length?'Copenhague/plancha lateral '+cl.map(([l,r])=>LADO[l]+' '+fmt2(r)).join(', '):null,sqDolor?'squeeze con dolor '+C.sqd+'/10':null].filter(Boolean).join(' · ')};
+  if(cl.length)f.aa={rojo:cl.some(x=>x[1]<0.6),lab:'Copenhague/plancha lateral '+cl.map(([l,r])=>LADO[l]+' '+fmt2(r)).join(', ')};
   const as=[];
   [['puente','puente de isquios'],['hop','single hop'],['cop','Copenhague'],['lat','plancha lateral']].forEach(([k,n])=>{const a=C.v(k,'i'),b=C.v(k,'d');if(a&&b){const p=Math.abs(a-b)/Math.max(a,b)*100;if(p>=10)as.push({n,p,weak:a<b?'i':'d'})}});
   if(as.length){const top=as.reduce((x,y)=>y.p>x.p?y:x);f.asym={w:top.weak,rojo:as.some(a=>a.p>15),lab:'asimetría '+as.map(a=>a.n+' '+Math.round(a.p)+' %').join(', ')}}
@@ -3438,8 +3429,7 @@ function nextSes(){for(let s=1;s<=8;s++)for(const d of DIAS()){const [n,t]=done(
 const semMax=()=>modoCli()?nextSes().s:8;
 function progTotal(){let n=0,t=0;for(let s=1;s<=8;s++)DIAS().forEach(d=>{const x=done(s,d);n+=x[0];t+=x[1]});return t?Math.round(n/t*100):0}
 function iniciarSesion(s,d){
-  if(bloqueada(s)){UI.tab='paywall';render();scrollTo(0,0);return}
-  if(esPrep()&&ROL==='cliente'&&!atl().prepIni)saveAtleta(UI.atleta,{...atl(),prepIni:prepIni()||Date.now(),t:Date.now()});
+  if(bloqueada(s,d)){UI.tab='paywall';render();scrollTo(0,0);return}
   const steps=pasosDe(s,d);let i=steps.findIndex(g=>g.some(it=>!S.registro[key(s,d,it.id)]?.hecho));if(i<0)i=0;
   UI.play={atleta:UI.atleta,s,d,i,t0:Date.now()};savePlay();UI.prevTab=UI.tab;UI.tab='play';saveUI();render();scrollTo(0,0);
 }
@@ -3592,7 +3582,7 @@ function renderHoy(m){
   const a=atl(),N=nextSes(),{s,d}=N,r=rows(d,s);
   if(N.fin&&!esBase()){m.append(cardFinBloque());const cf=cardMiSuscripcion();if(cf)m.append(cf);extras();return}
   const pt=progTotal();
-  if(!N.fin&&bloqueada(s)){m.append(cardPaywall());extras();return}
+  if(!N.fin&&bloqueada(s,d)){m.append(cardPaywall());extras();return}
   m.append(h('section',{class:'card hero'},
     h('span',{class:'wholbl',text:PROG[prog()].split(' (')[0]+(bk()>1?' · bloque '+bk():'')}),
     h('div',{class:'bar','aria-label':'Avance del programa: '+pt+' %'},h('i',{style:'width:'+pt+'%'})),
@@ -3772,11 +3762,12 @@ async function authHeaders(){const{data:{session}}=await SB.auth.getSession();re
 async function cargarAcceso(){if(!SB)return;try{const r=await fetch('/api/go/acceso',{headers:await authHeaders()});if(r.ok)ACC=await r.json()}catch(e){}}
 const planAcc=()=>(ACC&&ACC.plan)||'entrenamiento';
 const PLANES={prep:{n:'Sakros Go Prep',d:'Unos 12 minutos de preparación antes de tu entrenamiento, según tu evaluación de movilidad y control.',k:'precioPrep'},entrenamiento:{n:'Sakros Go Entrenamiento',d:'Tu programa completo (Fundamentos, Core, Activo o Rendimiento), el Coach y también Prep.',k:'precio'}};
-// Prueba gratis de una semana en los dos planes. Prep: 7 días desde la primera preparación (sirve cualquier plan).
-// Entrenamiento: la semana 1 del programa (necesita el plan Entrenamiento).
-const prepIni=()=>{const a=atl().prepIni;if(a)return a;const ts=Object.entries(S.sesiones).filter(([k])=>/^p\d/.test(k)).map(([,v])=>v.t||0).filter(Boolean);return ts.length?Math.min(...ts):null};
-const prepVencida=()=>{const t=prepIni();return t!=null&&Date.now()-t>7*864e5};
-const bloqueada=s=>ROL==='cliente'&&(esPrep()?prepVencida():(s>1||bk()>1))&&!(ACC&&ACC.activo&&(esPrep()||planAcc()==='entrenamiento'));
+// Prueba gratis: 3 entrenamientos terminados, en cualquier plan (Prep o Entrenamiento).
+// Una sesión cuenta al tocar «Guardar y terminar» (queda con sus minutos). Se puede volver a abrir una ya terminada.
+const PRUEBA=3;
+const hechasPrueba=()=>Object.values(S.sesiones).filter(v=>v&&v.min).length;
+const bloqueada=(s,d)=>ROL==='cliente'&&!(ACC&&ACC.activo&&(esPrep()||planAcc()==='entrenamiento'))&&
+  (bk()>1||(hechasPrueba()>=PRUEBA&&!(d&&(S.sesiones[sesKey(s,d)]||{}).min)));
 const necesitaTerminos=()=>ROL==='cliente'&&!!ACC&&((atl().terminos||{}).v!==ACC.terminosV);
 const terminosOk=()=>({v:(ACC&&ACC.terminosV)||'2026-11',salud:true,t:Date.now()});
 const QUIEN='Sakros Go lo dirige Joaquín Adi, kinesiólogo y osteópata, con máster en Functional Training. Su formación lo habilita para evaluar la calidad del movimiento. La planificación está pensada para que entrenes tus objetivos sin perder de vista tus patrones de movimiento.';
@@ -3818,7 +3809,7 @@ function cardPaywall(){
   const orden=esPrep()?['prep','entrenamiento']:['entrenamiento','prep'];
   const plan=k=>{const P=PLANES[k],pr=v[P.k];const btn=h('button',{class:'btn'+(k===orden[0]?' primary big':''),onclick:()=>suscribirme(btn,st,k)},'Suscribirme a '+P.n.replace('Sakros Go ',''));
     return h('div',{class:'plancard'},h('h3',{text:P.n}),h('p',{class:'note',text:P.d}),pr>=1000?h('p',{class:'precio'},h('b',{text:clp(pr)}),' al mes'):null,v.activo&&pr>=1000?h('div',{class:'row'},btn):null)};
-  return h('section',{class:'card hero'},h('span',{class:'chip',text:yaPrep?'Tu plan es Prep':'Terminaste tu semana de prueba'}),
+  return h('section',{class:'card hero'},h('span',{class:'chip',text:yaPrep?'Tu plan es Prep':'Terminaste tus '+PRUEBA+' entrenamientos de prueba'}),
     h('h2',{text:yaPrep?'Tu programa de entrenamiento necesita el plan Entrenamiento':'Sigue con tu plan'}),
     yaPrep?h('p',{class:'note',text:'Para cambiar: cancela la renovación de Prep (en Hoy → Tu suscripción; el acceso sigue hasta el fin del mes pagado) y suscríbete a Entrenamiento.'}):null,
     ...orden.map(plan),
@@ -3826,7 +3817,7 @@ function cardPaywall(){
     v.activo?null:h('p',{class:'dxline',text:'La suscripción abre muy pronto. Pregúntale a tu entrenador cómo continuar.'}),st,
     h('p',{class:'note'},'Al suscribirte aceptas los ',h('a',{href:'/go/terminos.html',target:'_blank',rel:'noopener'},'términos y el descargo de salud'),'.'));
 }
-function renderPaywall(m){m.append(cardPaywall());m.append(h('div',{class:'row'},h('button',{class:'linkbtn',onclick:()=>{UI.tab='hoy';UI.sem=1;render()}},'← Volver a la semana 1')))}
+function renderPaywall(m){m.append(cardPaywall());m.append(h('div',{class:'row'},h('button',{class:'linkbtn',onclick:()=>{UI.tab='hoy';UI.sem=1;render()}},'← Volver a Hoy')))}
 function cardMiSuscripcion(){
   if(ROL!=='cliente'||!ACC)return null;
   const st=h('p',{class:'note',role:'status'});
@@ -3842,7 +3833,7 @@ function cardMiSuscripcion(){
       h('p',{class:'note',text:ACC.origen==='coach'?'Acceso activo hasta el '+fechaCorta(ACC.hasta)+' (te lo dio tu entrenador).':renueva?'Activa. Se renueva sola el '+fechaCorta(ACC.hasta)+'.':'Activa hasta el '+fechaCorta(ACC.hasta)+'. No se renovará.'}),
       h('div',{class:'row'},cancel),st);
   }
-  return h('section',{class:'card'},h('h2',{text:'Prueba gratis'}),h('p',{class:'note',text:esPrep()?'Tienes la semana 1 gratis: 7 días desde tu primera preparación. Después necesitas la suscripción.':'Tienes la semana 1 completa para probar. Desde la semana 2 necesitas la suscripción.'}));
+  return h('section',{class:'card'},h('h2',{text:'Prueba gratis'}),h('p',{class:'note',text:(()=>{const n=Math.max(0,PRUEBA-hechasPrueba());return n?'Tienes '+PRUEBA+' entrenamientos gratis'+(n<PRUEBA?' (te '+(n===1?'queda 1':'quedan '+n)+')':'')+'. Después necesitas la suscripción.':'Ya usaste tus '+PRUEBA+' entrenamientos gratis. Para seguir, necesitas la suscripción.'})()}));
 }
 /* Vista del entrenador: precio de venta y acceso de cada atleta */
 async function cardVenta(){
