@@ -437,6 +437,39 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("Rendimiento: los ejercicios de fuerza y halterofilia varían entre semanas, sin tocar descarga, tests ni el plan del entrenador", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const ver = async (plan?: Record<string, unknown>) => {
+      await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3, cargas: { cargada: 80 }, plan })] });
+      await page.goto("/go");
+      await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+      await expect.poll(() => page.evaluate("esRend() && !!(atl().cargas && atl().cargas.cargada)")).toBe(true);
+      if (plan) await expect.poll(() => page.evaluate("!!(atl().plan && atl().plan.notas)")).toBe(true);
+      return (await page.evaluate(`(() => { const ids = (d, s) => rows(d, s).map((i) => i.id);
+        const js = rows('C', 5).find((i) => i.id === 'jumpshrug');
+        return { a1: ids('A',1), a2: ids('A',2), a4: ids('A',4), a5: ids('A',5), a6: ids('A',6), a8: ids('A',8), b5: ids('B',5), c3: ids('C',3), c5: ids('C',5), c8: ids('C',8),
+          js5: js ? pres(5, 'C', js) : null } })()`)) as Record<string, any>;
+    };
+    const p = await ver();
+    expect(p.a1).toContain("cargada");
+    expect(p.a2).toContain("jumpshrug");
+    expect(p.a5).toContain("powerclean");
+    expect(p.a5).toContain("bulgaram");
+    expect(p.a6).toContain("cargada");
+    for (const s of [p.a4, p.a8]) { expect(s).toContain("cargada"); expect(s).toContain("ksplit"); }
+    expect(p.b5).toEqual(expect.arrayContaining(["pushjerk", "trapbar"]));
+    expect(p.c3).not.toContain("jumpshrug");
+    expect(p.c5).toEqual(expect.arrayContaining(["jumpshrug", "rdlbarra"]));
+    expect(p.c5.indexOf("jumpshrug")).toBeLessThan(p.c5.indexOf("puenteexp"));
+    expect(p.c8).not.toContain("jumpshrug");
+    expect(p.js5).toMatch(/3×3 · \d+(,\d)? kg/);
+    const g = await ver({ notas: { cargada: "desde arriba de la rodilla" }, sust: { pushpress: "klandmine" } });
+    expect(g.a2).toContain("cargada");
+    expect(g.a5).toContain("cargada");
+    expect(g.b5).not.toContain("pushjerk");
+    expect(errores).toEqual([]);
+  });
+
   test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 800 } });
     const errores = vigilarErrores(page);
