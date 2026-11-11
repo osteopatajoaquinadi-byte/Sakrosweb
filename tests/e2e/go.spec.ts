@@ -110,6 +110,19 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("los tests no incluyen agilidad, velocidad, resistencia de campo ni squeeze", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { quien: { rol: "coach", atleta: null, email: "coach@sakros.cl" }, docs: [atleta("u2", { programa: "rend", nombre: "Beto" })] });
+    await page.goto("/go");
+    await page.locator("#atleta-sel").selectOption("u2");
+    await page.getByRole("tab", { name: "Tests" }).click();
+    await expect(page.getByText("Tests de campo").first()).toBeVisible();
+    const txt = await page.locator("main").innerText();
+    expect(txt).toContain("Salto vertical CMJ");
+    expect(txt).not.toMatch(/Sprint 10|Sprint 20|Agilidad|2,4 km|FC de recuperación|Squeeze/i);
+    expect(errores).toEqual([]);
+  });
+
   test("entrenador: ve a sus atletas y cambia entre ellos", async ({ page }) => {
     const errores = vigilarErrores(page);
     await montarGo(page, {
@@ -332,23 +345,29 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
-  test("la prueba gratis es la semana 1 en Prep y en el entrenamiento", async ({ page }) => {
+  test("la prueba gratis son 3 entrenamientos terminados, en Prep y en el entrenamiento", async ({ page }) => {
     const errores = vigilarErrores(page);
     const acceso = { rol: "cliente", activo: false, terminosV: "2026-11", venta: { activo: false } };
-    const dia = 86400000;
-    // Prep: 5 preparaciones en 2 días siguen gratis; a los 8 días de la primera, pide la suscripción.
-    const ses = [1, 2, 3, 4, 5].map((n) => ({ path: "a/u1/sesiones", id: "p" + n + "PI", data: { semana: 1, dia: "PI", t: Date.now() - dia } }));
-    await montarGo(page, { docs: [atleta("u1", { programa: "prep", prepIni: Date.now() - 2 * dia }), ...ses], acceso });
+    const ses = (ids: string[]) => ids.map((id) => ({ path: "a/u1/sesiones", id, data: { semana: 1, dia: id.slice(-1), min: "40", t: Date.now() } }));
+    // Prep: con 2 terminadas le queda 1; con 3, pide la suscripción.
+    await montarGo(page, { docs: [atleta("u1", { programa: "prep" }), ...ses(["p1PI", "p2PS"])], acceso });
     await page.goto("/go");
-    await expect(page.getByText(/Tienes la semana 1 gratis: 7 días/)).toBeVisible();
+    await expect(page.getByText(/Tienes 3 entrenamientos gratis \(te queda 1\)/)).toBeVisible();
     await expect(page.getByRole("heading", { name: "¿Qué vas a entrenar hoy?" })).toBeVisible();
     await expect(page.getByText(/Unos 12 minutos antes de entrenar/)).toBeVisible();
-    await montarGo(page, { docs: [atleta("u1", { programa: "prep", prepIni: Date.now() - 8 * dia })], acceso });
+    await montarGo(page, { docs: [atleta("u1", { programa: "prep" }), ...ses(["p1PI", "p2PS", "p3PC"])], acceso });
     await page.goto("/go");
-    await expect(page.getByText("Terminaste tu semana de prueba")).toBeVisible();
-    await montarGo(page, { docs: [atleta("u1", { programa: "global" })], acceso });
+    await expect(page.getByText("Terminaste tus 3 entrenamientos de prueba")).toBeVisible();
+    // Entrenamiento con 2 días: el día A de la semana 2 es el tercero y sigue gratis; el cuarto no.
+    await montarGo(page, { docs: [atleta("u1", { programa: "global", frecuencia: 2 }), ...ses(["g1A", "g1B"])], acceso });
     await page.goto("/go");
-    await expect(page.getByText(/Tienes la semana 1 completa/)).toBeVisible();
+    await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    await expect(page.getByText(/Terminaste tus 3 entrenamientos/)).toHaveCount(0);
+    await montarGo(page, { docs: [atleta("u1", { programa: "global", frecuencia: 2 }), ...ses(["g1A", "g1B", "g2A"])], acceso });
+    await page.goto("/go");
+    await expect(page.getByText(/Ya usaste tus 3 entrenamientos gratis/)).toBeVisible();
+    // El cuarto entrenamiento queda bloqueado; uno ya terminado se puede volver a abrir.
+    expect(await page.evaluate("[bloqueada(2,'B'), bloqueada(3,'A'), bloqueada(1,'A')]")).toEqual([true, true, false]);
     expect(errores).toEqual([]);
   });
 
