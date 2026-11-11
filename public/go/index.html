@@ -1292,7 +1292,7 @@ function renderTestsBase(m){
     h('li',{},h('strong',{text:'Módulo equilibrio: '}),'Timed Up and Go (pararse, caminar 3 m, volver y sentarse) y levantarse del suelo contando los apoyos que usa (manos, rodillas, silla).'))));
 }
 /* ---------- FMS por video y Sakros Go Prep ---------- */
-PROG.prep='Sakros Go Prep: 10 minutos de preparación antes de tu entrenamiento';PROGC.prep='Prep';
+PROG.prep='Sakros Go Prep: 12 minutos de preparación antes de tu entrenamiento';PROGC.prep='Prep';
 const ZONA={PI:'Piernas',PS:'Tren superior',PC:'Cuerpo completo',PR:'Correr o deporte'};
 const ZDESC={PI:'Sentadilla, peso muerto, zancadas, máquinas de pierna.',PS:'Press, remo, dominadas, hombros y brazos.',PC:'Circuito, funcional o cuerpo completo.',PR:'Trote, fútbol, tenis, pádel u otro deporte.'};
 const ZTEST={PI:['aslr','rs','il','hs','ds'],PS:['sm','rs','tspu'],PC:['aslr','sm','rs','tspu','il','hs','ds'],PR:['aslr','rs','il','hs','ds']};
@@ -1436,7 +1436,7 @@ function corrPres(id){const t=corrTest(id),r=fmsRes(t);let p=CORRP[t];if(r.debil
 const prepFill=(s,v)=>Array(Math.max(8,s)).fill(v);
 function prepRows(z,s){
   if(!ZONA[z])z='PC';
-  return [tejidoExtra()?{id:'frod'+z,b:'1',tm:5,p:prepFill(s,TEJ_LARGO)}:{id:'frod'+z,b:'1',tm:3,p:prepFill(s,'3 min')},...corrDe(z,2).map((id,i)=>({id,b:String(i+2),tm:2,p:prepFill(s,corrPres(id))})),{id:'fact'+z,b:'4',tm:3,p:prepFill(s,'3 min')}];
+  return [tejidoExtra()?{id:'frod'+z,b:'1',tm:5,p:prepFill(s,TEJ_LARGO)}:{id:'frod'+z,b:'1',tm:3,p:prepFill(s,'2–3 min · 2–3 grupos, 45–90 s cada uno')},...corrDe(z,2).map((id,i)=>({id,b:String(i+2),tm:3,p:prepFill(s,corrPres(id))})),{id:'fact'+z,b:'4',tm:3,p:prepFill(s,'3 min')}];
 }
 const zonaDia=(d,s)=>{const x=srcDia(d,s);return x==='A'?'PI':x==='B'?'PS':'PC'};
 // Correctivos del FMS en la sesión de entrenamiento.
@@ -1740,7 +1740,7 @@ function renderHoyPrep(m){
   if(bloqueada(n)){m.append(cardPaywall());return}
   const enCurso=UI.play&&UI.play.atleta===UI.atleta&&ZONA[UI.play.d];
   m.append(h('section',{class:'card hero'},h('span',{class:'wholbl',text:'Sakros Go Prep'}),
-    h('h2',{text:'¿Qué vas a entrenar hoy?'}),h('p',{class:'note',text:'10 minutos antes de entrenar: rodillo, 2 correctivos según tus resultados de movilidad y control, y activación.'}),
+    h('h2',{text:'¿Qué vas a entrenar hoy?'}),h('p',{class:'note',text:'Unos '+(tejidoExtra()?14:12)+' minutos antes de entrenar: rodillo, 2 correctivos según tus resultados de movilidad y control, y activación.'}),
     enCurso?h('div',{class:'row'},h('button',{class:'btn primary big',onclick:()=>{UI.prevTab='hoy';UI.tab='play';saveUI();render();scrollTo(0,0)}},'Continuar: '+ZONA[UI.play.d])):null,
     ...Object.keys(ZONA).map(z=>h('button',{class:'bigopt',onclick:()=>iniciarSesion(n,z)},h('b',{text:ZONA[z]}),h('span',{text:ZDESC[z]+' Hoy: '+corrDe(z,2).map(id=>EX[id].n.toLowerCase()).join(' y ')+'.'})))));
   m.append(cardFms());
@@ -1771,7 +1771,7 @@ function fmsContexto(){
   return L.join('\n');
 }
 const RULES_PREP=`Eres el entrenador de la persona en Sakros Go Prep. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, kinesiólogo y osteópata, o la propia persona desde la vista de cliente.
-Sakros Go Prep: 10 minutos antes de cualquier entrenamiento (gimnasio, rutina propia o deporte), según la zona del día (piernas, tren superior, cuerpo completo, carrera o deporte): 3 min de rodillo de la zona, 2 correctivos y 3 min de activación con el abdomen activo y el patrón que se va a cargar. Nace de la experiencia del centro de entrenamiento de Sakros (2015–2020): con 10 minutos de preparación por zona, el FMS promedio pasó de 9 a 14 puntos en 6 meses. Es la experiencia del centro, no un estudio controlado: no prometas resultados ni prevención de lesiones.
+Sakros Go Prep: unos 12 minutos antes de cualquier entrenamiento (gimnasio, rutina propia o deporte), según la zona del día (piernas, tren superior, cuerpo completo, carrera o deporte): rodillo de la zona (2–3 grupos, 45–90 s cada uno, unos 3 min; 3 grupos y 4–5 min si la evaluación da 12 o menos), 2 correctivos (unos 3 min cada uno) y 3 min de activación con el abdomen activo y el patrón que se va a cargar. Nace de la experiencia del centro de entrenamiento de Sakros (2015–2020): con 10 minutos de preparación por zona, el FMS promedio pasó de 9 a 14 puntos en 6 meses. Es la experiencia del centro, no un estudio controlado: no prometas resultados ni prevención de lesiones.
 Correctivos: salen del FMS por video. Orden de prioridad: primero las pruebas con dolor (no se corrigen con ejercicio: derivar al kinesiólogo), después las asimetrías y los puntajes de 1, en el orden elevación de pierna extendida, movilidad de hombro, estabilidad en rotación, flexión de estabilidad de tronco, estocada en línea, paso de valla y sentadilla profunda. Cada correctivo tiene 4 pasos y avanza con técnica limpia en 2 sesiones seguidas. Con asimetría, se empieza por el lado débil y se hace una serie extra de ese lado.
 Sobre su rutina del gimnasio: puedes orientar en técnica, dosis y descanso, y recomendar el programa de entrenamiento de Sakros Go si no tiene una rutina bien dirigida.
 Seguridad: dolor que aumenta, dolor irradiado, hormigueo o pérdida de fuerza → parar y consultar con su kinesiólogo.
@@ -3429,7 +3429,7 @@ async function ask(text){
 }
 
 /* ---------- Vista cliente: bienvenida, Hoy y modo sesión ---------- */
-const PDESC={prep:'10 minutos antes de entrenar, según lo que entrenes ese día: rodillo, 2 correctivos según tus resultados de movilidad y control, y activación. Sirve para tu gimnasio, tu rutina o tu deporte.',base:'8 semanas para empezar a moverte, en casa: postura, equilibrio y movimientos básicos. Lo más básico de Sakros Go.',rend:'8 semanas de potencia, velocidad y resistencia con el método EXOS.',core:'8 semanas para una espalda fuerte y un suelo pélvico que responde: fuerza real, sin miedo.',global:'8 semanas de cuerpo completo para empezar a entrenar o mantenerte en forma, con una progresión segura.'};
+const PDESC={prep:'Unos 12 minutos antes de entrenar (14 si tu evaluación sale baja), según lo que entrenes ese día: rodillo, 2 correctivos según tus resultados de movilidad y control, y activación. Sirve para tu gimnasio, tu rutina o tu deporte.',base:'8 semanas para empezar a moverte, en casa: postura, equilibrio y movimientos básicos. Lo más básico de Sakros Go.',rend:'8 semanas de potencia, velocidad y resistencia con el método EXOS.',core:'8 semanas para una espalda fuerte y un suelo pélvico que responde: fuerza real, sin miedo.',global:'8 semanas de cuerpo completo para empezar a entrenar o mantenerte en forma, con una progresión segura.'};
 const KEYLIFT=new Set([...CARGABLES,'khipthrust','khipthrustp','krdl','kgoblet','kgobletp','ksentbarra','kmuertobarra','kremobarra','kremomanc','ktrapbar','kgranjero','kswing','kstepup','ksplit','klandmine','kjammer','gsilla','gbisagra','gpress','gremom','gstep','gcurl','gmartillo']);
 const esClave=id=>KEYLIFT.has(id);
 const needsOnb=()=>{const a=atl();return !a.onb&&!a.programa&&!a.sexo};
@@ -3439,6 +3439,7 @@ const semMax=()=>modoCli()?nextSes().s:8;
 function progTotal(){let n=0,t=0;for(let s=1;s<=8;s++)DIAS().forEach(d=>{const x=done(s,d);n+=x[0];t+=x[1]});return t?Math.round(n/t*100):0}
 function iniciarSesion(s,d){
   if(bloqueada(s)){UI.tab='paywall';render();scrollTo(0,0);return}
+  if(esPrep()&&ROL==='cliente'&&!atl().prepIni)saveAtleta(UI.atleta,{...atl(),prepIni:prepIni()||Date.now(),t:Date.now()});
   const steps=pasosDe(s,d);let i=steps.findIndex(g=>g.some(it=>!S.registro[key(s,d,it.id)]?.hecho));if(i<0)i=0;
   UI.play={atleta:UI.atleta,s,d,i,t0:Date.now()};savePlay();UI.prevTab=UI.tab;UI.tab='play';saveUI();render();scrollTo(0,0);
 }
@@ -3464,7 +3465,7 @@ function renderOnb(m){
       opt(O.obj==='global','Entrenar todo el cuerpo o mantenerme en forma','Cuerpo completo, con una progresión segura y sin lesionarme.',()=>{O.obj='global';O.paso=2;render()}),
       opt(O.obj==='core','Fortalecer espalda, abdomen y suelo pélvico','Para dolor lumbar, hernia o escapes de orina al hacer esfuerzo.',()=>{O.obj='core';O.paso=2;render()}),
       opt(O.obj==='rend','Rendir más en mi deporte','Saltar más, ser más rápido y aguantar más.',()=>{O.obj='rend';O.paso=2;render()}),
-      opt(O.obj==='prep','Ya entreno: quiero prepararme para no lesionarme','10 minutos antes de tu gimnasio o tu deporte, según tu evaluación de movimiento.',()=>{O.obj='prep';O.paso=2;render()}));
+      opt(O.obj==='prep','Ya entreno: quiero prepararme para no lesionarme','Unos 12 minutos antes de tu gimnasio o tu deporte, según tu evaluación de movimiento.',()=>{O.obj='prep';O.paso=2;render()}));
   }else if(O.paso===2){
     card.append(paso(2,'¿Cuántos días por semana puedes entrenar?'),
       ...[[1,'1 día','Mínimo para mantener. Sumarás caminatas por tu cuenta.'],[2,'2 días','Lo recomendado para empezar.'],[3,'3 días','Para avanzar más rápido.']].map(([n,t,s])=>opt(O.dias===n,t,s,()=>{O.dias=n;O.paso=3;render()})),
@@ -3770,9 +3771,12 @@ const fechaCorta=iso=>{try{return new Date(iso).toLocaleDateString('es-CL',{day:
 async function authHeaders(){const{data:{session}}=await SB.auth.getSession();return{'Content-Type':'application/json',Authorization:'Bearer '+(session?session.access_token:'')}}
 async function cargarAcceso(){if(!SB)return;try{const r=await fetch('/api/go/acceso',{headers:await authHeaders()});if(r.ok)ACC=await r.json()}catch(e){}}
 const planAcc=()=>(ACC&&ACC.plan)||'entrenamiento';
-const PLANES={prep:{n:'Sakros Go Prep',d:'10 minutos de preparación antes de tu entrenamiento, según tu evaluación de movilidad y control.',k:'precioPrep'},entrenamiento:{n:'Sakros Go Entrenamiento',d:'Tu programa completo (Fundamentos, Core, Activo o Rendimiento), el Coach y también Prep.',k:'precio'}};
-// Prep: 3 sesiones de prueba y sirve cualquier plan. Entrenamiento: semana 1 de prueba y necesita el plan Entrenamiento.
-const bloqueada=s=>ROL==='cliente'&&(esPrep()?s>3:(s>1||bk()>1))&&!(ACC&&ACC.activo&&(esPrep()||planAcc()==='entrenamiento'));
+const PLANES={prep:{n:'Sakros Go Prep',d:'Unos 12 minutos de preparación antes de tu entrenamiento, según tu evaluación de movilidad y control.',k:'precioPrep'},entrenamiento:{n:'Sakros Go Entrenamiento',d:'Tu programa completo (Fundamentos, Core, Activo o Rendimiento), el Coach y también Prep.',k:'precio'}};
+// Prueba gratis de una semana en los dos planes. Prep: 7 días desde la primera preparación (sirve cualquier plan).
+// Entrenamiento: la semana 1 del programa (necesita el plan Entrenamiento).
+const prepIni=()=>{const a=atl().prepIni;if(a)return a;const ts=Object.entries(S.sesiones).filter(([k])=>/^p\d/.test(k)).map(([,v])=>v.t||0).filter(Boolean);return ts.length?Math.min(...ts):null};
+const prepVencida=()=>{const t=prepIni();return t!=null&&Date.now()-t>7*864e5};
+const bloqueada=s=>ROL==='cliente'&&(esPrep()?prepVencida():(s>1||bk()>1))&&!(ACC&&ACC.activo&&(esPrep()||planAcc()==='entrenamiento'));
 const necesitaTerminos=()=>ROL==='cliente'&&!!ACC&&((atl().terminos||{}).v!==ACC.terminosV);
 const terminosOk=()=>({v:(ACC&&ACC.terminosV)||'2026-11',salud:true,t:Date.now()});
 const QUIEN='Sakros Go lo dirige Joaquín Adi, kinesiólogo y osteópata, con máster en Functional Training. Su formación lo habilita para evaluar la calidad del movimiento. La planificación está pensada para que entrenes tus objetivos sin perder de vista tus patrones de movimiento.';
@@ -3814,7 +3818,7 @@ function cardPaywall(){
   const orden=esPrep()?['prep','entrenamiento']:['entrenamiento','prep'];
   const plan=k=>{const P=PLANES[k],pr=v[P.k];const btn=h('button',{class:'btn'+(k===orden[0]?' primary big':''),onclick:()=>suscribirme(btn,st,k)},'Suscribirme a '+P.n.replace('Sakros Go ',''));
     return h('div',{class:'plancard'},h('h3',{text:P.n}),h('p',{class:'note',text:P.d}),pr>=1000?h('p',{class:'precio'},h('b',{text:clp(pr)}),' al mes'):null,v.activo&&pr>=1000?h('div',{class:'row'},btn):null)};
-  return h('section',{class:'card hero'},h('span',{class:'chip',text:yaPrep?'Tu plan es Prep':esPrep()?'Terminaste tus 3 sesiones de prueba':'Terminaste tu semana de prueba'}),
+  return h('section',{class:'card hero'},h('span',{class:'chip',text:yaPrep?'Tu plan es Prep':'Terminaste tu semana de prueba'}),
     h('h2',{text:yaPrep?'Tu programa de entrenamiento necesita el plan Entrenamiento':'Sigue con tu plan'}),
     yaPrep?h('p',{class:'note',text:'Para cambiar: cancela la renovación de Prep (en Hoy → Tu suscripción; el acceso sigue hasta el fin del mes pagado) y suscríbete a Entrenamiento.'}):null,
     ...orden.map(plan),
@@ -3838,7 +3842,7 @@ function cardMiSuscripcion(){
       h('p',{class:'note',text:ACC.origen==='coach'?'Acceso activo hasta el '+fechaCorta(ACC.hasta)+' (te lo dio tu entrenador).':renueva?'Activa. Se renueva sola el '+fechaCorta(ACC.hasta)+'.':'Activa hasta el '+fechaCorta(ACC.hasta)+'. No se renovará.'}),
       h('div',{class:'row'},cancel),st);
   }
-  return h('section',{class:'card'},h('h2',{text:'Prueba gratis'}),h('p',{class:'note',text:esPrep()?'Tienes 3 sesiones de prueba. Desde la cuarta necesitas la suscripción.':'Tienes la semana 1 completa para probar. Desde la semana 2 necesitas la suscripción.'}));
+  return h('section',{class:'card'},h('h2',{text:'Prueba gratis'}),h('p',{class:'note',text:esPrep()?'Tienes la semana 1 gratis: 7 días desde tu primera preparación. Después necesitas la suscripción.':'Tienes la semana 1 completa para probar. Desde la semana 2 necesitas la suscripción.'}));
 }
 /* Vista del entrenador: precio de venta y acceso de cada atleta */
 async function cardVenta(){

@@ -318,6 +318,7 @@ test.describe("Sakros Go", () => {
     await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3 }), { path: "a/u1/tests", id: "fms", data: { r } }] });
     await page.goto("/go");
     await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    await expect.poll(() => page.evaluate("fmsListo()")).toBe(true); // la evaluación llega después de la ficha
     const ses = (await page.evaluate(`(() => { const out = []; for (let s = 1; s <= 2; s++) for (const d of DIAS()) out.push(rows(d, s).map(i => i.id)); return out; })()`)) as string[][];
     const corr = (ids: string[]) => ids.filter((i) => /^f(ds|hs|il|sm|aslr|tspu|rs)[1-4]$/.test(i));
     for (const ids of ses) {
@@ -331,12 +332,20 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
-  test("la prueba gratis de Prep son 3 sesiones y la del entrenamiento es la semana 1", async ({ page }) => {
+  test("la prueba gratis es la semana 1 en Prep y en el entrenamiento", async ({ page }) => {
     const errores = vigilarErrores(page);
     const acceso = { rol: "cliente", activo: false, terminosV: "2026-11", venta: { activo: false } };
-    await montarGo(page, { docs: [atleta("u1", { programa: "prep" })], acceso });
+    const dia = 86400000;
+    // Prep: 5 preparaciones en 2 días siguen gratis; a los 8 días de la primera, pide la suscripción.
+    const ses = [1, 2, 3, 4, 5].map((n) => ({ path: "a/u1/sesiones", id: "p" + n + "PI", data: { semana: 1, dia: "PI", t: Date.now() - dia } }));
+    await montarGo(page, { docs: [atleta("u1", { programa: "prep", prepIni: Date.now() - 2 * dia }), ...ses], acceso });
     await page.goto("/go");
-    await expect(page.getByText(/Tienes 3 sesiones de prueba/)).toBeVisible();
+    await expect(page.getByText(/Tienes la semana 1 gratis: 7 días/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "¿Qué vas a entrenar hoy?" })).toBeVisible();
+    await expect(page.getByText(/Unos 12 minutos antes de entrenar/)).toBeVisible();
+    await montarGo(page, { docs: [atleta("u1", { programa: "prep", prepIni: Date.now() - 8 * dia })], acceso });
+    await page.goto("/go");
+    await expect(page.getByText("Terminaste tu semana de prueba")).toBeVisible();
     await montarGo(page, { docs: [atleta("u1", { programa: "global" })], acceso });
     await page.goto("/go");
     await expect(page.getByText(/Tienes la semana 1 completa/)).toBeVisible();
@@ -351,6 +360,7 @@ test.describe("Sakros Go", () => {
       await montarGo(page, { docs: [atleta("u1", { programa, frecuencia: 2 }), { path: "a/u1/tests", id: "fms", data: { r } }] });
       await page.goto("/go");
       await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+      await expect.poll(() => page.evaluate("fmsListo()")).toBe(true);
       await expect(page.getByText(/Fundamentos|empezar por el Entrenamiento/)).toHaveCount(0);
       const prim = (await page.evaluate(`(() => DIAS().map(d => { const t = rows(d, 1).find(i => /^tejido[AB]$/.test(i.id)); return t ? PP(t)[0] : null; }))()`)) as (string | null)[];
       for (const p of prim) expect(p).toMatch(/3 grupos, 45–90 s/);
@@ -369,6 +379,7 @@ test.describe("Sakros Go", () => {
     await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3, cargas: { cargada: 75 }, plan })] });
     await page.goto("/go");
     await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    await expect.poll(() => page.evaluate("!!(atl().plan && atl().plan.extra)")).toBe(true); // espera la ficha del servidor
     const r = (await page.evaluate(`(() => ['A','B'].map(d => rows(d,1).map(i => [i.id, pres(1,d,i)])))()`)) as [string, string][][];
     const de = (dia: [string, string][], id: string) => dia.find((x) => x[0] === id)?.[1];
     expect(de(r[0], "copenhague")).toBe("2×20 s/lado");
