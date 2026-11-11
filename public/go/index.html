@@ -287,7 +287,7 @@ function reportarError(tipo,mensaje,detalle){
 window.addEventListener('error',e=>{if(e.target&&e.target!==window)return;reportarError('error',e.message,(e.error&&e.error.stack)||((e.filename||'')+':'+e.lineno+':'+e.colno))});
 window.addEventListener('unhandledrejection',e=>{const r=e.reason;if(r&&(r.code==='cancelled'||r.name==='AbortError'))return;reportarError('promesa',(r&&r.message)||(r&&r.code)||String(r),r&&r.stack)});
 const VIDEOS_B64={};
-const VIDEOS={'activacion-a':'x','apertura-lado':'x','aterrizaje-2':'x','aterrizar':'x','bajada-escalon':'x','birddog':'x','bisagra-palo':'x','circulo-hombro':'x','copenhague':'x','deadbug':'x','deadbug-disco':'x','dominadas':'x','drop-jump':'x','equilibrio-rodilla':'x','faslr1':'x','fds1':'x','fil2':'x','flex-pared':'x','flexiones':'x','flexor-cadera':'x','fsm1':'x','fsm2':'x','ftspu2':'x','goblet-profunda':'x','granjero':'x','hombro-atacante':'x','jalon-banda':'x','landmine-jammer':'x','landmine-press':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','lateral-abduccion':'x','lateral-completa':'x','lateral-corte':'x','lateral-rodillas':'x','mini-band':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','paso-cruzado':'x','peso-muerto':'x','pilar':'x','pmr-mancuernas':'x','press-sentado':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','remo-bisagra':'x','respiracion-diafragmatica':'x','salto-ataque':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-posterior':'x','sentadilla-silla':'x','skater':'x','snap-down':'x','split-squat':'x','swing':'x','tejido-a':'x','toque-hombro':'x','zancada-estatica':'x','zancada-lateral':'x','zancada-rodilla':'x'};const _vurl={};
+const VIDEOS={'activacion-a':'x','apertura-lado':'x','aterrizaje-2':'x','aterrizar':'x','bajada-escalon':'x','birddog':'x','bisagra-palo':'x','circulo-hombro':'x','clean':'x','copenhague':'x','deadbug':'x','deadbug-disco':'x','dominadas':'x','drop-jump':'x','equilibrio-rodilla':'x','faslr1':'x','fds1':'x','fil2':'x','flex-pared':'x','flexiones':'x','flexor-cadera':'x','fsm1':'x','fsm2':'x','ftspu2':'x','goblet-profunda':'x','granjero':'x','hombro-atacante':'x','jalon-banda':'x','landmine-jammer':'x','landmine-press':'x','lanz-atras':'x','lanz-rotacional':'x','lanz-supino':'x','lateral-abduccion':'x','lateral-completa':'x','lateral-corte':'x','lateral-rodillas':'x','mini-band':'x','movilidad-cadera':'x','pallof-pie':'x','pallof-semirrodillas':'x','pase-pecho':'x','paseo-maleta':'x','paso-cruzado':'x','peso-muerto':'x','pilar':'x','pmr-mancuernas':'x','press-sentado':'x','puente':'x','puente-bilateral':'x','puente-una-pierna':'x','remo-bisagra':'x','respiracion-diafragmatica':'x','salto-ataque':'x','sent-frontal':'x','sentadilla-cajon':'x','sentadilla-posterior':'x','sentadilla-silla':'x','skater':'x','snap-down':'x','split-squat':'x','swing':'x','tejido-a':'x','toque-hombro':'x','zancada-estatica':'x','zancada-lateral':'x','zancada-rodilla':'x'};const _vurl={};
 function videoURL(k){return '/go/media/'+k+'.mp4'}
 /* Resumen visible del ejercicio (sin abrir «Cómo se hace»): en los ejercicios compuestos, la lista de lo que
    se hace; en los simples, la clave de ejecución. */
@@ -436,7 +436,7 @@ const EX={
   'En el drop jump el contacto con el suelo es corto: si te hundes o los talones golpean el suelo, baja el cajón.',
   'Test (semana 8): CMJ con manos en la cintura y salto horizontal, 3 intentos de cada uno. Anota el mejor en Progreso y tests.'],
   clave:'Si caes en sentadilla profunda, el cajón está alto. Descansa 60 s entre series de drop jump.'},
- cargada:{n:'Cargada de potencia desde colgado',img:[['sakcolgado-1','Posición colgado (frente): barra sobre las rodillas'],['sakcolgado-2','Posición colgado (perfil): hombros delante de la barra'],['saktiron-1','Tirón: extensión completa y codos altos'],['sakfrontal-1','Final: barra sobre los hombros, codos altos']],pasos:[
+ cargada:{n:'Clean (levantamiento desde colgado)',video:'clean',img:[['sakcolgado-1','Posición colgado (frente): barra sobre las rodillas'],['sakcolgado-2','Posición colgado (perfil): hombros delante de la barra'],['saktiron-1','Tirón: extensión completa y codos altos'],['sakfrontal-1','Final: barra sobre los hombros, codos altos']],pasos:[
   'De pie con la barra en la cadera, agarre algo más ancho que los hombros y brazos largos.',
   'Flexiona la cadera hasta que la barra quede sobre las rodillas: hombros un poco por delante, espalda neutra.',
   'Extiende cadera, rodillas y tobillos en un solo «salto». Encoge los hombros y tira de los codos arriba con la barra pegada.',
@@ -3182,8 +3182,8 @@ const ALT={
   'El brazo sube en el plano escapular y no llega a la vertical: por eso cuida el hombro.',
   'Baja controlado al hombro. Haz todas las repeticiones de un lado y cambia.']},
  jumpshrug:{n:'Jump shrug (encogimiento con salto)',img:[['shrug-0','Posición inicial, brazos largos'],['shrug-1','Extensión y encogimiento, sin recepción']],pasos:[
-  'Misma posición que la cargada desde colgado: barra sobre las rodillas y espalda neutra.',
-  'Extiende cadera, rodillas y tobillos de forma explosiva y encoge los hombros, como en la cargada.',
+  'Misma posición que el clean desde colgado: barra sobre las rodillas y espalda neutra.',
+  'Extiende cadera, rodillas y tobillos de forma explosiva y encoge los hombros, como en el clean.',
   'No metas los codos ni recibas la barra en los hombros: la barra sube y baja con los brazos estirados.',
   'Amortigua al caer y reajusta antes de la siguiente repetición.']},
  trapbar:{n:'Peso muerto con trap bar',img:[['trapbar-0','Inicio: dentro de la barra, cadera atrás'],['trapbar-1','Bloqueo: de pie, columna neutra']],pasos:[
