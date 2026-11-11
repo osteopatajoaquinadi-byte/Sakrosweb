@@ -119,6 +119,9 @@ test.describe("Sakros Go", () => {
     await expect(page.getByText("Tests de campo").first()).toBeVisible();
     const txt = await page.locator("main").innerText();
     expect(txt).toContain("Salto vertical CMJ");
+    // La evaluación de movilidad y control va justo después del encabezado de los tests.
+    const tit = await page.locator("main section h2").allTextContents();
+    expect(tit.slice(0, 2)).toEqual(["Tests · Beto", "Evaluación de movilidad y control"]);
     expect(txt).not.toMatch(/Sprint 10|Sprint 20|Agilidad|2,4 km|FC de recuperación|Squeeze/i);
     expect(errores).toEqual([]);
   });
