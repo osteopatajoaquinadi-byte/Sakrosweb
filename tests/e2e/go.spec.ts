@@ -128,6 +128,43 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("entrenador: el panel Equipo muestra quién entrenó y quién no", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const ahora = Date.now(), dia = 86400000;
+    const reg = (a: string, id: string, semana: number, d: string, ej: string, t: number) => ({ path: `a/${a}/registro`, id, data: { ej, dia: d, semana, hecho: true, t } });
+    await montarGo(page, {
+      quien: { rol: "coach", atleta: null, email: "coach@sakros.cl" },
+      docs: [
+        atleta("u1", { programa: "rend", nombre: "Ana", frecuencia: 3 }),
+        atleta("u2", { programa: "rend", nombre: "Beto", frecuencia: 3 }),
+        atleta("u3", { programa: "base", nombre: "Caro", frecuencia: 2 }),
+        reg("u1", "2A-cargada", 2, "A", "cargada", ahora - 3600000),
+        reg("u1", "1A-cargada", 1, "A", "cargada", ahora - 4 * dia),
+        reg("u2", "1A-cargada", 1, "A", "cargada", ahora - 8 * dia),
+        reg("u2", "1B-pushpress", 1, "B", "pushpress", ahora - 7 * dia),
+      ],
+    });
+    await page.goto("/go");
+    await page.getByRole("tab", { name: "Equipo" }).click();
+    const filas = page.locator(".eqrow");
+    await expect(filas).toHaveCount(3);
+    // Primero quien lleva más días sin entrenar.
+    await expect(filas.nth(0)).toContainText("Beto");
+    await expect(filas.nth(0)).toHaveClass(/rojo/);
+    await expect(filas.nth(0)).toContainText("Semana 1 · 2 de 3");
+    await expect(filas.nth(0)).toContainText("hace 7 días");
+    await expect(page.getByRole("button", { name: /^Caro:/ })).toContainText("Nunca ha marcado un ejercicio");
+    await expect(page.getByRole("group", { name: "Semana" })).toHaveCount(0);
+    const ana = page.getByRole("button", { name: /^Ana:/ });
+    await expect(ana).toHaveClass(/ ok/);
+    await expect(ana).toContainText("Semana 2 · 1 de 3");
+    await expect(ana).toContainText("(hoy)");
+    await ana.click();
+    await expect(page.getByRole("tab", { name: "Progreso" })).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator("#atleta-sel")).toHaveValue("u1");
+    expect(errores).toEqual([]);
+  });
+
   test("entrenador: ve a sus atletas y cambia entre ellos", async ({ page }) => {
     const errores = vigilarErrores(page);
     await montarGo(page, {

@@ -168,6 +168,15 @@ td input{min-width:80px;padding:6px 8px}
 details.card>summary{font-weight:700}
 .freq{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-bottom:8px}
 .vid video{width:100%;max-height:70vh;border-radius:8px;margin-top:8px;background:#000;display:block}
+.eqres{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.eqchip{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--sunk)}
+.eqchip.rojo{background:var(--accent-soft);color:var(--accent)}.eqchip.amb{color:var(--warn)}.eqchip.ok{background:var(--ok-soft);color:var(--ok)}
+.eqlist{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}
+.eqrow{width:100%;display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;font:inherit;color:inherit;background:var(--sunk);border:0;border-left:4px solid transparent;border-radius:8px;padding:10px 12px;cursor:pointer}
+.eqrow.rojo{border-left-color:var(--accent)}.eqrow.amb{border-left-color:var(--warn)}.eqrow.ok{border-left-color:var(--ok)}
+.eqdot{width:10px;height:10px;border-radius:50%;background:var(--muted)}.eqrow.rojo .eqdot{background:var(--accent)}.eqrow.amb .eqdot{background:var(--warn)}.eqrow.ok .eqdot{background:var(--ok)}
+.eqmain,.eqdato{display:grid;min-width:0}.eqdato{text-align:right;font-size:.88rem}
+@media (max-width:480px){.eqrow{grid-template-columns:10px minmax(0,1fr)}.eqdato{grid-column:2;text-align:left}}
 .dxline{margin:0;font-size:.88rem;background:var(--sunk);border-radius:8px;padding:8px 10px}
 .linkbtn{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline}
 .dxhead{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
@@ -256,6 +265,7 @@ h2.sec{margin:18px 4px 8px;font-size:1.1rem}p.big{font-family:var(--display);fon
     <div class="who" id="who"></div>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" id="t-hoy" data-tab="hoy" hidden>Hoy</button>
+      <button class="tab" role="tab" id="t-equipo" data-tab="equipo" hidden>Equipo</button>
       <button class="tab" role="tab" id="t-tests" data-tab="tests">Tests</button>
       <button class="tab" role="tab" id="t-progreso" data-tab="progreso">Progreso</button>
       <button class="tab" role="tab" id="t-sesion" data-tab="sesion">Sesión</button>
@@ -2339,7 +2349,7 @@ function render(){
   if(cli&&['salud','perfil','nuevo'].includes(UI.tab))UI.tab='hoy';
   if(!cli&&['hoy','onb'].includes(UI.tab))UI.tab='tests';
   if(UI.tab==='play'&&!UI.play)UI.tab=cli?'hoy':'sesion';
-  const vis=cli?['hoy','progreso','tests','coach']:['tests','progreso','sesion','salud','coach'];
+  const vis=cli?['hoy','progreso','tests','coach']:[...(SB&&ROL==='coach'?['equipo']:[]),'tests','progreso','sesion','salud','coach'];
   document.querySelectorAll('.tab').forEach(b=>{b.hidden=!vis.includes(b.dataset.tab)||['onb','play','terminos'].includes(UI.tab);b.setAttribute('aria-selected',b.dataset.tab===UI.tab||(b.dataset.tab==='tests'&&UI.tab==='fms')||(b.dataset.tab==='hoy'&&UI.tab==='sesion'&&cli))});
   const ml=$('#modo-link');if(ml){ml.hidden=MODO_FIJO;ml.textContent=cli?'Vista entrenador':'Vista cliente';ml.onclick=()=>setModo(cli?'coach':'cliente')}
   if(atlListo&&!DIAS().includes(UI.dia))UI.dia=DIAS()[0];
@@ -2354,6 +2364,7 @@ function render(){
   if(mode==='local'){const nb=cli?(UI.tab==='hoy'?h('p',{class:'note',text:'Tus datos se guardan en este teléfono.'}):null):h('div',{class:'banner'},'Modo sin nube: lo que registres queda guardado en este navegador.');if(nb)m.append(nb)}
   const a=atl();
   if(UI.tab==='hoy'){renderHoy(m);return}
+  if(UI.tab==='equipo'){if(!cli&&SB&&ROL==='coach'){renderEquipo(m);return}UI.tab='tests'}
   if(!cli&&UI.tab!=='perfil'&&UI.tab!=='nuevo'&&(!a.sexo||(UI.atleta!=='yo'&&(!a.edad||!a.sesiones))))m.append(h('div',{class:'banner'},'Faltan datos del perfil de '+a.nombre+' (sexo'+(UI.atleta!=='yo'?', edad o sesiones por semana':'')+'). ',h('button',{class:'linkbtn',onclick:()=>{UI.tab='perfil';render()}},'Completar perfil')));
   if(UI.tab==='perfil'||UI.tab==='nuevo')renderPerfil(m,UI.tab==='nuevo');else if(UI.tab==='tests'){if(cli&&!esPrep())renderTestsCli(m);else{const n0=m.children.length;renderTests(m);m.insertBefore(cardFms(),m.children[n0+1]||null)}}else if(UI.tab==='sesion')renderSesion(m);else if(UI.tab==='progreso')renderProgreso(m);else if(UI.tab==='salud')renderSalud(m);else renderCoach(m);
 }
@@ -2426,7 +2437,7 @@ function renderPerfil(m,nuevo){
 }
 function renderSelectors(){
   const box=$('#selectors');box.replaceChildren();
-  if(['tests','progreso','salud','perfil','nuevo','hoy','play','onb','terminos','paywall','fms'].includes(UI.tab))return;
+  if(['equipo','tests','progreso','salud','perfil','nuevo','hoy','play','onb','terminos','paywall','fms'].includes(UI.tab))return;
   if(esPrep()){if(UI.tab==='sesion'&&!modoCli())box.append(selProg());return}
   const lanes=h('div',{class:'lanes',role:'group','aria-label':'Semana'}),sm=semMax();
   for(let s=1;s<=8;s++){
@@ -3451,6 +3462,63 @@ function cardRecordatorios(){
     h('div',{class:'freq',role:'group','aria-label':'Días de entrenamiento'},N.map((l,i)=>h('button',{class:'opt','aria-pressed':dias.includes(i+1),'aria-label':NL[i],onclick:()=>save({diasSemana:dias.includes(i+1)?dias.filter(x=>x!==i+1):[...dias,i+1].sort()})},l))),
     h('label',{class:'tcrow'},(()=>{const c=h('input',{type:'checkbox'});c.checked=on;c.addEventListener('change',()=>save({recordatorios:c.checked}));return c})(),h('span',{text:'Recordarme por correo'})),
     dias.length&&dias.length!==freq()&&!esPrep()?h('p',{class:'note',text:'Tu plan es de '+freq()+(freq()===1?' día':' días')+' por semana y elegiste '+dias.length+'.'}):null);
+}
+/* Equipo (entrenador): quién entrenó y quién no, sin abrir atleta por atleta.
+   Lee los registros de todos los atletas y cuenta, del programa y bloque actual de cada uno,
+   los días con al menos un ejercicio hecho. Rojo: 5 días o más sin entrenar; ámbar: 3–4. */
+let EQ=null;
+async function cargarEquipo(){
+  const out=[];
+  for(let i=0;i<20;i++){
+    const{data,error}=await SB.from('go_docs').select('path,id,data').like('path','%registro').order('updated_at',{ascending:false}).range(i*1000,i*1000+999);
+    if(error)throw error;out.push(...(data||[]));if(!data||data.length<1000)break;
+  }
+  return out;
+}
+function resumenEquipo(regs){
+  const por={};
+  regs.forEach(r=>{const m=/^(?:a\/([^/]+)\/)?registro$/.exec(r.path||'');if(!m)return;(por[m[1]||'yo']=por[m[1]||'yo']||[]).push(r)});
+  const hoy=Date.now();
+  return Object.keys(ATL).map(id=>{
+    const a=ATL[id]||{},pg=['core','global','base','prep'].includes(a.programa)?a.programa:'rend';
+    const f=parseInt(a.frecuencia,10),fr=f>=1&&f<=3?f:2,b=(pg==='base'||pg==='prep')?1:Math.max(1,parseInt((a.bloques||{})[pg],10)||1);
+    const pre=b>1?'b'+b+'.':'';
+    const L=(por[id]||[]).filter(r=>{const d=r.data||{};return d.hecho&&d.ej&&progOf(d.ej)===pg&&(pre?String(r.id).startsWith(pre):!/^b\d+\./.test(r.id))});
+    const dias={};let ult=0;
+    L.forEach(r=>{const d=r.data,k=d.semana+'|'+d.dia,t=+d.t||0;dias[k]=Math.max(dias[k]||0,t);if(t>ult)ult=t});
+    const sems=Object.keys(dias).map(k=>parseInt(k,10)).filter(n=>n>0);
+    const sem=sems.length?Math.max(...sems):0,enSem=Object.keys(dias).filter(k=>parseInt(k,10)===sem).length;
+    const sin=ult?Math.floor((hoy-ult)/86400000):null;
+    const est=!ult?'nuevo':sin>=5?'rojo':sin>=3?'amb':'ok';
+    return {id,nombre:id==='yo'?((a.nombre&&a.nombre!=='Mi perfil')?a.nombre+' (tú)':'Mi perfil'):(a.nombre||a.email||'Sin nombre'),pg,fr,sem,enSem,total:Object.keys(dias).length,ult,sin,est};
+  });
+}
+function renderEquipo(m){
+  const card=h('section',{class:'card'},h('h2',{text:'Equipo'}),h('p',{class:'note',text:'Quién entrenó y quién no. Cuenta los días con al menos un ejercicio marcado como hecho en su programa actual.'}));
+  m.append(card);
+  const box=h('div',{},h('p',{class:'note',text:'Cargando…'}));card.append(box);
+  const pinta=()=>{
+    const L=resumenEquipo(EQ),ord={rojo:0,amb:1,nuevo:2,ok:3};
+    L.sort((x,y)=>ord[x.est]-ord[y.est]||(y.sin||0)-(x.sin||0)||x.nombre.localeCompare(y.nombre));
+    const n=k=>L.filter(x=>x.est===k).length;
+    const fecha=t=>new Date(t).toLocaleDateString('es-CL',{weekday:'short',day:'numeric',month:'short'});
+    const txt={rojo:'5+ días sin entrenar',amb:'3–4 días sin entrenar',ok:'Al día',nuevo:'Sin empezar'};
+    box.replaceChildren(
+      h('p',{class:'eqres'},[['rojo','sin entrenar 5+ días'],['amb','3–4 días'],['ok','al día'],['nuevo','sin empezar']].filter(([k])=>n(k)).map(([k,t])=>h('span',{class:'eqchip '+k,text:n(k)+' '+t}))),
+      h('ul',{class:'eqlist'},L.map(x=>h('li',{},h('button',{class:'eqrow '+x.est,'aria-label':x.nombre+': '+txt[x.est],onclick:()=>{UI.tab='progreso';switchAtleta(x.id);scrollTo(0,0)}},
+        h('span',{class:'eqdot','aria-hidden':'true'}),
+        h('span',{class:'eqmain'},h('strong',{text:x.nombre}),h('span',{class:'note',text:PROGC[x.pg]+' · '+x.fr+'×/sem'})),
+        h('span',{class:'eqdato'},
+          h('span',{text:x.sem?'Semana '+x.sem+' · '+x.enSem+' de '+x.fr:'Sin sesiones'}),
+          h('span',{class:'note',text:x.ult?('Último: '+fecha(x.ult)+(x.sin===0?' (hoy)':x.sin===1?' (ayer)':' (hace '+x.sin+' días)')):'Nunca ha marcado un ejercicio'})))))),
+      h('div',{class:'row'},h('button',{class:'btn small',onclick:()=>{EQ=null;renderEquipoCarga(box,pinta)}},'Actualizar')));
+  };
+  renderEquipoCarga(box,pinta);
+}
+async function renderEquipoCarga(box,pinta){
+  if(EQ){pinta();return}
+  box.replaceChildren(h('p',{class:'note',text:'Cargando…'}));
+  try{EQ=await cargarEquipo();pinta()}catch(e){box.replaceChildren(h('p',{class:'note',text:'No se pudieron cargar los registros. Revisa tu conexión y vuelve a intentarlo.'}))}
 }
 function renderCoach(m){
   m.append(h('section',{class:'card'},h('h2',{text:'Coach IA'}),

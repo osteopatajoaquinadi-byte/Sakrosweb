@@ -49,6 +49,8 @@ function filtros(url: URL) {
   const f: Record<string, string> = {};
   url.searchParams.forEach((v, k) => {
     if (v.startsWith("eq.")) f[k] = decodeURIComponent(v.slice(3));
+    // like.%registro → todas las rutas que terminan así (panel Equipo del entrenador)
+    if (v.startsWith("like.")) f["like:" + k] = v.slice(5);
   });
   return f;
 }
@@ -148,14 +150,19 @@ export async function montarGo(page: Page, o: Opciones = {}): Promise<Fake> {
   return fake;
 }
 
+function comoLike(texto: string, patron: string) {
+  const re = new RegExp("^" + patron.split("%").map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(".*") + "$");
+  return re.test(texto);
+}
+
 async function responderDocs(req: Request, fake: Fake, o: Opciones) {
   const url = new URL(req.url());
   const f = filtros(url);
   const m = req.method();
   if (m === "GET" || m === "HEAD") {
     const filas = [...fake.docs.values()]
-      .filter((d) => d.path === f.path && (!f.id || d.id === f.id))
-      .map((d) => ({ id: d.id, data: d.data }));
+      .filter((d) => (f["like:path"] ? comoLike(d.path, f["like:path"]) : d.path === f.path) && (!f.id || d.id === f.id))
+      .map((d) => (f["like:path"] ? { path: d.path, id: d.id, data: d.data } : { id: d.id, data: d.data }));
     return { json: filas };
   }
   if (m === "POST") {
