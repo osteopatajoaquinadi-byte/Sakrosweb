@@ -507,6 +507,18 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("las flexiones muestran el video en el suelo en Rendimiento y en la pared en Activo", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3 })] });
+    await page.goto("/go");
+    await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    await expect.poll(() => page.evaluate("esRend()")).toBe(true);
+    expect(await page.evaluate("vidDe('gflex', EX.gflex)")).toBe("flexiones");
+    await page.evaluate("ATL[UI.atleta] = { ...ATL[UI.atleta], programa: 'global' }");
+    expect(await page.evaluate("vidDe('gflex', EX.gflex)")).toBe("flex-pared");
+    expect(errores).toEqual([]);
+  });
+
   test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 800 } });
     const errores = vigilarErrores(page);
