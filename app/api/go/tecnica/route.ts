@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { goMiembro } from "@/lib/go-auth";
 import { errorServidor } from "@/lib/go-errores";
+import { bloqueoPorGasto, registrarGasto } from "@/lib/go-gasto";
 
 // Revisión de técnica de cualquier ejercicio de Sakros Go a partir de cuadros
 // extraídos de un video casero. El navegador saca los cuadros (no se sube el video)
@@ -66,6 +67,8 @@ export async function POST(request: NextRequest) {
   }
 
   const db = getServiceClient();
+  const pausa = await bloqueoPorGasto(db, m);
+  if (pausa) return NextResponse.json({ error: pausa, code: "limite_mensual" }, { status: 429 });
   const cupo = await cupoDe(m);
   if (cupo.prep) {
     return NextResponse.json({ error: "La revisión de técnica es parte del plan Entrenamiento.", code: "no_incluido" }, { status: 403 });
@@ -119,6 +122,7 @@ export async function POST(request: NextRequest) {
       output_config: { effort: "medium" },
       messages: [{ role: "user", content }],
     });
+    await registrarGasto(db, m, res.usage);
     const texto = res.content.map((b) => (b.type === "text" ? b.text : "")).join("");
     const i = texto.indexOf("{"), j = texto.lastIndexOf("}");
     if (i < 0 || j < i) throw new Error("Respuesta sin JSON");

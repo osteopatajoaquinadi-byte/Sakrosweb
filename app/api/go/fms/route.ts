@@ -4,6 +4,7 @@ import { getServiceClient } from "@/lib/supabase";
 import { goMiembro } from "@/lib/go-auth";
 import { errorServidor } from "@/lib/go-errores";
 import { accesoActivo } from "@/lib/go-suscripcion";
+import { bloqueoPorGasto, registrarGasto } from "@/lib/go-gasto";
 
 // FMS por video: la app extrae cuadros de cada video (3 repeticiones por
 // lado) y los envía aquí. El Coach los compara con los criterios del FMS y
@@ -141,6 +142,8 @@ export async function POST(request: NextRequest) {
       );
     }
   }
+  const pausa = await bloqueoPorGasto(db, m);
+  if (pausa) return NextResponse.json({ error: pausa, code: "limite_mensual" }, { status: 429 });
   const { data: permitido } = await db.rpc("go_usar_fms", { p_user: m.userId, p_max: LIMITE[m.rol] });
   if (permitido === false) {
     return NextResponse.json({ error: "Llegaste al límite de análisis de hoy. Sigue mañana.", code: "limite_diario" }, { status: 429 });
@@ -201,6 +204,7 @@ export async function POST(request: NextRequest) {
       output_config: { effort: "medium" },
       messages: [{ role: "user", content }],
     });
+    await registrarGasto(db, m, res.usage);
     const texto = res.content.map((b) => (b.type === "text" ? b.text : "")).join("");
     const i = texto.indexOf("{"), j = texto.lastIndexOf("}");
     if (i < 0 || j < i) throw new Error("Respuesta sin JSON");

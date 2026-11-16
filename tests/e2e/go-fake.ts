@@ -118,6 +118,8 @@ export async function montarGo(page: Page, o: Opciones = {}): Promise<Fake> {
     return r.fulfill({ json: { ok: true } });
   });
   await page.route("**/api/go/claude", (r) => {
+    // GET: uso de la IA este mes y límites (los muestra la pestaña Coach).
+    if (r.request().method() === "GET") return r.fulfill({ json: { ilimitado: false, mensajesDia: 40, usoMes: 0 } });
     const body = JSON.parse(r.request().postData() || "{}");
     fake.coachLlamadas.push(body);
     return r.fulfill({
