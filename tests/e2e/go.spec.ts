@@ -537,14 +537,14 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
-  test("la evaluación dice que es gratis, el plazo de revisión y ofrece la presencial por WhatsApp", async ({ page }) => {
+  test("la evaluación dice que viene con el plan, el plazo de revisión y ofrece la presencial por WhatsApp", async ({ page }) => {
     const errores = vigilarErrores(page);
     await montarGo(page, { quien: { rol: "coach", atleta: null, email: "coach@sakros.cl" }, docs: [atleta("u2", { programa: "rend", nombre: "Beto" })] });
     await page.goto("/go");
     await page.locator("#atleta-sel").selectOption("u2");
     await page.getByRole("tab", { name: "Tests" }).click();
     const card = page.locator(".fmscard");
-    await expect(card).toContainText("gratis");
+    await expect(card).toContainText("incluida en tu plan");
     await expect(card).toContainText("48 horas a 7 días");
     await expect(card).toContainText("$25.000");
     const wa = card.getByRole("link", { name: "Reservar por WhatsApp" });
@@ -613,6 +613,25 @@ test.describe("Sakros Go", () => {
     await page.getByRole("button", { name: "Pagar 1 año · $200.000" }).click();
     await expect.poll(() => pedidos.length).toBe(1);
     expect(pedidos[0]).toEqual({ plan: "entrenamiento", periodo: "anual" });
+    expect(errores).toEqual([]);
+  });
+
+  test("prueba gratis: sin evaluación de movilidad y control, preparación de movilidad general", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, {
+      docs: [atleta("u1", { programa: "rend", frecuencia: 3 })],
+      acceso: { rol: "cliente", activo: false, plan: "entrenamiento", terminosV: "2026-11", venta: { activo: false } },
+    });
+    await page.goto("/go");
+    await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    await expect.poll(() => page.evaluate("fmsGen()")).toBe(true);
+    await page.getByRole("tab", { name: "Tests" }).click();
+    const card = page.locator(".fmscard");
+    await expect(card).toContainText("viene incluida en los planes Prep y Entrenamiento");
+    await expect(card).toContainText("movilidad general");
+    await expect(card.getByRole("button", { name: /Hacer mi evaluación/ })).toHaveCount(0);
+    await page.evaluate("UI.tab='fms';render()");
+    await expect(page.locator(".fmscard")).toHaveCount(0);
     expect(errores).toEqual([]);
   });
 

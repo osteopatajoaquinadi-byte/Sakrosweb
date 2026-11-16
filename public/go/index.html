@@ -1459,7 +1459,10 @@ function cardSaltoBase(){
 function fmsPrioridad(zona){return FMSH.filter(id=>ZTEST[zona].includes(id)).map(id=>({id,...fmsRes(id)})).filter(r=>r.score!=null&&r.score>0&&(r.score<3||r.asym))}
 function nivCorr(id){const v=(atl().corr||{})[id];if(v>=1&&v<=4)return v;const r=fmsRes(id);if(r.score===3&&!r.asym)return 4;return r.score===1?1:2}
 // «Quiero ir directo al entrenamiento»: sin evaluación, movilidad general que rota los 7 patrones (no dirigida).
-const fmsGen=()=>!!atl().fmsNo&&!fmsListo();
+// La evaluación de movilidad y control (FMS) viene con Prep y Entrenamiento: en la prueba gratis no se hace
+// y la preparación trabaja la movilidad general. El entrenador y los atletas piloto siempre pueden.
+const fmsPermitida=()=>ROL!=='cliente'||!!(ACC&&ACC.activo)||!!atl().piloto;
+const fmsGen=()=>(!!atl().fmsNo||!fmsPermitida())&&!fmsListo();
 const sesHecha=()=>Object.values(S.sesiones||{}).some(v=>v&&v.fecha);// al menos una sesión terminada
 const corrGen=(i,n)=>Array.from({length:n},(_,k)=>FMSH[(i+k)%FMSH.length]).map(id=>'f'+id+nivCorr(id));
 async function irDirecto(v=true){await saveAtleta(UI.atleta,{...atl(),fmsNo:v,t:Date.now()});render()}
@@ -1686,12 +1689,17 @@ let TECCUPO=null,_tecCupoPide=false;
 function pideTecCupo(){if(_tecCupoPide||!SB||!modoCli()||ROL!=='cliente')return;_tecCupoPide=true;
   authHeaders().then(hd=>fetch('/api/go/tecnica',{headers:hd})).then(r=>r.ok?r.json():null).then(j=>{if(j){TECCUPO=j;render()}}).catch(()=>{_tecCupoPide=false})}
 const evalPresencial=()=>h('p',{class:'note'},'¿Prefieres la evaluación presencial? Necesitas una hora de kinesiología en Sakros para evaluar tu FMS: cuesta $25.000 y se paga directamente en el centro. ',h('a',{href:WA_EVAL,target:'_blank',rel:'noopener'},'Reservar por WhatsApp'));
+const FMS_PLAN_TXT='La evaluación de movilidad y control viene incluida en los planes Prep y Entrenamiento. Durante tus 3 entrenamientos gratis, tu preparación trabaja la movilidad general de todo el cuerpo. Al suscribirte, haces tu evaluación (7 pruebas con tu teléfono, unos 15 minutos), Joaquín la revisa en un plazo de 48 horas a 7 días y tu preparación pasa a correctivos dirigidos a lo que más necesitas.';
 function cardFms(){
+  if(!fmsPermitida()&&!fmsListo())return h('section',{class:'card fmscard'},h('h2',{text:'Evaluación de movilidad y control'}),
+    h('p',{class:'dxline',text:FMS_PLAN_TXT}),
+    h('div',{class:'row'},h('button',{class:'btn primary',onclick:()=>{UI.tab='paywall';saveUI();render();scrollTo(0,0)}},'Ver los planes')),
+    evalPresencial());
   const tot=fmsTotal(),F=FF(),al=fmsAlguno(),dol=fmsDolor();
   return h('section',{class:'card fmscard'},h('h2',{text:'Evaluación de movilidad y control'}),
     tot!=null?h('div',{class:'balrow'},h('span',{text:'Tu resultado'}),h('span',{class:'sem '+(tot>=14?'v':'a'),text:tot+' de 21'})):null,
     fmsGen()?h('p',{class:'dxline',text:'Elegiste ir directo al entrenamiento: tu preparación trabaja la movilidad general de todo el cuerpo. Cuando quieras, haz la evaluación y pasa a correctivos dirigidos a lo que más necesitas.'}):null,
-    h('p',{class:'note',text:!al?'Tu evaluación principal, gratis. 7 pruebas de movimiento grabadas con tu teléfono, unos 15 minutos. El Coach te da un puntaje al instante, Joaquín Adi (kinesiólogo) la revisa en un plazo de 48 horas a 7 días y tu preparación se arma según lo que más necesitas.':tot==null?'En curso: completa las pruebas que faltan. Cuando esté completa, Joaquín la revisa en un plazo de 48 horas a 7 días.':(F.revisado?'Revisada por Joaquín Adi, kinesiólogo.':'Resultado preliminar del Coach. Joaquín la revisa en un plazo de 48 horas a 7 días y te avisamos si cambia algo.')}),
+    h('p',{class:'note',text:!al?'Tu evaluación principal, incluida en tu plan. 7 pruebas de movimiento grabadas con tu teléfono, unos 15 minutos. El Coach te da un puntaje al instante, Joaquín Adi (kinesiólogo) la revisa en un plazo de 48 horas a 7 días y tu preparación se arma según lo que más necesitas.':tot==null?'En curso: completa las pruebas que faltan. Cuando esté completa, Joaquín la revisa en un plazo de 48 horas a 7 días.':(F.revisado?'Revisada por Joaquín Adi, kinesiólogo.':'Resultado preliminar del Coach. Joaquín la revisa en un plazo de 48 horas a 7 días y te avisamos si cambia algo.')}),
     al&&tot==null?avanceFms():null,
     !F.revisado?evalPresencial():null,
     dol.length?h('p',{class:'dxline',text:'Con dolor en: '+dol.join(', ')+'. El dolor no se corrige con ejercicio: coméntalo con tu kinesiólogo.'}):null,
@@ -2397,7 +2405,7 @@ function render(){
   if(UI.tab==='terminos'){renderTerminos(m);return}
   if(UI.tab==='paywall'){renderPaywall(m);return}
   if(UI.tab==='play'){renderPlay(m);return}
-  if(UI.tab==='fms'){renderFms(m);return}
+  if(UI.tab==='fms'){if(fmsPermitida()||fmsListo()){renderFms(m);return}UI.tab=cli?'hoy':'tests';return render()}
   if(mode==='local'){const nb=cli?(UI.tab==='hoy'?h('p',{class:'note',text:'Tus datos se guardan en este teléfono.'}):null):h('div',{class:'banner'},'Modo sin nube: lo que registres queda guardado en este navegador.');if(nb)m.append(nb)}
   const a=atl();
   if(UI.tab==='hoy'){renderHoy(m);return}
@@ -3673,7 +3681,7 @@ function renderOnb(m){
     const ed=h('input',{id:'onb-edad',inputmode:'numeric',placeholder:'años'});ed.value=O.ed!=null?O.ed:(a.edad||'');
     const guardar=()=>{O.nom=nom.value;O.sx=sx.value;O.ed=ed.value};
     const err=h('p',{class:'note err',role:'alert'});
-    const res=prog==='prep'?h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),h('h2',{text:'Sakros Go Prep'}),h('p',{text:PDESC.prep}),h('p',{text:'Te recomendamos hacer tu evaluación de movilidad y control por video: así los correctivos son los que tú necesitas.'}),
+    const res=prog==='prep'?h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),h('h2',{text:'Sakros Go Prep'}),h('p',{text:PDESC.prep}),h('p',{text:'Durante tus 3 entrenamientos gratis, tu preparación trabaja la movilidad general. Al suscribirte, haces tu evaluación de movilidad y control por video: así los correctivos son los que tú necesitas.'}),
       h('p',{class:'note',text:(adapt.length?'Adaptado a: '+adapt.join(', '):'')})):h('div',{class:'plancard'},h('span',{class:'wholbl',text:'Tu plan'}),
       h('h2',{text:PROG[prog].split(' (')[0]}),h('p',{text:PDESC[prog]}),
       h('p',{class:'note',text:O.dias+(O.dias===1?' día':' días')+' por semana'+(adapt.length?' · adaptado a: '+adapt.join(', '):'')}));
@@ -3730,12 +3738,12 @@ function cardAlerta(){
       h('button',{class:'linkbtn',onclick:async()=>{await saveAtleta(UI.atleta,{...atl(),alerta:{...x,ok:Date.now()},t:Date.now()});render()}},'Ya me evaluó un profesional')));
 }
 function cardPartida(){
-  if(esPrep()||fmsListo()||atl().fmsNo)return null;
+  if(esPrep()||fmsListo()||atl().fmsNo||!fmsPermitida())return null;
   const al0=fmsAlguno();if(!al0&&!sesHecha())return null;// primero una sesión genérica; después, la evaluación
   let oc=false;try{oc=localStorage.getItem('go-partida-'+UI.atleta)===new Date().toDateString()}catch(e){}if(oc)return null;
   const al=fmsAlguno();
   return h('section',{class:'card partida'},h('span',{class:'chip',text:'Tu punto de partida'}),h('h2',{text:al?'Termina tu evaluación de movimiento':'Haz tu evaluación de movimiento'}),
-    h('p',{text:'Ya hiciste tu primera sesión. Ahora personaliza tu entrenamiento: 7 pruebas cortas que grabas con tu teléfono, unos 15 minutos y gratis. Joaquín revisa tu evaluación en un plazo de 48 horas a 7 días y tu preparación pasa de movilidad general a correctivos para lo que más necesitas.'}),
+    h('p',{text:'Ya hiciste tu primera sesión. Ahora personaliza tu entrenamiento: 7 pruebas cortas que grabas con tu teléfono, unos 15 minutos, incluidas en tu plan. Joaquín revisa tu evaluación en un plazo de 48 horas a 7 días y tu preparación pasa de movilidad general a correctivos para lo que más necesitas.'}),
     al?avanceFms():null,
     evalPresencial(),
     h('p',{class:'note',text:'Los demás tests (fuerza, saltos y campo) son opcionales. Están en la pestaña Tests, en «Tests complementarios».'}),
