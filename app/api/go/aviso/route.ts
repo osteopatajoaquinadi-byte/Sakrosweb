@@ -8,13 +8,13 @@ import { renderBrandedEmail } from "@/lib/email-template";
 import { siteConfig } from "@/lib/site-config";
 
 // Avisos al entrenador por correo:
-// - «fms»: un cliente completó su evaluación de movimiento y espera la revisión (48 h).
+// - «fms»: un cliente completó su evaluación de movimiento y espera la revisión (de 48 horas a 7 días).
 // - «alerta»: un cliente marcó señales de alarma al entrar (plan suave).
 const TIPOS = {
   fms: {
     asunto: "Sakros Go: evaluación lista para revisar",
     titulo: "Evaluación de movimiento lista",
-    texto: "completó su evaluación de movimiento por video. Prometimos revisarla en 48 horas: entra a Sakros Go, elige al atleta, abre su evaluación y marca «Revisado».",
+    texto: "completó su evaluación de movimiento por video. Prometimos revisarla en un plazo de 48 horas a 7 días: entra a Sakros Go, elige al atleta, abre su evaluación y marca «Revisado».",
   },
   alerta: {
     asunto: "Sakros Go: cliente con señales de alarma",

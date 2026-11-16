@@ -536,6 +536,22 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("la evaluación dice que es gratis, el plazo de revisión y ofrece la presencial por WhatsApp", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { quien: { rol: "coach", atleta: null, email: "coach@sakros.cl" }, docs: [atleta("u2", { programa: "rend", nombre: "Beto" })] });
+    await page.goto("/go");
+    await page.locator("#atleta-sel").selectOption("u2");
+    await page.getByRole("tab", { name: "Tests" }).click();
+    const card = page.locator(".fmscard");
+    await expect(card).toContainText("gratis");
+    await expect(card).toContainText("48 horas a 7 días");
+    await expect(card).toContainText("$25.000");
+    const wa = card.getByRole("link", { name: "Reservar por WhatsApp" });
+    await expect(wa).toHaveAttribute("href", /^https:\/\/wa\.me\/56945399692\?text=.*kinesiolog/);
+    expect(await page.locator("main").innerText()).not.toMatch(/en 48 horas|próximas 48 horas/);
+    expect(errores).toEqual([]);
+  });
+
   test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 800 } });
     const errores = vigilarErrores(page);
