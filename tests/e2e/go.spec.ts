@@ -553,11 +553,13 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
-  test("Entrenamiento: tope semanal de análisis de técnica", async ({ page }) => {
+  test("Entrenamiento: grupo de WhatsApp con Joaquín y tope semanal de análisis de técnica", async ({ page }) => {
     const errores = vigilarErrores(page);
     await page.route("**/api/go/tecnica", (r) => r.fulfill({ json: { max: 3, usadas: 3 } }));
     await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3, nombre: "Ana" })] });
     await page.goto("/go");
+    await expect(page.getByRole("link", { name: "Entrar al grupo de WhatsApp" })).toHaveAttribute("href", "https://chat.whatsapp.com/KT5uhodKmYGDQZlFwhqUqx");
+    await expect(page.getByText(/Una consulta semanal con Joaquín en el grupo de WhatsApp/)).toBeVisible();
     await page.getByText(/Ver la sesión completa/).first().click();
     const tec = page.locator("details.tec").first();
     await tec.locator("summary").click();
@@ -575,6 +577,13 @@ test.describe("Sakros Go", () => {
     await tec.locator("summary").click();
     await expect(tec.getByRole("button", { name: /Subir un video/ })).toBeVisible();
     await expect(tec).not.toContainText("análisis de esta semana");
+  });
+
+  test("Prep no ofrece el grupo de WhatsApp con Joaquín", async ({ page }) => {
+    await montarGo(page, { docs: [atleta("u1", { programa: "prep", frecuencia: 2 })] });
+    await page.goto("/go");
+    await expect(page.locator("main section").first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Entrar al grupo de WhatsApp" })).toHaveCount(0);
   });
 
   test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
