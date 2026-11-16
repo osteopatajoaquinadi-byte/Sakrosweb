@@ -1102,4 +1102,16 @@
   EJ.pilarB = une([EJ.kplanchar, EJ.klateralr, X.puente, X.pallof, X.paredMarcha]);
   EJ.frodPI = une([X.cuads, X.gemelos, X.gluteo]);
   EJ.frodPC = une([X.espalda, X.gluteo, X.cuads, X.gemelos]);
+
+  // Fundamentos: velocidad real del programa (tempo 3-1-1: 3 s bajando, 1 s de pausa, 1 s subiendo;
+  // remo: 1 s tirando, 2 s de pausa, 2 s volviendo). Solo cambia las duraciones, no las poses.
+  (function () {
+    function dur(id, d) { var e = window.MQ_EJ[id]; if (!e || !e.k) return; d.forEach(function (v, i) { if (v != null && e.k[i]) e.k[i] = [v, e.k[i][1]]; }); }
+    ['xsent1', 'xsent1@1', 'xsent1@2', 'xsent1@3'].forEach(function (id) { dur(id, [null, 0.8, 3, 1, 1]); });
+    dur('xrdl1@1', [null, 0.8, 3, 1, 1, 0.5]);
+    ['xrdl1', 'xrdl1@2', 'xrdl1@3'].forEach(function (id) { dur(id, [null, 0.6, 3, 1, 1, 0.6, 0.6]); });
+    ['xstepup', 'xstepup@1', 'xstepup@3'].forEach(function (id) { dur(id, [null, 0.6, 0.5, 0.5, 1, 1.6, 1.4]); });
+    ['xtiron', 'xtiron@1', 'xtiron@2'].forEach(function (id) { dur(id, [null, 0.6, 1, 2, 2]); });
+    dur('xtiron@3', [null, 0.6, 1, 2, 2]);
+  })();
 })();
