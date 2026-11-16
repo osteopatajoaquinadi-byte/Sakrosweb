@@ -1601,7 +1601,10 @@ async function subirTec(s,d,it,V,file){
     if(!SB)throw {msg:'La revisión necesita conexión con Sakros.'};
     TECBUSY[k]='El Coach está revisando tu técnica…';render();
     const res=await fetch('/api/go/tecnica',{method:'POST',headers:await authHeaders(),body:JSON.stringify({nombre:V.n,pres:V.pres,pasos:V.pasos||[],clave:V.clave||'',cuadros,sexo:atl().sexo||''})});
-    const j=await res.json().catch(()=>({}));if(!res.ok)throw {msg:j.error||'No se pudo analizar el video.'};
+    const j=await res.json().catch(()=>({}));
+    if(j.code==='limite_semanal'&&TECCUPO&&!TECCUPO.ilimitado)TECCUPO={...TECCUPO,usadas:TECCUPO.max};
+    if(!res.ok)throw {msg:j.error||'No se pudo analizar el video.'};
+    if(j.cupo){TECCUPO={...(TECCUPO||{}),...j.cupo};delete j.cupo}
     const cur={...(S.registro[k]||{semana:semReg(s),dia:d,ej:it.id}),tec:{frames:paths,ia:j,t:Date.now()},t:Date.now()};
     S.registro[k]=cur;await write('registro',k,cur);delete TECBUSY[k];render();
   }catch(e){delete TECBUSY[k];registrarVideo('Video de técnica',e,file);TECERR[k]=e.msg||(e.message==='largo'?'El video dura más de 90 s: graba solo una serie.':e.message==='subida'?'No se pudo subir. Revisa la conexión.':'No se pudo leer el video. Grábalo de nuevo con la cámara del teléfono.');render()}
@@ -1625,7 +1628,10 @@ function tecBox(s,d,it,V){
     ta.addEventListener('change',async()=>{const cur={...S.registro[k],tec:{...t,coment:ta.value.trim(),ct:Date.now()},t:Date.now()};S.registro[k]=cur;await write('registro',k,cur)});
     kids.push(h('label',{class:'f'},'Tu comentario',ta))}
   else if(t&&t.coment)kids.push(h('p',{class:'dxline'},h('strong',{text:'Tu entrenador: '}),t.coment));
-  if(!TECBUSY[k])kids.push(h('div',{class:'row'},h('button',{class:'btn',onclick:()=>inp.click()},t?'Grabar otro video':'Subir un video de una serie'),inp));
+  pideTecCupo();
+  const cu=modoCli()&&TECCUPO&&!TECCUPO.ilimitado?TECCUPO:null,quedan=cu?Math.max(0,cu.max-cu.usadas):null;
+  if(cu)kids.push(h('p',{class:'note',text:quedan?'Te quedan '+quedan+' de '+cu.max+' análisis esta semana. Se renuevan el lunes.':'Ya usaste tus '+cu.max+' análisis de esta semana. Se renuevan el lunes.'}));
+  if(!TECBUSY[k]&&quedan!==0)kids.push(h('div',{class:'row'},h('button',{class:'btn',onclick:()=>inp.click()},t?'Grabar otro video':'Subir un video de una serie'),inp));
   const det=h('details',{class:'tec'},h('summary',{},'Revisar mi técnica'+(ia?' · revisado':'')+(t&&t.coment?' · con comentario':'')),
     h('p',{class:'note',text:'Graba una serie de lado o de frente, con el cuerpo completo en el cuadro (máx. 90 s). El video no se guarda: solo algunos cuadros.'}),...kids);
   if(ia||TECBUSY[k]||TECERR[k])det.open=true;
@@ -1664,6 +1670,21 @@ const scoreTxt=v=>v==null?'—':String(v);
 function chipScore(v){return h('span',{class:'sem '+(v==null?'n':v>=3?'v':v===2?'a':'r'),text:v==null?'pendiente':v===0?'0 · dolor':v+' de 3'})}
 // Evaluación presencial en Sakros: se reserva por WhatsApp con secretaría y se paga en el centro.
 const WA_EVAL='https://wa.me/56945399692?text='+encodeURIComponent('Hola, quiero reservar una hora de kinesiología en Sakros para evaluar mi FMS (evaluación de movilidad y control) de Sakros Go.');
+// Consultas con Joaquín: en el grupo de WhatsApp de Sakros Go (no por chat privado). Plan Entrenamiento;
+// Prep no lo incluye. Una consulta por semana en un solo mensaje, respuesta en 48 horas hábiles; los atletas
+// piloto sin límite. La tarjeta aparece cuando WA_GRUPO tiene el enlace de invitación del grupo.
+const WA_GRUPO='';
+function cardJoaquin(){
+  if(!WA_GRUPO)return null;
+  const pil=!!atl().piloto;
+  return h('section',{class:'card'},h('h2',{text:'Consultas con Joaquín'}),
+    h('p',{class:'note',text:pil?'Escríbele a Joaquín en el grupo de WhatsApp de Sakros Go cuando lo necesites.':'Una consulta semanal con Joaquín en el grupo de WhatsApp de Sakros Go: escribe tu duda en un solo mensaje (texto, foto o video de hasta 30 s) y te responde dentro de 48 horas hábiles, antes de tu siguiente entrenamiento. Para las dudas del día a día, pregúntale primero al Coach IA.'}),
+    h('div',{class:'row'},h('a',{class:'btn',href:WA_GRUPO,target:'_blank',rel:'noopener'},'Entrar al grupo de WhatsApp')));
+}
+// Análisis de técnica que quedan esta semana (el servidor lleva la cuenta; piloto y entrenador sin límite).
+let TECCUPO=null,_tecCupoPide=false;
+function pideTecCupo(){if(_tecCupoPide||!SB||!modoCli()||ROL!=='cliente')return;_tecCupoPide=true;
+  authHeaders().then(hd=>fetch('/api/go/tecnica',{headers:hd})).then(r=>r.ok?r.json():null).then(j=>{if(j){TECCUPO=j;render()}}).catch(()=>{_tecCupoPide=false})}
 const evalPresencial=()=>h('p',{class:'note'},'¿Prefieres la evaluación presencial? Necesitas una hora de kinesiología en Sakros para evaluar tu FMS: cuesta $25.000 y se paga directamente en el centro. ',h('a',{href:WA_EVAL,target:'_blank',rel:'noopener'},'Reservar por WhatsApp'));
 function cardFms(){
   const tot=fmsTotal(),F=FF(),al=fmsAlguno(),dol=fmsDolor();
@@ -2404,6 +2425,8 @@ function renderPerfil(m,nuevo){
   const err=h('p',{class:'note err',role:'alert'});
   m.append(h('section',{class:'card'},h('h2',{text:nuevo?'Nuevo atleta':'Perfil de '+a.nombre}),
     h('div',{class:'row'},inp('nombre','Nombre',a.nombre,{ph:'Ej.: Moira'})),
+    (()=>{const c=h('input',{type:'checkbox',id:'pf-piloto'});c.checked=!!a.piloto;f.piloto=c;
+      return h('label',{class:'tcrow',for:'pf-piloto'},c,h('span',{text:'Atleta piloto: sin límite de análisis de técnica ni de consultas por WhatsApp'}))})(),
     h('div',{class:'row'},inp('edad','Edad *',a.edad,{num:1,ph:'años'}),inp('sesiones','Entrenamientos por semana *',a.sesiones,{num:1,ph:'ej.: 2'})),
     (()=>{const sel=h('select',{id:'pf-prog'},[['base',PROG.base],['rend',PROG.rend],['core',PROG.core],['global',PROG.global]].map(([v,l])=>{const o=h('option',{value:v},l);if((a.programa||'rend')===v)o.selected=true;return o}));f.prog=sel;
       f.mods={};const mb=h('div',{class:'opts'},Object.entries(MOD).map(([k,l])=>{const c=h('input',{type:'checkbox',id:'pf-mod-'+k});c.checked=(a.modulos||[]).includes(k);f.mods[k]=c;return h('label',{class:'tcrow',for:'pf-mod-'+k},c,h('span',{text:l}))}));
@@ -2438,7 +2461,7 @@ function renderPerfil(m,nuevo){
     if(!f.freq.value){err.textContent='Elige cuántas sesiones de este plan hará por semana (1 a 3).';return}
     const cargas={};CARGABLES.forEach(id=>{const v=f['c-'+id].value.trim();if(v)cargas[id]=v.replace('.',',')});
     const id=nuevo?'a'+Date.now().toString(36):UI.atleta;
-    const data={...(nuevo?{}:a),nombre,edad:ne,sesiones:ns,sexo:f.sexo.value,frecuencia:parseInt(f.freq.value,10),programa:f.prog.value,condicion:f.cond.value,deporte:f.dep.value,modulos:Object.keys(MOD).filter(k=>f.mods[k].checked).slice(0,2),nivel:parseInt(f.nivel.value,10)||1,siguiente:f.sig.value,email:f.email.value.trim().toLowerCase(),objetivo:f.objetivo.value.trim(),notas:f.notas.value.trim(),cargas,t:Date.now()};
+    const data={...(nuevo?{}:a),nombre,edad:ne,sesiones:ns,sexo:f.sexo.value,frecuencia:parseInt(f.freq.value,10),programa:f.prog.value,condicion:f.cond.value,deporte:f.dep.value,modulos:Object.keys(MOD).filter(k=>f.mods[k].checked).slice(0,2),nivel:parseInt(f.nivel.value,10)||1,siguiente:f.sig.value,email:f.email.value.trim().toLowerCase(),objetivo:f.objetivo.value.trim(),notas:f.notas.value.trim(),cargas,piloto:f.piloto.checked,t:Date.now()};
     save.disabled=true;const ok=await saveAtleta(id,data);save.disabled=false;
     if(!ok){err.textContent='No se pudo guardar. Revisa la conexión y vuelve a intentarlo.';return}
     if(nuevo)switchAtleta(id);else{UI.tab='tests';render()}
@@ -3767,6 +3790,7 @@ function renderHoy(m){
   {const cr=cardRecordatorios();if(cr)m.append(cr)}
   m.append(h('section',{class:'card'},h('h2',{text:'Coach IA'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:prog(),dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mis respuestas'))));
+  {const cj=!esPrep()&&cardJoaquin();if(cj)m.append(cj)}
 }
 
 /* Modo sesión */

@@ -7,12 +7,33 @@ import { errorServidor } from "@/lib/go-errores";
 // Revisión de técnica de cualquier ejercicio de Sakros Go a partir de cuadros
 // extraídos de un video casero. El navegador saca los cuadros (no se sube el video)
 // y manda el nombre, la prescripción y las instrucciones del ejercicio.
-// Comparte el límite diario con el análisis del FMS.
+// Comparte el límite diario con el análisis del FMS. Además, un cliente tiene un máximo de
+// análisis por semana (TECNICA_SEMANA). Prep no incluye revisión de técnica; los atletas piloto
+// (ficha con piloto: true) y el entrenador no tienen límite semanal.
 
 export const maxDuration = 60;
 
 const MODEL = process.env.GO_MODEL || process.env.ANTHROPIC_MODEL || "claude-opus-5-5";
 const LIMITE = { coach: 300, cliente: 25 };
+const TECNICA_SEMANA = 3;
+
+type Cupo = { ilimitado: boolean; prep: boolean };
+async function cupoDe(m: { rol: string; atleta: string | null }): Promise<Cupo> {
+  if (m.rol === "coach" || !m.atleta) return { ilimitado: m.rol === "coach", prep: false };
+  const { data } = await getServiceClient().from("go_docs").select("data").eq("path", "atletas").eq("id", m.atleta).maybeSingle();
+  const a = (data?.data || {}) as { piloto?: boolean; programa?: string };
+  return { ilimitado: !!a.piloto, prep: a.programa === "prep" };
+}
+
+// Cuántos análisis de técnica le quedan esta semana (para el contador de la app).
+export async function GET(request: NextRequest) {
+  const m = await goMiembro(request);
+  if (!m) return NextResponse.json({ error: "Inicia sesión de nuevo.", code: "not_granted" }, { status: 401 });
+  const c = await cupoDe(m);
+  if (c.ilimitado) return NextResponse.json({ ilimitado: true });
+  const { data: usadas } = await getServiceClient().rpc("go_tecnica_usadas", { p_user: m.userId });
+  return NextResponse.json({ max: TECNICA_SEMANA, usadas: Number(usadas) || 0, prep: c.prep });
+}
 const MAX_CUADROS = 12;
 const MAX_CUADRO_B64 = 400_000;
 
@@ -45,8 +66,24 @@ export async function POST(request: NextRequest) {
   }
 
   const db = getServiceClient();
+  const cupo = await cupoDe(m);
+  if (cupo.prep) {
+    return NextResponse.json({ error: "La revisión de técnica es parte del plan Entrenamiento.", code: "no_incluido" }, { status: 403 });
+  }
+  let usadas: number | null = null;
+  if (!cupo.ilimitado) {
+    const { data: n } = await db.rpc("go_usar_tecnica", { p_user: m.userId, p_max: TECNICA_SEMANA });
+    if (n === -1) {
+      return NextResponse.json({ error: `Ya usaste tus ${TECNICA_SEMANA} análisis de esta semana. Se renuevan el lunes.`, code: "limite_semanal" }, { status: 429 });
+    }
+    usadas = typeof n === "number" ? n : null;
+  }
+  const devolver = async () => {
+    if (usadas != null) await db.rpc("go_devolver_tecnica", { p_user: m.userId });
+  };
   const { data: permitido } = await db.rpc("go_usar_fms", { p_user: m.userId, p_max: LIMITE[m.rol] });
   if (permitido === false) {
+    await devolver();
     return NextResponse.json({ error: "Llegaste al límite de análisis de hoy. Sigue mañana.", code: "limite_diario" }, { status: 429 });
   }
 
@@ -93,8 +130,10 @@ export async function POST(request: NextRequest) {
       seguridad: limpia(r.seguridad, 300),
       confianza: ["alta", "media", "baja"].includes(String(r.confianza)) ? r.confianza : "baja",
       regrabar: limpia(r.regrabar, 400),
+      ...(usadas != null ? { cupo: { max: TECNICA_SEMANA, usadas } } : {}),
     });
   } catch (e) {
+    await devolver();
     if (e instanceof Anthropic.RateLimitError) {
       return NextResponse.json({ error: "Demasiadas consultas seguidas. Inténtalo en un minuto.", code: "rate_limited" }, { status: 429 });
     }

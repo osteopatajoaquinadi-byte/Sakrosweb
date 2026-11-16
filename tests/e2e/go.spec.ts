@@ -458,6 +458,7 @@ test.describe("Sakros Go", () => {
     await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3, cargas: { cargada: 80 }, plan: { afina: 4 } })] });
     await page.goto("/go");
     await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    await expect.poll(() => page.evaluate("!!(atl().cargas && atl().plan && atl().plan.afina)")).toBe(true);
     const p = (await page.evaluate(`(() => { const g = (s, d, id) => { const it = rows(d, s).find((i) => i.id === id); return it ? pres(s, d, it) : null };
       return { sen1: g(1,'A','sentadilla'), sen2: g(1+1,'A','sentadilla'), car1: g(1,'A','cargada'), remo1: g(1,'A','kremomanc'), remo2: g(2,'A','kremomanc'),
         dom3: g(3,'B','dominadas'), c4: rows('C', 4).map((i) => i.id), afina: afinaTxt(4, 'C') } })()`)) as Record<string, any>;
@@ -550,6 +551,30 @@ test.describe("Sakros Go", () => {
     await expect(wa).toHaveAttribute("href", /^https:\/\/wa\.me\/56945399692\?text=.*kinesiolog/);
     expect(await page.locator("main").innerText()).not.toMatch(/en 48 horas|próximas 48 horas/);
     expect(errores).toEqual([]);
+  });
+
+  test("Entrenamiento: tope semanal de análisis de técnica", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await page.route("**/api/go/tecnica", (r) => r.fulfill({ json: { max: 3, usadas: 3 } }));
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3, nombre: "Ana" })] });
+    await page.goto("/go");
+    await page.getByText(/Ver la sesión completa/).first().click();
+    const tec = page.locator("details.tec").first();
+    await tec.locator("summary").click();
+    await expect(tec).toContainText("Ya usaste tus 3 análisis de esta semana");
+    await expect(tec.getByRole("button", { name: /Subir un video/ })).toHaveCount(0);
+    expect(errores).toEqual([]);
+  });
+
+  test("atleta piloto: no ve el tope de análisis de técnica", async ({ page }) => {
+    await page.route("**/api/go/tecnica", (r) => r.fulfill({ json: { ilimitado: true } }));
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3, piloto: true })] });
+    await page.goto("/go");
+    await page.getByText(/Ver la sesión completa/).first().click();
+    const tec = page.locator("details.tec").first();
+    await tec.locator("summary").click();
+    await expect(tec.getByRole("button", { name: /Subir un video/ })).toBeVisible();
+    await expect(tec).not.toContainText("análisis de esta semana");
   });
 
   test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
