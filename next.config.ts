@@ -21,6 +21,20 @@ const nextConfig: NextConfig = {
       { source: "/go", destination: "/go/index.html" },
       // Landing de venta de Sakros Go (página estática).
       { source: "/sakros-go", destination: "/sakros-go/index.html" },
+      // Borrador de la landing para revisarla antes de publicarla (no indexado, fuera del sitemap).
+      { source: "/sakros-go-borrador", destination: "/sakros-go-borrador/index.html" },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/sakros-go-borrador/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
+      {
+        source: "/sakros-go-borrador",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      },
     ];
   },
   async redirects() {
