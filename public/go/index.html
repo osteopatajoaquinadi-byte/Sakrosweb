@@ -1625,7 +1625,7 @@ function tecBox(s,d,it,V){
     if((ia.corregir||[]).length)kids.push(h('p',{},h('strong',{text:'Corrige: '}),ia.corregir.join(' · ')));
     if(ia.clave)kids.push(h('p',{},h('strong',{text:'Para la próxima serie: '}),ia.clave));
     if(ia.seguridad)kids.push(h('p',{class:'dxline',text:ia.seguridad}));
-    kids.push(h('p',{class:'note',text:'Revisión del Coach (IA) · confianza '+(ia.confianza||'baja')+'. Tu entrenador puede comentarla.'}));
+    kids.push(h('p',{class:'note',text:'Revisión del Coach Osteojuaco IA · confianza '+(ia.confianza||'baja')+'. Tu entrenador puede comentarla.'}));
   }
   if(coach&&t){const ta=h('textarea',{rows:2,placeholder:'Comentario para el atleta…'});ta.value=t.coment||'';
     ta.addEventListener('change',async()=>{const cur={...S.registro[k],tec:{...t,coment:ta.value.trim(),ct:Date.now()},t:Date.now()};S.registro[k]=cur;await write('registro',k,cur)});
@@ -1681,7 +1681,7 @@ function cardJoaquin(){
   if(!WA_GRUPO)return null;
   const pil=!!atl().piloto;
   return h('section',{class:'card'},h('h2',{text:'Consultas con Joaquín'}),
-    h('p',{class:'note',text:pil?'Escríbele a Joaquín en el grupo de WhatsApp de Sakros Go cuando lo necesites.':'Una consulta semanal con Joaquín en el grupo de WhatsApp de Sakros Go: escribe tu duda en un solo mensaje (texto, foto o video de hasta 30 s) y te responde dentro de 48 horas hábiles, antes de tu siguiente entrenamiento. Para las dudas del día a día, pregúntale primero al Coach IA.'}),
+    h('p',{class:'note',text:pil?'Escríbele a Joaquín en el grupo de WhatsApp de Sakros Go cuando lo necesites.':'Una consulta semanal con Joaquín en el grupo de WhatsApp de Sakros Go: escribe tu duda en un solo mensaje (texto, foto o video de hasta 30 s) y te responde dentro de 48 horas hábiles, antes de tu siguiente entrenamiento. Para las dudas del día a día, pregúntale primero al Coach Osteojuaco IA.'}),
     h('div',{class:'row'},h('a',{class:'btn',href:WA_GRUPO,target:'_blank',rel:'noopener'},'Entrar al grupo de WhatsApp')));
 }
 // Análisis de técnica que quedan esta semana (el servidor lleva la cuenta; piloto y entrenador sin límite).
@@ -1818,7 +1818,7 @@ function renderHoyPrep(m){
   const cs=cardMiSuscripcion();if(cs)m.append(cs);
   if(hist.length)m.append(h('section',{class:'card'},h('h2',{text:'Tus preparaciones'}),h('ul',{},hist.slice(0,6).map(([k,v])=>h('li',{text:(v.fecha||'')+' · '+(ZONA[v.dia]||'')+(v.min?' · '+v.min+' min':'')+(v.nota?' · '+v.nota:'')})))));
   {const cr=cardRecordatorios();if(cr)m.append(cr)}
-  m.append(h('section',{class:'card'},h('h2',{text:'Coach IA'}),h('p',{class:'note',text:'¿Dudas sobre tu evaluación de movilidad y control, una molestia o tu rutina del gimnasio? Escríbele al Coach.'}),
+  m.append(h('section',{class:'card'},h('h2',{text:'Coach Osteojuaco IA'}),h('p',{class:'note',text:'¿Dudas sobre tu evaluación de movilidad y control, una molestia o tu rutina del gimnasio? Escríbele al Coach.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:'prep',dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mi plan'))));
 }
 function renderSesionPrep(m){
@@ -2520,7 +2520,7 @@ function renderSesion(m){
     h('div',{class:'row'},h('span',{class:'chip'+(!core&&(s===4||s===8)?' descarga':''),text:'Semana '+s+' · '+fase}),done(s,d)[0]===done(s,d)[1]?h('span',{class:'chip ok',text:'Sesión completa'}):null),
     h('h2',{text:titulo}));
   // Vista cliente: lo que se anota de la sesión va al final, después de los ejercicios.
-  const finBox=h('section',{class:'card'},h('h2',{text:'Al terminar la sesión'}),h('p',{class:'note',text:'Anota cómo te fue: el Coach IA lo usa para ajustar tu próxima sesión.'})),R=modoCli()?finBox:sec;
+  const finBox=h('section',{class:'card'},h('h2',{text:'Al terminar la sesión'}),h('p',{class:'note',text:'Anota cómo te fue: el Coach Osteojuaco IA lo usa para ajustar tu próxima sesión.'})),R=modoCli()?finBox:sec;
   if(!core){
     if(esBase()){
       const mods=modulos();
@@ -2729,7 +2729,7 @@ function renderTestsCli(m){
   m.append(h('p',{class:'pasotit',text:'1. Evaluación principal'}),cardFms());
   const box=h('div',{class:'comp'});
   box.append(h('p',{class:'note',text:'No son necesarios para entrenar. Agregan especificidad a tu planificación: '+(esBase()?'':'los de fuerza definen tus pesos de partida, ')+'los de campo'+(basico?'':' e isometría')+' suman trabajo para tus desbalances entre piernas y grupos musculares. Haz los que puedas, cuando quieras, y repítelos en la semana 4 y al final del bloque para ver tu progreso.'}));
-  if(!rend)box.append(h('p',{class:'note',text:esBase()?'Los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.':'Los pesos máximos y los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach IA para orientarte.'}));
+  if(!rend)box.append(h('p',{class:'note',text:esBase()?'Los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach Osteojuaco IA para orientarte.':'Los pesos máximos y los desbalances que detecten los tests de campo se aplican al plan desde tu programa de Rendimiento; mientras tanto, los usan tu profesional y el Coach Osteojuaco IA para orientarte.'}));
   renderCampo(box,T,upd,!!balance(),true,basico);
   if(!esBase())renderTestsRend(box);
   if(!basico)renderIso(box,T,upd,true);
@@ -3401,7 +3401,7 @@ function autoEj(s,d,it){
 
 /* ---------- Coach ---------- */
 let sample=null, ctl=null, busy=false;
-const RULES_IA='\n\nIDENTIDAD Y SEGURIDAD: eres el Coach IA de Sakros Go, una inteligencia artificial. Los programas y criterios los define Joaquín Adi, kinesiólogo y osteópata, con máster en Functional Training; él revisa personalmente la evaluación de movimiento en un plazo de 48 horas a 7 días. Si la evaluación de movimiento da 12 o menos de 21, la sesión trae más tejido blando (3 grupos, 45–90 s cada uno): no recomiendes cambiar a Fundamentos por el puntaje; ese programa es solo para quien lo elige. Si te preguntan, di que eres una IA y no te presentes como Joaquín ni como un profesional de la salud. No diagnostiques ni indiques tratamientos. Ante dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta o se irradia, hormigueo o pérdida de fuerza, indica detener el ejercicio y consultar a un profesional. No pidas datos personales que el plan no necesite (RUT, dirección, datos bancarios). En Sakros no hay trineo de arrastre ni se usa el test Yo-Yo: no los propongas (usa cuesta o sprint lanzado, y el test de 2,4 km).\nMÉTODO (EXOS, por movimientos): cada sesión va de cuerpo completo explosivo a fuerza principal (bilateral), fuerza secundaria (unilateral) y rotación (de estabilidad o de propulsión). En la semana se equilibran empuje y tirón del tren superior (horizontal y vertical), empuje de piernas, cadera dominante y rodilla dominante, y se trabaja en los 3 planos. Si cambias un ejercicio, reemplázalo por otro del mismo tipo de movimiento (por ejemplo, un remo por otro tirón horizontal) para no romper el equilibrio. La velocidad multidireccional (shuffle, corte y paso cruzado) va en 3 niveles: continuo, dirigido y secuencias.\nLENGUAJE: con el cliente no uses las palabras Knack, braceo ni hollowing; di «activa el suelo pélvico», «activa el abdomen» o «abdomen profundo».';
+const RULES_IA='\n\nIDENTIDAD Y SEGURIDAD: eres el Coach Osteojuaco IA de Sakros Go, una inteligencia artificial. Los programas y criterios los define Joaquín Adi, kinesiólogo y osteópata, con máster en Functional Training; él revisa personalmente la evaluación de movimiento en un plazo de 48 horas a 7 días. Si la evaluación de movimiento da 12 o menos de 21, la sesión trae más tejido blando (3 grupos, 45–90 s cada uno): no recomiendes cambiar a Fundamentos por el puntaje; ese programa es solo para quien lo elige. Si te preguntan, di que eres una IA y no te presentes como Joaquín ni como un profesional de la salud. No diagnostiques ni indiques tratamientos. Ante dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta o se irradia, hormigueo o pérdida de fuerza, indica detener el ejercicio y consultar a un profesional. No pidas datos personales que el plan no necesite (RUT, dirección, datos bancarios). En Sakros no hay trineo de arrastre ni se usa el test Yo-Yo: no los propongas (usa cuesta o sprint lanzado, y el test de 2,4 km).\nMÉTODO (EXOS, por movimientos): cada sesión va de cuerpo completo explosivo a fuerza principal (bilateral), fuerza secundaria (unilateral) y rotación (de estabilidad o de propulsión). En la semana se equilibran empuje y tirón del tren superior (horizontal y vertical), empuje de piernas, cadera dominante y rodilla dominante, y se trabaja en los 3 planos. Si cambias un ejercicio, reemplázalo por otro del mismo tipo de movimiento (por ejemplo, un remo por otro tirón horizontal) para no romper el equilibrio. La velocidad multidireccional (shuffle, corte y paso cruzado) va en 3 niveles: continuo, dirigido y secuencias.\nLENGUAJE: con el cliente no uses las palabras Knack, braceo ni hollowing; di «activa el suelo pélvico», «activa el abdomen» o «abdomen profundo».';
 const RULES=`Eres el entrenador personal del atleta, con el método EXOS. Si sus datos dicen DEPORTE: vóley playa, adapta todo a su deporte (saltos de ataque y bloqueo, desplazamientos en arena, hombro del atacante): no pongas trineo ni salidas de sprint dentro de la sesión; esos trabajos van como complementario en la playa, fuera de la rutina del día. Escribe en español latinoamericano neutro, con tuteo y sin voseo. Quien te escribe es el entrenador, osteópata, que gestiona a varios atletas (su propio perfil es «Mi perfil»). Habla del atleta seleccionado y usa términos técnicos.
 Objetivo del bloque: potencia, aceleración, salto y, sobre todo, resistencia cardiovascular. 8 semanas, con 1, 2 o 3 sesiones por semana según el atleta (sesión única U; días A y B; o A, B y C), sesiones de 50–60 min como máximo (preparación de 10–12 min como máximo: tejido blando 2 min, 2 correctivos del FMS de la persona en lugar de movilidad genérica, pilar y activación; en vóley el hombro de atacante va en el bloque de fuerza del día B; superseries con 90 s de pausa). El calentamiento completo (tejido blando, movilidad, pilar y activación) no se recorta para ahorrar tiempo. Semana 4: descarga. Semana 8: descarga y test.
 Adapta tus consejos al sexo, la edad, el nivel y las sesiones por semana del atleta. En mujeres el plan ya suma más pilar y más activación de aterrizajes y frenadas; mantenlo.
@@ -3568,7 +3568,7 @@ async function renderEquipoCarga(box,pinta){
   try{EQ=await cargarEquipo();pinta()}catch(e){box.replaceChildren(h('p',{class:'note',text:'No se pudieron cargar los registros. Revisa tu conexión y vuelve a intentarlo.'}))}
 }
 function renderCoach(m){
-  m.append(h('section',{class:'card'},h('h2',{text:'Coach IA'}),
+  m.append(h('section',{class:'card'},h('h2',{text:'Coach Osteojuaco IA'}),
     h('p',{class:'note',text:'Cuéntale cómo fue la sesión o pídele cambios. Ve tu plan, tus registros y tus tests, y puede ajustar las cargas directamente. El chat queda guardado.'}),
     h('p',{class:'note',text:'Es una inteligencia artificial que trabaja con los programas y criterios de Joaquín Adi, kinesiólogo. Orienta tu entrenamiento, pero puede equivocarse y no diagnostica: si tienes dolor que no cede o una duda de salud, consulta a un profesional.'})));
   m.append(h('div',{class:'chat',id:'chatlog'}));
@@ -3646,7 +3646,7 @@ function renderOnb(m){
   const paso=(n,t)=>h('div',{class:'onbhead'},h('span',{class:'chip',text:'Paso '+n+' de 3'}),h('h2',{text:t}));
   const opt=(sel,txt,sub,on)=>h('button',{class:'bigopt','aria-pressed':sel,onclick:on},h('b',{text:txt}),sub?h('span',{text:sub}):null);
   if(O.paso===1){
-    card.append(h('p',{class:'brandline',text:'Bienvenido a Sakros Go. Con 3 respuestas armamos tu plan.'}),h('p',{class:'note quienline',text:'Programas diseñados por Joaquín Adi, kinesiólogo y osteópata, con máster en Functional Training. Él revisa tu evaluación en un plazo de 48 horas a 7 días y el Coach IA ajusta tu plan contigo.'}),paso(1,'¿Qué quieres lograr?'),
+    card.append(h('p',{class:'brandline',text:'Bienvenido a Sakros Go. Con 3 respuestas armamos tu plan.'}),h('p',{class:'note quienline',text:'Programas diseñados por Joaquín Adi, kinesiólogo y osteópata, con máster en Functional Training. Él revisa tu evaluación en un plazo de 48 horas a 7 días y el Coach Osteojuaco IA ajusta tu plan contigo.'}),paso(1,'¿Qué quieres lograr?'),
       opt(O.obj==='base','Nunca he entrenado: quiero empezar a moverme','Lo más básico, en casa: postura, equilibrio y movimientos simples.',()=>{O.obj='base';O.paso=2;render()}),
       opt(O.obj==='global','Entrenar todo el cuerpo o mantenerme en forma','Cuerpo completo, con una progresión segura y sin lesionarme.',()=>{O.obj='global';O.paso=2;render()}),
       opt(O.obj==='core','Fortalecer espalda, abdomen y suelo pélvico','Para dolor lumbar, hernia o escapes de orina al hacer esfuerzo.',()=>{O.obj='core';O.paso=2;render()}),
@@ -3796,7 +3796,7 @@ function renderHoy(m){
   const cs=cardMiSuscripcion();if(cs)m.append(cs);
   {const cv=cardComplVoley(s);if(cv)m.append(cv)}
   {const cr=cardRecordatorios();if(cr)m.append(cr)}
-  m.append(h('section',{class:'card'},h('h2',{text:'Coach IA'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
+  m.append(h('section',{class:'card'},h('h2',{text:'Coach Osteojuaco IA'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:prog(),dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mis respuestas'))));
   {const cj=!esPrep()&&cardJoaquin();if(cj)m.append(cj)}
 }
@@ -3970,13 +3970,13 @@ const bloqueada=(s,d)=>ROL==='cliente'&&!(ACC&&ACC.activo&&(esPrep()||planAcc()=
 const necesitaTerminos=()=>ROL==='cliente'&&!!ACC&&((atl().terminos||{}).v!==ACC.terminosV);
 const terminosOk=()=>({v:(ACC&&ACC.terminosV)||'2026-11',salud:true,t:Date.now()});
 const QUIEN='Sakros Go lo dirige Joaquín Adi, kinesiólogo y osteópata, con máster en Functional Training. Su formación lo habilita para evaluar la calidad del movimiento. La planificación está pensada para que entrenes tus objetivos sin perder de vista tus patrones de movimiento.';
-const QUIEN_IA='Joaquín revisa personalmente tu evaluación de movimiento en un plazo de 48 horas a 7 días. El día a día lo acompaña el Coach IA, una inteligencia artificial que arma y ajusta tu plan con los programas y criterios definidos por Joaquín. La app no es una atención kinesiológica: no reemplaza una evaluación presencial, un diagnóstico ni un tratamiento.';
+const QUIEN_IA='Joaquín revisa personalmente tu evaluación de movimiento en un plazo de 48 horas a 7 días. El día a día lo acompaña el Coach Osteojuaco IA, una inteligencia artificial que arma y ajusta tu plan con los programas y criterios definidos por Joaquín. La app no es una atención kinesiológica: no reemplaza una evaluación presencial, un diagnóstico ni un tratamiento.';
 function cardQuien(){return h('section',{class:'card quien'},h('h2',{text:'Quién está detrás de tu plan'}),h('p',{text:QUIEN}),h('p',{class:'note',text:QUIEN_IA}))}
 function puntosTerminos(){return h('ul',{class:'medir'},
   ['Sakros Go es un programa de entrenamiento. No reemplaza una evaluación ni un tratamiento de salud.',
    'Si tienes una lesión, una enfermedad o estás embarazada, consulta con un profesional antes de empezar.',
    'Detén el ejercicio y consulta si sientes dolor en el pecho, mareo, falta de aire desproporcionada, dolor que aumenta, hormigueo o escape de orina que no cede.',
-   'El Coach IA es una inteligencia artificial: arma y ajusta tu plan con los criterios de Joaquín Adi, kinesiólogo, pero puede equivocarse y no diagnostica. Ante dudas de salud, consulta a tu profesional.',
+   'El Coach Osteojuaco IA es una inteligencia artificial: arma y ajusta tu plan con los criterios de Joaquín Adi, kinesiólogo, pero puede equivocarse y no diagnostica. Ante dudas de salud, consulta a tu profesional.',
    'Tus datos de salud se guardan cifrados, en una base protegida a la que solo accedes tú y tu profesional de Sakros. No los vendemos ni los usamos para publicidad.',
    'Si tienes menos de 18 años, necesitas la autorización de tu madre, padre o tutor.',
    'La suscripción es mensual o anual y se renueva sola. Puedes cancelarla cuando quieras desde la app; el acceso sigue hasta el final del período pagado.',
