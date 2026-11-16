@@ -11,7 +11,7 @@ on:
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # ubuntu-latest pasó a 26.04 y Playwright 1.56 no lo soporta
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
