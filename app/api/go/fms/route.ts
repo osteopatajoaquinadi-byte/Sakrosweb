@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { goMiembro } from "@/lib/go-auth";
 import { errorServidor } from "@/lib/go-errores";
+import { accesoActivo } from "@/lib/go-suscripcion";
 
 // FMS por video: la app extrae cuadros de cada video (3 repeticiones por
 // lado) y los envía aquí. El Coach los compara con los criterios del FMS y
@@ -127,6 +128,19 @@ export async function POST(request: NextRequest) {
   }
 
   const db = getServiceClient();
+  // La evaluación viene con Prep y Entrenamiento: en la prueba gratis no se analiza (salvo atletas piloto).
+  if (m.rol === "cliente") {
+    const [{ data: ficha }, activo] = await Promise.all([
+      db.from("go_docs").select("data").eq("path", "atletas").eq("id", m.atleta ?? "").maybeSingle(),
+      accesoActivo(db, m.atleta),
+    ]);
+    if (!activo && !(ficha?.data as { piloto?: boolean } | undefined)?.piloto) {
+      return NextResponse.json(
+        { error: "La evaluación de movilidad y control viene incluida en los planes Prep y Entrenamiento.", code: "no_incluido" },
+        { status: 403 },
+      );
+    }
+  }
   const { data: permitido } = await db.rpc("go_usar_fms", { p_user: m.userId, p_max: LIMITE[m.rol] });
   if (permitido === false) {
     return NextResponse.json({ error: "Llegaste al límite de análisis de hoy. Sigue mañana.", code: "limite_diario" }, { status: 429 });
