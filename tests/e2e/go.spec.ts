@@ -653,6 +653,19 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("Hoy muestra «Adaptado a tu hombro», la flexión de Fundamentos nivel 1 va en la pared y no aparece EXOS", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "global", frecuencia: 2, triaje: { les: ["hombro"], t: 1 } })] });
+    await page.goto("/go");
+    await expect(page.locator(".adaptado")).toContainText("Adaptado a tu hombro");
+    await page.evaluate("ATL[UI.atleta] = { ...ATL[UI.atleta], programa: 'base', nivel: 1 }");
+    expect(await page.evaluate("vidDe('xempuje', EX.xempuje)")).toBe("flex-pared");
+    await page.evaluate("ATL[UI.atleta] = { ...ATL[UI.atleta], nivel: 3 }");
+    expect(await page.evaluate("vidDe('xempuje', EX.xempuje)")).toBe("flexiones");
+    expect(await page.evaluate("document.documentElement.outerHTML.includes('EXOS')")).toBe(false);
+    expect(errores).toEqual([]);
+  });
+
   test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 800 } });
     const errores = vigilarErrores(page);
