@@ -519,6 +519,23 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("Fundamentos: animaciones en estilo holograma y a la velocidad del tempo 3-1-1", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "base", frecuencia: 2, nivel: 1 })] });
+    await page.goto("/go");
+    await page.getByText(/Ver la sesión completa/).first().click();
+    await expect(page.locator(".media.mq.holo").first()).toBeVisible();
+    await expect(page.locator(".media.mq:not(.holo)")).toHaveCount(0);
+    await page.evaluate("cargaManiqui()");
+    await expect.poll(() => page.evaluate("!!(window.MQ_EJ && MQ_EJ['xsent1@1'])")).toBe(true);
+    // Sentadilla a una pierna: 3 s bajando, 1 s abajo, 1 s subiendo. Remo: 1 s tirando, 2 s de pausa, 2 s volviendo.
+    expect(await page.evaluate("MQ_EJ['xsent1@1'].k.slice(2).map(k => k[0])")).toEqual([3, 1, 1]);
+    expect(await page.evaluate("MQ_EJ['xtiron@1'].k.slice(2).map(k => k[0])")).toEqual([1, 2, 2]);
+    // El remo de Activo y Core no cambia de velocidad.
+    expect(await page.evaluate("MQ_EJ.gremob.k.slice(2).map(k => k[0])")).toEqual([0.9, 0.6, 2]);
+    expect(errores).toEqual([]);
+  });
+
   test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 800 } });
     const errores = vigilarErrores(page);

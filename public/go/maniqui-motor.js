@@ -1,5 +1,6 @@
 /* Sakros Go · motor del maniquí 3D (ejercicios sin video).
-   Maniqui.mount(contenedor, id) → { destroy }. Los ejercicios se registran en window.MQ_EJ (maniqui.js).
+   Maniqui.mount(contenedor, id, opts) → { destroy }. opts.holo: estilo holograma (fondo negro, cuerpo azul
+   translúcido, reflejo en el piso); opts.foco = 'gluteo' ilumina el glúteo; opts.onFrame(canvas) tras cada cuadro. Los ejercicios se registran en window.MQ_EJ (maniqui.js).
    - Piernas y brazos con cinemática inversa: pies y manos quedan exactos en el piso, el cajón o la barra.
    - Interpolación cúbica monótona entre poses: el movimiento fluye sin frenadas y las pausas quedan quietas.
    Requiere three.js r128 (window.THREE). */
@@ -107,6 +108,24 @@
     var bandM = new T.MeshStandardMaterial({ color: 0x2f9e8f, roughness: 0.6 });
     var ballM = new T.MeshStandardMaterial({ color: 0x7a3b2e, roughness: 0.7 });
     var wallM = new T.MeshStandardMaterial({ color: 0xd5dbe1, roughness: 0.95 });
+    // ---------- estilo holograma (prueba) ----------
+    var HOLO = !!(opts && opts.holo), holoMats = [];
+    function hm(core, rim, pulse) {
+      var m = new T.ShaderMaterial({ uniforms: { uCore: { value: new T.Color(core) }, uRim: { value: new T.Color(rim) }, uK: { value: 1 }, uT: { value: 0 }, uPulse: { value: pulse || 0 } },
+        vertexShader: 'varying vec3 vN; varying vec3 vV; varying float vY; void main(){ vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = normalize(-mv.xyz); vY = (modelMatrix * vec4(position, 1.0)).y; gl_Position = projectionMatrix * mv; }',
+        fragmentShader: 'uniform vec3 uCore; uniform vec3 uRim; uniform float uK; uniform float uT; uniform float uPulse; varying vec3 vN; varying vec3 vV; varying float vY; void main(){ float f = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 1.5); float scan = 0.97 + 0.03 * sin(vY * 300.0 - uT * 6.0); float p = 1.0 + uPulse * (0.55 + 0.45 * sin(uT * 3.5)); vec3 c = (uCore * (0.35 + 0.4 * (1.0 - f)) + uRim * f * 1.9) * scan * p * uK; gl_FragColor = vec4(c, 1.0); }' });
+      holoMats.push(m); return m;
+    }
+    if (HOLO) {
+      bg = 0x01040a; scene.background = new T.Color(bg); scene.fog = new T.Fog(bg, 5, 11);
+      mat = hm(0x08296e, 0x5cc0ff); jmat = hm(0x0d3c95, 0x8fd8ff); dmat = hm(0x08306f, 0x63c8ff); fmat = hm(0x06244f, 0x2f7fd0);
+      steel = hm(0x020a1c, 0x3f8fd8); steel.transparent = true; steel.depthWrite = false; steel.blending = T.AdditiveBlending; wood = hm(0x041430, 0x1f5aa8); pad = hm(0x041430, 0x1f5aa8); bandM = hm(0x0b3d91, 0x63c8ff); ballM = hm(0x0b3d91, 0x63c8ff); wallM = hm(0x020812, 0x0a2040);
+      floor.material = new T.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.78 }); floor.receiveShadow = false;
+      scene.remove(grid); grid = new T.GridHelper(4.5, 24, 0x1d5fb8, 0x123a73); grid.material.opacity = 0.22; grid.material.transparent = true; grid.position.y = 0.002; scene.add(grid);
+      var halo = (function () { var c = document.createElement('canvas'); c.width = c.height = 256; var x = c.getContext('2d'); var g = x.createRadialGradient(128, 128, 0, 128, 128, 128); g.addColorStop(0, 'rgba(60,150,255,0.55)'); g.addColorStop(0.5, 'rgba(30,90,220,0.18)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 256, 256);
+        var mm = new T.Mesh(new T.PlaneGeometry(3.2, 3.2), new T.MeshBasicMaterial({ map: new T.CanvasTexture(c), transparent: true, depthWrite: false, blending: T.AdditiveBlending })); mm.rotation.x = -Math.PI / 2; mm.position.y = 0.004; return mm; })();
+      scene.add(halo);
+    }
     function M(g, m) { var o = new T.Mesh(g, m || mat); o.castShadow = true; o.receiveShadow = true; return o; }
     function elip(r, sx, sy, sz, m) { var o = M(new T.SphereGeometry(r, 24, 16), m); o.scale.set(sx, sy, sz); return o; }
     function seg(len, r0, r1) { var g = new T.Group(), c = M(new T.CylinderGeometry(r1, r0, len, 22)); c.position.y = -len / 2; g.add(c); return g; }
@@ -121,12 +140,13 @@
     var abd = elip(0.12, 1.05, 1.1, 0.78); abd.position.y = 0.12; spine.add(abd);
     var chestG = new T.Group(); chestG.position.y = 0.23; spine.add(chestG);
     var rib = elip(0.165, 1.12, 1.05, 0.72); rib.position.y = 0.11; chestG.add(rib);
-    var escM = new T.MeshStandardMaterial({ color: 0xd9a08f, roughness: 0.5 });
+    var escM = new T.MeshStandardMaterial({ color: 0xd9a08f, roughness: 0.5 }); if (HOLO) escM = mat;
     var esc = { l: elip(0.055, 0.9, 1.25, 0.3, escM), r: elip(0.055, 0.9, 1.25, 0.3, escM) };
     esc.l.rotation.z = -0.25; esc.r.rotation.z = 0.25; chestG.add(esc.l); chestG.add(esc.r);
     var pisoM = new T.MeshBasicMaterial({ color: ROJO, transparent: true, opacity: 0.9, depthTest: false }); var piso = elip(0.06, 1.2, 0.35, 1, pisoM); piso.renderOrder = 10; piso.castShadow = false; piso.position.y = -0.1; piso.visible = !!dyn.suelo; root.add(piso);
     // logo SAKROS Go en la polera
     (function () {
+      if (HOLO) return;
       var c = document.createElement('canvas'); c.width = 256; c.height = 80; var x = c.getContext('2d');
       x.font = '700 50px "Barlow Condensed", "Arial Narrow", Arial, sans-serif'; x.textBaseline = 'middle';
       var w1 = x.measureText('SAKROS ').width, w2 = x.measureText('Go').width, x0 = (256 - w1 - w2) / 2;
@@ -163,6 +183,7 @@
       return { hip: hip, kn: kn, an: an };
     }
     var A = { l: brazo(1), r: brazo(-1) }, P = { l: pierna(1), r: pierna(-1) };
+    if (HOLO && opts.foco === 'gluteo') { var gmat = hm(0x2a7dff, 0xd9f4ff, 0.9); gl.material = gmat; gr.material = gmat; }
 
     // ---------- implementos fijos ----------
     var propsG = [];
@@ -338,15 +359,28 @@
       ponCam();
       if (!R) creaR();
       if (cv.clientWidth && (cv.width !== Math.round(cv.clientWidth * R.getPixelRatio()))) tam();
-      R.render(scene, cam);
+      pinta(now / 1000);
       if (visible) raf = requestAnimationFrame(loop);
+    }
+    function pinta(sec) {
+      if (!HOLO) { R.render(scene, cam); return; }
+      holoMats.forEach(function (m) { m.uniforms.uT.value = sec || 0; });
+      R.autoClear = false; R.clear();
+      // reflejo en el piso: la escena invertida bajo el suelo, más tenue
+      floor.visible = false; grid.visible = false; halo.visible = false;
+      holoMats.forEach(function (m) { m.uniforms.uK.value = 0.32; });
+      scene.scale.y = -1; R.render(scene, cam); scene.scale.y = 1;
+      holoMats.forEach(function (m) { m.uniforms.uK.value = 1; });
+      floor.visible = true; grid.visible = true; halo.visible = true;
+      R.clearDepth(); R.render(scene, cam);
+      if (opts && opts.onFrame) opts.onFrame(cv);
     }
     function destroy() { vivo = false; clearTimeout(fuera); if (io) io.disconnect(); window.removeEventListener('pointermove', mover); window.removeEventListener('pointerup', soltar); sale(); scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); }); }
     ponCam();
     if (opts && opts.captura) {
       creaR();
       // modo prueba: dibuja un instante concreto y devuelve cuánto le faltó a manos/pies para llegar a su objetivo
-      return { destroy: destroy, dur: L.dur, en: function (tt, a) { var c = cuadro(tt); az = a !== undefined ? a * D : c.c.az; elv = c.c.el; rad = c.c.rad; tgt.set(c.tx, c.c.ty, c.tz); ponCam(); R.render(scene, cam); return { falla: falla, cue: c.p.cue, cv: cv }; } };
+      return { destroy: destroy, dur: L.dur, en: function (tt, a) { var c = cuadro(tt); az = a !== undefined ? a * D : c.c.az; elv = c.c.el; rad = c.c.rad; tgt.set(c.tx, c.c.ty, c.tz); ponCam(); pinta(tt); return { falla: falla, cue: c.p.cue, cv: cv }; } };
     }
     if (!io) { creaR(); raf = requestAnimationFrame(loop); }
     return { destroy: destroy };

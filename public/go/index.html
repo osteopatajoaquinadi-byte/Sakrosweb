@@ -89,6 +89,8 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px soli
 .media.tall{aspect-ratio:4/5;background:#0d1217}
 .media.tall img{object-fit:contain}
 .media.mq{background:#e3e8ed;overflow:hidden;touch-action:pan-y}.media.mq .mq-cv{display:block;width:100%;height:100%}
+.media.mq.holo{background:#01040a}.media.mq .mq-glow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen}
+.mq.holo .mq-marca{color:#cfe9ff}.mq.holo .mq-marca b{color:#ff6a4d}.mq.holo .mq-cue{background:rgba(4,16,36,.72);color:#e6f4ff}.mq.holo .tag{background:rgba(4,16,36,.72);color:#cfe9ff}
 .mq-marca{position:absolute;top:8px;left:10px;font:700 .8rem/1 'Barlow Condensed',Arial Narrow,sans-serif;letter-spacing:.08em;color:#16202a;opacity:.8;pointer-events:none}.mq-marca b{color:#c9402a}
 .mq-cue{position:absolute;left:8px;right:8px;bottom:36px;background:rgba(255,255,255,.8);color:#16202a;font-size:.78rem;font-weight:600;line-height:1.25;padding:4px 8px;border-radius:8px;pointer-events:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.mq-cue:empty{display:none}
 .ssmedia .mq-cue{font-size:.62rem;bottom:6px;left:5px;right:5px;padding:2px 5px}.ssmedia .mq .tag{display:none}.ssmedia .mq-marca{font-size:.66rem}
@@ -351,10 +353,18 @@ const animDe=(id,V)=>ANIM.has(id)&&V.n===EX[id].n?(EX[id].niv?id+'@'+nivelDe(id)
 let _mq=null;
 function cargaManiqui(){if(_mq)return _mq;const js=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
   _mq=(window.THREE?Promise.resolve():js('/go/three.min.js')).then(()=>window.Maniqui?null:js('/go/maniqui-motor.js')).then(()=>window.MQ_EJ&&window.MQ?null:js('/go/maniqui.js'));_mq.catch(()=>{_mq=null});return _mq}
+// Fundamentos: animaciones en estilo holograma, con un brillo suave (el cuadro 3D se copia difuminado encima).
+const HOLO_GLUTEO=/^(xsent1|xrdl1|xbis1|xstepup|xlevantar|xbisagra)(@|$)/;
+function holoOpts(box,a){
+  if(!esBase())return undefined;
+  const g=h('canvas',{class:'mq-glow','aria-hidden':'true'});box.append(g);const x=g.getContext('2d');
+  return {holo:1,foco:HOLO_GLUTEO.test(a)?'gluteo':null,onFrame:cv=>{if(!x||!g.isConnected)return;const w=cv.width>>1,hh=cv.height>>1;if(!w||!hh)return;if(g.width!==w||g.height!==hh){g.width=w;g.height=hh}
+    x.clearRect(0,0,w,hh);if(!('filter' in x))return;x.filter='blur(6px)';x.globalAlpha=.8;x.drawImage(cv,0,0,w,hh);x.filter='none';x.globalAlpha=1}};
+}
 function mediaAnim(a,alt,cls){
-  const box=h('div',{class:'media tall mq'+(cls?' '+cls:''),role:'img','aria-label':'Animación 3D: '+alt});
+  const box=h('div',{class:'media tall mq'+(esBase()?' holo':'')+(cls?' '+cls:''),role:'img','aria-label':'Animación 3D: '+alt});
   const st=h('span',{class:'tag',text:'Animación 3D · cargando…'});box.append(st);
-  cargaManiqui().then(()=>{if(!box.isConnected&&!document.body.contains(box)){}const m=window.Maniqui&&window.Maniqui.mount(box,a);st.textContent=m?'Animación 3D · arrastra para girar · toca para pausar':'No se pudo mostrar la animación'}).catch(()=>{st.textContent='Sin conexión: la animación se verá al volver la señal'});
+  cargaManiqui().then(()=>{if(!box.isConnected&&!document.body.contains(box)){}const m=window.Maniqui&&window.Maniqui.mount(box,a,holoOpts(box,a));st.textContent=m?'Animación 3D · arrastra para girar · toca para pausar':'No se pudo mostrar la animación'}).catch(()=>{st.textContent='Sin conexión: la animación se verá al volver la señal'});
   return box;
 }
 // En Rendimiento las flexiones van en el suelo (Activo empieza en la pared).
