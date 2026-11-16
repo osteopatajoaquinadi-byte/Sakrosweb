@@ -179,6 +179,7 @@ details.card>summary{font-weight:700}
 .eqdot{width:10px;height:10px;border-radius:50%;background:var(--muted)}.eqrow.rojo .eqdot{background:var(--accent)}.eqrow.amb .eqdot{background:var(--warn)}.eqrow.ok .eqdot{background:var(--ok)}
 .eqmain,.eqdato{display:grid;min-width:0}.eqdato{text-align:right;font-size:.88rem}
 @media (max-width:480px){.eqrow{grid-template-columns:10px minmax(0,1fr)}.eqdato{grid-column:2;text-align:left}}
+.limdet summary{cursor:pointer;font-weight:700}.limdet[open] summary{margin-bottom:6px}
 .dxline{margin:0;font-size:.88rem;background:var(--sunk);border-radius:8px;padding:8px 10px}
 .linkbtn{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline}
 .dxhead{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
@@ -3567,10 +3568,29 @@ async function renderEquipoCarga(box,pinta){
   box.replaceChildren(h('p',{class:'note',text:'Cargando…'}));
   try{EQ=await cargarEquipo();pinta()}catch(e){box.replaceChildren(h('p',{class:'note',text:'No se pudieron cargar los registros. Revisa tu conexión y vuelve a intentarlo.'}))}
 }
+// Límites de uso, explícitos para el cliente (el servidor los aplica igual).
+let USOIA=null,_usoPide=false;
+function pideUsoIA(){if(_usoPide||!SB||ROL!=='cliente')return;_usoPide=true;
+  authHeaders().then(hd=>fetch('/api/go/claude',{headers:hd})).then(r=>r.ok?r.json():null).then(j=>{if(j){USOIA=j;render()}}).catch(()=>{_usoPide=false})}
+function cardLimites(){
+  if(ROL!=='cliente')return null;
+  pideUsoIA();
+  const pil=!!atl().piloto||(USOIA&&USOIA.ilimitado),prueba=!(ACC&&ACC.activo),prep=esPrep();
+  const L=pil?['Eres atleta piloto: sin límites de uso.']:[
+    'Coach Osteojuaco IA: hasta '+((USOIA&&USOIA.mensajesDia)||(prueba?5:40))+' mensajes al día'+(prueba?' durante la prueba gratis (40 con tu suscripción)':'')+'.',
+    prep?'Análisis de técnica por video: no viene en Prep (sí en Entrenamiento).':'Análisis de técnica por video: 3 por semana; se renuevan el lunes.',
+    'Evaluación de movilidad y control: incluida en Prep y Entrenamiento, no en la prueba gratis.',
+    prep?'Consulta con Joaquín en el grupo de WhatsApp: no viene en Prep (sí en Entrenamiento).':'Consulta con Joaquín en el grupo de WhatsApp: 1 por semana, en un solo mensaje, con respuesta en 48 horas hábiles.',
+    'Uso justo de la IA: el Coach y los análisis por video tienen un tope de uso mensual. Si llegas, se pausan hasta el día 1 del mes siguiente; tu plan y tus sesiones siguen funcionando.'];
+  const pct=USOIA&&USOIA.usoMes!=null&&!pil?USOIA.usoMes:null;
+  return h('section',{class:'card limites'},h('h2',{text:'Límites de uso'}),h('ul',{class:'medir'},L.map(x=>h('li',{text:x}))),
+    pct!=null?h('p',{class:pct>=80?'dxline':'note',text:pct>=100?'Este mes ya usaste todo tu uso de IA. Vuelve el día 1.':'Este mes llevas el '+pct+' % de tu uso de IA.'}):null);
+}
 function renderCoach(m){
   m.append(h('section',{class:'card'},h('h2',{text:'Coach Osteojuaco IA'}),
     h('p',{class:'note',text:'Cuéntale cómo fue la sesión o pídele cambios. Ve tu plan, tus registros y tus tests, y puede ajustar las cargas directamente. El chat queda guardado.'}),
     h('p',{class:'note',text:'Es una inteligencia artificial que trabaja con los programas y criterios de Joaquín Adi, kinesiólogo. Orienta tu entrenamiento, pero puede equivocarse y no diagnostica: si tienes dolor que no cede o una duda de salud, consulta a un profesional.'})));
+  {const cl=cardLimites();if(cl){const d=h('details',{class:'limdet'},h('summary',{},'Límites de uso'),...[...cl.childNodes].slice(1));m.append(h('section',{class:'card'},d))}}
   m.append(h('div',{class:'chat',id:'chatlog'}));
   const ta=h('textarea',{id:'chat-in',rows:2,placeholder:sample===null&&mode!=='cargando'?'El chat no está disponible en esta vista':'Escribe aquí…'});
   const send=h('button',{class:'btn primary',id:'chat-send',onclick:()=>{const v=ta.value.trim();if(v){ta.value='';ask(v)}}},'Enviar');
@@ -3595,7 +3615,7 @@ async function addMsg(rol,texto){
   S.chat.push(m);renderChatLog();
   try{await db.collection(P('chat')).doc(String(t)+rol).set(m)}catch(e){setSync('No se pudo guardar el chat')}
 }
-const ERR={not_granted:'No diste permiso para usar Claude en esta página. Recarga para volver a intentarlo.',rate_limited:'Demasiados mensajes seguidos. Espera un momento y vuelve a enviar.',sampling_disabled:'Tu cuenta no tiene disponible esta función ahora.',prompt_too_large:'Hay demasiado historial. Escribe un mensaje más corto.',refused:'Claude no pudo responder a ese mensaje.',limite_prueba:'En la prueba gratis el Coach tiene 5 mensajes al día. Con la suscripción tienes más.',limite_diario:'Llegaste al límite de mensajes de hoy con el Coach. Mañana sigues.'};
+const ERR={limite_mensual:'Llegaste al límite de uso mensual del Coach Osteojuaco IA. Se renueva el día 1 del próximo mes. Tu plan sigue funcionando.',not_granted:'No diste permiso para usar Claude en esta página. Recarga para volver a intentarlo.',rate_limited:'Demasiados mensajes seguidos. Espera un momento y vuelve a enviar.',sampling_disabled:'Tu cuenta no tiene disponible esta función ahora.',prompt_too_large:'Hay demasiado historial. Escribe un mensaje más corto.',refused:'Claude no pudo responder a ese mensaje.',limite_prueba:'En la prueba gratis el Coach tiene 5 mensajes al día. Con la suscripción tienes más.',limite_diario:'Llegaste al límite de mensajes de hoy con el Coach. Mañana sigues.'};
 async function ask(text){
   if(busy)return;
   if(!sample){setSync('El chat no está disponible en esta vista');return}
@@ -3920,7 +3940,7 @@ async function goApi(body,signal){
   try{r=await fetch('/api/go/claude',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(session?session.access_token:'')},body:JSON.stringify(body),signal})}
   catch(e){throw{code:e&&e.name==='AbortError'?'cancelled':'error'}}
   const j=await r.json().catch(()=>({}));
-  if(!r.ok)throw{code:j.code||'error'};
+  if(!r.ok){if(j.code==='limite_mensual'&&j.error)ERR.limite_mensual=j.error;throw{code:j.code||'error'}}
   if(j.stop_reason==='refusal')throw{code:'refused'};
   return j;
 }
@@ -3980,7 +4000,8 @@ function puntosTerminos(){return h('ul',{class:'medir'},
    'Tus datos de salud se guardan cifrados, en una base protegida a la que solo accedes tú y tu profesional de Sakros. No los vendemos ni los usamos para publicidad.',
    'Si tienes menos de 18 años, necesitas la autorización de tu madre, padre o tutor.',
    'La suscripción es mensual o anual y se renueva sola. Puedes cancelarla cuando quieras desde la app; el acceso sigue hasta el final del período pagado.',
-   'El período corre igual aunque no completes tus entrenamientos.'].map(x=>h('li',{text:x})))}
+   'El período corre igual aunque no completes tus entrenamientos.',
+   'Límites de uso: el Coach Osteojuaco IA responde hasta 40 mensajes al día (5 en la prueba). Entrenamiento incluye 3 análisis de técnica por semana y 1 consulta semanal con Joaquín por WhatsApp. La IA tiene un tope de uso mensual: si se alcanza, se pausa hasta el día 1.'].map(x=>h('li',{text:x})))}
 function renderTerminos(m){
   const ck=h('input',{type:'checkbox',id:'tc-ok'}),ck2=h('input',{type:'checkbox',id:'tc-salud'});const err=h('p',{class:'note err',role:'alert'});
   m.append(cardQuien());
@@ -4020,6 +4041,11 @@ function cardPaywall(){
     v.beta?h('p',{class:'dxline',text:BETA_TXT}):null,
     ...orden.map(plan),
     h('ul',{class:'medir'},['Entrena 1, 2 o 3 veces por semana, como te acomode.','El período corre igual aunque no completes los entrenamientos.','Cancela cuando quieras desde la app.'].map(x=>h('li',{text:x}))),
+    h('details',{class:'limdet'},h('summary',{},'Límites de uso de cada plan'),h('ul',{class:'medir'},[
+      'Entrenamiento: Coach Osteojuaco IA hasta 40 mensajes al día, 3 análisis de técnica por video a la semana y 1 consulta semanal con Joaquín en el grupo de WhatsApp.',
+      'Prep: Coach Osteojuaco IA hasta 40 mensajes al día; sin análisis de técnica ni consulta por WhatsApp.',
+      'Los dos planes incluyen la evaluación de movilidad y control, revisada por Joaquín en 48 horas a 7 días.',
+      'Uso justo de la IA: el Coach y los análisis por video tienen un tope de uso mensual. Si llegas, se pausan hasta el día 1 del mes siguiente; tu plan sigue funcionando.'].map(x=>h('li',{text:x})))),
     v.activo?null:h('p',{class:'dxline',text:'La suscripción abre muy pronto. Pregúntale a tu entrenador cómo continuar.'}),st,
     h('p',{class:'note'},'Al suscribirte aceptas los ',h('a',{href:'/go/terminos.html',target:'_blank',rel:'noopener'},'términos y el descargo de salud'),'.'));
 }

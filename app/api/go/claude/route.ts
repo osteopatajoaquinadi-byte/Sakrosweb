@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { goMiembro } from "@/lib/go-auth";
+import { TOPE_USUARIO_USD, bloqueoPorGasto, gastoActual, registrarGasto } from "@/lib/go-gasto";
 import { accesoActivo } from "@/lib/go-suscripcion";
 import { errorServidor } from "@/lib/go-errores";
 
@@ -16,6 +17,27 @@ const TOOLS_PERMITIDAS = new Set(["ajustar_prescripcion", "quitar_ajuste"]);
 // Llamadas a Claude por día y por persona (cada vuelta con herramientas
 // cuenta una): así el costo del Coach queda acotado.
 const LIMITE = { coach: 400, suscriptor: 40, prueba: 5 };
+
+// El primer mensaje lleva las reglas y los datos del atleta, iguales en toda la conversación: se marca para caché.
+function conCache(msgs: Anthropic.Beta.BetaMessageParam[]): Anthropic.Beta.BetaMessageParam[] {
+  const [primero, ...resto] = msgs;
+  if (!primero || primero.role !== "user" || typeof primero.content !== "string") return msgs;
+  return [{ role: "user", content: [{ type: "text", text: primero.content, cache_control: { type: "ephemeral" } }] }, ...resto];
+}
+
+// Uso de la IA este mes y límites, para mostrarlos en la app.
+export async function GET(request: NextRequest) {
+  const m = await goMiembro(request);
+  if (!m) return NextResponse.json({ error: "Inicia sesión de nuevo.", code: "not_granted" }, { status: 401 });
+  const db = getServiceClient();
+  const c = await gastoActual(db, m);
+  const tipo = m.rol === "coach" ? "coach" : (await accesoActivo(db, m.atleta)) ? "suscriptor" : "prueba";
+  return NextResponse.json({
+    ilimitado: c.ilimitado,
+    mensajesDia: LIMITE[tipo],
+    usoMes: c.ilimitado ? null : Math.min(100, Math.round((c.usuario / TOPE_USUARIO_USD) * 100)),
+  });
+}
 
 export async function POST(request: NextRequest) {
   const m = await goMiembro(request);
@@ -43,6 +65,8 @@ export async function POST(request: NextRequest) {
     .map((t) => ({ name: t.name, description: String(t.description || ""), input_schema: t.input_schema }));
 
   const db = getServiceClient();
+  const pausa = await bloqueoPorGasto(db, m);
+  if (pausa) return NextResponse.json({ error: pausa, code: "limite_mensual" }, { status: 429 });
   const tipo = m.rol === "coach" ? "coach" : (await accesoActivo(db, m.atleta)) ? "suscriptor" : "prueba";
   const { data: permitido } = await db.rpc("go_usar", { p_user: m.userId, p_max: LIMITE[tipo] });
   if (permitido === false) {
@@ -69,9 +93,13 @@ export async function POST(request: NextRequest) {
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       output_config: { effort: body.json ? "medium" : "low" },
-      messages: body.messages as Anthropic.Beta.BetaMessageParam[],
+      // Reutiliza el contexto entre mensajes: el primero (reglas + datos del atleta) queda en caché, y la caché
+      // automática guarda además la conversación hasta el último mensaje.
+      cache_control: { type: "ephemeral" },
+      messages: conCache(body.messages as Anthropic.Beta.BetaMessageParam[]),
       ...(tools.length ? { tools: tools as Anthropic.Beta.BetaTool[] } : {}),
     });
+    await registrarGasto(db, m, res.usage);
     return NextResponse.json({ content: res.content, stop_reason: res.stop_reason });
   } catch (e) {
     if (e instanceof Anthropic.RateLimitError) {

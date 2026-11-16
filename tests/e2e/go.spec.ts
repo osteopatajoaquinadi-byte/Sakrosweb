@@ -635,6 +635,24 @@ test.describe("Sakros Go", () => {
     expect(errores).toEqual([]);
   });
 
+  test("el cliente ve sus límites de uso en el Coach y en los términos", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3 })] });
+    await page.route("**/api/go/claude", (r) =>
+      r.request().method() === "GET" ? r.fulfill({ json: { ilimitado: false, mensajesDia: 40, usoMes: 85 } }) : r.fallback(),
+    );
+    await page.goto("/go");
+    await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    await page.getByRole("tab", { name: "Coach" }).click();
+    const lim = page.locator("details.limdet").first();
+    await lim.locator("summary").click();
+    await expect(lim).toContainText("hasta 40 mensajes al día");
+    await expect(lim).toContainText("3 por semana");
+    await expect(lim).toContainText("1 por semana");
+    await expect(lim).toContainText("Este mes llevas el 85 % de tu uso de IA.");
+    expect(errores).toEqual([]);
+  });
+
   test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 800 } });
     const errores = vigilarErrores(page);
