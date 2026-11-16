@@ -3951,7 +3951,8 @@ const fechaCorta=iso=>{try{return new Date(iso).toLocaleDateString('es-CL',{day:
 async function authHeaders(){const{data:{session}}=await SB.auth.getSession();return{'Content-Type':'application/json',Authorization:'Bearer '+(session?session.access_token:'')}}
 async function cargarAcceso(){if(!SB)return;try{const r=await fetch('/api/go/acceso',{headers:await authHeaders()});if(r.ok)ACC=await r.json()}catch(e){}}
 const planAcc=()=>(ACC&&ACC.plan)||'entrenamiento';
-const PLANES={prep:{n:'Sakros Go Prep',d:'Unos 12 minutos de preparación antes de tu entrenamiento, según tu evaluación de movilidad y control.',k:'precioPrep'},entrenamiento:{n:'Sakros Go Entrenamiento',d:'Tu programa completo (Fundamentos, Core, Activo o Rendimiento), el Coach y también Prep.',k:'precio'}};
+const PLANES={prep:{n:'Sakros Go Prep',d:'Unos 12 minutos de preparación antes de tu entrenamiento, según tu evaluación de movilidad y control.',k:'precioPrep',kA:'precioPrepAnual'},entrenamiento:{n:'Sakros Go Entrenamiento',d:'Tu programa completo (Fundamentos, Core, Activo o Rendimiento), el Coach, 3 análisis de técnica por semana, una consulta semanal con Joaquín en el grupo de WhatsApp y también Prep.',k:'precio',kA:'precioAnual'}};
+const BETA_TXT='Sakros Go está en beta: muchos ejercicios ya tienen video de Joaquín y otros se muestran con una animación 3D mientras terminamos de grabarlos. Por eso tiene precio beta.';
 // Prueba gratis: 3 entrenamientos terminados, en cualquier plan (Prep o Entrenamiento).
 // Una sesión cuenta al tocar «Guardar y terminar» (queda con sus minutos). Se puede volver a abrir una ya terminada.
 const PRUEBA=3;
@@ -3970,8 +3971,8 @@ function puntosTerminos(){return h('ul',{class:'medir'},
    'El Coach IA es una inteligencia artificial: arma y ajusta tu plan con los criterios de Joaquín Adi, kinesiólogo, pero puede equivocarse y no diagnostica. Ante dudas de salud, consulta a tu profesional.',
    'Tus datos de salud se guardan cifrados, en una base protegida a la que solo accedes tú y tu profesional de Sakros. No los vendemos ni los usamos para publicidad.',
    'Si tienes menos de 18 años, necesitas la autorización de tu madre, padre o tutor.',
-   'La suscripción es mensual y se renueva sola. Puedes cancelarla cuando quieras desde la app; el acceso sigue hasta el final del mes pagado.',
-   'El mes corre igual aunque no completes tus entrenamientos.'].map(x=>h('li',{text:x})))}
+   'La suscripción es mensual o anual y se renueva sola. Puedes cancelarla cuando quieras desde la app; el acceso sigue hasta el final del período pagado.',
+   'El período corre igual aunque no completes tus entrenamientos.'].map(x=>h('li',{text:x})))}
 function renderTerminos(m){
   const ck=h('input',{type:'checkbox',id:'tc-ok'}),ck2=h('input',{type:'checkbox',id:'tc-salud'});const err=h('p',{class:'note err',role:'alert'});
   m.append(cardQuien());
@@ -3986,9 +3987,9 @@ function renderTerminos(m){
       if(!ok){err.textContent='No se pudo guardar. Revisa la conexión.';return}
       UI.tab='hoy';render();scrollTo(0,0)}},'Aceptar y continuar'))));
 }
-async function suscribirme(btn,st,plan){
+async function suscribirme(btn,st,plan,periodo){
   btn.disabled=true;st.textContent='Abriendo Mercado Pago…';
-  try{const r=await fetch('/api/go/suscripcion',{method:'POST',headers:await authHeaders(),body:JSON.stringify({plan})});const j=await r.json().catch(()=>({}));
+  try{const r=await fetch('/api/go/suscripcion',{method:'POST',headers:await authHeaders(),body:JSON.stringify({plan,periodo:periodo||'mes'})});const j=await r.json().catch(()=>({}));
     if(r.ok&&j.url){location.href=j.url;return}
     st.textContent=j.error||'No se pudo iniciar el pago.';}catch(e){st.textContent='Sin conexión. Inténtalo de nuevo.'}
   btn.disabled=false;
@@ -3997,13 +3998,20 @@ function cardPaywall(){
   const v=(ACC&&ACC.venta)||{};const st=h('p',{class:'note',role:'status'});
   const yaPrep=ACC&&ACC.activo&&planAcc()==='prep';
   const orden=esPrep()?['prep','entrenamiento']:['entrenamiento','prep'];
-  const plan=k=>{const P=PLANES[k],pr=v[P.k];const btn=h('button',{class:'btn'+(k===orden[0]?' primary big':''),onclick:()=>suscribirme(btn,st,k)},'Suscribirme a '+P.n.replace('Sakros Go ',''));
-    return h('div',{class:'plancard'},h('h3',{text:P.n}),h('p',{class:'note',text:P.d}),pr>=1000?h('p',{class:'precio'},h('b',{text:clp(pr)}),' al mes'):null,v.activo&&pr>=1000?h('div',{class:'row'},btn):null)};
+  const plan=k=>{const P=PLANES[k],pr=v[P.k],pa=v[P.kA];
+    const btn=h('button',{class:'btn'+(k===orden[0]?' primary big':''),onclick:()=>suscribirme(btn,st,k,'mes')},'Suscribirme a '+P.n.replace('Sakros Go ','')+(pa>=1000?' · mensual':''));
+    const btnA=pa>=1000?h('button',{class:'btn',onclick:()=>suscribirme(btnA,st,k,'anual')},'Pagar 1 año · '+clp(pa)):null;
+    const ahorro=pa>=1000&&pr>=1000&&pr*12>pa?Math.round((pr*12-pa)/pr):0;
+    return h('div',{class:'plancard'},h('h3',{text:P.n}),h('p',{class:'note',text:P.d}),
+      pr>=1000?h('p',{class:'precio'},h('b',{text:clp(pr)}),' al mes'+(v.beta&&k==='entrenamiento'?' · precio beta':'')):null,
+      pa>=1000?h('p',{class:'note',text:'O '+clp(pa)+' al año (equivale a '+clp(Math.round(pa/12))+' al mes'+(ahorro>=1?'; '+ahorro+(ahorro===1?' mes gratis':' meses gratis'):'')+').'}):null,
+      v.activo&&pr>=1000?h('div',{class:'row'},btn,v.activo?btnA:null):null)};
   return h('section',{class:'card hero'},h('span',{class:'chip',text:yaPrep?'Tu plan es Prep':'Terminaste tus '+PRUEBA+' entrenamientos de prueba'}),
     h('h2',{text:yaPrep?'Tu programa de entrenamiento necesita el plan Entrenamiento':'Sigue con tu plan'}),
     yaPrep?h('p',{class:'note',text:'Para cambiar: cancela la renovación de Prep (en Hoy → Tu suscripción; el acceso sigue hasta el fin del mes pagado) y suscríbete a Entrenamiento.'}):null,
+    v.beta?h('p',{class:'dxline',text:BETA_TXT}):null,
     ...orden.map(plan),
-    h('ul',{class:'medir'},['Entrena 1, 2 o 3 veces por semana, como te acomode.','El mes corre igual aunque no completes los entrenamientos.','Cancela cuando quieras desde la app.'].map(x=>h('li',{text:x}))),
+    h('ul',{class:'medir'},['Entrena 1, 2 o 3 veces por semana, como te acomode.','El período corre igual aunque no completes los entrenamientos.','Cancela cuando quieras desde la app.'].map(x=>h('li',{text:x}))),
     v.activo?null:h('p',{class:'dxline',text:'La suscripción abre muy pronto. Pregúntale a tu entrenador cómo continuar.'}),st,
     h('p',{class:'note'},'Al suscribirte aceptas los ',h('a',{href:'/go/terminos.html',target:'_blank',rel:'noopener'},'términos y el descargo de salud'),'.'));
 }
@@ -4031,17 +4039,24 @@ async function cardVenta(){
   const{data}=await SB.from('go_docs').select('data').eq('path','config').eq('id','venta').maybeSingle();
   const v=(data&&data.data)||{};
   const pr=h('input',{id:'v-precio',inputmode:'numeric',placeholder:'ej.: 25000'});pr.value=v.precio||'';
-  const pp=h('input',{id:'v-prep',inputmode:'numeric',placeholder:'ej.: 15000'});pp.value=v.precioPrep||'';
+  const pp=h('input',{id:'v-prep',inputmode:'numeric',placeholder:'ej.: 12990'});pp.value=v.precioPrep||'';
+  const pa=h('input',{id:'v-anual',inputmode:'numeric',placeholder:'ej.: 250000'});pa.value=v.precioAnual||'';
+  const ppa=h('input',{id:'v-prep-anual',inputmode:'numeric',placeholder:'ej.: 129900'});ppa.value=v.precioPrepAnual||'';
+  const beta=h('input',{type:'checkbox',id:'v-beta'});beta.checked=v.beta===true;
   const on=h('input',{type:'checkbox',id:'v-on'});on.checked=v.activo===true;
   const st=h('p',{class:'note',role:'status'});
   card.replaceChildren(h('h2',{text:'Venta de Sakros Go'}),
-    h('p',{class:'note',text:'Precios de la suscripción mensual en pesos (CLP). Los cambios valen para las suscripciones nuevas; las que ya existen mantienen su precio. Entrenamiento incluye Prep.'}),
+    h('p',{class:'note',text:'Precios de la suscripción en pesos (CLP). Los cambios valen para las suscripciones nuevas; las que ya existen mantienen su precio. Entrenamiento incluye Prep. Deja el precio anual vacío para no ofrecer pago anual.'}),
     h('div',{class:'row'},h('label',{class:'f',for:'v-precio'},'Entrenamiento (CLP/mes)',pr),h('label',{class:'f',for:'v-prep'},'Prep (CLP/mes)',pp)),
+    h('div',{class:'row'},h('label',{class:'f',for:'v-anual'},'Entrenamiento (CLP/año)',pa),h('label',{class:'f',for:'v-prep-anual'},'Prep (CLP/año)',ppa)),
+    h('label',{class:'tcrow',for:'v-beta'},beta,h('span',{text:'Precio beta (la app avisa que algunos ejercicios aún se muestran con animación)'})),
     h('label',{class:'tcrow',for:'v-on'},on,h('span',{text:'Venta abierta (los clientes pueden suscribirse)'})),
     h('div',{class:'row'},h('button',{class:'btn primary',onclick:async()=>{
-      const n=Math.round(Number(String(pr.value).replace(/[^\d]/g,''))),np=Math.round(Number(String(pp.value).replace(/[^\d]/g,'')));
-      if(on.checked&&!(n>=1000&&np>=1000)){st.textContent='Escribe precios de al menos $1.000.';return}
-      try{await db.collection('config').doc('venta').set({precio:n||0,precioPrep:np||0,activo:on.checked,t:Date.now()});st.textContent='Guardado.'}catch(e){st.textContent='No se pudo guardar.'}}},'Guardar')),st);
+      const num=x=>Math.round(Number(String(x.value).replace(/[^\d]/g,'')))||0;
+      const n=num(pr),np=num(pp),na=num(pa),npa=num(ppa);
+      if(on.checked&&!(n>=1000&&np>=1000)){st.textContent='Escribe precios mensuales de al menos $1.000.';return}
+      if((na&&na<1000)||(npa&&npa<1000)){st.textContent='Los precios anuales deben ser de al menos $1.000, o quedar vacíos.';return}
+      try{await db.collection('config').doc('venta').set({precio:n,precioPrep:np,precioAnual:na,precioPrepAnual:npa,beta:beta.checked,activo:on.checked,t:Date.now()});st.textContent='Guardado.'}catch(e){st.textContent='No se pudo guardar.'}}},'Guardar')),st);
   return card;
 }
 async function cardAcceso(id){

@@ -7,6 +7,7 @@ import {
   TERMINOS_V,
   cancelarSuscripcion,
   crearSuscripcion,
+  esPeriodo,
   esPlan,
   leerVenta,
   precioDe,
@@ -22,11 +23,12 @@ export async function POST(request: NextRequest) {
   if (!mercadoPagoEnabled()) {
     return NextResponse.json({ error: "Los pagos no están disponibles." }, { status: 503 });
   }
-  const body = (await request.json().catch(() => ({}))) as { plan?: unknown };
+  const body = (await request.json().catch(() => ({}))) as { plan?: unknown; periodo?: unknown };
   const plan = esPlan(body.plan) ? body.plan : "entrenamiento";
+  const periodo = esPeriodo(body.periodo) ? body.periodo : "mes";
   const db = getServiceClient();
   const venta = await leerVenta(db);
-  const precio = precioDe(venta, plan);
+  const precio = precioDe(venta, plan, periodo);
   if (!venta.activo || precio < 1000) {
     return NextResponse.json({ error: "La suscripción todavía no está disponible." }, { status: 409 });
   }
@@ -53,6 +55,7 @@ export async function POST(request: NextRequest) {
       atleta: m.atleta,
       email: m.email,
       plan,
+      periodo,
       precio,
       backUrl: `${request.nextUrl.origin}/go?sub=ok`,
     });
