@@ -586,6 +586,36 @@ test.describe("Sakros Go", () => {
     await expect(page.getByRole("link", { name: "Entrar al grupo de WhatsApp" })).toHaveCount(0);
   });
 
+  test("pago: precio beta, Prep y pago anual con 2 meses gratis", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const pedidos: unknown[] = [];
+    await page.route("**/api/go/suscripcion", (r) => {
+      pedidos.push(JSON.parse(r.request().postData() || "{}"));
+      return r.fulfill({ status: 409, json: { error: "prueba" } });
+    });
+    await montarGo(page, {
+      docs: [atleta("u1", { programa: "rend", frecuencia: 3 })],
+      acceso: {
+        rol: "cliente", activo: false, plan: "entrenamiento", terminosV: "2026-11",
+        venta: { activo: true, precio: 20000, precioPrep: 12990, precioAnual: 200000, precioPrepAnual: 129900, beta: true },
+      },
+    });
+    await page.goto("/go");
+    await expect(page.getByText(/Hoy toca/).first()).toBeVisible();
+    await page.evaluate("UI.tab='paywall';render()");
+    const main = page.locator("main");
+    await expect(main).toContainText("Sakros Go está en beta");
+    await expect(main).toContainText("$20.000");
+    await expect(main).toContainText("precio beta");
+    await expect(main).toContainText("$12.990");
+    await expect(main).toContainText("$200.000 al año (equivale a $16.667 al mes; 2 meses gratis)");
+    await expect(main).toContainText("$129.900 al año");
+    await page.getByRole("button", { name: "Pagar 1 año · $200.000" }).click();
+    await expect.poll(() => pedidos.length).toBe(1);
+    expect(pedidos[0]).toEqual({ plan: "entrenamiento", periodo: "anual" });
+    expect(errores).toEqual([]);
+  });
+
   test("la sesión no muestra «null» y el video cabe en la pantalla", async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width: 1440, height: 800 } });
     const errores = vigilarErrores(page);

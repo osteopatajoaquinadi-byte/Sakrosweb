@@ -1,6 +1,6 @@
-// Sakros Go: suscripción mensual con Mercado Pago (suscripciones sin plan,
-// "preapproval"). Cada cobro aprobado deja el acceso activo un mes desde la
-// fecha del cobro; el mes corre igual aunque no se completen los
+// Sakros Go: suscripción mensual o anual con Mercado Pago (suscripciones sin plan,
+// "preapproval"). Cada cobro aprobado deja el acceso activo un mes (o 12 meses, si es
+// anual) desde la fecha del cobro; el mes corre igual aunque no se completen los
 // entrenamientos. Usa la misma cuenta que los pagos de reservas
 // (MP_ACCESS_TOKEN).
 import { getServiceClient } from "@/lib/supabase";
@@ -9,7 +9,7 @@ const API = "https://api.mercadopago.com";
 
 // Versión vigente de los términos (public/go/terminos.html). Si cambian,
 // súbela: se pedirá aceptarlos de nuevo antes de pagar.
-export const TERMINOS_V = "2026-11";
+export const TERMINOS_V = "2026-12";
 type Db = ReturnType<typeof getServiceClient>;
 
 async function mp<T>(path: string, init?: RequestInit): Promise<T> {
@@ -41,47 +41,68 @@ export type Preapproval = {
 // completos; incluye Prep).
 export type Plan = "prep" | "entrenamiento";
 export const esPlan = (v: unknown): v is Plan => v === "prep" || v === "entrenamiento";
-export type Venta = { precio: number; precioPrep: number; activo: boolean };
+export type Periodo = "mes" | "anual";
+export const esPeriodo = (v: unknown): v is Periodo => v === "mes" || v === "anual";
+export type Venta = {
+  precio: number;
+  precioPrep: number;
+  precioAnual: number;
+  precioPrepAnual: number;
+  // Precio beta: la app aún muestra animaciones en algunos ejercicios mientras se graban los videos.
+  beta: boolean;
+  activo: boolean;
+};
 
 // Precios y estado de la venta: los define el coach en la app (config/venta).
-// precio = Entrenamiento; precioPrep = Prep.
+// precio = Entrenamiento mensual; precioPrep = Prep mensual; *Anual = pago anual (0 = sin plan anual).
 export async function leerVenta(db: Db): Promise<Venta> {
   const { data } = await db.from("go_docs").select("data").eq("path", "config").eq("id", "venta").maybeSingle();
-  const v = (data?.data ?? {}) as { precio?: unknown; precioPrep?: unknown; activo?: unknown };
-  const precio = Math.round(Number(v.precio) || 0);
-  const precioPrep = Math.round(Number(v.precioPrep) || 0);
-  return { precio, precioPrep, activo: v.activo === true && precio >= 1000 };
+  const v = (data?.data ?? {}) as Record<string, unknown>;
+  const n = (x: unknown) => Math.round(Number(x) || 0);
+  const precio = n(v.precio);
+  return {
+    precio,
+    precioPrep: n(v.precioPrep),
+    precioAnual: n(v.precioAnual),
+    precioPrepAnual: n(v.precioPrepAnual),
+    beta: v.beta === true,
+    activo: v.activo === true && precio >= 1000,
+  };
 }
 
-export function precioDe(venta: Venta, plan: Plan): number {
+export function precioDe(venta: Venta, plan: Plan, periodo: Periodo = "mes"): number {
+  if (periodo === "anual") return plan === "prep" ? venta.precioPrepAnual : venta.precioAnual;
   return plan === "prep" ? venta.precioPrep : venta.precio;
 }
 
-// external_reference: "go:{atleta}" (Entrenamiento, también las antiguas) o "go:{atleta}|prep".
-function leerReferencia(ref: string): { atleta: string; plan: Plan } | null {
+// external_reference: "go:{atleta}" (Entrenamiento mensual, también las antiguas), con "|prep" para Prep
+// y "|anual" para el pago anual (ej. "go:abc|prep|anual").
+function leerReferencia(ref: string): { atleta: string; plan: Plan; periodo: Periodo } | null {
   if (!ref.startsWith("go:")) return null;
-  const [atleta, plan] = ref.slice(3).split("|");
+  const [atleta, ...resto] = ref.slice(3).split("|");
   if (!atleta) return null;
-  return { atleta, plan: plan === "prep" ? "prep" : "entrenamiento" };
+  return { atleta, plan: resto.includes("prep") ? "prep" : "entrenamiento", periodo: resto.includes("anual") ? "anual" : "mes" };
 }
 
 export function crearSuscripcion(p: {
   atleta: string;
   email: string;
   plan: Plan;
+  periodo?: Periodo;
   precio: number;
   backUrl: string;
 }): Promise<Preapproval> {
+  const anual = p.periodo === "anual";
   return mp<Preapproval>("/preapproval", {
     method: "POST",
     body: JSON.stringify({
-      reason: p.plan === "prep" ? "Sakros Go Prep · suscripción mensual" : "Sakros Go Entrenamiento · suscripción mensual",
-      external_reference: p.plan === "prep" ? `go:${p.atleta}|prep` : `go:${p.atleta}`,
+      reason: `Sakros Go ${p.plan === "prep" ? "Prep" : "Entrenamiento"} · suscripción ${anual ? "anual" : "mensual"}`,
+      external_reference: `go:${p.atleta}${p.plan === "prep" ? "|prep" : ""}${anual ? "|anual" : ""}`,
       payer_email: p.email,
       back_url: p.backUrl,
       status: "pending",
       auto_recurring: {
-        frequency: 1,
+        frequency: anual ? 12 : 1,
         frequency_type: "months",
         transaction_amount: p.precio,
         currency_id: "CLP",
@@ -106,26 +127,26 @@ export async function preapprovalDeCobro(authorizedPaymentId: string): Promise<s
   return ap.preapproval_id ?? null;
 }
 
-function sumarMes(fecha: Date): Date {
+function sumarMeses(fecha: Date, meses: number): Date {
   const d = new Date(fecha);
-  d.setMonth(d.getMonth() + 1);
+  d.setMonth(d.getMonth() + meses);
   return d;
 }
 
 // Consulta la suscripción en Mercado Pago y actualiza go_accesos. Es
-// idempotente: el acceso dura hasta un mes después del último cobro.
+// idempotente: el acceso dura hasta un mes (12 si es anual) después del último cobro.
 export async function sincronizarSuscripcion(db: Db, preapprovalId: string) {
   const pre = await leerSuscripcion(preapprovalId);
   const r = leerReferencia(pre.external_reference ?? "");
   if (!r) return null;
-  const { atleta, plan } = r;
+  const { atleta, plan, periodo } = r;
 
   const { data: actual } = await db.from("go_accesos").select("hasta, origen").eq("atleta", atleta).maybeSingle();
   let hasta = actual?.hasta ? new Date(actual.hasta) : null;
 
   const ultimo = pre.summarized?.last_charged_date ? new Date(pre.summarized.last_charged_date) : null;
   if (ultimo && !isNaN(+ultimo)) {
-    const nuevo = sumarMes(ultimo);
+    const nuevo = sumarMeses(ultimo, periodo === "anual" ? 12 : 1);
     nuevo.setDate(nuevo.getDate() + 1); // un día de margen para el siguiente cobro
     if (!hasta || nuevo > hasta) hasta = nuevo;
   } else if (pre.status === "authorized") {
