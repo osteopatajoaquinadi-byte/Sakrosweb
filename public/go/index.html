@@ -173,6 +173,7 @@ details.card>summary{font-weight:700}
 .eqres{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
 .eqchip{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--sunk)}
 .eqchip.rojo{background:var(--accent-soft);color:var(--accent)}.eqchip.amb{color:var(--warn)}.eqchip.ok{background:var(--ok-soft);color:var(--ok)}
+.fb{margin:14px 0 10px}.fb h3{margin:0 0 4px;font-size:1.05rem}.fblist{list-style:none;margin:8px 0;padding:0;display:grid;gap:6px}.fbitem{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;border-left:4px solid transparent}.fbitem.alto{border-left-color:var(--accent)}.fbtop{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}.fbdatos{display:flex;gap:6px;margin:6px 0 0}.fbnota{margin:6px 0 2px;font-style:italic}
 .eqlist{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}
 .eqrow{width:100%;display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;font:inherit;color:inherit;background:var(--sunk);border:0;border-left:4px solid transparent;border-radius:8px;padding:10px 12px;cursor:pointer}
 .eqrow.rojo{border-left-color:var(--accent)}.eqrow.amb{border-left-color:var(--warn)}.eqrow.ok{border-left-color:var(--ok)}
@@ -309,8 +310,8 @@ const RES={
   tejidoA:['Rodillo en gemelos','isquiotibiales','cuádriceps','pelotita en glúteo','kettlebell en psoas · elige 2–3 grupos, 45–90 s cada uno'],
   tejidoB:['Rack en trapecio','dorsal ancho','rotadores del hombro','pelotita en gemelos y glúteo','kettlebell en psoas · elige 2–3 grupos, 45–90 s cada uno'],
   movA:['Aductores en cuatro apoyos','psoas en caballero','rotación','extensión de piernas','rotación de tronco en caballero · 3 por lado'],
-  pilarA:['Plancha frontal 30 s','plancha lateral 20 s/lado','puente glúteo ×10','Pallof ×8/lado · sin pausa'],
-  pilarB:['Plancha frontal 30 s','plancha lateral 20 s/lado','puente glúteo ×10','Pallof ×8/lado','pared: marching y switches'],
+  pilarA:['Plancha frontal 30 s','plancha lateral 20 s/lado','puente glúteo (bilateral → a una pierna)','Pallof ×8/lado · sin pausa'],
+  pilarB:['Plancha frontal 30 s','plancha lateral 20 s/lado','puente glúteo (bilateral → a una pierna)','Pallof ×8/lado','pared: marching y switches'],
   actA:['Mini band lateral y skips A','snap-down ×5','aterrizaje a dos pies ×3','aterrizaje a una pierna ×3/lado'],
   actB:['Snap-down ×5','snap-down a una pierna ×3/lado','aterrizaje lateral a una pierna ×3/lado'],
   xmsuelo:['Activa el suelo pélvico antes de cada esfuerzo','exhala al empujar','progresa de acostado a de pie'],
@@ -410,17 +411,17 @@ const EX={
   clave:'Contención abdominal y columna neutra en todo el bloque. Es movilidad activa: si se pierde el glúteo o la posición, acorta el rango.'},
  pilarA:{n:'Preparación del pilar',video:'pilar',img:[['plancha-0','Plancha frontal: antebrazos, cuerpo alineado'],['sakplancha-2','Plancha lateral: cadera arriba'],['puente-1','Puente glúteo: cadera arriba'],['pallof-1','Pallof: brazos extendidos, tronco quieto']],pasos:[
   'Tiempo: 3 min por vuelta.',
-  'Circuito sin pausa entre ejercicios: plancha frontal 30 s → plancha lateral 20 s por lado → puente glúteo ×10 (2 s arriba) → Pallof press ×8 por lado.',
-  'Vueltas: hombres 1, mujeres 2 (en las semanas de descarga, 1). Si el atleta necesita más control del tronco, suma una vuelta.',
+  'Circuito sin pausa entre ejercicios: plancha frontal 30 s → plancha lateral 20 s por lado → puente de glúteo → Pallof press ×8 por lado. 2 vueltas (1 en las semanas de descarga).',
+  'Un solo puente de glúteo, según la semana: semanas 1–4, bilateral ×10 (2 s arriba); semanas 5–8, a una pierna ×6 por lado. Si tu sesión ya trae el correctivo «Puente de glúteo con pierna elevada», aquí no hagas puente.',
   'Plancha frontal: antebrazos bajo los hombros, glúteos y abdomen apretados, sin hundir la zona lumbar.',
   'Plancha lateral: antebrazo bajo el hombro. Hazla con las rodillas apoyadas si cuesta mantener la cadera alta.',
-  'Puente glúteo: empuja con los talones hasta alinear rodilla, cadera y hombro, con las costillas abajo.',
+  'Puente de glúteo: empuja con el talón hasta alinear rodilla, cadera y hombro, con las costillas abajo. A una pierna, la pelvis no cae hacia el lado libre.',
   'Pallof press: banda a la altura del pecho; extiende los brazos y aguanta 2 s sin que el tronco gire.'],
   clave:'Calidad antes que tiempo: si se pierde la posición, corta la serie.'},
  pilarB:{n:'Preparación del pilar + pared',video:'pilar',img:[['plancha-0','Plancha frontal: antebrazos, cuerpo alineado'],['sakplancha-2','Plancha lateral: cadera arriba'],['puente-1','Puente glúteo: cadera arriba'],['pallof-1','Pallof: brazos extendidos'],['pared-1','Pared: marching']],pasos:[
   'Tiempo: 3 min por vuelta, con la pared incluida.',
-  'Circuito sin pausa: plancha frontal 30 s → plancha lateral 20 s por lado → puente glúteo ×10 (2 s arriba) → Pallof press ×8 por lado.',
-  'Vueltas: hombres 1, mujeres 2 (en las semanas de descarga, 1).',
+  'Circuito sin pausa: plancha frontal 30 s → plancha lateral 20 s por lado → puente de glúteo → Pallof press ×8 por lado. 2 vueltas (1 en las semanas de descarga).',
+  'Un solo puente de glúteo, según la semana: semanas 1–4, bilateral ×10 (2 s arriba); semanas 5–8, a una pierna ×6 por lado. Si tu sesión ya trae el correctivo «Puente de glúteo con pierna elevada», aquí no hagas puente.',
   'Pared: inclínate unos 45° con las manos en la pared. Marching 2×5 por pierna (2 s arriba) y switches 3×3 explosivos.'],
   clave:'La pared enseña la inclinación de las salidas: cadera adelantada, sin quebrarse.'},
  actA:{n:'Activación: aterrizajes y frenadas',video:'activacion-a',img:[['sakcajon-1','Snap-down, inicio: de puntillas y brazos arriba (triple extensión)'],['sakcajon-2','Snap-down: baja de golpe a la posición de aterrizaje y congela 2 s'],['drop-1','Aterrizaje a dos pies: rodillas sobre los pies'],['caida-1','Aterrizaje a una pierna: frena 2 s']],pasos:[
@@ -607,7 +608,7 @@ PLAN.U=[{..._row('A','tejidoA')},{..._row('A','movA')},{..._row('A','pilarA')},{
 DUR.C=[55,57,60,45,60,63,65,48];DUR.U=[63,66,66,52,66,69,72,60];
 DIA.C='Fuerza unilateral, saltos laterales y velocidad multidireccional';DIA.U='Sesión completa: potencia, fuerza y velocidad multidireccional';
 EX.mdcut={n:'Velocidad multidireccional: desplazamiento lateral y corte',video:'lateral-corte',img:[['skater-0','Base baja, peso en el borde interno'],['pared-1','Postura contra la pared']],pasos:[
-  'Bloque 1 · Pared (técnica, «pared 1×10 s/lado»): manos en la pared, cuerpo inclinado y base más ancha que los hombros. Mantén la posición de corte 10 s por lado y luego carga y despega la pierna de afuera ×5.',
+  'Bloque 1 · Pared (técnica, «pared 1×10 s/lado»): ponte DE LADO a la pared, a un brazo de distancia, con la pared a tu costado. Apoya las dos manos en la pared a la altura del pecho y aleja los pies hasta que el cuerpo quede inclinado hacia la pared, recto desde el pie de afuera (el más lejano a la pared) hasta la cabeza. Base más ancha que los hombros y el peso en el borde interno del pie de afuera: esa es la posición de corte. Mantenla 10 s, luego carga y despega la pierna de afuera ×5. Date vuelta y repite del otro lado.',
   'Bloque 2 · Dinámico, en una zona de 5 m: llevas la fuerza y la posición que sostuviste en la pared a un movimiento real.',
   'Shuffle continuo: desplazamiento lateral rápido y fluido, ganando inercia. Base atlética baja, pies paralelos apuntando al frente. Empuja fuerte el suelo con la pierna de atrás, sin cruzar los pies ni saltar hacia arriba.',
   'Corte: al llegar al final de los 5 m, clava la pierna de afuera con la misma inclinación y flexión que trabajaste en la pared, frena y sal explosivo hacia el otro lado.',
@@ -616,7 +617,7 @@ EX.mdcut={n:'Velocidad multidireccional: desplazamiento lateral y corte',video:'
   'Cada repetición al 100 % y pausa completa: menos de 90 s entre repeticiones y hasta 2 min entre series.'],
   clave:'Quédate «bajo el techo»: la cabeza no sube ni baja. Si la técnica se pierde, la serie termina.'};
 EX.mdcross={n:'Velocidad multidireccional: paso cruzado',video:'paso-cruzado',img:[['pared-1','Postura contra la pared'],['salida-1','Salida explosiva']],pasos:[
-  'Bloque 1 · Pared (técnica, «pared 1×10 s/lado»): posición de paso cruzado 10 s por lado y luego carga y despega ×5.',
+  'Bloque 1 · Pared (técnica, «pared 1×10 s/lado»): ponte DE LADO a la pared, a un brazo de distancia, y apoya las dos manos en ella a la altura del pecho. Aleja los pies para que el cuerpo quede inclinado hacia la pared, recto desde los pies hasta la cabeza. Sube la rodilla de la pierna más cercana a la pared (posición de paso cruzado) y mantén 10 s; luego carga y despega ×5. Date vuelta y repite del otro lado.',
   'Bloque 2 · Paso cruzado a la base (nivel 1, «2×3/lado»): trabaja el cambio de dirección cruzando la pierna por delante del cuerpo para desplazarte de lado y terminar en una posición atlética estable, la base.',
   'Inicio: de pie y de perfil a la dirección en la que vas a salir, erguido o en semi-base.',
   'Paso cruzado: empuja el suelo con la pierna de adentro (borde externo del pie) y cruza la pierna de afuera por delante del cuerpo, ganando terreno hacia el lado.',
@@ -811,8 +812,8 @@ const EXC={
   'Abdomen firme al 50–70 %. Sube y baja la pierna de arriba sin que la cadera caiga.',
   'Cambia de lado.'],
   clave:'Trabaja el glúteo medio del lado de arriba y el core lateral del de abajo.'},
- kchop:{n:'Chop o lift en polea (diagonal)',img:[['chop-0','Inicio: arriba y al lado'],['chop-1','Final: diagonal abajo']],pasos:[
-  'De pie, de lado a la polea, con los brazos extendidos.',
+ kchop:{n:'Chop o lift en polea o elástico (diagonal)',img:[['chop-0','Inicio: arriba y al lado'],['chop-1','Final: diagonal abajo']],pasos:[
+  'De pie, de lado a la polea, con los brazos extendidos. Sin polea: elástico anclado arriba (chop) o abajo (lift), por ejemplo en el rack.',
   'Abdomen firme al 50–70 %. Lleva la cuerda en diagonal girando desde la cadera y los pies, no desde la zona lumbar.',
   'Exhala en el esfuerzo y vuelve controlado.'],
   clave:'Rota la cadera, no la columna lumbar.'},
@@ -2085,7 +2086,11 @@ function personal(r,d){
 // Rendimiento: la preparación dura 10–12 min (tejido 3 + correctivos 4 + pilar 3 + activación 2).
 function prepRend(r){
   if(!esRend())return r;
-  return r.map(it=>/^tejido[AB]$/.test(it.id)?{...it,p:Array(8).fill('2–3 min · 2 grupos, 45–90 s cada uno'),tm:3}:/^pilar[AB]$/.test(it.id)?{...it,pM:undefined,tm:3}:/^act[AB]$/.test(it.id)?{...it,pM:undefined,tm:2}:it);
+  // Pilar: 2 vueltas (1 en descarga) y un solo puente de glúteo que progresa: bilateral en las semanas 1–4 y a una
+  // pierna en las 5–8. Si el correctivo de la evaluación ya es un puente, el pilar va sin puente (nunca dos a la vez).
+  const corrPuente=r.some(x=>x.id==='fhs2'),pared=id=>id==='pilarB'?' + pared':'';
+  const pilarP=id=>[0,1,2,3,4,5,6,7].map(i=>(i===3||i===7?'1 vuelta':'2 vueltas')+pared(id)+(corrPuente?' · sin puente (ya va en el correctivo)':i<4?' · puente bilateral':' · puente a una pierna'));
+  return r.map(it=>/^tejido[AB]$/.test(it.id)?{...it,p:Array(8).fill('2–3 min · 2 grupos, 45–90 s cada uno'),tm:3}:/^pilar[AB]$/.test(it.id)?{...it,p:pilarP(it.id),pM:undefined,tm:3}:/^act[AB]$/.test(it.id)?{...it,pM:undefined,tm:2}:it);
 }
 // Evaluación de movimiento de 12 o menos de 21: más tejido blando (3 grupos, 45–90 s cada uno) en todos los programas.
 // Rendimiento y Prep alargan el suyo; Fundamentos, Activo y Core lo suman al inicio (tren inferior o superior según el día).
@@ -2142,11 +2147,19 @@ const VAR_REND={
  hipthrust:{2:['rdlbarra',0.7],5:['rdlbarra',0.7],7:['rdlbarra',0.7]},
  kpallofsr:{2:['kchop',null,'/lado'],5:['kchop',null,'/lado'],7:['kchop',null,'/lado']}
 };
+// Ejercicios con barra olímpica. Con una sola barra (lo normal), una superserie no lleva dos de estos.
+const BARRA=new Set(['sentadilla','frontal','muerto','cargada','pushpress','hipthrust','kremobarra','trapbar','rdlbarra','powerclean','jumpshrug','pushjerk','klandmine','ksentbarra','kmuertobarra','krdl','kpuentex','kjammer','khipthrustp']);
+const equipo=()=>atl().equipo||{};
+const unaBarra=()=>(parseInt(equipo().barras,10)||1)<2;
 function variar(r,d,s){
   if(!esRend()||bk()>1)return r;
   const P=atl().plan||{},fija=id=>((P.notas||{})[id])||((P.sust||{})[id]);
+  const idVar=it=>{const v=(VAR_REND[it.id]||{})[s];return v&&!fija(it.id)?v[0]:it.id};
+  const pareja=it=>{const m=/^(\d+)([AB])$/.exec(String(it.b));return m?r.find(x=>String(x.b)===m[1]+(m[2]==='A'?'B':'A')):null};
   return r.map(it=>{const v=(VAR_REND[it.id]||{})[s];if(!v||fija(it.id))return it;
-    const [id,f,suf]=v;if(!EX[id]&&typeof ALT!=='undefined'&&ALT[id])EX[id]={...ALT[id]};if(!EX[id])return it;
+    const [id,f,suf]=v;
+    // Superserie con una sola barra: si la variante pide barra y la pareja ya la usa, se queda el ejercicio original.
+    if(unaBarra()&&BARRA.has(id)&&!BARRA.has(it.id)){const q=pareja(it);if(q&&BARRA.has(idVar(q)))return it}if(!EX[id]&&typeof ALT!=='undefined'&&ALT[id])EX[id]={...ALT[id]};if(!EX[id])return it;
     const p=[...PP(it)];if(f==null){const sr=String(p[s-1]).split(' · ')[0].replace(/\/lado$/,'');p[s-1]=sr+(suf||'')}
     return {...it,id,p,pM:undefined,rpe:f==null?undefined:it.rpe,kgId:f==null?undefined:it.id,kgF:f==null?undefined:f,varDe:it.id}}).flatMap(it=>{
     // semanas 5–7: el día C suma un tirón de halterofilia al inicio del bloque de fuerza (la potencia va primero)
@@ -2155,7 +2168,22 @@ function variar(r,d,s){
     const p=['','','','','3×3 · 52,5 kg','3×3 · 55 kg','3×2 · 57,5 kg',''];
     return [{id:'jumpshrug',b:it.b,p,kgId:'cargada'},it]});
 }
-function rows(d,s){if(esPrep())return prepRows(d,s);return blq4(afinar(variar(personal(voley(tejidoLargo(prepRend(rows0(d,s)),d,s),d),d),d,s),d,s))}
+function rows(d,s){if(esPrep())return prepRows(d,s);return conEquipo(blq4(afinar(menosRend(variar(personal(voley(tejidoLargo(prepRend(rows0(d,s)),d,s),d),d),d,s),s),d,s)))}
+// Sin polea: el chop se hace con elástico.
+EX.kchopband={n:'Chop o lift con elástico (diagonal)',img:[['chop-0','Inicio: arriba y al lado'],['chop-1','Final: diagonal abajo']],pasos:[
+  'Ancla el elástico arriba, por ejemplo en lo alto del rack (chop), o abajo, cerca del suelo (lift).',
+  'De pie, de lado al anclaje, con los pies a la anchura de la cadera y los brazos extendidos tomando el elástico con las dos manos.',
+  'Abdomen firme al 50–70 %. Lleva las manos en diagonal, de arriba hacia la cadera contraria (o de abajo hacia arriba en el lift), girando desde la cadera y los pies, no desde la zona lumbar.',
+  'Exhala en el esfuerzo y vuelve controlado. Para más carga, aléjate del anclaje o usa un elástico más fuerte.'],
+  clave:'Rota la cadera, no la columna lumbar.'};
+function conEquipo(r){
+  if(equipo().polea!==false)return r;
+  return r.map(it=>it.id==='kchop'?{...it,id:'kchopband',kgId:it.kgId||'kchop'}:it);
+}
+// Rendimiento: una serie menos en los ejercicios de 4 o más series (la sesión quedaba larga). No toca la preparación.
+const menosRend=(r,s)=>!esRend()?r:r.map(it=>{if(/^1/.test(String(it.b))||it.id==='regen')return it;
+  const baja=t=>String(t).replace(/^(\D*?)(\d+)×/,(m,a,n)=>+n>=4?a+(n-1)+'×':m);
+  if(!Array.isArray(it.p))return it;const p=it.p.map(baja),pM=it.pM?it.pM.map(baja):it.pM;return {...it,p,pM}});
 // Semana de competencia (plan.afina = n): la semana anterior mantiene la carga con una serie menos;
 // la de la competencia es descarga y el día C queda solo con la preparación (activación previa al partido).
 const afinaSem=()=>{const n=parseInt((atl().plan||{}).afina,10);return esRend()&&n>=2&&n<=8?n:0};
@@ -2484,6 +2512,7 @@ function renderPerfil(m,nuevo){
     row.append(del);
   }
   m.append(h('section',{class:'card'},err,row));
+  if(!nuevo){const ce=cardEquipo();if(ce)m.append(ce)}
   if(!nuevo&&SB&&ROL==='coach'){if(UI.atleta==='yo')cardVenta().then(c=>m.append(c));else cardAcceso(UI.atleta).then(c=>m.append(c))}
 }
 function renderSelectors(){
@@ -3502,6 +3531,17 @@ function fmt(text){
   });
   return out;
 }
+/* Equipo disponible: cuántas barras y si hay polea. La sesión se arma con eso (Rendimiento y Core). */
+function cardEquipo(){
+  const pg=prog();if(pg!=='rend'&&pg!=='core')return null;
+  const e=equipo(),bar=parseInt(e.barras,10)||1,pol=e.polea!==false;
+  const save=async patch=>{await saveAtleta(UI.atleta,{...atl(),equipo:{...equipo(),...patch},t:Date.now()});render()};
+  const op=(on,txt,fn)=>h('button',{class:'opt','aria-pressed':on,onclick:fn},txt);
+  return h('section',{class:'card',id:'card-equipo'},h('h2',{text:modoCli()?'Tu equipo':'Equipo disponible'}),
+    h('p',{class:'note',text:'La sesión se arma con lo que hay en el gimnasio. Con una sola barra, ninguna superserie lleva dos ejercicios con barra. Sin polea, esos ejercicios van con elástico.'}),
+    h('div',{class:'freq',role:'group','aria-label':'Barras'},h('span',{class:'wholbl',text:'Barras'}),op(bar<2,'1 barra',()=>save({barras:1})),op(bar>=2,'2 o más',()=>save({barras:2}))),
+    h('div',{class:'freq',role:'group','aria-label':'Polea'},h('span',{class:'wholbl',text:'Polea'}),op(pol,'Hay polea',()=>save({polea:true})),op(!pol,'Sin polea (elástico)',()=>save({polea:false}))));
+}
 /* Recordatorios por correo: días de entrenamiento y aviso si pasan 5 días sin entrenar. */
 function cardRecordatorios(){
   if(!SB)return null;
@@ -3524,7 +3564,17 @@ async function cargarEquipo(){
     const{data,error}=await SB.from('go_docs').select('path,id,data').like('path','%registro').order('updated_at',{ascending:false}).range(i*1000,i*1000+999);
     if(error)throw error;out.push(...(data||[]));if(!data||data.length<1000)break;
   }
+  // Cierre de cada sesión (RPE, minutos y comentario), las 200 más recientes.
+  const{data:ses,error:e2}=await SB.from('go_docs').select('path,id,data').like('path','%sesiones').order('updated_at',{ascending:false}).range(0,199);
+  if(!e2)out.push(...(ses||[]));
   return out;
+}
+// Comentarios que dejan los atletas al terminar cada sesión, del más nuevo al más viejo.
+function feedbackEquipo(regs){
+  return regs.map(r=>{const m=/^(?:a\/([^/]+)\/)?sesiones$/.exec(r.path||'');if(!m)return null;const d=r.data||{},id=m[1]||'yo';
+    const nota=String(d.nota||'').trim(),rpe=String(d.rpe||'').trim();if(!nota&&!rpe)return null;
+    const a=ATL[id]||{};return {id,nombre:a.nombre||a.email||'Sin nombre',ses:r.id,sem:d.semana,dia:d.dia,fecha:d.fecha,min:d.min,rpe,nota,dolor:d.dolor,t:+d.t||0}})
+    .filter(Boolean).sort((x,y)=>y.t-x.t);
 }
 function resumenEquipo(regs){
   const por={};
@@ -3562,9 +3612,25 @@ function renderEquipo(m){
         h('span',{class:'eqdato'},
           h('span',{text:x.sem?'Semana '+x.sem+' · '+x.enSem+' de '+x.fr:'Sin sesiones'}),
           h('span',{class:'note',text:x.ult?('Último: '+fecha(x.ult)+(x.sin===0?' (hoy)':x.sin===1?' (ayer)':' (hace '+x.sin+' días)')):'Nunca ha marcado un ejercicio'})))))),
+      cardFeedback(feedbackEquipo(EQ)),
       h('div',{class:'row'},h('button',{class:'btn small',onclick:()=>{EQ=null;renderEquipoCarga(box,pinta)}},'Actualizar')));
   };
   renderEquipoCarga(box,pinta);
+}
+function cardFeedback(L){
+  const lista=h('ul',{class:'fblist'}),N=15;let ver=N;
+  const pinta=()=>{lista.replaceChildren(...L.slice(0,ver).map(x=>{const r=parseFloat(String(x.rpe).replace(',','.'));
+    return h('li',{class:'fbitem'+(r>=9?' alto':'')},
+      h('div',{class:'fbtop'},h('strong',{text:x.nombre}),h('span',{class:'note',text:[x.sem?'Semana '+x.sem:'',x.dia?dayName(x.dia):'',x.fecha||'',x.min?x.min+' min':''].filter(Boolean).join(' · ')})),
+      h('div',{class:'fbdatos'},x.rpe?h('span',{class:'eqchip '+(r>=9?'rojo':r>=7?'amb':'ok'),text:'RPE '+x.rpe}):null,x.dolor?h('span',{class:'eqchip amb',text:'Dolor '+x.dolor+'/10'}):null),
+      x.nota?h('p',{class:'fbnota',text:'«'+x.nota+'»'}):null,
+      h('button',{class:'linkbtn',onclick:()=>{UI.tab='progreso';switchAtleta(x.id);scrollTo(0,0)}},'Ver su progreso'))}));
+    mas.hidden=ver>=L.length};
+  const mas=h('button',{class:'btn small',onclick:()=>{ver+=N;pinta()}},'Ver más');
+  pinta();
+  return h('div',{class:'fb'},h('h3',{text:'Comentarios de las sesiones'}),
+    L.length?h('p',{class:'note',text:'Lo que escribe cada atleta al terminar la sesión, con su RPE (qué tan dura fue, de 1 a 10).'}):h('p',{class:'note',text:'Todavía no hay comentarios. Aparecen cuando un atleta termina una sesión y la guarda.'}),
+    lista,mas);
 }
 async function renderEquipoCarga(box,pinta){
   if(EQ){pinta();return}
@@ -3837,6 +3903,7 @@ function renderHoy(m){
   const cs=cardMiSuscripcion();if(cs)m.append(cs);
   {const cv=cardComplVoley(s);if(cv)m.append(cv)}
   {const cr=cardRecordatorios();if(cr)m.append(cr)}
+  {const ce=cardEquipo();if(ce)m.append(ce)}
   m.append(h('section',{class:'card'},h('h2',{text:'Coach Osteojuaco IA'}),h('p',{class:'note',text:'¿Dudas, molestias o poco tiempo hoy? Escríbele: ve tu plan y tus registros, y lo ajusta.'}),
     h('div',{class:'row'},h('button',{class:'btn',onclick:()=>{UI.tab='coach';render()}},'Escribir al Coach'),h('button',{class:'linkbtn',onclick:()=>{UI.onb={paso:1,obj:prog(),dias:freq(),les:[]};UI.tab='onb';render()}},'Cambiar mis respuestas'))));
   {const cj=!esPrep()&&cardJoaquin();if(cj)m.append(cj)}
@@ -3887,13 +3954,16 @@ function renderPlay(m){
             h('details',{},h('summary',{},'Cómo se hace'),h('ol',{},V.pasos.map(p=>h('li',{text:p}))),V.clave?h('p',{class:'clave',text:V.clave}):null)));
     if(esClave(it.id)){const kg=h('input',{id:'pk-'+it.id,inputmode:'decimal',placeholder:(V.pres.match(/(\d+(?:,\d+)?) kg/)||[])[1]||'kg'});kg.value=reg.kg||'';
       const rp=h('input',{id:'pr-'+it.id,inputmode:'decimal',placeholder:'1–10'});rp.value=reg.rpe||'';inputs.push([k,it,kg,rp]);
+      // Se guarda mientras escribe: si toca el cronómetro, «Anterior» o «Saltar», los kilos y el RPE no se pierden.
+      const borrador=(f,e)=>e.addEventListener('input',()=>{const cur={...(S.registro[k]||{}),semana:semReg(s),dia:d,ej:it.id,t:Date.now()},v=e.value.trim();if(v)cur[f]=v;else delete cur[f];S.registro[k]=cur;debounce(k,()=>write('registro',k,cur),500)});
+      borrador('kg',kg);borrador('rpe',rp);
       card.querySelector('.body').append(h('div',{class:'row'},h('label',{class:'f',for:'pk-'+it.id},'Kg que usaste',kg),h('label',{class:'f',for:'pr-'+it.id},'Esfuerzo (RPE)',rp)));}
     else inputs.push([k,it,null,null]);
     {const cb=ctrlBox(s,d,it);if(cb)card.querySelector('.body').append(cb)}
     m.append(card);
   });
   m.append(restBox());
-  const sig=async()=>{for(const [k,it,kg,rp] of inputs){const cur={...(S.registro[k]||{}),semana:semReg(s),dia:d,ej:it.id,hecho:true,t:Date.now()};if(kg&&kg.value.trim())cur.kg=kg.value.trim();if(rp&&rp.value.trim())cur.rpe=rp.value.trim();S.registro[k]=cur;write('registro',k,cur)}
+  const sig=async()=>{for(const [k,it,kg,rp] of inputs){clearTimeout(timers[k]);const cur={...(S.registro[k]||{}),semana:semReg(s),dia:d,ej:it.id,hecho:true,t:Date.now()};if(kg&&kg.value.trim())cur.kg=kg.value.trim();if(rp&&rp.value.trim())cur.rpe=rp.value.trim();S.registro[k]=cur;write('registro',k,cur)}
     REST.end=0;P.i++;savePlay();render();scrollTo(0,0)};
   m.append(h('div',{class:'playnav'},
     h('button',{class:'btn',disabled:P.i===0,onclick:()=>{P.i--;savePlay();render();scrollTo(0,0)}},'← Anterior'),

@@ -142,6 +142,8 @@ test.describe("Sakros Go", () => {
         reg("u1", "1A-cargada", 1, "A", "cargada", ahora - 4 * dia),
         reg("u2", "1A-cargada", 1, "A", "cargada", ahora - 8 * dia),
         reg("u2", "1B-pushpress", 1, "B", "pushpress", ahora - 7 * dia),
+        { path: "a/u1/sesiones", id: "2A", data: { semana: 2, dia: "A", fecha: "16/11", min: "85", rpe: "8", nota: "Cargado en piernas por el tiempo total", t: ahora - 3600000 } },
+        { path: "a/u2/sesiones", id: "1B", data: { semana: 1, dia: "B", rpe: "", nota: "", t: ahora - 7 * dia } },
       ],
     });
     await page.goto("/go");
@@ -155,6 +157,13 @@ test.describe("Sakros Go", () => {
     await expect(filas.nth(0)).toContainText("hace 7 días");
     await expect(page.getByRole("button", { name: /^Caro:/ })).toContainText("Nunca ha marcado un ejercicio");
     await expect(page.getByRole("group", { name: "Semana" })).toHaveCount(0);
+    // Comentarios de las sesiones: solo las que tienen RPE o comentario.
+    const fb = page.locator(".fbitem");
+    await expect(fb).toHaveCount(1);
+    await expect(fb).toContainText("Ana");
+    await expect(fb).toContainText("Semana 2 · Día A · 16/11 · 85 min");
+    await expect(fb).toContainText("RPE 8");
+    await expect(fb).toContainText("Cargado en piernas por el tiempo total");
     const ana = page.getByRole("button", { name: /^Ana:/ });
     await expect(ana).toHaveClass(/ ok/);
     await expect(ana).toContainText("Semana 2 · 1 de 3");
@@ -467,7 +476,7 @@ test.describe("Sakros Go", () => {
     expect(p.sen2).not.toBe(p.sen1);
     expect(p.car1).toContain("80 kg");
     expect(p.remo2).not.toBe(p.remo1);
-    expect(p.dom3).toBe("3×7");
+    expect(p.dom3).toBe("2×7"); // 4×7 con una serie menos (3×7) y otra menos por la competencia
     expect(p.c4).not.toContain("sentadilla");
     expect(p.c4).not.toContain("hipthrust");
     expect(p.c4[p.c4.length - 1]).toBe("regen");
@@ -698,6 +707,50 @@ test.describe("Sakros Go", () => {
     await expect(page.getByRole("button", { name: "Empezar" })).toBeVisible();
     const ancho = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(ancho).toBeLessThanOrEqual(1);
+    expect(errores).toEqual([]);
+  });
+
+  test("Rendimiento: con una barra la superserie no lleva dos barras; sin polea, el chop va con elástico", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3 })] });
+    await page.goto("/go");
+    await expect(page.locator("#sync")).toHaveText("Sincronizado");
+    const ids = () => page.evaluate(() => (window as unknown as { rows: (d: string, s: number) => { id: string }[] }).rows("A", 2).map((r) => r.id));
+    expect(await ids()).toEqual(expect.arrayContaining(["sentadilla", "kremomanc", "kchop"]));
+    expect(await ids()).not.toContain("kremobarra");
+    // Una serie menos en lo que tenía 4 o más (semana 1: sentadilla 4×5 → 3×5).
+    const sent = await page.evaluate(() => (window as unknown as { rows: (d: string, s: number) => { id: string; p: string[] }[] }).rows("A", 1).find((r) => r.id === "sentadilla")!.p[0]);
+    expect(sent).toBe("3×5 · 100 kg");
+    // Pilar: una vuelta más y un solo puente, bilateral al comienzo y a una pierna después.
+    const pil = await page.evaluate(() => (window as unknown as { rows: (d: string, s: number) => { id: string; p: string[] }[] }).rows("A", 1).find((r) => r.id === "pilarA")!.p);
+    expect(pil[0]).toBe("2 vueltas · puente bilateral");
+    expect(pil[3]).toBe("1 vuelta · puente bilateral");
+    expect(pil[4]).toBe("2 vueltas · puente a una pierna");
+    await page.getByRole("tab", { name: "Hoy" }).click();
+    const card = page.locator("#card-equipo");
+    await card.getByRole("button", { name: "2 o más" }).click();
+    await card.getByRole("button", { name: "Sin polea (elástico)" }).click();
+    await expect(card.getByRole("button", { name: "Sin polea (elástico)" })).toHaveAttribute("aria-pressed", "true");
+    expect(await ids()).toEqual(expect.arrayContaining(["kremobarra", "kchopband"]));
+    expect(errores).toEqual([]);
+  });
+
+  test("sesión: los kilos y el RPE se guardan al escribir, aunque toque otro botón", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const fake = await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3 })] });
+    await page.goto("/go");
+    await page.getByRole("tab", { name: "Hoy" }).click();
+    await page.getByRole("button", { name: "Empezar" }).click();
+    await page.getByRole("button", { name: "Saltar" }).click(); // pregunta de cómo llega hoy
+    const kg = page.locator('input[id^="pk-"]').first();
+    for (let i = 0; i < 20 && !(await kg.count()); i++) await page.getByRole("button", { name: "Saltar" }).click();
+    const id = (await kg.getAttribute("id"))!.slice(3);
+    await kg.fill("85");
+    await page.locator("#pr-" + id).fill("8");
+    await page.getByRole("button", { name: "60 s" }).click(); // vuelve a dibujar la pantalla
+    await expect(page.locator("#pk-" + id)).toHaveValue("85");
+    await expect(page.locator("#pr-" + id)).toHaveValue("8");
+    await expect.poll(() => fake.escrituras.some((e) => e.path === "a/u1/registro" && e.data.kg === "85" && e.data.rpe === "8" && !e.data.hecho)).toBe(true);
     expect(errores).toEqual([]);
   });
 });
