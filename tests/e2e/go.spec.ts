@@ -753,4 +753,23 @@ test.describe("Sakros Go", () => {
     await expect.poll(() => fake.escrituras.some((e) => e.path === "a/u1/registro" && e.data.kg === "85" && e.data.rpe === "8" && !e.data.hecho)).toBe(true);
     expect(errores).toEqual([]);
   });
+
+  test("carga reducida por la espalda: el atleta ve el peso ya rebajado", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, {
+      docs: [
+        atleta("u1", { programa: "rend", frecuencia: 3, cargas: { cargada: 80 }, plan: { menosKg: { sentadilla: 30, cargada: 30, frontal: 20 } } }),
+        { path: "a/u1/registro", id: "1A-sentadilla", data: { ej: "sentadilla", dia: "A", semana: 1, kg: "100", hecho: true, t: 5 } },
+      ],
+    });
+    await page.goto("/go");
+    await expect(page.locator("#sync")).toHaveText("Sincronizado");
+    const p = (await page.evaluate(`(() => { const g = (s, d, id) => { const it = rows(d, s).find((i) => i.id === id); return it ? pres(s, d, it) : null };
+      return { sen: g(1,'A','sentadilla'), car: g(1,'A','cargada'), sinCarga: g(1,'B','muerto') } })()`)) as Record<string, string>;
+    expect(p.sen).toContain("≈70 kg (−30 % de tus 100 kg)");
+    expect(p.car).toContain("(−30 %)");
+    expect(p.car).not.toContain("80 kg");
+    expect(p.sinCarga).not.toContain("−");
+    expect(errores).toEqual([]);
+  });
 });
