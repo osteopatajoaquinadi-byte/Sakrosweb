@@ -173,6 +173,7 @@ details.card>summary{font-weight:700}
 .eqres{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
 .eqchip{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--sunk)}
 .eqchip.rojo{background:var(--accent-soft);color:var(--accent)}.eqchip.amb{color:var(--warn)}.eqchip.ok{background:var(--ok-soft);color:var(--ok)}
+.mkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
 .fb{margin:14px 0 10px}.fb h3{margin:0 0 4px;font-size:1.05rem}.fblist{list-style:none;margin:8px 0;padding:0;display:grid;gap:6px}.fbitem{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;border-left:4px solid transparent}.fbitem.alto{border-left-color:var(--accent)}.fbtop{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}.fbdatos{display:flex;gap:6px;margin:6px 0 0}.fbnota{margin:6px 0 2px;font-style:italic}
 .eqlist{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}
 .eqrow{width:100%;display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;font:inherit;color:inherit;background:var(--sunk);border:0;border-left:4px solid transparent;border-radius:8px;padding:10px 12px;cursor:pointer}
@@ -2267,7 +2268,15 @@ const key=(s,d,id)=>(bk()>1?'b'+bk()+'.':'')+`${s}${d}-${id}`;
 // Femenino o sin declarar: la versión con más zona media y aterrizajes (más prevención).
 const PP=it=>((atl().sexo==='M'||atl().sexo==='N')&&it.pM)?it.pM:it.p;
 const sexoTxt=x=>x==='M'?'femenino':x==='H'?'masculino':x==='N'?'prefiere no decirlo':'';
-const pres0=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const r=it.rpe&&it.rpe[s-1];let p=escalar(PP(it)[s-1],it.kgId||it.id);if(it.kgF)p=p.replace(/(\d+(?:,\d+)?) kg/g,(m,n)=>fmtKg(parseFloat(n.replace(',','.'))*it.kgF)+' kg');if(r)p=/carga según RPE/.test(p)?p.replace('carga según RPE','RPE '+r+' ('+RESERVA[r]+')'):/RPE/.test(p)?p:p+' · RPE '+r;const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
+// Carga reducida por el entrenador (plan.menosKg = {ejercicio: %}), por ejemplo por una discopatía.
+// Busca el ejercicio y luego el de su carga (variantes); si la dosis no trae kilos, usa el último peso registrado.
+const MENOS_KG=[['sentadilla','Sentadilla posterior'],['muerto','Peso muerto (y trap bar)'],['cargada','Cargada (y sus variantes)'],['frontal','Sentadilla frontal'],['pushpress','Push press (y push jerk)'],['kremobarra','Remo con barra en bisagra'],['rdlbarra','Peso muerto rumano con barra'],['hipthrust','Hip thrust']];
+const menosKg=it=>{const m=(atl().plan||{}).menosKg||{},v=+(m[it.id]??m[it.kgId]??0);return v>0&&v<100?v:0};
+function ultKg(id){let best=null;Object.values(S.registro||{}).forEach(x=>{if(x&&x.ej===id&&x.kg&&(!best||(+x.t||0)>(+best.t||0)))best=x});const v=best&&parseFloat(String(best.kg).replace(',','.'));return v>0?v:0}
+function conMenosKg(p,it){const pct=menosKg(it);if(!pct)return p;const f=1-pct/100;
+  if(/\d kg/.test(p))return p.replace(/(\d+(?:,\d+)?) kg/g,(m,n)=>fmtKg(parseFloat(n.replace(',','.'))*f)+' kg')+' (−'+pct+' %)';
+  const u=ultKg(it.id)||ultKg(it.kgId);return p+(u?' · ≈'+fmtKg(u*f)+' kg (−'+pct+' % de tus '+fmtKg(u)+' kg)':' · −'+pct+' % del peso habitual')}
+const pres0=(s,d,it)=>{const a=S.ajustes[key(s,d,it.id)];if(a)return a.pres;const r=it.rpe&&it.rpe[s-1];let p=escalar(PP(it)[s-1],it.kgId||it.id);if(it.kgF)p=p.replace(/(\d+(?:,\d+)?) kg/g,(m,n)=>fmtKg(parseFloat(n.replace(',','.'))*it.kgF)+' kg');p=conMenosKg(p,it);if(r)p=/carga según RPE/.test(p)?p.replace('carga según RPE','RPE '+r+' ('+RESERVA[r]+')'):/RPE/.test(p)?p:p+' · RPE '+r;const nv=EX[it.id]&&EX[it.id].niv;return nv?p+' · '+NIVEL[nivelDe(it.id)]+': '+nv[nivelDe(it.id)-1]:p};
 /* Chequeo antes de entrenar: si salió bajo, la sesión de hoy va suave (una serie menos en cada ejercicio). */
 const chkDe=(s,d)=>{try{return ((S.sesiones||{})[sesKey(s,d)]||{}).chk||null}catch(e){return null}};
 const suave=(s,d)=>{const c=chkDe(s,d);if(alertaOn()&&!(c&&c.normal))return true;return !!(c&&c.ajuste==='suave'&&!c.normal)};
@@ -2512,7 +2521,7 @@ function renderPerfil(m,nuevo){
     row.append(del);
   }
   m.append(h('section',{class:'card'},err,row));
-  if(!nuevo){const ce=cardEquipo();if(ce)m.append(ce)}
+  if(!nuevo){const ce=cardEquipo();if(ce)m.append(ce);if(prog()==='rend')m.append(cardMenosKg())}
   if(!nuevo&&SB&&ROL==='coach'){if(UI.atleta==='yo')cardVenta().then(c=>m.append(c));else cardAcceso(UI.atleta).then(c=>m.append(c))}
 }
 function renderSelectors(){
@@ -3541,6 +3550,15 @@ function cardEquipo(){
     h('p',{class:'note',text:'La sesión se arma con lo que hay en el gimnasio. Con una sola barra, ninguna superserie lleva dos ejercicios con barra. Sin polea, esos ejercicios van con elástico.'}),
     h('div',{class:'freq',role:'group','aria-label':'Barras'},h('span',{class:'wholbl',text:'Barras'}),op(bar<2,'1 barra',()=>save({barras:1})),op(bar>=2,'2 o más',()=>save({barras:2}))),
     h('div',{class:'freq',role:'group','aria-label':'Polea'},h('span',{class:'wholbl',text:'Polea'}),op(pol,'Hay polea',()=>save({polea:true})),op(!pol,'Sin polea (elástico)',()=>save({polea:false}))));
+}
+/* Entrenador: bajar la carga de los ejercicios que más cargan la espalda (u otra molestia), en % del peso. */
+function cardMenosKg(){
+  const P=atl().plan||{},mk=P.menosKg||{};
+  const save=async(id,v)=>{const n={...mk};if(v>0)n[id]=v;else delete n[id];await saveAtleta(UI.atleta,{...atl(),plan:{...P,menosKg:n},t:Date.now()});render()};
+  return h('section',{class:'card',id:'card-menoskg'},h('h2',{text:'Carga reducida'}),
+    h('p',{class:'note',text:'Para una molestia o una lesión en evolución (por ejemplo, una discopatía): baja el peso de los ejercicios que más cargan la espalda. El atleta ve el peso ya reducido; si no tiene peso de referencia, se calcula sobre el último que registró.'}),
+    h('div',{class:'mkgrid'},MENOS_KG.map(([id,l])=>{const sel=h('select',{id:'mk-'+id,'aria-label':l},[0,10,20,30,40].map(v=>{const o=h('option',{value:v},v?'−'+v+' %':'Normal');if((+mk[id]||0)===v)o.selected=true;return o}));
+      sel.addEventListener('change',()=>save(id,+sel.value));return h('label',{class:'f',for:'mk-'+id},l,sel)})));
 }
 /* Recordatorios por correo: días de entrenamiento y aviso si pasan 5 días sin entrenar. */
 function cardRecordatorios(){
