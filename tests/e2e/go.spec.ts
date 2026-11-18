@@ -772,4 +772,24 @@ test.describe("Sakros Go", () => {
     expect(p.sinCarga).not.toContain("−");
     expect(errores).toEqual([]);
   });
+
+  test("una sesión ya hecha no se deshace si después cambia un ejercicio del plan", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    const hecho = (id: string) => ({ path: "a/u1/registro", id, data: { ej: id.split("-")[1], dia: id[1], semana: +id[0], hecho: true, t: 1 } });
+    const cerrada = (id: string) => ({ path: "a/u1/sesiones", id, data: { semana: +id[0], dia: id[1], fecha: "16/11", min: "80", rpe: "8", t: 1 } });
+    await montarGo(page, {
+      docs: [
+        atleta("u1", { programa: "rend", sexo: "H", frecuencia: 3 }),
+        // Semana 1 cerrada; la 2A se hizo con remo con barra, que hoy el plan cambia por remo con mancuerna.
+        hecho("1A-sentadilla"), cerrada("1A"), hecho("1B-frontal"), cerrada("1B"), hecho("1C-hipthrust"), cerrada("1C"),
+        hecho("2A-sentadilla"), hecho("2A-kremobarra"), cerrada("2A"),
+      ],
+    });
+    await page.goto("/go");
+    await expect(page.locator("#sync")).toHaveText("Sincronizado");
+    expect(await page.evaluate("JSON.stringify((({s,d}) => ({s,d}))(nextSes()))")).toBe('{"s":2,"d":"B"}');
+    await page.getByRole("tab", { name: "Hoy" }).click();
+    await expect(page.getByText("Hoy toca: Día B")).toBeVisible();
+    expect(errores).toEqual([]);
+  });
 });

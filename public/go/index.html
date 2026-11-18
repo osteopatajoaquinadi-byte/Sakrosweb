@@ -2427,7 +2427,13 @@ function refresh(){
 document.addEventListener('focusout',()=>setTimeout(()=>{if(dirty){const a=document.activeElement;if(!(a&&/INPUT|TEXTAREA/.test(a.tagName))){dirty=false;render()}}},50));
 
 /* ---------- Render ---------- */
-function done(s,d){const it=rows(d,s);const n=it.filter(x=>S.registro[key(s,d,x.id)]?.hecho).length;return [n,it.length]}
+// Una sesión hecha no se «deshace» si después cambia un ejercicio (variante, nivel del correctivo, equipo):
+// cuenta lo marcado aunque el ejercicio ya no esté en la lista, y si la sesión tiene fecha y algo marcado (se cerró con «Guardar y terminar»), está completa.
+function done(s,d){const it=rows(d,s),t=it.length;
+  const pre=key(s,d,''),igual=it.filter(x=>S.registro[key(s,d,x.id)]?.hecho).length;
+  const todos=Object.entries(S.registro||{}).filter(([k,v])=>k.startsWith(pre)&&v&&v.hecho).length;
+  if(todos&&((S.sesiones||{})[sesKey(s,d)]||{}).fecha)return [t,t];
+  return [Math.min(t,Math.max(igual,todos)),t]}
 function render(){
   const cli=modoCli();
   if(cli&&atlListo&&needsOnb()&&UI.tab!=='onb')UI.tab='onb';
