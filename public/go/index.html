@@ -353,7 +353,9 @@ const ANIM=new Set('mdcut mdcross copenhague kgoblet gcurl sentadilla ksplit gst
 // Fuera de la lista (los graba el kinesiólogo): cargada, salto de ataque, paso cruzado, desplazamiento lateral y corte,
 // skater, salto al cajón / drop jump, lanzamiento rotacional, puente con rodilla abrazada y aperturas de lado.
 // En Base, la animación sigue el nivel del ejercicio (ej. flexión en la pared, en banco o de rodillas).
-const animDe=(id,V)=>ANIM.has(id)&&V.n===EX[id].n?(EX[id].niv?id+'@'+nivelDe(id):id):null;
+// Lanzamiento sin maniquí: si un ejercicio no tiene video propio, se muestran sus fotos y los pasos. Para volver a usarlo, poner false.
+const SIN_MANIQUI=false;
+const animDe=(id,V)=>!SIN_MANIQUI&&ANIM.has(id)&&V.n===EX[id].n?(EX[id].niv?id+'@'+nivelDe(id):id):null;
 let _mq=null;
 function cargaManiqui(){if(_mq)return _mq;const js=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
   _mq=(window.THREE?Promise.resolve():js('/go/three.min.js')).then(()=>window.Maniqui?null:js('/go/maniqui-motor.js')).then(()=>window.MQ_EJ&&window.MQ?null:js('/go/maniqui.js'));_mq.catch(()=>{_mq=null});return _mq}
@@ -609,7 +611,7 @@ PLAN.U=[{..._row('A','tejidoA')},{..._row('A','movA')},{..._row('A','pilarA')},{
 DUR.C=[55,57,60,45,60,63,65,48];DUR.U=[63,66,66,52,66,69,72,60];
 DIA.C='Fuerza unilateral, saltos laterales y velocidad multidireccional';DIA.U='Sesión completa: potencia, fuerza y velocidad multidireccional';
 EX.mdcut={n:'Velocidad multidireccional: desplazamiento lateral y corte',video:'lateral-corte',img:[['skater-0','Base baja, peso en el borde interno'],['pared-1','Postura contra la pared']],pasos:[
-  'Bloque 1 · Pared (técnica, «pared 1×10 s/lado»): ponte DE LADO a la pared, a un brazo de distancia, con la pared a tu costado. Apoya las dos manos en la pared a la altura del pecho y aleja los pies hasta que el cuerpo quede inclinado hacia la pared, recto desde el pie de afuera (el más lejano a la pared) hasta la cabeza. Base más ancha que los hombros y el peso en el borde interno del pie de afuera: esa es la posición de corte. Mantenla 10 s, luego carga y despega la pierna de afuera ×5. Date vuelta y repite del otro lado.',
+  'Bloque 1 · Pared (técnica, «pared 1×10 s/lado»): ponte DE LADO a la pared, a un brazo de distancia. Apoya solo la mano de adentro (la más cercana a la pared) a la altura del hombro, con el brazo estirado, y aleja los pies hasta que el cuerpo quede inclinado hacia la pared, recto desde el pie de afuera hasta la cabeza. Base más ancha que los hombros y el peso en el borde interno del pie de afuera: esa es la posición de corte. Mantenla 10 s, luego carga y despega la pierna de afuera ×5. Date vuelta y repite del otro lado.',
   'Bloque 2 · Dinámico, en una zona de 5 m: llevas la fuerza y la posición que sostuviste en la pared a un movimiento real.',
   'Shuffle continuo: desplazamiento lateral rápido y fluido, ganando inercia. Base atlética baja, pies paralelos apuntando al frente. Empuja fuerte el suelo con la pierna de atrás, sin cruzar los pies ni saltar hacia arriba.',
   'Corte: al llegar al final de los 5 m, clava la pierna de afuera con la misma inclinación y flexión que trabajaste en la pared, frena y sal explosivo hacia el otro lado.',
@@ -618,7 +620,7 @@ EX.mdcut={n:'Velocidad multidireccional: desplazamiento lateral y corte',video:'
   'Cada repetición al 100 % y pausa completa: menos de 90 s entre repeticiones y hasta 2 min entre series.'],
   clave:'Quédate «bajo el techo»: la cabeza no sube ni baja. Si la técnica se pierde, la serie termina.'};
 EX.mdcross={n:'Velocidad multidireccional: paso cruzado',video:'paso-cruzado',img:[['pared-1','Postura contra la pared'],['salida-1','Salida explosiva']],pasos:[
-  'Bloque 1 · Pared (técnica, «pared 1×10 s/lado»): ponte DE LADO a la pared, a un brazo de distancia, y apoya las dos manos en ella a la altura del pecho. Aleja los pies para que el cuerpo quede inclinado hacia la pared, recto desde los pies hasta la cabeza. Sube la rodilla de la pierna más cercana a la pared (posición de paso cruzado) y mantén 10 s; luego carga y despega ×5. Date vuelta y repite del otro lado.',
+  'Bloque 1 · Pared (técnica, «pared 1×10 s/lado»): ponte DE LADO a la pared, a un brazo de distancia. Apoya solo la mano de adentro (la más cercana a la pared) a la altura del hombro, con el brazo estirado, y aleja los pies para que el cuerpo quede inclinado hacia la pared, recto desde los pies hasta la cabeza. Sube la rodilla de la pierna más cercana a la pared (posición de paso cruzado) y mantén 10 s; luego carga y despega ×5. Date vuelta y repite del otro lado.',
   'Bloque 2 · Paso cruzado a la base (nivel 1, «2×3/lado»): trabaja el cambio de dirección cruzando la pierna por delante del cuerpo para desplazarte de lado y terminar en una posición atlética estable, la base.',
   'Inicio: de pie y de perfil a la dirección en la que vas a salir, erguido o en semi-base.',
   'Paso cruzado: empuja el suelo con la pierna de adentro (borde externo del pie) y cruza la pierna de afuera por delante del cuerpo, ganando terreno hacia el lado.',
