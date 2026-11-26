@@ -1902,13 +1902,13 @@ const BRACEO={fuerza:' · abdomen firme 70 %',volumen:' · abdomen firme 50 %',p
 // Plantillas: [b, tipo, banco de ejercicios]
 const BLK={
  rend:{
-  A:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['cajon','skater']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['kpallofsr','kchop']],['5','cardio',['mdcut','mdcross']],['6','prep',['regen']]],
+  A:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['cajon','skater','caida1']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['kpallofsr','kchop']],['5','cardio',['mdcut','mdcross']],['6','prep',['regen']]],
   B:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarB']],['1d','prep',['actB']],['2','pot',['cajon','skater']],['3A','pri',['pushpress']],['3B','acc',['dominadas']],['4','pri',['muerto','hipthrust']],['4B','core',['klanzfront','kchop']],['5','cardio',['mdcross','mdcut']],['6','prep',['regen']]],
   C:[['1a','prep',['tejidoB']],['1b','prep',['movB']],['1c','prep',['pilarA']],['1d','prep',['actB']],['2','pot',['skater','cajon']],['3A','pri',['hipthrust','muerto']],['3B','acc',['dominadas']],['4A','pri',['frontal','sentadilla']],['4B','core',['kpallofsr','kchop']],['5','cardio',['mdcut','mdcross']],['6','prep',['regen']]],
   U:[['1a','prep',['tejidoA']],['1b','prep',['movA']],['1c','prep',['pilarA']],['1d','prep',['actA']],['2','pot',['cajon','puenteexp']],['3','pot',['cargada','puenteexp']],['4A','pri',['sentadilla','frontal']],['4B','core',['kpallofsr','kchop']],['5A','pri',['muerto','hipthrust']],['5B','acc',['dominadas']],['6','cardio',['mdcut','mdcross']],['7','prep',['regen']]]},
  core:{
   A:[['1','prep',['kprep']],['2A','core',['kdeadbugc','krollout']],['2B','pot',['klanzpecho','klanzover','klanzatras']],['3A','pri',['ksentbarra','kgoblet']],['3B','pri',['kmuertobarra','krdl']],['3C','acc',['khipthrust','khipthrustp','kpuentex']],['4','acc',['kremobarra','kremomanc']],['5','carry',['kgranjero','kmaleta']],['6','prep',['kcalma']]],
-  B:[['1','prep',['kprep']],['2A','core',['klateral','klateralabd']],['2B','pot',['klanzrot','klanzrotp']],['2C','core',['kbirddogc','kpallofsr']],['3A','pri',['ksplit','kstepup']],['3B','acc',['klandmine']],['3C','pot',['kswing','kjammer','kpuentex']],['4','acc',['kjalon','kremoband']],['5','carry',['kcarrera','kmaleta']],['6','prep',['kcalma']]]},
+  B:[['1','prep',['kprep']],['2A','core',['klateral','klateralabd']],['2B','pot',['klanzrot','klanzrotp']],['2C','core',['kbirddogc','kpallofsr']],['3A','pri',['ksplit','kstepup','estdisco','cossack']],['3B','acc',['klandmine']],['3C','pot',['kswing','kjammer','kpuentex']],['4','acc',['kjalon','kremoband']],['5','carry',['kcarrera','kmaleta']],['6','prep',['kcalma']]]},
  global:{
   A:[['1','prep',['gcalor']],['2','pri',['gsilla','gstep']],['3','acc',['gflex','gpress']],['4','acc',['gremob','gremom']],['5','acc',['gpuente','gbisagra']],['6A','acc',['gcurl','gmartillo']],['6B','acc',['gtricep','gpatada']],['7','core',['gcorea','gcoreb']],['8','cardio',['gcaminata','ginterv']],['9','prep',['gestira']]],
   B:[['1','prep',['gcalor']],['2','pri',['gstep','gsilla']],['3','acc',['gpress','gflex']],['4','acc',['gremom','gremob']],['5','pri',['gbisagra','gpuente']],['6A','acc',['gmartillo','gcurl']],['6B','acc',['gpatada','gtricep']],['7','core',['gcoreb','gcorea']],['8','cardio',['ginterv','gcaminata']],['9','prep',['gestira']]]}};
@@ -1923,6 +1923,7 @@ function rowsBloque(src,n){
   const e=enfDe(n).k,k=n-2;
   return T.map(([b,cat,pool])=>{
     const id=pool[(cat==='pri'?Math.floor(k/2):k)%pool.length];
+    if(!EX[id]&&typeof ALT!=='undefined'&&ALT[id])EX[id]={...ALT[id]};// ejercicios de la biblioteca que rotan desde los bloques siguientes
     const bp=baseP(id);let p;
     if(cat==='prep'||cat==='core'||cat==='cardio')p=cat==='prep'?bp:bp.map((v,i)=>bp[Math.min(7,4+(i%4))]||v);
     else if(pg==='global')p=SCHG[e].map(x=>x+(cat==='pri'||cat==='acc'?VARTXT[e]&&!/descarga|Tests/.test(x)?VARTXT[e]:'':''));
@@ -3356,6 +3357,30 @@ Responde solo con JSON con esta forma: {"generales":["..."],"reglas":[{"ej":"id"
 
 /* ---------- Modo automático ---------- */
 const ALT={
+ // Variedad para los próximos bloques (rodilla: control, estabilidad y rango). Sin video propio todavía.
+ caida1:{n:'Caída a una pierna desde cajón',img:[['drop-1','Aterrizaje: rodilla sobre el pie']],pasos:[
+  'Sube a un cajón bajo (20–30 cm). Da un paso al vacío y cae sobre una sola pierna.',
+  'Aterriza suave en la punta y luego en todo el pie, con la cadera atrás y la rodilla alineada con el segundo dedo.',
+  'Congela 2–3 s sin que la rodilla se vaya hacia dentro ni la pelvis caiga. Baja y repite con la otra pierna.',
+  'Progresión: más altura, después caída y salto inmediato.'],
+  clave:'Es control, no fuerza: si la rodilla se mueve o el aterrizaje suena, baja la altura.'},
+ sissy:{n:'Sentadilla sissy (con apoyo o con peso)',img:[],pasos:[
+  'De pie, tomado de un rack o de una banda para equilibrarte; con peso, un disco al pecho.',
+  'Sube a la punta de los pies y lleva las rodillas hacia delante mientras el tronco se inclina atrás, en línea recta de las rodillas a la cabeza.',
+  'Baja lento (3 s) solo hasta donde controles, y sube empujando con los cuádriceps sin quebrar la cadera.',
+  'Empieza sin peso y con poco rango. Nivel avanzado: sin apoyo y con disco.'],
+  clave:'Carga alta en el tendón rotuliano: rango progresivo y sin dolor de rodilla por encima de 3/10.'},
+ cossack:{n:'Sentadilla cosaca (lateral profunda)',img:[['skater-0','Base amplia, peso sobre una pierna']],pasos:[
+  'Pies muy separados, puntas un poco abiertas. Con peso, una kettlebell o mancuerna al pecho (goblet).',
+  'Lleva el peso a una pierna y baja profundo sobre ella, mientras la otra queda estirada con la punta hacia arriba.',
+  'Rodilla alineada con el pie y talón apoyado; el tronco alto. Sube y pasa al otro lado.',
+  'Si no llegas abajo, apóyate en una caja o baja solo hasta donde mantienes el talón en el suelo.'],
+  clave:'Rango con control en el plano lateral: aductores, cadera y rodilla trabajan juntos.'},
+ estdisco:{n:'Estocada atrás con el pie delantero elevado',img:[['split-1','Rodilla de atrás cerca del suelo']],pasos:[
+  'Pie de adelante sobre un disco o step bajo (5–10 cm); mancuernas a los lados.',
+  'Da un paso largo atrás y baja hasta que la rodilla de atrás casi toque el suelo. La elevación da más rango a la cadera y la rodilla de adelante.',
+  'Sube empujando con el pie de adelante y vuelve a juntar los pies. Haz todas las repeticiones y cambia de lado.'],
+  clave:'La rodilla de adelante sigue la línea del pie y el tronco no se cae hacia delante.'},
  landmine:{n:'Landmine press a una mano',video:'landmine-press',img:[['landmine-0','Barra a la altura del hombro'],['landmine-1','Empuje en diagonal hasta extender el brazo']],pasos:[
   'El video muestra 2 niveles: 1, press a una mano sin impulso; 2, con impulso de piernas. El tuyo es el 2.',
   'Ancla un extremo de la barra en una esquina o en un landmine. Sujeta el otro extremo a la altura del hombro con una mano.',
