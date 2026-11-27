@@ -92,3 +92,25 @@ Estado de `public/go/media/` el 27 de noviembre de 2026, antes de reajustar los 
 | `zancada-estatica` | 15.6 s | 3088 KB | `55cf49c51c` | xzanc (Zancada estática) |
 | `zancada-lateral` | 6.0 s | 1373 KB | `10b476c421` | gcurl (Zancada lateral) |
 | `zancada-rodilla` | 6.8 s | 1700 KB | `bb72a86640` | xzancdin (Zancada dinámica) |
+
+## Cambios del 27-11-2026 (recortes y videos nuevos)
+
+Todo lo anterior a esta sección describe los videos **antes** de estos cambios (commit `59a2913`).
+Para volver uno atrás: `git checkout 59a2913 -- public/go/media/<clave>.mp4 public/go/media/<clave>.jpg`.
+
+| Clave | Qué cambió | Fuente |
+|---|---|---|
+| pallof-semirrodillas | Solo las presiones (3,8 s), sin la preparación ni el cambio de lado | mismo clip, 3,6–7,4 s |
+| faslr2 | Sin los 2 s acostado al inicio (7,4 s) | mismo clip, 2,2–9,6 s |
+| lanz-atras | Solo tomar el balón y lanzar (4,8 s), sin los 4 s de preparación | mismo clip, 4,3–9,1 s |
+| birddog | Solo el tramo con extensión de pierna (3 s) | mismo clip, 7–10 s |
+| salto-ataque | Solo la carrera, el salto y la caída (3 s), sin la vuelta caminando | mismo clip, 0,3–3,3 s |
+| puente | Sin el último 0,4 s, que mostraba otro ejercicio | mismo clip, 0–5,45 s |
+| push-press | Encuadre más cerrado, 900×1124 | IMG_6654, 17–27 s |
+| paso-cruzado | Encuadre más cerrado, 864×1080 | IMG_6677, 6,5–16,5 s |
+| paseo-maleta | Ahora camina con la pesa (antes estaba quieto), 960×1200 | IMG_6537, 54,3–57 s |
+| power-clean (nuevo) | Power clean de perfil; lo usa `powerclean` (antes usaba `clean`) | IMG_6660, 17,5–23,6 s |
+| remo-barra (nuevo) | Remo con barra en bisagra; lo usa `kremobarra` (antes maniquí) | IMG_6656, 14,8–20,8 s |
+
+Los cortes desde los originales (HLG del iPhone) se ajustaron al color de los clips actuales
+por coincidencia de histograma (60 %), h264 CRF 24, sin audio, etiquetas bt709.
