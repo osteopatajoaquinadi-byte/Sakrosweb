@@ -134,3 +134,18 @@ por coincidencia de histograma (60 %), h264 CRF 24, sin audio, etiquetas bt709.
 | birddog | reemplazado: bird dog completo de perfil (antes 8 s quieto) | IMG_1560, 7,5–16,5 s |
 
 Volver atrás el bird dog: `git checkout 59a2913 -- public/go/media/birddog.mp4 public/go/media/birddog.jpg`.
+
+Más videos de la misma tanda:
+
+| Clave | Ejercicios | Fuente |
+|---|---|---|
+| remo-banda (nuevo) | kremoband, gremob (antes maniquí) | IMG_1553, 14–24 s |
+| plancha (nuevo) | kplanchar, xplancha: de rodillas y completa (antes maniquí) | IMG_1534, 18,5–26,5 s |
+| pared-corte (nuevo) | mdcut: pared con una mano + shuffle y corte (antes solo `lateral-corte`) | IMG_1547 16–20,5 s + lateral-corte 0–6 s |
+| pared-cruce (nuevo) | mdcross: pared con una mano + paso cruzado (antes solo `paso-cruzado`) | IMG_1548 9–13,5 s + paso-cruzado 0–6 s |
+| pilar-pared (nuevo) | pilarB: pilar + marcha en la pared a 45° (antes solo `pilar`) | pilar 0–5 s + IMG_1550 14–19,5 s |
+| act-piernas (nuevo) | factPI | IMG_1536 20–24,5 s + IMG_1569 9–14,5 s |
+| act-tren-sup (nuevo) | factPS | IMG_1568 9–14,5 s + IMG_1567 11–15,5 s |
+| act-completa (nuevo) | factPC | IMG_1565 12–16 s + IMG_1569 9–12,5 s + IMG_1567 11–14,5 s |
+
+`lateral-corte.mp4` y `paso-cruzado.mp4` quedan en `media/` (se usan dentro de los clips nuevos y para volver atrás), pero ya no están en `VIDEOS`.
