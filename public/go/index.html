@@ -349,7 +349,7 @@ function mediaVideo(k,alt,cls){
   return h('div',{class:'media tall vidm'+(cls?' '+cls:''),onclick:()=>{v.paused?v.play().catch(()=>{}):v.pause()}},v,h('span',{class:'tag',text:'Video · toca para pausar'}));
 }
 // Ejercicios sin video con animación 3D (maniquí Sakros Go). Se cargan solo al mostrarse.
-const ANIM=new Set('mdcut mdcross copenhague kgoblet gcurl sentadilla ksplit gstep kstepup xstepup xsent1 klanzscoop muerto kmuertobarra krdl gbisagra xbisagra xrdl1 xbis1 kremobarra kextension pushpress klandmine kjammer gpress dominadas kjalon gflex xempuje ftspu3 ftspu4 kplanchar xplancha klateral klateralr klateralabd frs2 kbirddog kbirddogc xbirddog frs3 frs4 frs1 ftspu2 ftspu1 krollout kcurlup gcorea gcoreb kremomanc gremom gremob kremoband xtiron kfacepull kchop gmartillo kmonster vhombro hipthrust khipthrust khipthrustp fhs3 fhs4 fsm1 fsm2 faslr1 faslr2 faslr3 faslr4 kgranjero xcarry kcarrera gcaminata ginterv xlanz klanzover xlevantar vbloqueo tejidoA tejidoB frodPI frodPS frodPC frodPR pilarA pilarB regen gcalor gestira kprep xmequi xcalma xmsuelo xmat factPI factPS factPC factPR fds1 fds2 fds3 fds4 fil1 fil2 fil3 fil4 fhs1'.split(' '));
+const ANIM=new Set('mdcut mdcross copenhague kgoblet gcurl sentadilla ksplit gstep kstepup xstepup xsent1 klanzscoop muerto kmuertobarra krdl gbisagra xbisagra xrdl1 xbis1 kremobarra pushpress klandmine kjammer gpress dominadas kjalon gflex xempuje ftspu3 ftspu4 kplanchar xplancha klateral klateralr klateralabd frs2 kbirddog kbirddogc xbirddog frs3 frs4 frs1 ftspu2 ftspu1 krollout kcurlup gcorea gcoreb kremomanc gremom gremob kremoband xtiron kfacepull kchop gmartillo kmonster vhombro hipthrust khipthrust khipthrustp fhs3 fhs4 fsm1 fsm2 faslr1 faslr2 faslr3 faslr4 kgranjero xcarry kcarrera gcaminata ginterv xlanz klanzover xlevantar vbloqueo tejidoA tejidoB frodPI frodPS frodPC frodPR pilarA pilarB regen gcalor gestira kprep xmequi xcalma xmsuelo xmat factPI factPS factPC factPR fds1 fds2 fds3 fds4 fil1 fil2 fil3 fil4 fhs1'.split(' '));
 // Fuera de la lista (los graba el kinesiólogo): cargada, salto de ataque, paso cruzado, desplazamiento lateral y corte,
 // skater, salto al cajón / drop jump, lanzamiento rotacional, puente con rodilla abrazada y aperturas de lado.
 // En Base, la animación sigue el nivel del ejercicio (ej. flexión en la pared, en banco o de rodillas).
@@ -824,10 +824,11 @@ const EXC={
   'Inhala al bajar en vertical. Activa el suelo pélvico y exhala al subir. Abdomen firme al 50–70 %.',
   'La rodilla delantera sigue al pie.'],
   clave:'Tronco erguido.'},
- kextension:{n:'Extensión de espalda a 45° (isométrica)',img:[['extension-0','Banco a 45°: cuerpo alineado']],pasos:[
-  'En el banco a 45°, con la cadera apoyada.',
-  'Abdomen firme al 50 %. Sube solo hasta alinear el cuerpo (posición neutra) y aguanta 5 s.',
-  'Nunca en hiperextensión. Baja controlado.'],
+ kextension:{n:'Bird dog con pausa (extensores)',video:'birddog',img:[],pasos:[
+  'Sin banco: en cuatro apoyos, manos bajo los hombros y rodillas bajo la cadera. Abdomen firme al 50 %.',
+  'Extiende un brazo al frente y la pierna contraria atrás hasta alinearlos con el tronco y aguanta 5 s, con la espalda neutra.',
+  'Vuelve sin apoyar y alterna. Las repeticiones son por lado.',
+  'Nunca en hiperextensión: la zona lumbar no se arquea y la pelvis no rota.'],
   clave:'Es fuerza de extensores en neutro, no movilidad lumbar.'},
  kremobisagra:{n:'Remo con mancuerna en bisagra, sin apoyo',video:'remo-bisagra',img:[['remobis-1','Bisagra con la espalda neutra']],pasos:[
   'En bisagra de cadera, con la columna neutra y una mancuerna en una mano.',
@@ -971,7 +972,7 @@ const PLANC={
   {id:'kjammer',b:'3A',w:[7,8],p:W3(7,bz(['4×5/lado','4×5/lado · +carga'],'70 %'))},
   {id:'klanzscoop',b:'3B',w:[7,8],p:W3(7,bz(['3×5 · balón 4 kg','4×5 · balón 4–5 kg'],'70 %'))},
   {id:'kmuertobarra',b:'3C',w:[7,8],p:W3(7,bz(['4×3 · +carga · RPE 8','3×3 · RPE 7'],'70 %'))},
-  {id:'kextension',b:'4',w:[5,8],p:W3(5,bz(['3×8 · 5 s','3×10 · 5 s','3×10 · 5 s','2×10 · 5 s'],'50 %'))},
+  {id:'kextension',b:'4',w:[5,8],p:W3(5,bz(['3×8/lado · 5 s','3×10/lado · 5 s','3×10/lado · 5 s','2×10/lado · 5 s'],'50 %'))},
   {id:'kcarrera',b:'5',w:[5,8],p:W3(5,bz(['3×30 m','4×30 m','3×30 m · +carga','2×30 m'],'70 %'))},
   {id:'kcalma',b:'6',p:fill('3 min')}]
 };
