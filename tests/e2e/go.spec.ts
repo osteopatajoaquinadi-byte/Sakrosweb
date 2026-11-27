@@ -355,6 +355,11 @@ test.describe("Sakros Go", () => {
     await page.goto("/go");
     await page.getByRole("button", { name: /Rendir más en mi deporte/ }).click();
     await page.getByRole("button", { name: /^2 días/ }).click();
+    // Equipo: se pregunta para armar las sesiones.
+    await expect(page.getByRole("heading", { name: "¿Con qué equipo cuentas?" })).toBeVisible();
+    await page.getByRole("button", { name: "En casa" }).click();
+    await page.getByRole("button", { name: "Mancuernas" }).click();
+    await page.getByRole("button", { name: "Siguiente" }).click();
     await page.getByRole("button", { name: "Rodilla" }).click();
     await expect(page.getByRole("button", { name: "Ver mi plan" })).toBeDisabled();
     await page.getByRole("button", { name: "Menos de 6 semanas" }).click();
@@ -367,7 +372,8 @@ test.describe("Sakros Go", () => {
     await page.locator("#onb-salud").check();
     await page.getByRole("button", { name: "Crear mi plan" }).click();
     await expect(page.getByRole("heading", { name: "Antes de cargar, evalúate con un profesional" })).toBeVisible();
-    const a = fake.doc("atletas", "u1") as { alerta?: { motivos: string[]; ok: boolean }; nivel?: number };
+    const a = fake.doc("atletas", "u1") as { alerta?: { motivos: string[]; ok: boolean }; nivel?: number; equipo?: { tiene: string[]; polea: boolean } };
+    expect(a.equipo).toEqual({ tiene: ["bandas", "mancuernas"], polea: false });
     expect(a.alerta?.motivos).toEqual(["lesión de menos de 6 semanas", "dolor de 8 de 10"]);
     expect(a.nivel).toBe(1);
     await expect.poll(() => fake.avisos.map((x) => x.tipo)).toEqual(["alerta"]);
@@ -729,8 +735,8 @@ test.describe("Sakros Go", () => {
     await page.getByRole("tab", { name: "Hoy" }).click();
     const card = page.locator("#card-equipo");
     await card.getByRole("button", { name: "2 o más" }).click();
-    await card.getByRole("button", { name: "Sin polea (elástico)" }).click();
-    await expect(card.getByRole("button", { name: "Sin polea (elástico)" })).toHaveAttribute("aria-pressed", "true");
+    await card.getByRole("button", { name: "Polea", exact: true }).click();
+    await expect(card.getByRole("button", { name: "Polea", exact: true })).not.toHaveAttribute("aria-pressed", "true");
     expect(await ids()).toEqual(expect.arrayContaining(["kremobarra", "kchopband"]));
     expect(errores).toEqual([]);
   });
@@ -790,6 +796,21 @@ test.describe("Sakros Go", () => {
     expect(await page.evaluate("JSON.stringify((({s,d}) => ({s,d}))(nextSes()))")).toBe('{"s":2,"d":"B"}');
     await page.getByRole("tab", { name: "Hoy" }).click();
     await expect(page.getByText("Hoy toca: Día B")).toBeVisible();
+    expect(errores).toEqual([]);
+  });
+
+  test("equipo: sin barra ni cajón, la app recomienda qué conseguir para seguir después de las 8 semanas", async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await montarGo(page, { docs: [atleta("u1", { programa: "rend", frecuencia: 3, equipo: { tiene: ["mancuernas", "bandas"], polea: false } })] });
+    await page.goto("/go");
+    await page.getByRole("tab", { name: "Hoy" }).click();
+    const rec = page.locator("#card-equipo .conseguir");
+    await expect(rec).toContainText("Para seguir después de las 8 semanas");
+    await expect(rec).toContainText("Barra olímpica y discos");
+    await expect(rec).not.toContainText("Mancuernas");
+    // Al marcar la barra, deja de recomendarse.
+    await page.locator("#card-equipo").getByRole("button", { name: "Barra olímpica y discos" }).click();
+    await expect(page.locator("#card-equipo .conseguir")).not.toContainText("Barra olímpica");
     expect(errores).toEqual([]);
   });
 });

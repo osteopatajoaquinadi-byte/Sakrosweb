@@ -173,6 +173,7 @@ details.card>summary{font-weight:700}
 .eqres{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
 .eqchip{font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--sunk)}
 .eqchip.rojo{background:var(--accent-soft);color:var(--accent)}.eqchip.amb{color:var(--warn)}.eqchip.ok{background:var(--ok-soft);color:var(--ok)}
+.conseguir{margin-top:12px;padding:12px 14px;border-radius:var(--r);background:var(--accent-soft)}.conseguir ol{margin:6px 0;padding-left:20px;display:grid;gap:4px}
 .mkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
 .fb{margin:14px 0 10px}.fb h3{margin:0 0 4px;font-size:1.05rem}.fblist{list-style:none;margin:8px 0;padding:0;display:grid;gap:6px}.fbitem{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;border-left:4px solid transparent}.fbitem.alto{border-left-color:var(--accent)}.fbtop{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}.fbdatos{display:flex;gap:6px;margin:6px 0 0}.fbnota{margin:6px 0 2px;font-style:italic}
 .eqlist{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}
@@ -3514,6 +3515,7 @@ function contexto(){
     core?'Programa '+PROGC[pg]+': sin cargas de referencia; la carga se ajusta a la RPE de la fase.':UI.atleta==='yo'?'Referencias de partida: sentadilla posterior 120 kg ×5 (1RM ≈135), frontal 90 kg ×5–6 (1RM ≈105), peso muerto 120 kg ×3–4 (1RM ≈130).':'Cargas de la semana 1: '+(Object.keys(c).length?CARGABLES.filter(k=>c[k]).map(k=>EX[k].n+' '+c[k]+' kg').join(', '):'sin definir (las sesiones dicen «carga según RPE»)')+'.',
     `Semana que tiene abierta: S${UI.sem}, día ${UI.dia}.`,'','PLAN ACTUAL (* = ajustado por ti con la herramienta; [auto] = adaptado automáticamente por diagnóstico):'];
   if(pg==='prep')Object.keys(ZONA).forEach(z=>L.push('Prep '+ZONA[z]+': '+prepRows(z,1).map(it=>it.id+' '+EX[it.id].n+' ('+pres(1,z,it)+')').join(' | ')));
+  {const T=tieneImpl(),e=equipo();if(T)L.push('EQUIPO del atleta: '+(T.length?T.map(k=>IMPL_N[k]).join(', '):'casi nada (entrena en casa)')+(T.includes('barra')?' · barras: '+(parseInt(e.barras,10)||1):'')+'. Si un ejercicio pide algo que no tiene, propón una alternativa con lo que tiene.')}
   if(esVoley())L.push('DEPORTE: vóley playa. En la sesión no hay trineo ni salidas de sprint (se cambiaron por salto de ataque, salto de bloqueo, intervalos tipo rally y hombro de atacante). Salidas en arena, sprints cortos y desplazamientos defensivos van como complementario en la playa, fuera de la sesión.');
   if(pg==='prep'){}
   else if(core||bk()>1||esVoley())DIAS().forEach(d=>{for(let s=1;s<=8;s++)L.push(`${dayName(d)} S${s} (${faseTxt(s)}): `+rows(d,s).map(it=>{const A=autoEj(s,d,it);return `${it.id} ${A.changed?'[auto: '+A.n+'] ':''}${A.pres}${S.ajustes[key(s,d,it.id)]?'*':''}`}).join(' | '))});
@@ -3573,16 +3575,55 @@ function fmt(text){
   });
   return out;
 }
+/* Implementos: se preguntan en la bienvenida y en «Tu equipo». Con eso se arma la sesión (una barra, sin polea)
+   y se recomienda qué conseguir para seguir después de las 8 semanas. Sin respuesta, se asume un gimnasio completo. */
+const IMPL=[['mancuernas','Mancuernas'],['bandas','Bandas elásticas y mini band'],['cajon','Cajón, banco o escalón firme'],['kettlebell','Kettlebell'],['barra','Barra olímpica y discos'],['dominadas','Barra de dominadas'],['balon','Balón medicinal'],['rodillo','Rodillo de espuma'],['polea','Polea']];
+const IMPL_N=Object.fromEntries(IMPL);
+const IMPL_POR={mancuernas:'la mayoría de los ejercicios de fuerza con carga',bandas:'activación, Pallof, remo y chop',cajon:'saltos, step-up, búlgara y hip thrust',kettlebell:'swing, goblet y paseos con carga',barra:'sentadilla, peso muerto, hip thrust y halterofilia',dominadas:'tracción vertical',balon:'lanzamientos de potencia',rodillo:'el tejido blando del inicio',polea:'chop y Pallof (se reemplaza por bandas)'};
+function implDe(id){
+  const x=EX[id]||(typeof ALT!=='undefined'&&ALT[id]);if(!x)return [];
+  if(id==='dominadas')return ['dominadas'];
+  const t=(x.n+' '+(x.pasos||[]).join(' ')).toLowerCase(),o=[];
+  if(/mancuerna/.test(t))o.push('mancuernas');
+  if(/kettlebell/.test(t))o.push('kettlebell');
+  if(/\bbanda|el[aá]stico|mini band/.test(t))o.push('bandas');
+  if(/caj[oó]n|\bbanco|escal[oó]n|step-up/.test(t))o.push('cajon');
+  if(/bal[oó]n/.test(t))o.push('balon');
+  if(/rodillo/.test(t))o.push('rodillo');
+  if(BARRA.has(id)||/trap bar|landmine/.test(t))o.push('barra');
+  return o;
+}
+const tieneImpl=()=>{const e=equipo();return Array.isArray(e.tiene)?e.tiene:null};
+// Lo que falta para el bloque en curso y el siguiente, ordenado por cuántos ejercicios lo usan.
+function implFaltan(){
+  const t=tieneImpl();if(!t)return [];
+  const pg=prog();if(pg==='prep'||pg==='base')return [];
+  const cnt={},b0=bk(),a=atl(),bl=a.bloques||{};
+  const contar=()=>{for(let s=1;s<=8;s++)DIAS().forEach(d=>{let r=[];try{r=rows(d,s)}catch(e){}r.forEach(it=>implDe(it.id).forEach(k=>{if(!t.includes(k)&&k!=='polea')(cnt[k]=cnt[k]||new Set()).add(it.id)}))})};
+  contar();
+  try{a.bloques={...bl,[pg]:b0+1};contar()}finally{a.bloques=bl}
+  return Object.entries(cnt).map(([k,v])=>[k,v.size]).sort((x,y)=>y[1]-x[1]).map(([k,n])=>({k,n}));
+}
 /* Equipo disponible: cuántas barras y si hay polea. La sesión se arma con eso (Rendimiento y Core). */
 function cardEquipo(){
-  const pg=prog();if(pg!=='rend'&&pg!=='core')return null;
+  const pg=prog();if(pg!=='rend'&&pg!=='core'&&pg!=='global')return null;
   const e=equipo(),bar=parseInt(e.barras,10)||1,pol=e.polea!==false;
   const save=async patch=>{await saveAtleta(UI.atleta,{...atl(),equipo:{...equipo(),...patch},t:Date.now()});render()};
   const op=(on,txt,fn)=>h('button',{class:'opt','aria-pressed':on,onclick:fn},txt);
   return h('section',{class:'card',id:'card-equipo'},h('h2',{text:modoCli()?'Tu equipo':'Equipo disponible'}),
-    h('p',{class:'note',text:'La sesión se arma con lo que hay en el gimnasio. Con una sola barra, ninguna superserie lleva dos ejercicios con barra. Sin polea, esos ejercicios van con elástico.'}),
+    h('p',{class:'note',text:'La sesión se arma con lo que hay en el gimnasio. Con una sola barra, ninguna superserie lleva dos ejercicios con barra. Sin polea, esos ejercicios van con elástico. Toca lo que tienes para marcarlo o desmarcarlo.'}),
     h('div',{class:'freq',role:'group','aria-label':'Barras'},h('span',{class:'wholbl',text:'Barras'}),op(bar<2,'1 barra',()=>save({barras:1})),op(bar>=2,'2 o más',()=>save({barras:2}))),
-    h('div',{class:'freq',role:'group','aria-label':'Polea'},h('span',{class:'wholbl',text:'Polea'}),op(pol,'Hay polea',()=>save({polea:true})),op(!pol,'Sin polea (elástico)',()=>save({polea:false}))));
+    h('span',{class:'wholbl',text:'Qué tienes'}),
+    h('div',{class:'opts',role:'group','aria-label':'Implementos'},IMPL.map(([k,l])=>{const T=tieneImpl(),on=k==='polea'?pol:(T?T.includes(k):true);
+      return op(on,l,()=>{const base=T||IMPL.map(x=>x[0]);const n=on?base.filter(x=>x!==k):[...base,k];save({tiene:n,...(k==='polea'?{polea:!on}:{})})})})),
+    cardConseguir());
+}
+// Qué conviene conseguir para seguir entrenando después de las 8 semanas.
+function cardConseguir(){
+  const F=implFaltan();if(!F.length)return null;
+  return h('div',{class:'conseguir'},h('p',{},h('strong',{text:'Para seguir después de las 8 semanas, te conviene conseguir:'})),
+    h('ol',{},F.slice(0,3).map(({k,n})=>h('li',{},h('strong',{text:IMPL_N[k]}),' · para '+IMPL_POR[k]+' ('+n+(n===1?' ejercicio':' ejercicios')+' de este bloque y el siguiente).'))),
+    h('p',{class:'note',text:'Mientras tanto, si un ejercicio pide algo que no tienes, pídele al Coach una alternativa con lo que tienes.'}));
 }
 /* Entrenador: bajar la carga de los ejercicios que más cargan la espalda (u otra molestia), en % del peso. */
 function cardMenosKg(){
@@ -3783,7 +3824,8 @@ function renderOnb(m){
   const O=UI.onb=UI.onb||{paso:1,obj:null,dias:null,les:[]};
   const a=atl();
   const card=h('section',{class:'card onb'});
-  const paso=(n,t)=>h('div',{class:'onbhead'},h('span',{class:'chip',text:'Paso '+n+' de 3'}),h('h2',{text:t}));
+  const conEq=['rend','core','global'].includes(O.obj),tot=conEq?4:3;
+  const paso=(n,t)=>h('div',{class:'onbhead'},h('span',{class:'chip',text:'Paso '+n+' de '+tot}),h('h2',{text:t}));
   const opt=(sel,txt,sub,on)=>h('button',{class:'bigopt','aria-pressed':sel,onclick:on},h('b',{text:txt}),sub?h('span',{text:sub}):null);
   if(O.paso===1){
     card.append(h('p',{class:'brandline',text:'Bienvenido a Sakros Go. Con 3 respuestas armamos tu plan.'}),h('p',{class:'note quienline',text:'Programas diseñados por Joaquín Adi, kinesiólogo y osteópata, con máster en Functional Training. Él revisa tu evaluación en un plazo de 48 horas a 7 días y el Coach Osteojuaco IA ajusta tu plan contigo.'}),paso(1,'¿Qué quieres lograr?'),
@@ -3794,8 +3836,16 @@ function renderOnb(m){
       opt(O.obj==='prep','Ya entreno: quiero prepararme para no lesionarme','Unos 12 minutos antes de tu gimnasio o tu deporte, según tu evaluación de movimiento.',()=>{O.obj='prep';O.paso=2;render()}));
   }else if(O.paso===2){
     card.append(paso(2,'¿Cuántos días por semana puedes entrenar?'),
-      ...[[1,'1 día','Mínimo para mantener. Sumarás caminatas por tu cuenta.'],[2,'2 días','Lo recomendado para empezar.'],[3,'3 días','Para avanzar más rápido.']].map(([n,t,s])=>opt(O.dias===n,t,s,()=>{O.dias=n;O.paso=3;render()})),
+      ...[[1,'1 día','Mínimo para mantener. Sumarás caminatas por tu cuenta.'],[2,'2 días','Lo recomendado para empezar.'],[3,'3 días','Para avanzar más rápido.']].map(([n,t,s])=>opt(O.dias===n,t,s,()=>{O.dias=n;O.paso=conEq?'eq':3;render()})),
       h('button',{class:'linkbtn',onclick:()=>{O.paso=1;render()}},'← Volver'));
+  }else if(O.paso==='eq'){
+    const E=O.eq=O.eq||[];const tog=k=>{O.eq=E.includes(k)?E.filter(x=>x!==k):[...E,k];render()};
+    const pre=(l,ks)=>h('button',{class:'opt',onclick:()=>{O.eq=[...ks];render()}},l);
+    card.append(paso(3,'¿Con qué equipo cuentas?'),h('p',{class:'note',text:'Con esto armamos tus sesiones. Si te falta algo, el Coach te da alternativas y te decimos qué conviene conseguir para seguir después de las 8 semanas.'}),
+      h('div',{class:'opts'},pre('Gimnasio completo',IMPL.map(x=>x[0])),pre('Gimnasio básico',['mancuernas','bandas','cajon','kettlebell','rodillo']),pre('En casa',['bandas'])),
+      h('span',{class:'wholbl',text:'Marca lo que tienes'}),
+      h('div',{class:'opts'},IMPL.map(([k,l])=>h('button',{class:'opt','aria-pressed':E.includes(k),onclick:()=>tog(k)},l))),
+      h('div',{class:'row'},h('button',{class:'btn primary big',onclick:()=>{O.paso=3;render()}},'Siguiente'),h('button',{class:'linkbtn',onclick:()=>{O.paso=2;render()}},'← Volver')));
   }else if(O.paso===3){
     const L=[['ninguna','Ninguna'],['espalda','Dolor de espalda o hernia lumbar'],['escapes','Escapes de orina al hacer esfuerzo'],['rodilla','Rodilla'],['hombro','Hombro'],['tobillo','Tobillo'],['otra','Otra']];
     const tog=k=>{if(k==='ninguna')O.les=O.les.includes('ninguna')?[]:['ninguna'];else{O.les=O.les.filter(x=>x!=='ninguna');O.les=O.les.includes(k)?O.les.filter(x=>x!==k):[...O.les,k]}render()};
@@ -3808,9 +3858,9 @@ function renderOnb(m){
       h('span',{class:'wholbl',text:'Marca si te pasa algo de esto'}),
       h('div',{class:'opts'},FL.map(([k,t])=>h('button',{class:'opt','aria-pressed':T.flags.includes(k),onclick:()=>{T.flags=T.flags.includes(k)?T.flags.filter(x=>x!==k):[...T.flags,k];render()}},t)))):null;
     const listo=O.les.length&&(!conLes||(T.desde&&T.dolor!=null));
-    card.append(paso(3,'¿Tienes alguna lesión o molestia?'),h('p',{class:'note',text:'Puedes marcar varias. El plan se adapta a lo que elijas.'}),
+    card.append(paso(conEq?4:3,'¿Tienes alguna lesión o molestia?'),h('p',{class:'note',text:'Puedes marcar varias. El plan se adapta a lo que elijas.'}),
       h('div',{class:'opts'},L.map(([k,t])=>h('button',{class:'opt','aria-pressed':O.les.includes(k),onclick:()=>tog(k)},t))),tri,
-      h('div',{class:'row'},h('button',{class:'btn primary big',disabled:!listo,onclick:()=>{O.paso=4;render()}},'Ver mi plan'),h('button',{class:'linkbtn',onclick:()=>{O.paso=2;render()}},'← Volver')));
+      h('div',{class:'row'},h('button',{class:'btn primary big',disabled:!listo,onclick:()=>{O.paso=4;render()}},'Ver mi plan'),h('button',{class:'linkbtn',onclick:()=>{O.paso=conEq?'eq':2;render()}},'← Volver')));
   }else{
     let prog=O.obj;const les=O.les.filter(x=>x!=='ninguna');
     const sugCore=prog!=='core'&&prog!=='prep'&&prog!=='base'&&les.some(x=>x==='escapes'||x==='espalda');
@@ -3846,6 +3896,7 @@ function renderOnb(m){
         const ala=les.length?alarmaDe(O.tri):null;
         const data={...a,triaje:les.length?{...O.tri,les,t:Date.now()}:null,alerta:ala?{motivos:ala,t:Date.now(),ok:false}:(a.alerta||null),nombre,sexo:sx.value,edad:edad>=5&&edad<=100?edad:(a.edad||''),programa:prog,siguiente:prog==='base'?'global':(a.siguiente||''),modulos:mods.length?mods.slice(0,2):['equilibrio'],nivel:ala?1:(a.nivel||((prog==='base'||prog==='global'||edad>=60)?1:2)),frecuencia:O.dias,sesiones:a.sesiones||O.dias,condicion:cond||'',objetivo:a.objetivo||({base:'Empezar a moverme',rend:'Rendir más en mi deporte',core:'Fortalecer espalda, abdomen y suelo pélvico',global:'Empezar a entrenar o mantenerme',prep:'Prepararme para entrenar sin lesionarme'})[prog],
           saltarBase:false,saltoBase:a.saltoBase||null,notas:[a.notas,les.includes('otra')?'Marcó otra molestia en la bienvenida: revisar.':''].filter(Boolean).join(' '),onb:Date.now(),terminos:terminosOk(),t:Date.now()};
+        if(conEq&&Array.isArray(O.eq))data.equipo={...(a.equipo||{}),tiene:O.eq,polea:O.eq.includes('polea')};
         e.target.disabled=true;const ok=await saveAtleta(UI.atleta,data);e.target.disabled=false;
         if(!ok){err.textContent='No se pudo guardar. Revisa la conexión y vuelve a intentarlo.';return}
         if(ala)avisarCoach('alerta',ala.join(', ')+' · zonas: '+les.join(', ')+' · dolor hoy '+O.tri.dolor+'/10');
