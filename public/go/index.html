@@ -354,9 +354,9 @@ const ANIM=new Set('mdcut mdcross copenhague kgoblet gcurl sentadilla ksplit xse
 // Fuera de la lista (los graba el kinesiólogo): cargada, salto de ataque, paso cruzado, desplazamiento lateral y corte,
 // skater, salto al cajón / drop jump, lanzamiento rotacional, puente con rodilla abrazada y aperturas de lado.
 // En Base, la animación sigue el nivel del ejercicio (ej. flexión en la pared, en banco o de rodillas).
-// Lanzamiento sin maniquí: si un ejercicio no tiene video propio, se muestran sus fotos y los pasos. Para volver a usarlo, poner false.
-const SIN_MANIQUI=false;
-const animDe=(id,V)=>!SIN_MANIQUI&&ANIM.has(id)&&V.n===EX[id].n?(EX[id].niv?id+'@'+nivelDe(id):id):null;
+// Lanzamiento sin maniquí: si un ejercicio no tiene video propio, se muestran sus fotos y los pasos. Solo si tampoco tiene fotos, se muestra el maniquí para que no quede en blanco. Para volver a usarlo en todos, poner false.
+const SIN_MANIQUI=true;
+const animDe=(id,V)=>(!SIN_MANIQUI||!(EX[id]&&EX[id].img&&EX[id].img.length))&&ANIM.has(id)&&V.n===EX[id].n?(EX[id].niv?id+'@'+nivelDe(id):id):null;
 let _mq=null;
 function cargaManiqui(){if(_mq)return _mq;const js=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=no;document.head.appendChild(e)});
   _mq=(window.THREE?Promise.resolve():js('/go/three.min.js')).then(()=>window.Maniqui?null:js('/go/maniqui-motor.js')).then(()=>window.MQ_EJ&&window.MQ?null:js('/go/maniqui.js'));_mq.catch(()=>{_mq=null});return _mq}
