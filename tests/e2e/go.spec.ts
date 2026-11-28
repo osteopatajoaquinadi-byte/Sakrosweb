@@ -540,7 +540,8 @@ test.describe("Sakros Go", () => {
     await montarGo(page, { docs: [atleta("u1", { programa: "base", frecuencia: 2, nivel: 1 })] });
     await page.goto("/go");
     await page.getByText(/Ver la sesión completa/).first().click();
-    await expect(page.locator(".media.mq.holo").first()).toBeVisible();
+    await expect(page.locator("article.ex").first()).toBeVisible();
+    // Sin maniquí en el lanzamiento: solo aparece en ejercicios sin video ni fotos, y en Fundamentos con estilo holograma.
     await expect(page.locator(".media.mq:not(.holo)")).toHaveCount(0);
     await page.evaluate("cargaManiqui()");
     await expect.poll(() => page.evaluate("!!(window.MQ_EJ && MQ_EJ['xsent1@1'])")).toBe(true);
